@@ -137,10 +137,31 @@
         <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </div>
 
-      <div id="practice-screen" class="hidden space-y-8">
-        <h1 class="heading text-5xl">Practice</h1>
-        <p class="text-zinc-400 text-lg">Open any module from the Learn screen to start a voice or tray practice session.</p>
-        <button onclick="navigate('learn')" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold px-8 py-4 rounded-3xl">Browse Modules</button>
+      <div id="practice-screen" class="hidden">
+        <div id="practice-scenarios" class="space-y-8">
+          <div>
+            <h1 class="heading text-5xl mb-2">AI Role-Play Practice</h1>
+            <p class="text-zinc-400 text-lg">Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="scenario-grid"></div>
+        </div>
+        <div id="practice-chat" class="hidden space-y-6">
+          <div class="flex items-center gap-4">
+            <button onclick="exitChat()" class="text-zinc-400 hover:text-amber-400 flex items-center gap-2 text-sm">← Back to scenarios</button>
+            <div>
+              <h2 class="heading text-3xl" id="chat-scenario-title"></h2>
+              <p class="text-zinc-400 text-sm" id="chat-scenario-hint">You are the server. Type your response to the guest.</p>
+            </div>
+          </div>
+          <div id="chat-messages" class="space-y-4 max-h-[55vh] overflow-y-auto pr-2"></div>
+          <div class="flex gap-3">
+            <input id="chat-input" type="text" placeholder="Type your response as the server..."
+              class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
+              onkeydown="if(event.key==='Enter') sendChat()" />
+            <button onclick="sendChat()" id="chat-send-btn"
+              class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors">Send</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -440,6 +461,137 @@
 
     function drag(ev) { ev.dataTransfer.setData("text", "glass"); }
 
+    // --- PRACTICE / AI ROLE-PLAY ---
+    const practiceScenarios = [
+      { id: 1, emoji: '😤', title: 'The Difficult Guest',       desc: 'De-escalate an angry, impatient guest at the door.' },
+      { id: 2, emoji: '🍷', title: 'Wine Upselling',             desc: 'Guide an uncertain couple to the right bottle.' },
+      { id: 3, emoji: '⚠️', title: 'Serious Food Allergy',       desc: 'Handle a guest with a severe nut allergy safely.' },
+      { id: 4, emoji: '⏱️', title: 'The Long Wait Complaint',    desc: 'Recover a frustrated guest waiting 45 minutes.' },
+      { id: 5, emoji: '🍮', title: 'Dessert Upselling',          desc: 'Persuade a "stuffed" guest to try a dessert.' },
+      { id: 6, emoji: '🎂', title: 'Birthday Celebration',       desc: 'Take a surprise 40th birthday booking by phone.' },
+      { id: 7, emoji: '🧾', title: 'Splitting the Bill',         desc: 'Handle a complicated 7-person split bill.' },
+      { id: 8, emoji: '⭐', title: 'VIP Guest Arrival',          desc: 'Exceed the expectations of a high-profile guest.' },
+      { id: 9, emoji: '🤔', title: 'The Indecisive Guest',       desc: 'Guide an overwhelmed guest to their perfect dish.' },
+      { id: 10, emoji: '❌', title: 'Wrong Order Delivered',     desc: 'Recover from bringing the wrong dish gracefully.' },
+    ];
+
+    let chatScenarioId = null;
+    let chatHistory = [];
+
+    function renderScenarios() {
+      const grid = document.getElementById('scenario-grid');
+      if (!grid) return;
+      grid.innerHTML = practiceScenarios.map(function(s) {
+        return '<div onclick="startChat(' + s.id + ')" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">' +
+          '<div class="text-3xl mt-1">' + s.emoji + '</div>' +
+          '<div><div class="font-semibold text-lg mb-1">' + s.title + '</div>' +
+          '<div class="text-zinc-400 text-sm">' + s.desc + '</div></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function startChat(scenarioId) {
+      chatScenarioId = scenarioId;
+      chatHistory = [];
+      const scenario = practiceScenarios.find(function(s) { return s.id === scenarioId; });
+      document.getElementById('chat-scenario-title').textContent = scenario.emoji + ' ' + scenario.title;
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('practice-scenarios').classList.add('hidden');
+      document.getElementById('practice-chat').classList.remove('hidden');
+      sendInitialMessage();
+    }
+
+    function exitChat() {
+      document.getElementById('practice-chat').classList.add('hidden');
+      document.getElementById('practice-scenarios').classList.remove('hidden');
+    }
+
+    async function sendInitialMessage() {
+      appendChatMessage('assistant', '...');
+      try {
+        const res = await fetch('/api/roleplay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin the scenario. Set the scene and start as the guest.' }] })
+        });
+        const data = await res.json();
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        replaceLast(data.reply);
+      } catch (e) {
+        replaceLast('Could not connect to AI. Please ensure the server is running.');
+      }
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      input.disabled = true;
+      document.getElementById('chat-send-btn').disabled = true;
+
+      chatHistory.push({ role: 'user', content: text });
+      appendChatMessage('user', text);
+      appendChatMessage('assistant', '...');
+
+      try {
+        const res = await fetch('/api/roleplay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
+        });
+        const data = await res.json();
+        chatHistory.push({ role: 'assistant', content: data.reply });
+
+        const parts = data.reply.split(/\[Coaching note:/i);
+        const guestText = parts[0].trim();
+        const coaching = parts[1] ? parts[1].replace(/\]$/, '').trim() : null;
+
+        let html = '<p>' + escHtml(guestText) + '</p>';
+        if (coaching) {
+          html += '<div class="mt-3 bg-amber-400/10 border border-amber-400/30 rounded-xl px-4 py-3 text-sm text-amber-300"><span class="font-semibold">📋 Coaching:</span> ' + escHtml(coaching) + '</div>';
+        }
+        replaceLastHtml(html);
+      } catch (e) {
+        replaceLastHtml('<p class="text-red-400">Connection error — is the server running?</p>');
+      }
+
+      input.disabled = false;
+      document.getElementById('chat-send-btn').disabled = false;
+      input.focus();
+    }
+
+    function appendChatMessage(role, text) {
+      const box = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = role === 'user'
+        ? 'flex justify-end'
+        : 'flex justify-start';
+      div.innerHTML = '<div class="max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ' +
+        (role === 'user' ? 'bg-amber-400 text-black' : 'bg-zinc-800 text-zinc-100') + '">' +
+        escHtml(text) + '</div>';
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function replaceLast(text) {
+      const box = document.getElementById('chat-messages');
+      const last = box.lastElementChild;
+      if (last) last.querySelector('div').textContent = text;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function replaceLastHtml(html) {
+      const box = document.getElementById('chat-messages');
+      const last = box.lastElementChild;
+      if (last) last.querySelector('div').innerHTML = html;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     // --- ONBOARDING ---
     let obSelectedLevel = '';
 
@@ -514,6 +666,7 @@
     }
 
     function renderAll() {
+      renderScenarios();
       const continueEl = document.getElementById('continue-modules');
       const allEl = document.getElementById('all-modules');
       const sidebarEl = document.getElementById('sidebar-modules');
