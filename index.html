@@ -1,16 +1,169 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>replit</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ServeMaster Academy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2VydmVNYXN0ZXIgQWNhZGVteSIsInNob3J0X25hbWUiOiJTZXJ2ZU1hc3RlciIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMTkwOTExIiwidGhlbWVfY29sb3IiOiIjZDRhZjM3IiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLmljb25zY291dC5jb20vaWNvbi1mcmVlL3BuZy0yNTYvd2luZS1nbGFzcy0yNTYucG5nIiwic2l6ZXMiOiIyNTZ4MjU2In1dfQ==" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .tray { border: 8px solid #78350f; background: linear-gradient(45deg, #451a03, #78350f); }
+    .glass { width: 48px; height: 68px; background: linear-gradient(#e0f2fe, #bae6fd); border: 3px solid #bae6fd; border-radius: 50% 50% 10% 10%; cursor: grab; }
+  </style>
 </head>
+<body class="min-h-screen bg-zinc-950 text-white">
+  <!-- NAV -->
+  <nav class="bg-black border-b border-amber-900 flex items-center justify-between px-6 py-4 sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-gradient-to-br from-amber-400 to-rose-700 rounded-2xl flex items-center justify-center text-2xl">🍸</div>
+      <div>
+        <span class="heading text-3xl tracking-tight">ServeMaster</span>
+        <span class="text-amber-400 text-sm font-medium tracking-widest block -mt-1">ACADEMY</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-8 text-sm">
+      <div onclick="navigate('dashboard')" class="cursor-pointer hover:text-amber-400">Dashboard</div>
+      <div onclick="navigate('learn')" class="cursor-pointer hover:text-amber-400">Learn</div>
+      <div onclick="navigate('practice')" class="cursor-pointer hover:text-amber-400">Practice</div>
+    </div>
+    <div class="flex items-center gap-3 bg-zinc-900 px-4 py-2 rounded-3xl">
+      <div class="text-right">
+        <div class="text-sm font-semibold">Alex Rivera</div>
+        <div class="text-amber-400 text-xs">Level 16 • Master Server</div>
+      </div>
+      <div class="w-9 h-9 bg-amber-400 rounded-2xl flex items-center justify-center text-black font-bold">AR</div>
+    </div>
+  </nav>
 
-<body>
-  Hello world
-  <script src="script.js"></script>
+  <div class="flex">
+    <!-- Sidebar -->
+    <div class="w-72 bg-zinc-900 border-r border-amber-900 min-h-screen p-6 hidden lg:block">
+      <div id="sidebar-modules" class="space-y-1"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-8" id="main-content">
+      <div id="dashboard-screen" class="space-y-12">
+        <h1 class="heading text-6xl">Good evening, Alex 👋</h1>
+        <p class="text-zinc-400 text-xl">v5.1 Live on Replit — Voice & Tray ready!</p>
+        <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+      </div>
+
+      <div id="learn-screen" class="hidden">
+        <h1 class="heading text-5xl mb-10">All Modules</h1>
+        <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module Modal -->
+  <div id="module-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-4">
+    <div class="bg-zinc-900 w-full max-w-4xl rounded-3xl overflow-hidden max-h-[92vh]">
+      <div class="px-8 py-6 border-b border-amber-900 flex justify-between items-center">
+        <div id="modal-title" class="heading text-3xl"></div>
+        <button onclick="closeModal()" class="text-4xl leading-none hover:text-amber-400">×</button>
+      </div>
+      <div id="modal-content" class="p-8 overflow-auto" style="max-height: calc(92vh - 80px);"></div>
+    </div>
+  </div>
+
+  <script>
+    // All modules + progress
+    const modules = [
+      { id: 1, title: "Foundations of Exceptional Service", progress: 100, emoji: "🌟" },
+      { id: 2, title: "Seating, Menus & Taking Orders", progress: 95, emoji: "📋" },
+      { id: 3, title: "Beverage Mastery: Wine & Cocktail Service", progress: 95, emoji: "🍸" },
+      { id: 4, title: "Wine Pairing & Advanced Beverage Knowledge", progress: 85, emoji: "🥂" },
+      { id: 5, title: "Natural & Effective Upselling", progress: 80, emoji: "💰" },
+      { id: 6, title: "Food Service & Perfect Pacing", progress: 75, emoji: "🍽️" },
+      { id: 7, title: "Table Maintenance & Problem Resolution", progress: 70, emoji: "🧼" },
+      { id: 8, title: "International Etiquette", progress: 65, emoji: "🌍" },
+      { id: 9, title: "Special Occasions Mastery", progress: 60, emoji: "🎂" },
+      { id: 10, title: "Closing the Experience", progress: 55, emoji: "👋" },
+      { id: 11, title: "Advanced Wine Regions", progress: 45, emoji: "🌎" },
+      { id: 12, title: "Server Leadership & Career", progress: 30, emoji: "⭐" }
+    ];
+
+    let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: m.progress}));
+
+    function saveProgress() { localStorage.setItem('serveMasterProgress', JSON.stringify(userProgress)); }
+
+    function updateProgress(id, amount) {
+      const mod = userProgress.find(m => m.id === id);
+      if (mod) mod.progress = Math.min(100, mod.progress + amount);
+      saveProgress();
+      renderAll();
+    }
+
+    function getModuleContent(id) {
+      if (id === 3) {
+        return `
+          <h3 class="text-2xl font-semibold mb-4">Cocktail Service Mastery</h3>
+          <div class="mt-12">
+            <h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>
+            <button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">
+              🎤 Start Voice Practice
+            </button>
+            <div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div>
+          </div>
+          <div class="mt-12">
+            <h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>
+            <div class="bg-zinc-800 p-8 rounded-3xl">
+              <div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);">
+                <div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>
+                <div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>
+                <div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>
+                <div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      return `<p class="text-zinc-400">Module ${id} content loaded.</p>`;
+    }
+
+    function startVoiceRoleplay() {
+      const feedback = document.getElementById('voice-feedback');
+      feedback.innerHTML = '🎤 Listening... Speak your upsell!';
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return alert("Voice not supported");
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      rec.onresult = (e) => {
+        const text = e.results[0][0].transcript.toLowerCase();
+        feedback.innerHTML = `✅ Great! "${text}"<br><span class="text-emerald-400">You nailed the upsell!</span>`;
+        updateProgress(3, 30);
+      };
+      rec.start();
+    }
+
+    function drag(ev) { ev.dataTransfer.setData("text", "glass"); }
+
+    function openModule(id) {
+      const mod = modules.find(m => m.id === id);
+      document.getElementById('modal-title').innerHTML = `${mod.emoji} ${mod.title}`;
+      document.getElementById('modal-content').innerHTML = getModuleContent(id);
+      document.getElementById('module-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('module-modal').classList.add('hidden'); }
+    function navigate(screen) {
+      document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
+      document.getElementById(screen + '-screen').classList.remove('hidden');
+    }
+
+    function renderAll() {
+      console.log("ServeMaster Academy running on Replit");
+    }
+
+    window.onload = () => {
+      renderAll();
+      navigate('dashboard');
+    };
+  </script>
 </body>
-
 </html>
