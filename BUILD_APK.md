@@ -2,7 +2,7 @@
 
 ## How the app works
 The APK is a native Android shell that loads your live Replit-hosted app
-(https://workspace-herbdubee.replit.app) inside a native WebView. All AI
+(https://servemaster-academy.replit.app) inside a native WebView. All AI
 features continue to run through the Replit server — the APK itself contains
 no API keys or secrets.
 
@@ -13,19 +13,8 @@ Practice scenarios to work inside the APK.
 
 ## Before you build — update your server URL
 
-Open `capacitor.config.json` and update the `server.url` to your actual
-deployed Replit URL:
-
-```json
-"server": {
-  "url": "https://YOUR-ACTUAL-DEPLOYED-URL.replit.app"
-}
-```
-
-Then run this command to sync the change into the Android project:
-```
-npx cap sync android
-```
+The server URL is already set to `https://servemaster-academy.replit.app` in
+`capacitor.config.json`. No changes needed unless you move to a different domain.
 
 ---
 

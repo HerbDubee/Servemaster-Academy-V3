@@ -3,7 +3,7 @@
   "appName": "ServeMaster Academy",
   "webDir": "www",
   "server": {
-    "url": "https://workspace-herbdubee.replit.app",
+    "url": "https://servemaster-academy.replit.app",
     "cleartext": false
   },
   "android": {
