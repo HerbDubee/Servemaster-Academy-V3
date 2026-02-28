@@ -173,7 +173,7 @@
       { id: 12, title: "Server Leadership & Career", progress: 30, emoji: "⭐" }
     ];
 
-    let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: m.progress}));
+    let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: 0}));
 
     function saveProgress() { localStorage.setItem('serveMasterProgress', JSON.stringify(userProgress)); }
 
