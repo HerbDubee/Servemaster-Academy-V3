@@ -105,31 +105,251 @@
       renderAll();
     }
 
+    const lessonData = {
+      1: {
+        subtitle: "The mindset and habits that separate great servers from average ones.",
+        lessons: [
+          { title: "The Server Mindset", body: "Exceptional service starts before you step on the floor. Adopt a hospitality-first mindset: every guest deserves to feel like the only person in the room. Learn to read body language, anticipate needs, and project confidence without arrogance." },
+          { title: "First Impressions", body: "You have 7 seconds to make a first impression. A warm smile, eye contact, and a genuine greeting set the tone. Approach the table within 2 minutes of seating — delay signals neglect." },
+          { title: "The 3-Foot Rule", body: "Any guest within 3 feet deserves acknowledgement. A simple nod or 'I'll be right with you' prevents frustration. Never walk past a guest who is looking for help." },
+          { title: "Professionalism Under Pressure", body: "Busy shifts will test you. Develop a mental reset routine — breathe, prioritize, and communicate delays honestly. Guests respect honesty far more than false promises." }
+        ],
+        quiz: [
+          { q: "How soon should you approach a newly seated table?", options: ["Within 2 minutes", "When they wave", "After 5 minutes", "After taking another order"], answer: 0 },
+          { q: "What does the 3-Foot Rule mean?", options: ["Keep 3 feet from tables", "Acknowledge any guest within 3 feet", "Carry trays 3 feet high", "Space tables 3 feet apart"], answer: 1 }
+        ]
+      },
+      2: {
+        subtitle: "Guide guests smoothly from arrival to order with confidence and precision.",
+        lessons: [
+          { title: "Seating Guests Correctly", body: "Always lead guests to their table — never point. Pull out chairs for guests when appropriate. Present menus open to the first page and begin from the host or guest of honour." },
+          { title: "Menu Knowledge", body: "Know your menu inside out: every ingredient, allergen, and preparation method. Be ready to describe any dish with enthusiasm. If you don't know something, say so and find out immediately — never guess." },
+          { title: "Taking Orders Efficiently", body: "Start with beverages to give guests time with the food menu. Write orders down clearly — never rely solely on memory for a full table. Repeat the order back to confirm accuracy." },
+          { title: "Handling Dietary Restrictions", body: "Take allergies seriously — always confirm with the kitchen. Suggest alternatives without making guests feel like a burden. Phrases like 'Absolutely, let me check with the chef for you' build trust." }
+        ],
+        quiz: [
+          { q: "When presenting menus, you should present them:", options: ["Closed face-down", "Open to the first page", "To the youngest guest first", "Only to adults"], answer: 1 },
+          { q: "When should you take beverage orders?", options: ["After food orders", "Before food orders", "At the same time as food", "Only when asked"], answer: 1 }
+        ]
+      },
+      3: {
+        subtitle: "Master wine presentation, cocktail service, and beverage upselling.",
+        lessons: [
+          { title: "Wine Presentation", body: "Present the bottle label facing the host before opening. Cut the foil cleanly, insert the corkscrew, and remove the cork with a single smooth pull. Pour a small taste for the host to approve before serving others clockwise around the table." },
+          { title: "Cocktail Knowledge", body: "Know your bar's signature cocktails and classic standards. Understand the difference between shaken and stirred, and when to use each. Be ready to suggest cocktails based on a guest's stated preferences." },
+          { title: "Non-Alcoholic Options", body: "Never overlook guests who don't drink alcohol. Present mocktails and premium non-alcoholic options with the same enthusiasm as cocktails. Ask 'Would you prefer something with or without alcohol tonight?'" },
+          { title: "Proper Glassware Service", body: "Always handle glassware by the stem (wine) or base (beer). Never let fingers touch the bowl. Set glasses down gently — no clanking. Replenish water glasses proactively throughout the meal." }
+        ],
+        voice: true,
+        tray: true,
+        quiz: [
+          { q: "When opening wine, you should present the label to:", options: ["The youngest guest", "The host", "The nearest guest", "No one"], answer: 1 },
+          { q: "How should you handle wine glasses?", options: ["By the bowl", "By the rim", "By the stem", "Any way is fine"], answer: 2 }
+        ]
+      },
+      4: {
+        subtitle: "Match wines to dishes and guide guests through the wine list.",
+        lessons: [
+          { title: "The Basics of Pairing", body: "The golden rule: match weight with weight. Light dishes (salads, seafood) pair with light wines (Sauvignon Blanc, Pinot Grigio). Heavy dishes (steak, lamb) pair with full-bodied reds (Cabernet Sauvignon, Syrah)." },
+          { title: "Red Wine Fundamentals", body: "Key reds to know: Pinot Noir (light, earthy), Merlot (medium, plummy), Cabernet Sauvignon (full, tannic), Syrah/Shiraz (spicy, bold). Each pairs best with different proteins and sauces." },
+          { title: "White Wine Fundamentals", body: "Key whites: Sauvignon Blanc (crisp, citrus), Chardonnay (can be buttery or crisp), Riesling (off-dry, goes with spicy food), Pinot Gris (versatile, food-friendly). Temperature matters — serve whites chilled." },
+          { title: "Guiding Guests on the Wine List", body: "Ask questions before recommending: 'Do you prefer something dry or a little fruity?' then steer toward a mid-list bottle. Never lead with the cheapest or most expensive option. Make every recommendation feel personal." }
+        ],
+        quiz: [
+          { q: "Which wine pairs best with a rich steak?", options: ["Sauvignon Blanc", "Pinot Grigio", "Cabernet Sauvignon", "Riesling"], answer: 2 },
+          { q: "A guest says they prefer 'something fruity but not too sweet'. You recommend:", options: ["Merlot", "Chardonnay", "Pinot Noir", "Sauvignon Blanc"], answer: 0 }
+        ]
+      },
+      5: {
+        subtitle: "Increase revenue naturally while genuinely enhancing the guest experience.",
+        lessons: [
+          { title: "The Right Mindset for Upselling", body: "Upselling isn't selling — it's guiding. When done well, guests feel cared for, not pressured. Your goal is to enhance their experience, which happens to benefit the restaurant. Authenticity is key." },
+          { title: "Suggestive Selling Techniques", body: "Use specific, enthusiastic language. Instead of 'Would you like a starter?' say 'Our wagyu beef tartare is incredible tonight — shall I bring one to share?' Specific beats generic every time." },
+          { title: "Timing Your Suggestions", body: "Suggest appetizers when guests are first seated. Wine when menus are open. Dessert before clearing main plates — 'Our chocolate fondant takes 12 minutes, shall I put one in for you now?'" },
+          { title: "Reading the Table", body: "Not every table wants upselling. A couple on a budget date may feel uncomfortable with constant premium suggestions. Read the energy, listen to their language, and adapt. Silence is sometimes the best service." }
+        ],
+        quiz: [
+          { q: "The best upselling approach is:", options: ["Mention every premium item", "Be specific and enthusiastic", "Ask yes/no questions", "Only suggest if asked"], answer: 1 },
+          { q: "When should you suggest dessert?", options: ["Before starters", "When clearing main plates", "At the start of the meal", "Only if they ask"], answer: 1 }
+        ]
+      },
+      6: {
+        subtitle: "Serve food correctly and keep the meal flowing at the perfect pace.",
+        lessons: [
+          { title: "Correct Food Service", body: "Serve food from the left, clear from the right — though consistency within your restaurant matters most. Announce each dish as you place it: 'This is your pan-seared halibut with lemon beurre blanc.' Never reach across a guest." },
+          { title: "Pacing the Meal", body: "A great meal has rhythm. Don't rush courses — wait until all guests have finished before clearing. Don't let the table sit with empty plates too long either. Check in after 2-3 bites of each course." },
+          { title: "Coordinating with the Kitchen", body: "Communicate clearly with the kitchen on timing, especially for large parties. If a dish is delayed, inform the guest before they have to ask. 'Your sea bass is just a couple of minutes away — I apologise for the wait.'" },
+          { title: "Carrying Plates Professionally", body: "Practice the three-plate carry: two on your left arm, one in your right hand. Never stack plates in front of guests. Use a tray for drinks and small items. Economy of motion reduces trips and accidents." }
+        ],
+        quiz: [
+          { q: "Food should be served from the:", options: ["Right", "Left", "Either side is fine", "Behind the guest"], answer: 1 },
+          { q: "When should you clear main plates?", options: ["As soon as one guest finishes", "When all guests have finished", "After 20 minutes", "When you need the space"], answer: 1 }
+        ]
+      },
+      7: {
+        subtitle: "Keep tables immaculate and resolve problems before they escalate.",
+        lessons: [
+          { title: "Proactive Table Maintenance", body: "Clear used glasses, crumb the table between courses, and replace soiled napkins. These small acts show attention to detail. The goal: the table should always look as good as when guests sat down." },
+          { title: "The Check-Back", body: "Return within 2 minutes of serving food — not to hover, but to ensure everything is right. Ask specifically: 'How is the beef for you?' is more useful than 'Is everything okay?'" },
+          { title: "Handling Complaints Gracefully", body: "Listen fully before responding. Apologise without excuses: 'I'm so sorry about that — let me take care of it right away.' Never argue, never deflect to the kitchen. Own the problem and solve it." },
+          { title: "Recovery Techniques", body: "A well-handled complaint can create a more loyal guest than a perfect meal. After resolving an issue, follow up personally. Consider a small gesture — a complimentary dessert or drink — but only when genuinely warranted." }
+        ],
+        quiz: [
+          { q: "When a guest complains about their food, you should first:", options: ["Blame the kitchen", "Argue politely", "Listen fully, then apologise", "Offer a discount immediately"], answer: 2 },
+          { q: "The check-back should happen:", options: ["After the meal", "Within 2 minutes of serving food", "Only when flagged down", "Before food arrives"], answer: 1 }
+        ]
+      },
+      8: {
+        subtitle: "Serve guests from every culture with awareness and respect.",
+        lessons: [
+          { title: "Cultural Awareness Basics", body: "Different cultures have different expectations of service. In some cultures, formal address (Mr/Mrs) is essential. In others, warmth and informality are preferred. Observe, adapt, and never assume." },
+          { title: "Dietary & Religious Requirements", body: "Be familiar with Halal, Kosher, Hindu vegetarian, and other dietary frameworks. When in doubt, ask politely and check with the kitchen. Treat these requirements as non-negotiable priorities." },
+          { title: "Language Barriers", body: "Speak clearly and slowly — not loudly. Use simple language, and have a menu available with photos if possible. A small phrasebook or translation app can de-escalate frustration immediately." },
+          { title: "VIP and Dignitary Service", body: "For VIP guests, work from a briefing sheet. Know preferred seating, dietary needs, and preferred forms of address in advance. Discretion is paramount — never discuss a VIP's presence with other guests." }
+        ],
+        quiz: [
+          { q: "When serving guests from another culture you are unfamiliar with, you should:", options: ["Treat them identically to everyone", "Observe, adapt, and ask respectfully", "Ask them to explain their culture", "Ignore cultural differences"], answer: 1 },
+          { q: "For a guest with a language barrier, you should:", options: ["Speak loudly", "Speak slowly and clearly", "Get a colleague to serve them", "Avoid the table"], answer: 1 }
+        ]
+      },
+      9: {
+        subtitle: "Create unforgettable moments for birthdays, anniversaries, and celebrations.",
+        lessons: [
+          { title: "Identifying Special Occasions", body: "When taking a reservation or during seating, note any special occasion. A simple 'Is there anything special we can do for you tonight?' opens the door. Note it in the reservation system so all staff are prepared." },
+          { title: "The Birthday Experience", body: "Coordinate with the kitchen for a complimentary dessert with a candle. Brief your team on timing — the delivery should feel spontaneous, not chaotic. A handwritten card from the team is a powerful touch." },
+          { title: "Anniversaries & Proposals", body: "For proposals, work with the guest in advance. Hiding a ring in a dessert carries legal liability — instead, offer a presentation box on a silver tray. Ensure privacy and have champagne ready to go." },
+          { title: "Group Celebrations", body: "Large groups need a pre-agreed menu and a single bill handler. Confirm both on booking. Brief the whole team before service — surprises during a group meal are rarely welcome." }
+        ],
+        quiz: [
+          { q: "When should you ask about special occasions?", options: ["At the end of the meal", "During reservation or seating", "Never, wait for guests to tell you", "When presenting the bill"], answer: 1 },
+          { q: "For a proposal, hiding the ring in food is:", options: ["A wonderful tradition", "A legal and safety risk", "Standard practice", "Encouraged"], answer: 1 }
+        ]
+      },
+      10: {
+        subtitle: "End every meal on a high note and maximise return visits.",
+        lessons: [
+          { title: "The Dessert Moment", body: "Present the dessert menu with enthusiasm — 'Our pastry chef has been making the salted caramel tart fresh today.' Even guests who say they're full often indulge when it's described well. Offer coffee and digestifs alongside." },
+          { title: "Presenting the Bill", body: "Never bring the bill unprompted — wait until it's requested. Present it in a clean bill folder. If asked to split, do so without sighing or complaint. Return change promptly and completely." },
+          { title: "The Farewell", body: "See guests out when possible. A genuine 'It was wonderful having you — I hope we'll see you again soon' is more powerful than any loyalty card. Use the guest's name if you learned it." },
+          { title: "Post-Service Rituals", body: "After service, note anything memorable: a guest's birthday, a wine they loved, a special request you handled. This feeds back into your reservation notes for next time and builds lasting loyalty." }
+        ],
+        quiz: [
+          { q: "When should you bring the bill?", options: ["As soon as main plates are cleared", "Only when requested", "After 30 minutes", "Automatically after dessert"], answer: 1 },
+          { q: "The most powerful way to encourage return visits is:", options: ["Hand out loyalty cards", "A genuine, personalised farewell", "Offer a discount", "Give a business card"], answer: 1 }
+        ]
+      },
+      11: {
+        subtitle: "Navigate the world's great wine regions and recommend with authority.",
+        lessons: [
+          { title: "France: The Benchmark", body: "Bordeaux (Cabernet/Merlot blends), Burgundy (Pinot Noir & Chardonnay), Champagne, and Rhône (Syrah & GSM blends) are the world's reference points. Know at least one producer from each region." },
+          { title: "Italy: Diversity & Complexity", body: "Barolo and Barbaresco (Piedmont) are the 'king and queen' of Italian reds. Chianti Classico (Sangiovese, Tuscany), Amarone (Veneto), and Prosecco are essential knowledge for any serious server." },
+          { title: "New World Highlights", body: "Napa Valley Cabernet, New Zealand Sauvignon Blanc, Argentine Malbec, Chilean Carménère, and Australian Shiraz represent the New World's best exports. New World wines tend to be fruit-forward and approachable." },
+          { title: "Spain & Germany", body: "Rioja (Tempranillo) and Ribera del Duero are Spain's flagship reds. Albariño is an exciting white. Germany excels in Riesling — from bone-dry Trocken to luscious Trockenbeerenauslese. Don't underestimate German wines." }
+        ],
+        quiz: [
+          { q: "Barolo is made from which grape?", options: ["Sangiovese", "Nebbiolo", "Barbera", "Dolcetto"], answer: 1 },
+          { q: "New World wines are generally known for being:", options: ["Earthy and austere", "Fruit-forward and approachable", "Low alcohol", "Highly tannic"], answer: 1 }
+        ]
+      },
+      12: {
+        subtitle: "Step into a leadership role and build a long-term hospitality career.",
+        lessons: [
+          { title: "Mentoring Junior Staff", body: "As a senior server, your habits become the team's habits. Lead by example on the floor — never visibly complain, never cut corners. Take a new team member under your wing each month and share one skill explicitly." },
+          { title: "Running a Pre-Service Briefing", body: "A great briefing covers: tonight's specials, 86'd items, VIP guests, any service challenges, and one learning point from last service. Keep it under 10 minutes. Energy in the briefing sets the energy on the floor." },
+          { title: "Managing Your Finances", body: "Track your tips over time and treat your income professionally. Set aside money for taxes if self-employed. Invest in training — a sommelier course or hospitality certification compounds your earnings significantly." },
+          { title: "Career Pathways", body: "From server you can grow into: head server, floor manager, restaurant manager, sommelier, F&B director, or open your own venue. Every senior figure in hospitality started on the floor. Document your achievements and build a hospitality CV." }
+        ],
+        quiz: [
+          { q: "A pre-service briefing should cover:", options: ["Only specials", "Specials, 86'd items, VIPs, and a learning point", "Staff complaints", "Nothing — waste of time"], answer: 1 },
+          { q: "The best investment in your hospitality career is:", options: ["Buying better shoes", "Training and certifications", "Working more hours", "Memorising menus"], answer: 1 }
+        ]
+      }
+    };
+
     function getModuleContent(id) {
+      const data = lessonData[id];
+      if (!data) return `<p class="text-zinc-400">Content coming soon.</p>`;
+
+      const prog = userProgress.find(u => u.id === id);
+      const currentProgress = prog ? prog.progress : 0;
+
+      let html = `
+        <p class="text-zinc-400 text-lg mb-8">${data.subtitle}</p>
+        <div class="space-y-4 mb-10">
+          ${data.lessons.map((l, i) => `
+            <details class="bg-zinc-800 rounded-2xl overflow-hidden group" ${i === 0 ? 'open' : ''}>
+              <summary class="px-6 py-4 font-semibold cursor-pointer flex items-center justify-between hover:text-amber-400 list-none">
+                <span>${i + 1}. ${l.title}</span>
+                <span class="text-amber-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="px-6 pb-6 text-zinc-300 leading-relaxed border-t border-zinc-700 pt-4">${l.body}</div>
+            </details>
+          `).join('')}
+        </div>`;
+
       if (id === 3) {
-        return `
-          <h3 class="text-2xl font-semibold mb-4">Cocktail Service Mastery</h3>
-          <div class="mt-12">
-            <h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>
-            <button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">
-              🎤 Start Voice Practice
-            </button>
-            <div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div>
-          </div>
-          <div class="mt-12">
-            <h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>
-            <div class="bg-zinc-800 p-8 rounded-3xl">
-              <div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);">
-                <div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>
-                <div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>
-                <div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>
-                <div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>
-              </div>
+        html += `
+        <div class="mb-10">
+          <h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>
+          <button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">
+            🎤 Start Voice Practice
+          </button>
+          <div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div>
+        </div>
+        <div class="mb-10">
+          <h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>
+          <div class="bg-zinc-800 p-8 rounded-3xl">
+            <div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);">
+              <div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>
+              <div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>
+              <div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>
+              <div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>
             </div>
           </div>
-        `;
+        </div>`;
       }
-      return `<p class="text-zinc-400">Module ${id} content loaded.</p>`;
+
+      if (data.quiz) {
+        html += `
+        <div class="mt-4">
+          <h4 class="text-xl font-semibold mb-6">📝 Quick Quiz</h4>
+          <div class="space-y-6" id="quiz-${id}">
+            ${data.quiz.map((q, qi) => `
+              <div class="bg-zinc-800 rounded-2xl p-6">
+                <p class="font-medium mb-4">${qi + 1}. ${q.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  ${q.options.map((opt, oi) => `
+                    <button onclick="answerQuiz(${id}, ${qi}, ${oi}, ${q.answer}, this)"
+                      class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button onclick="completeLesson(${id})" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl">
+            ✅ Mark Lesson Complete
+          </button>
+        </div>`;
+      }
+
+      return html;
+    }
+
+    function answerQuiz(modId, questionIdx, chosen, correct, btn) {
+      const container = btn.closest('.grid');
+      const buttons = container.querySelectorAll('.quiz-btn');
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        if (i === correct) b.classList.add('border-emerald-400', 'text-emerald-400');
+        else if (b === btn && chosen !== correct) b.classList.add('border-red-500', 'text-red-400');
+      });
+    }
+
+    function completeLesson(id) {
+      updateProgress(id, 10);
+      closeModal();
     }
 
     function startVoiceRoleplay() {
