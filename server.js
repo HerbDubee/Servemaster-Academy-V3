@@ -61,14 +61,14 @@ app.post('/api/roleplay', async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: scenario.systemPrompt },
         ...messages
       ],
-      max_completion_tokens: 400,
     });
-    res.json({ reply: completion.choices[0].message.content });
+    const reply = completion.choices[0].message.content || '';
+    res.json({ reply });
   } catch (err) {
     console.error('OpenAI error:', err.message);
     res.status(500).json({ error: 'AI request failed' });
