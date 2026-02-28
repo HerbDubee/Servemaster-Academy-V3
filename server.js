@@ -54,6 +54,10 @@ const scenarios = {
   }
 };
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.post('/api/roleplay', async (req, res) => {
   const { scenarioId, messages } = req.body;
   const scenario = scenarios[scenarioId];
@@ -75,11 +79,24 @@ app.post('/api/roleplay', async (req, res) => {
   }
 });
 
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'), (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err.message);
+      res.status(200).send(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>ServeMaster Academy</title>
+<meta http-equiv="refresh" content="0;url=/">
+</head><body>Loading...</body></html>`);
+    }
+  });
 });
 
-const PORT = 5000;
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`ServeMaster Academy running on port ${PORT}`);
 });
