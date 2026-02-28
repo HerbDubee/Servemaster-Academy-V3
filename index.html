@@ -1070,6 +1070,7 @@ function startVoiceInput() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) { alert(lang==='fr'?'Voix non supportée':'Voice not supported'); return; }
   const indicator = document.getElementById('voice-recording-indicator');
+  const listeningText = document.getElementById('voice-listening-text');
   if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
   const rec = new SpeechRecognition();
   rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
@@ -1077,11 +1078,16 @@ function startVoiceInput() {
   rec.onresult = (e) => {
     const text = e.results[0][0].transcript;
     const input = document.getElementById('chat-input');
-    if (input) { input.value = text; sendChat(); }
-    if (indicator) indicator.classList.add('hidden');
+    if (input) input.value = text;
+    if (listeningText) listeningText.textContent = lang === 'fr' ? 'Envoi dans 2s...' : 'Sending in 2s...';
+    setTimeout(() => {
+      if (indicator) indicator.classList.add('hidden');
+      if (listeningText) listeningText.textContent = lang === 'fr' ? 'Écoute...' : 'Listening...';
+      sendChat();
+    }, 2000);
   };
   rec.onerror = () => { if (indicator) indicator.classList.add('hidden'); };
-  rec.onend = () => { if (indicator) indicator.classList.add('hidden'); };
+  rec.onend = () => {};
   rec.start();
   currentChatRecognizer = rec;
 }
