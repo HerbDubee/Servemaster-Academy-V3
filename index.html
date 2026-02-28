@@ -1,734 +1,1832 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ServeMaster Academy</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2VydmVNYXN0ZXIgQWNhZGVteSIsInNob3J0X25hbWUiOiJTZXJ2ZU1hc3RlciIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMTkwOTExIiwidGhlbWVfY29sb3IiOiIjZDRhZjM3IiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLmljb25zY291dC5jb20vaWNvbi1mcmVlL3BuZy0yNTYvd2luZS1nbGFzcy0yNTYucG5nIiwic2l6ZXMiOiIyNTZ4MjU2In1dfQ==" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
     .heading { font-family: 'Playfair Display', serif; }
-    .tray { border: 8px solid #78350f; background: linear-gradient(45deg, #451a03, #78350f); }
-    .glass { width: 48px; height: 68px; background: linear-gradient(#e0f2fe, #bae6fd); border: 3px solid #bae6fd; border-radius: 50% 50% 10% 10%; cursor: grab; }
+    .tray-container { perspective: 600px; }
+    .tray-board { width: 280px; height: 180px; background: linear-gradient(45deg, #451a03, #78350f); border: 6px solid #78350f; border-radius: 24px; position: relative; transform-style: preserve-3d; transition: transform 0.1s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .tray-glass { width: 38px; height: 54px; background: linear-gradient(180deg, rgba(224,242,254,0.9), rgba(186,230,253,0.7)); border: 2px solid #bae6fd; border-radius: 50% 50% 8px 8px; position: absolute; transition: left 0.05s, top 0.05s; cursor: default; }
+    @keyframes pulse-rec { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.2)} }
+    .pulse-rec { animation: pulse-rec 1s infinite; }
+    @keyframes badge-pop { 0%{transform:scale(0) rotate(-10deg);opacity:0} 60%{transform:scale(1.15) rotate(3deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .badge-pop { animation: badge-pop 0.5s ease forwards; }
+    @keyframes streak-glow { 0%,100%{text-shadow:0 0 8px #f59e0b} 50%{text-shadow:0 0 20px #f59e0b, 0 0 40px #f59e0b} }
+    .streak-glow { animation: streak-glow 2s infinite; }
+    .nav-link { cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: all 0.15s; }
+    .nav-link:hover { background: rgba(251,191,36,0.1); color: #fbbf24; }
+    .nav-link.active { color: #fbbf24; }
+    .modal-bg { backdrop-filter: blur(4px); }
+    .lang-btn { font-size: 18px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+    .lang-btn.active { opacity: 1; transform: scale(1.15); }
   </style>
 </head>
 <body class="min-h-screen bg-zinc-950 text-white">
 
-  <!-- ONBOARDING OVERLAY -->
-  <div id="onboarding" class="fixed inset-0 bg-zinc-950 z-[200] flex items-center justify-center p-6">
-    <div class="w-full max-w-lg">
-
-      <!-- Step 1: Welcome -->
-      <div id="ob-step-1" class="text-center space-y-8">
-        <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-rose-700 rounded-3xl flex items-center justify-center text-5xl mx-auto">🍸</div>
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[300] flex items-center justify-center p-4">
+  <div class="bg-zinc-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+    <div class="flex border-b border-zinc-800">
+      <button onclick="switchAuth('login')" id="auth-tab-login" class="flex-1 py-4 font-semibold text-sm transition-all text-amber-400 border-b-2 border-amber-400">Sign In</button>
+      <button onclick="switchAuth('register')" id="auth-tab-register" class="flex-1 py-4 font-semibold text-sm transition-all text-zinc-400">Create Account</button>
+    </div>
+    <div class="p-8 space-y-5">
+      <div id="auth-error" class="hidden bg-red-900/50 border border-red-700 text-red-300 rounded-xl px-4 py-3 text-sm"></div>
+      <form id="auth-login-form" class="space-y-4" onsubmit="event.preventDefault();doLogin()">
         <div>
-          <h1 class="heading text-5xl mb-3">Welcome to ServeMaster</h1>
-          <p class="text-zinc-400 text-lg">The professional training academy for exceptional servers.</p>
+          <label class="text-sm text-zinc-400 mb-1 block">Email</label>
+          <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
         </div>
-        <div class="text-left space-y-2">
-          <label class="text-sm font-medium text-zinc-300">What's your name?</label>
-          <input id="ob-name" type="text" placeholder="e.g. Alex Rivera"
-            class="w-full bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 text-lg transition-colors" />
-        </div>
-        <button onclick="obNext(1)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
-          Continue →
-        </button>
-      </div>
-
-      <!-- Step 2: Experience -->
-      <div id="ob-step-2" class="hidden text-center space-y-8">
         <div>
-          <h2 class="heading text-4xl mb-3">Your experience level</h2>
-          <p class="text-zinc-400">We'll tailor your learning path to where you are right now.</p>
+          <label class="text-sm text-zinc-400 mb-1 block">Password</label>
+          <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
         </div>
-        <div class="space-y-3 text-left">
-          <div onclick="obSelectLevel(this,'New to serving')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
-            <div class="font-semibold text-lg">🌱 New to Serving</div>
-            <div class="text-zinc-400 text-sm mt-1">I'm just getting started in hospitality</div>
-          </div>
-          <div onclick="obSelectLevel(this,'Experienced server')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
-            <div class="font-semibold text-lg">⭐ Experienced Server</div>
-            <div class="text-zinc-400 text-sm mt-1">I've been serving for 1–3 years</div>
-          </div>
-          <div onclick="obSelectLevel(this,'Senior professional')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
-            <div class="font-semibold text-lg">🏆 Senior Professional</div>
-            <div class="text-zinc-400 text-sm mt-1">I'm refining my craft and aiming for mastery</div>
-          </div>
+        <button type="submit" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-xl transition-colors">Sign In</button>
+        <div class="relative flex items-center gap-3">
+          <div class="flex-1 h-px bg-zinc-700"></div>
+          <span class="text-zinc-500 text-sm">or</span>
+          <div class="flex-1 h-px bg-zinc-700"></div>
         </div>
-        <button onclick="obNext(2)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
-          Continue →
-        </button>
-      </div>
-
-      <!-- Step 3: Ready -->
-      <div id="ob-step-3" class="hidden text-center space-y-8">
-        <div class="text-7xl">🎉</div>
+        <a href="/api/auth/google" class="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold py-3 rounded-xl hover:bg-zinc-100 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.1 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 3.4 29.2 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.7 5.2C12.2 13.2 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7C43.5 36.9 46.5 30.9 46.5 24z"/><path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L3.6 14.2A22.4 22.4 0 0 0 1.5 24c0 3.5.8 6.9 2.2 9.8l6.7-5.2z"/><path fill="#34A853" d="M24 46.5c5.2 0 9.6-1.7 12.8-4.6l-7.4-5.7c-1.7 1.1-3.9 1.8-5.4 1.8-6.4 0-11.8-4.3-13.6-10l-6.7 5.2C7.2 41 14.9 46.5 24 46.5z"/></svg>
+          Continue with Google
+        </a>
+        <p class="text-center text-zinc-500 text-xs">Or <button onclick="closeAuthModal()" class="text-amber-400 hover:underline">continue without account</button></p>
+      </form>
+      <form id="auth-register-form" class="hidden space-y-4" onsubmit="event.preventDefault();doRegister()">
         <div>
-          <h2 class="heading text-4xl mb-3" id="ob-ready-title">You're all set!</h2>
-          <p class="text-zinc-400 text-lg" id="ob-ready-sub">Your personalised curriculum is ready. 12 modules, real skills, real results.</p>
+          <label class="text-sm text-zinc-400 mb-1 block">Your Name</label>
+          <input id="reg-name" type="text" placeholder="e.g. Alex Rivera" autocomplete="name" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
         </div>
-        <div class="bg-zinc-900 border border-amber-900 rounded-2xl p-6 text-left space-y-3">
-          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> 12 professional training modules</div>
-          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Interactive quizzes after every lesson</div>
-          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Voice role-play & tray simulation</div>
-          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Progress saved automatically</div>
+        <div>
+          <label class="text-sm text-zinc-400 mb-1 block">Email</label>
+          <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
         </div>
-        <button onclick="obFinish()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
-          Start Learning 🍸
-        </button>
-      </div>
-
-      <!-- Step dots -->
-      <div class="flex justify-center gap-2 mt-8">
-        <div id="ob-dot-1" class="w-2 h-2 rounded-full bg-amber-400"></div>
-        <div id="ob-dot-2" class="w-2 h-2 rounded-full bg-zinc-600"></div>
-        <div id="ob-dot-3" class="w-2 h-2 rounded-full bg-zinc-600"></div>
-      </div>
+        <div>
+          <label class="text-sm text-zinc-400 mb-1 block">Password</label>
+          <input id="reg-password" type="password" placeholder="••••••••" autocomplete="new-password" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
+        </div>
+        <button type="submit" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-xl transition-colors">Create Account</button>
+        <div class="relative flex items-center gap-3">
+          <div class="flex-1 h-px bg-zinc-700"></div>
+          <span class="text-zinc-500 text-sm">or</span>
+          <div class="flex-1 h-px bg-zinc-700"></div>
+        </div>
+        <a href="/api/auth/google" class="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold py-3 rounded-xl hover:bg-zinc-100 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.1 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 3.4 29.2 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.7 5.2C12.2 13.2 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7C43.5 36.9 46.5 30.9 46.5 24z"/><path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L3.6 14.2A22.4 22.4 0 0 0 1.5 24c0 3.5.8 6.9 2.2 9.8l6.7-5.2z"/><path fill="#34A853" d="M24 46.5c5.2 0 9.6-1.7 12.8-4.6l-7.4-5.7c-1.7 1.1-3.9 1.8-5.4 1.8-6.4 0-11.8-4.3-13.6-10l-6.7 5.2C7.2 41 14.9 46.5 24 46.5z"/></svg>
+          Continue with Google
+        </a>
+        <p class="text-center text-zinc-500 text-xs">Or <button onclick="closeAuthModal()" class="text-amber-400 hover:underline">continue without account</button></p>
+      </form>
     </div>
   </div>
+</div>
 
-  <!-- NAV -->
-  <nav class="bg-black border-b border-amber-900 flex items-center justify-between px-6 py-4 sticky top-0 z-50">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-gradient-to-br from-amber-400 to-rose-700 rounded-2xl flex items-center justify-center text-2xl">🍸</div>
+<!-- NEWSLETTER MODAL -->
+<div id="newsletter-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[250] flex items-center justify-center p-4">
+  <div class="bg-zinc-900 w-full max-w-md rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-900/40">
+    <div class="text-center">
+      <div class="text-5xl mb-4">📬</div>
+      <h2 class="heading text-3xl mb-2" id="nl-title">Monthly Tips for Servers</h2>
+      <p class="text-zinc-400 text-sm" id="nl-sub">Get exclusive service tips, new scenarios, and wine knowledge delivered monthly. No spam.</p>
+    </div>
+    <div id="nl-form" class="space-y-3">
+      <input id="nl-name" type="text" placeholder="First name" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
+      <input id="nl-email" type="email" placeholder="your@email.com" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
+      <button onclick="subscribeNewsletter()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-xl transition-colors" id="nl-btn">Subscribe</button>
+    </div>
+    <div id="nl-success" class="hidden text-center py-4">
+      <div class="text-4xl mb-2">✅</div>
+      <p class="text-emerald-400 font-semibold" id="nl-success-text">You're subscribed!</p>
+    </div>
+    <button onclick="closeNewsletter()" class="w-full text-zinc-500 hover:text-zinc-300 text-sm transition-colors">No thanks</button>
+  </div>
+</div>
+
+<!-- BADGE NOTIFICATION -->
+<div id="badge-notification" class="hidden fixed top-4 right-4 z-[400] bg-zinc-900 border border-amber-400 rounded-2xl px-6 py-4 shadow-2xl badge-pop max-w-xs">
+  <div class="flex items-center gap-3">
+    <div class="text-3xl" id="badge-notif-icon"></div>
+    <div>
+      <div class="font-semibold text-amber-400" id="badge-notif-name"></div>
+      <div class="text-zinc-400 text-xs" id="badge-notif-desc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING OVERLAY -->
+<div id="onboarding" class="fixed inset-0 bg-zinc-950 z-[200] flex items-center justify-center p-6">
+  <div class="w-full max-w-lg">
+    <div id="ob-step-1" class="text-center space-y-8">
+      <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-rose-700 rounded-3xl flex items-center justify-center text-5xl mx-auto">🍸</div>
       <div>
-        <span class="heading text-3xl tracking-tight">ServeMaster</span>
-        <span class="text-amber-400 text-sm font-medium tracking-widest block -mt-1">ACADEMY</span>
+        <h1 class="heading text-5xl mb-3" id="ob-welcome">Welcome to ServeMaster</h1>
+        <p class="text-zinc-400 text-lg" id="ob-welcome-sub">The professional training academy for exceptional servers.</p>
       </div>
+      <div class="text-left space-y-2">
+        <label class="text-sm font-medium text-zinc-300" id="ob-name-label">What's your name?</label>
+        <input id="ob-name" type="text" placeholder="e.g. Alex Rivera" class="w-full bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 text-lg transition-colors" />
+      </div>
+      <button onclick="obNext(1)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors" id="ob-continue-1">Continue →</button>
     </div>
-    <div class="flex items-center gap-8 text-sm">
-      <div onclick="navigate('dashboard')" class="cursor-pointer hover:text-amber-400">Dashboard</div>
-      <div onclick="navigate('learn')" class="cursor-pointer hover:text-amber-400">Learn</div>
-      <div onclick="navigate('practice')" class="cursor-pointer hover:text-amber-400">Practice</div>
+    <div id="ob-step-2" class="hidden text-center space-y-8">
+      <div>
+        <h2 class="heading text-4xl mb-3" id="ob-exp-title">Your experience level</h2>
+        <p class="text-zinc-400" id="ob-exp-sub">We'll tailor your learning path to where you are right now.</p>
+      </div>
+      <div class="space-y-3 text-left">
+        <div onclick="obSelectLevel(this,'New to serving')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+          <div class="font-semibold text-lg" id="ob-l1">🌱 New to Serving</div>
+          <div class="text-zinc-400 text-sm mt-1" id="ob-l1d">I'm just getting started in hospitality</div>
+        </div>
+        <div onclick="obSelectLevel(this,'Experienced server')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+          <div class="font-semibold text-lg" id="ob-l2">⭐ Experienced Server</div>
+          <div class="text-zinc-400 text-sm mt-1" id="ob-l2d">I've been serving for 1–3 years</div>
+        </div>
+        <div onclick="obSelectLevel(this,'Senior professional')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+          <div class="font-semibold text-lg" id="ob-l3">🏆 Senior Professional</div>
+          <div class="text-zinc-400 text-sm mt-1" id="ob-l3d">I'm refining my craft and aiming for mastery</div>
+        </div>
+      </div>
+      <button onclick="obNext(2)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors" id="ob-continue-2">Continue →</button>
     </div>
-    <div class="flex items-center gap-3 bg-zinc-900 px-4 py-2 rounded-3xl">
-      <div class="text-right">
-        <div class="text-sm font-semibold" id="nav-name">—</div>
+    <div id="ob-step-3" class="hidden text-center space-y-8">
+      <div class="text-7xl">🎉</div>
+      <div>
+        <h2 class="heading text-4xl mb-3" id="ob-ready-title">You're all set!</h2>
+        <p class="text-zinc-400 text-lg" id="ob-ready-sub">Your personalised curriculum is ready. 12 modules, real skills, real results.</p>
+      </div>
+      <div class="bg-zinc-900 border border-amber-900 rounded-2xl p-6 text-left space-y-3">
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f1">12 professional training modules</span></div>
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f2">30 AI role-play scenarios</span></div>
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f3">Voice role-play & tray simulation</span></div>
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f4">Badges, streaks & leaderboard</span></div>
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f5">Completion certificate PDF</span></div>
+      </div>
+      <button onclick="obFinish()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors" id="ob-start">Start Learning 🍸</button>
+      <button onclick="showAuthModal()" class="w-full border border-zinc-700 hover:border-amber-400 text-zinc-300 hover:text-amber-400 font-medium py-3 rounded-3xl text-sm transition-colors" id="ob-account-btn">Create account to sync across devices</button>
+    </div>
+    <div class="flex justify-center gap-2 mt-8">
+      <div id="ob-dot-1" class="w-2 h-2 rounded-full bg-amber-400"></div>
+      <div id="ob-dot-2" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+      <div id="ob-dot-3" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bg-black border-b border-amber-900 flex items-center justify-between px-4 lg:px-6 py-3 sticky top-0 z-50">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 bg-gradient-to-br from-amber-400 to-rose-700 rounded-2xl flex items-center justify-center text-2xl">🍸</div>
+    <div class="hidden sm:block">
+      <span class="heading text-2xl tracking-tight">ServeMaster</span>
+      <span class="text-amber-400 text-xs font-medium tracking-widest block -mt-1">ACADEMY</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-1 text-sm text-zinc-300">
+    <div onclick="navigate('dashboard')" class="nav-link" id="nav-dashboard">Dashboard</div>
+    <div onclick="navigate('learn')" class="nav-link" id="nav-learn">Learn</div>
+    <div onclick="navigate('practice')" class="nav-link" id="nav-practice">Practice</div>
+    <div onclick="navigate('achievements')" class="nav-link" id="nav-achievements">Badges</div>
+    <div onclick="navigate('leaderboard')" class="nav-link hidden sm:block" id="nav-leaderboard">Scores</div>
+    <div onclick="navigate('manager')" class="nav-link hidden" id="nav-manager">Manager</div>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="flex gap-1">
+      <button onclick="setLang('en')" class="lang-btn active" id="lang-en" title="English">🇬🇧</button>
+      <button onclick="setLang('fr')" class="lang-btn" id="lang-fr" title="Français">🇫🇷</button>
+    </div>
+    <div id="streak-display" class="hidden items-center gap-1 bg-zinc-900 px-3 py-1.5 rounded-xl">
+      <span class="streak-glow">🔥</span>
+      <span class="text-amber-400 text-sm font-bold" id="streak-count">0</span>
+    </div>
+    <div id="user-menu" class="flex items-center gap-2 bg-zinc-900 px-3 py-1.5 rounded-2xl cursor-pointer hover:bg-zinc-800 transition-colors" onclick="toggleUserMenu()">
+      <div class="text-right hidden sm:block">
+        <div class="text-xs font-semibold" id="nav-name">—</div>
         <div class="text-amber-400 text-xs" id="nav-level">ServeMaster Academy</div>
       </div>
-      <div class="w-9 h-9 bg-amber-400 rounded-2xl flex items-center justify-center text-black font-bold" id="nav-avatar">?</div>
+      <div class="w-8 h-8 bg-amber-400 rounded-xl flex items-center justify-center text-black font-bold text-sm" id="nav-avatar">?</div>
     </div>
-  </nav>
-
-  <div class="flex">
-    <!-- Sidebar -->
-    <div class="w-72 bg-zinc-900 border-r border-amber-900 min-h-screen p-6 hidden lg:block">
-      <div id="sidebar-modules" class="space-y-1"></div>
+    <div id="user-dropdown" class="hidden absolute top-16 right-4 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl min-w-48 overflow-hidden z-50">
+      <div id="dd-logged-in" class="hidden">
+        <div class="px-4 py-3 border-b border-zinc-800">
+          <div class="text-sm font-semibold" id="dd-name"></div>
+          <div class="text-zinc-400 text-xs" id="dd-email"></div>
+          <div class="text-emerald-400 text-xs mt-1">☁ Synced</div>
+        </div>
+        <button onclick="navigate('manager');closeUserMenu()" id="dd-manager-btn" class="hidden w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🏢 Manager Dashboard</button>
+        <button onclick="showNewsletter();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">📬 Newsletter</button>
+        <button onclick="doLogout()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors">Sign Out</button>
+      </div>
+      <div id="dd-logged-out">
+        <button onclick="showAuthModal();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🔐 Sign In / Register</button>
+        <button onclick="showNewsletter();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">📬 Newsletter</button>
+      </div>
     </div>
+  </div>
+</nav>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-8" id="main-content">
-      <div id="dashboard-screen" class="space-y-12">
-        <div>
-          <h1 class="heading text-6xl" id="dashboard-greeting">Welcome back 👋</h1>
-          <p class="text-zinc-400 text-xl mt-2" id="dashboard-sub">Continue where you left off.</p>
-        </div>
-        <div>
-          <h2 class="text-xl font-semibold mb-6">Continue Learning</h2>
-          <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </div>
+<div class="flex">
+  <!-- Sidebar -->
+  <div class="w-64 bg-zinc-900 border-r border-amber-900 min-h-screen p-4 hidden lg:block">
+    <div id="sidebar-modules" class="space-y-1"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-4 lg:p-8 min-w-0" id="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-screen" class="space-y-10">
+      <div>
+        <h1 class="heading text-4xl lg:text-6xl" id="dashboard-greeting">Welcome back 👋</h1>
+        <p class="text-zinc-400 text-lg mt-2" id="dashboard-sub">Continue where you left off.</p>
       </div>
-
-      <div id="learn-screen" class="hidden">
-        <h1 class="heading text-5xl mb-10">All Modules</h1>
-        <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      <div id="certificate-banner" class="hidden bg-gradient-to-r from-amber-900/40 to-rose-900/40 border border-amber-500 rounded-3xl p-6 flex items-center justify-between">
+        <div>
+          <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Ready!</div>
+          <div class="text-zinc-400 text-sm mt-1" id="cert-sub">You've completed all 12 modules. Download your certificate.</div>
+        </div>
+        <button onclick="downloadCertificate()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap" id="cert-btn">Download PDF</button>
       </div>
-
-      <div id="practice-screen" class="hidden">
-        <div id="practice-scenarios" class="space-y-8">
+      <div id="streak-card" class="hidden bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+        <div class="flex items-center gap-4">
+          <div class="text-4xl streak-glow">🔥</div>
           <div>
-            <h1 class="heading text-5xl mb-2">AI Role-Play Practice</h1>
-            <p class="text-zinc-400 text-lg">Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.</p>
+            <div class="text-2xl font-bold text-amber-400" id="dash-streak-count">0</div>
+            <div class="text-zinc-400 text-sm" id="dash-streak-label">day streak</div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="scenario-grid"></div>
+          <div class="ml-auto text-right">
+            <div class="text-zinc-400 text-xs" id="dash-streak-best-label">Best</div>
+            <div class="font-semibold" id="dash-streak-best">0</div>
+          </div>
         </div>
-        <div id="practice-chat" class="hidden space-y-6">
-          <div class="flex items-center gap-4">
-            <button onclick="exitChat()" class="text-zinc-400 hover:text-amber-400 flex items-center gap-2 text-sm">← Back to scenarios</button>
-            <div>
-              <h2 class="heading text-3xl" id="chat-scenario-title"></h2>
-              <p class="text-zinc-400 text-sm" id="chat-scenario-hint">You are the server. Type your response to the guest.</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
+        <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+      </div>
+      <div id="badge-showcase" class="hidden">
+        <h2 class="text-xl font-semibold mb-4" id="dash-badges-title">Recent Badges</h2>
+        <div id="badge-showcase-grid" class="flex flex-wrap gap-3"></div>
+      </div>
+      <div class="text-center pt-4">
+        <button onclick="showNewsletter()" class="text-zinc-500 hover:text-amber-400 text-sm transition-colors" id="dash-newsletter-btn">📬 Get monthly tips newsletter</button>
+      </div>
+    </div>
+
+    <!-- LEARN -->
+    <div id="learn-screen" class="hidden">
+      <h1 class="heading text-4xl lg:text-5xl mb-10" id="learn-title">All Modules</h1>
+      <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div id="practice-screen" class="hidden">
+      <div id="practice-scenarios" class="space-y-8">
+        <div>
+          <h1 class="heading text-4xl lg:text-5xl mb-2" id="practice-title">AI Role-Play Practice</h1>
+          <p class="text-zinc-400 text-lg" id="practice-sub">Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="scenario-grid"></div>
+      </div>
+      <div id="practice-chat" class="hidden space-y-6">
+        <div class="flex items-center gap-4 flex-wrap">
+          <button onclick="exitChat()" class="text-zinc-400 hover:text-amber-400 flex items-center gap-2 text-sm" id="chat-back">← Back</button>
+          <div class="flex-1">
+            <h2 class="heading text-2xl lg:text-3xl" id="chat-scenario-title"></h2>
+            <p class="text-zinc-400 text-sm" id="chat-scenario-hint">You are the server. Type or speak your response.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="toggleVoiceMode()" id="voice-mode-btn" class="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl text-sm transition-colors" title="Toggle voice mode">
+              🎤 <span id="voice-mode-label">Voice</span>
+            </button>
+            <button onclick="toggleAISpeech()" id="ai-speech-btn" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-sm transition-colors" title="Toggle AI voice">🔊</button>
+          </div>
+        </div>
+        <div id="chat-messages" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2"></div>
+        <div class="flex gap-3 flex-wrap">
+          <input id="chat-input" type="text" placeholder="Type your response as the server..."
+            class="flex-1 min-w-0 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
+            onkeydown="if(event.key==='Enter') sendChat()" />
+          <button onclick="startVoiceInput()" id="mic-btn" class="bg-zinc-700 hover:bg-zinc-600 text-white px-5 py-4 rounded-2xl transition-colors text-lg" title="Speak your response">🎤</button>
+          <button onclick="sendChat()" id="chat-send-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors" id="send-label">Send</button>
+        </div>
+        <div id="voice-recording-indicator" class="hidden items-center gap-3 text-sm text-red-400">
+          <div class="w-3 h-3 bg-red-500 rounded-full pulse-rec"></div>
+          <span id="voice-listening-text">Listening...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div id="achievements-screen" class="hidden space-y-10">
+      <div>
+        <h1 class="heading text-4xl lg:text-5xl mb-2" id="achieve-title">Achievements</h1>
+        <p class="text-zinc-400 text-lg" id="achieve-sub">Earn badges by completing modules, scenarios, and daily streaks.</p>
+      </div>
+      <div id="streak-panel" class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">🔥 <span id="streak-section-title">Your Streak</span></h2>
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div><div class="text-3xl font-bold text-amber-400" id="streak-current">0</div><div class="text-zinc-400 text-xs mt-1" id="streak-current-label">Current</div></div>
+          <div><div class="text-3xl font-bold text-zinc-300" id="streak-best">0</div><div class="text-zinc-400 text-xs mt-1" id="streak-best-label">Best</div></div>
+          <div><div class="text-3xl font-bold text-zinc-300" id="scenarios-done">0</div><div class="text-zinc-400 text-xs mt-1" id="scenarios-done-label">Scenarios</div></div>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold mb-6" id="badges-title">Badges</h2>
+        <div id="badges-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="leaderboard-screen" class="hidden space-y-8">
+      <div>
+        <h1 class="heading text-4xl lg:text-5xl mb-2" id="lb-title">Leaderboard</h1>
+        <p class="text-zinc-400 text-lg" id="lb-sub">Top learners across ServeMaster Academy.</p>
+      </div>
+      <div id="leaderboard-list" class="space-y-3"></div>
+    </div>
+
+    <!-- MANAGER DASHBOARD -->
+    <div id="manager-screen" class="hidden space-y-8">
+      <div>
+        <h1 class="heading text-4xl lg:text-5xl mb-2" id="mgr-title">Manager Dashboard</h1>
+        <p class="text-zinc-400 text-lg" id="mgr-sub">Monitor your team's training progress.</p>
+      </div>
+      <div id="manager-setup" class="hidden bg-zinc-900 border border-amber-900/40 rounded-3xl p-8 space-y-6 max-w-lg">
+        <h2 class="text-xl font-semibold" id="mgr-setup-title">Set Up Your Restaurant</h2>
+        <p class="text-zinc-400 text-sm" id="mgr-setup-sub">Create a restaurant profile to invite and manage your staff's training.</p>
+        <input id="restaurant-name-input" type="text" placeholder="Restaurant name" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors" />
+        <button onclick="createRestaurant()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-xl transition-colors" id="mgr-create-btn">Create Restaurant</button>
+        <div class="relative flex items-center gap-3"><div class="flex-1 h-px bg-zinc-700"></div><span class="text-zinc-500 text-sm" id="mgr-or">or</span><div class="flex-1 h-px bg-zinc-700"></div></div>
+        <div class="space-y-3">
+          <p class="text-zinc-400 text-sm" id="mgr-join-sub">Join an existing restaurant with an invite code:</p>
+          <div class="flex gap-2">
+            <input id="join-code-input" type="text" placeholder="Invite code" class="flex-1 bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-xl px-4 py-3 text-white placeholder-zinc-500 transition-colors uppercase" />
+            <button onclick="joinRestaurant()" class="bg-zinc-700 hover:bg-zinc-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors" id="mgr-join-btn">Join</button>
+          </div>
+        </div>
+      </div>
+      <div id="manager-content" class="hidden space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="mgr-stats"></div>
+        <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <h2 class="text-xl font-semibold" id="mgr-staff-title">Staff Progress</h2>
+            <div class="flex gap-3">
+              <button onclick="exportCSV()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-export-btn">Export CSV</button>
+              <button onclick="copyInviteCode()" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-invite-btn">Copy Invite Link</button>
             </div>
           </div>
-          <div id="chat-messages" class="space-y-4 max-h-[55vh] overflow-y-auto pr-2"></div>
-          <div class="flex gap-3">
-            <input id="chat-input" type="text" placeholder="Type your response as the server..."
-              class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
-              onkeydown="if(event.key==='Enter') sendChat()" />
-            <button onclick="sendChat()" id="chat-send-btn"
-              class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors">Send</button>
-          </div>
+          <div id="staff-table" class="space-y-3"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Module Modal -->
-  <div id="module-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-4">
-    <div class="bg-zinc-900 w-full max-w-4xl rounded-3xl overflow-hidden max-h-[92vh]">
-      <div class="px-8 py-6 border-b border-amber-900 flex justify-between items-center">
-        <div id="modal-title" class="heading text-3xl"></div>
-        <button onclick="closeModal()" class="text-4xl leading-none hover:text-amber-400">×</button>
-      </div>
-      <div id="modal-content" class="p-8 overflow-auto" style="max-height: calc(92vh - 80px);"></div>
+  </div>
+</div>
+
+<!-- Module Modal -->
+<div id="module-modal" class="hidden fixed inset-0 bg-black/90 modal-bg flex items-center justify-center z-[100] p-4">
+  <div class="bg-zinc-900 w-full max-w-4xl rounded-3xl overflow-hidden max-h-[92vh]">
+    <div class="px-6 lg:px-8 py-5 border-b border-amber-900 flex justify-between items-center">
+      <div id="modal-title" class="heading text-2xl lg:text-3xl"></div>
+      <button onclick="closeModal()" class="text-4xl leading-none hover:text-amber-400 ml-4">×</button>
     </div>
+    <div id="modal-content" class="p-6 lg:p-8 overflow-auto" style="max-height: calc(92vh - 80px);"></div>
   </div>
+</div>
 
-  <script>
-    // All modules + progress
-    const modules = [
-      { id: 1, title: "Foundations of Exceptional Service", progress: 100, emoji: "🌟" },
-      { id: 2, title: "Seating, Menus & Taking Orders", progress: 95, emoji: "📋" },
-      { id: 3, title: "Beverage Mastery: Wine & Cocktail Service", progress: 95, emoji: "🍸" },
-      { id: 4, title: "Wine Pairing & Advanced Beverage Knowledge", progress: 85, emoji: "🥂" },
-      { id: 5, title: "Natural & Effective Upselling", progress: 80, emoji: "💰" },
-      { id: 6, title: "Food Service & Perfect Pacing", progress: 75, emoji: "🍽️" },
-      { id: 7, title: "Table Maintenance & Problem Resolution", progress: 70, emoji: "🧼" },
-      { id: 8, title: "International Etiquette", progress: 65, emoji: "🌍" },
-      { id: 9, title: "Special Occasions Mastery", progress: 60, emoji: "🎂" },
-      { id: 10, title: "Closing the Experience", progress: 55, emoji: "👋" },
-      { id: 11, title: "Advanced Wine Regions", progress: 45, emoji: "🌎" },
-      { id: 12, title: "Server Leadership & Career", progress: 30, emoji: "⭐" }
-    ];
+<script>
+// =========================================================
+// LANGUAGE / i18n
+// =========================================================
+const STRINGS = {
+  en: {
+    welcome: 'Welcome to ServeMaster', welcomeSub: 'The professional training academy for exceptional servers.',
+    nameLbl: "What's your name?", continueBtn: 'Continue →', expTitle: 'Your experience level',
+    expSub: "We'll tailor your learning path to where you are right now.",
+    l1: '🌱 New to Serving', l1d: "I'm just getting started in hospitality",
+    l2: '⭐ Experienced Server', l2d: "I've been serving for 1–3 years",
+    l3: '🏆 Senior Professional', l3d: "I'm refining my craft and aiming for mastery",
+    readySub: 'Your personalised curriculum is ready. 12 modules, real skills, real results.',
+    f1: '12 professional training modules', f2: '30 AI role-play scenarios',
+    f3: 'Voice role-play & tray simulation', f4: 'Badges, streaks & leaderboard',
+    f5: 'Completion certificate PDF', startBtn: 'Start Learning 🍸',
+    accountBtn: 'Create account to sync across devices',
+    dashContinue: 'Continue Learning', dashBadges: 'Recent Badges',
+    learnTitle: 'All Modules', practiceTitle: 'AI Role-Play Practice',
+    practiceSub: 'Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.',
+    chatBack: '← Back', chatHint: 'You are the server. Type or speak your response.',
+    voiceLabel: 'Voice', aiSpeechLabel: '🔊', sendLabel: 'Send', listening: 'Listening...',
+    achieveTitle: 'Achievements', achieveSub: 'Earn badges by completing modules, scenarios, and daily streaks.',
+    streakSection: 'Your Streak', streakCurrent: 'Current', streakBest: 'Best',
+    scenariosDone: 'Scenarios', badgesTitle: 'Badges',
+    lbTitle: 'Leaderboard', lbSub: 'Top learners across ServeMaster Academy.',
+    mgrTitle: 'Manager Dashboard', mgrSub: "Monitor your team's training progress.",
+    mgrSetupTitle: 'Set Up Your Restaurant', mgrSetupSub: 'Create a restaurant profile to invite and manage your staff\'s training.',
+    mgrCreateBtn: 'Create Restaurant', mgrOr: 'or', mgrJoinSub: 'Join an existing restaurant with an invite code:',
+    mgrJoinBtn: 'Join', mgrStaffTitle: 'Staff Progress', mgrExportBtn: 'Export CSV', mgrInviteBtn: 'Copy Invite Link',
+    nlTitle: 'Monthly Tips for Servers', nlSub: 'Get exclusive service tips, new scenarios, and wine knowledge delivered monthly. No spam.',
+    certTitle: '🎓 Certificate Ready!', certSub: "You've completed all 12 modules. Download your certificate.", certBtn: 'Download PDF',
+    dayStreak: 'day streak', streakBestLabel: 'Best',
+    dashNewsletterBtn: '📬 Get monthly tips newsletter',
+    noStaff: 'No staff have joined yet. Share the invite code to get started.',
+  },
+  fr: {
+    welcome: 'Bienvenue à ServeMaster', welcomeSub: "L'académie de formation professionnelle pour serveurs d'exception.",
+    nameLbl: 'Quel est votre prénom?', continueBtn: 'Continuer →', expTitle: 'Votre niveau d\'expérience',
+    expSub: 'Nous adapterons votre parcours d\'apprentissage à votre niveau actuel.',
+    l1: '🌱 Débutant', l1d: "Je commence tout juste dans l'hôtellerie",
+    l2: '⭐ Serveur Expérimenté', l2d: "J'ai servi pendant 1 à 3 ans",
+    l3: '🏆 Professionnel Senior', l3d: "J'affine mon art et vise l'excellence",
+    readySub: 'Votre programme personnalisé est prêt. 12 modules, de vraies compétences, de vrais résultats.',
+    f1: '12 modules de formation professionnelle', f2: '30 scénarios de jeu de rôle IA',
+    f3: 'Jeu de rôle vocal & simulation de plateau', f4: 'Badges, séries & classement',
+    f5: 'Certificat de réussite PDF', startBtn: 'Commencer 🍸',
+    accountBtn: 'Créer un compte pour synchroniser entre appareils',
+    dashContinue: 'Continuer à apprendre', dashBadges: 'Badges Récents',
+    learnTitle: 'Tous les modules', practiceTitle: 'Pratique IA - Jeu de rôle',
+    practiceSub: 'Choisissez un scénario. Vous jouez le serveur — l\'IA joue le client. Recevez des conseils instantanés après chaque réponse.',
+    chatBack: '← Retour', chatHint: 'Vous êtes le serveur. Tapez ou parlez votre réponse.',
+    voiceLabel: 'Voix', aiSpeechLabel: '🔊', sendLabel: 'Envoyer', listening: 'Écoute...',
+    achieveTitle: 'Réalisations', achieveSub: 'Gagnez des badges en complétant des modules, des scénarios et des séries quotidiennes.',
+    streakSection: 'Votre Série', streakCurrent: 'Actuelle', streakBest: 'Meilleure',
+    scenariosDone: 'Scénarios', badgesTitle: 'Badges',
+    lbTitle: 'Classement', lbSub: "Meilleurs apprenants de ServeMaster Academy.",
+    mgrTitle: 'Tableau de bord Gérant', mgrSub: "Suivez la progression de formation de votre équipe.",
+    mgrSetupTitle: 'Configurez votre Restaurant', mgrSetupSub: 'Créez un profil de restaurant pour inviter et gérer la formation de votre personnel.',
+    mgrCreateBtn: 'Créer le Restaurant', mgrOr: 'ou', mgrJoinSub: "Rejoignez un restaurant existant avec un code d'invitation:",
+    mgrJoinBtn: 'Rejoindre', mgrStaffTitle: 'Progression du personnel', mgrExportBtn: 'Exporter CSV', mgrInviteBtn: "Copier le lien d'invitation",
+    nlTitle: 'Conseils Mensuels pour Serveurs', nlSub: 'Recevez des conseils exclusifs, des scénarios et des connaissances en vins chaque mois. Aucun spam.',
+    certTitle: '🎓 Certificat Prêt!', certSub: 'Vous avez complété les 12 modules. Téléchargez votre certificat.', certBtn: 'Télécharger PDF',
+    dayStreak: 'jours de série', streakBestLabel: 'Meilleure',
+    dashNewsletterBtn: '📬 Newsletter mensuelle',
+    noStaff: "Aucun membre du personnel n'a encore rejoint. Partagez le code d'invitation pour commencer.",
+  }
+};
+let lang = localStorage.getItem('sma-lang') || 'en';
+function t(key) { return (STRINGS[lang] || STRINGS.en)[key] || key; }
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('sma-lang', l);
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  document.getElementById('lang-fr').classList.toggle('active', l === 'fr');
+  applyLangStrings();
+}
+function applyLangStrings() {
+  const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','dashContinue','dashBadges','learnTitle','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
+  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn' };
+  for (const [k, elId] of Object.entries(map)) {
+    const text = t(k);
+    if (Array.isArray(elId)) { elId.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = text; }); }
+    else { const el = document.getElementById(elId); if(el) el.textContent = text; }
+  }
+  if (document.getElementById('html-root')) {
+    document.getElementById('html-root').lang = lang;
+  }
+  renderAll();
+}
 
-    let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: 0}));
+// =========================================================
+// USER STATE
+// =========================================================
+let currentUser = null;
+let authToken = localStorage.getItem('sma-token') || null;
 
-    function saveProgress() { localStorage.setItem('serveMasterProgress', JSON.stringify(userProgress)); }
+async function fetchCurrentUser() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) { authToken = null; localStorage.removeItem('sma-token'); return; }
+    const data = await res.json();
+    currentUser = data.user;
+    applyUserToNav(currentUser);
+    await syncProgressFromServer();
+  } catch {}
+}
 
-    function updateProgress(id, amount) {
-      const mod = userProgress.find(m => m.id === id);
-      if (mod) mod.progress = Math.min(100, mod.progress + amount);
+function applyUserToNav(user) {
+  const initials = user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('nav-name').textContent = user.name;
+  document.getElementById('nav-level').textContent = user.experience_level || 'ServeMaster';
+  document.getElementById('nav-avatar').textContent = initials;
+  document.getElementById('dd-name').textContent = user.name;
+  document.getElementById('dd-email').textContent = user.email || '';
+  document.getElementById('dd-logged-in').classList.remove('hidden');
+  document.getElementById('dd-logged-out').classList.add('hidden');
+  if (user.role === 'manager') {
+    document.getElementById('nav-manager').classList.remove('hidden');
+    document.getElementById('dd-manager-btn').classList.remove('hidden');
+  }
+}
+
+async function syncProgressFromServer() {
+  if (!authToken || !currentUser) return;
+  try {
+    const res = await fetch('/api/user/progress', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.progress && data.progress.length) {
+      data.progress.forEach(p => {
+        const mod = userProgress.find(u => u.id === p.module_id);
+        if (mod) mod.progress = Math.max(mod.progress, p.progress);
+      });
       saveProgress();
-      renderAll();
     }
+    if (data.streak) {
+      updateStreakDisplay(data.streak.current_streak, data.streak.longest_streak);
+    }
+    if (data.badges) {
+      earnedBadges = data.badges.map(b => b.badge_id);
+    }
+    if (data.scenarios) {
+      completedScenarios = data.scenarios.map(s => s.scenario_id);
+    }
+    renderAll();
+  } catch {}
+}
 
-    const lessonData = {
-      1: {
-        subtitle: "The mindset and habits that separate great servers from average ones.",
-        lessons: [
-          { title: "The Server Mindset", body: "Exceptional service starts before you step on the floor. Adopt a hospitality-first mindset: every guest deserves to feel like the only person in the room. Learn to read body language, anticipate needs, and project confidence without arrogance." },
-          { title: "First Impressions", body: "You have 7 seconds to make a first impression. A warm smile, eye contact, and a genuine greeting set the tone. Approach the table within 2 minutes of seating — delay signals neglect." },
-          { title: "The 3-Foot Rule", body: "Any guest within 3 feet deserves acknowledgement. A simple nod or 'I'll be right with you' prevents frustration. Never walk past a guest who is looking for help." },
-          { title: "Professionalism Under Pressure", body: "Busy shifts will test you. Develop a mental reset routine — breathe, prioritize, and communicate delays honestly. Guests respect honesty far more than false promises." }
-        ],
-        quiz: [
-          { q: "How soon should you approach a newly seated table?", options: ["Within 2 minutes", "When they wave", "After 5 minutes", "After taking another order"], answer: 0 },
-          { q: "What does the 3-Foot Rule mean?", options: ["Keep 3 feet from tables", "Acknowledge any guest within 3 feet", "Carry trays 3 feet high", "Space tables 3 feet apart"], answer: 1 }
-        ]
-      },
-      2: {
-        subtitle: "Guide guests smoothly from arrival to order with confidence and precision.",
-        lessons: [
-          { title: "Seating Guests Correctly", body: "Always lead guests to their table — never point. Pull out chairs for guests when appropriate. Present menus open to the first page and begin from the host or guest of honour." },
-          { title: "Menu Knowledge", body: "Know your menu inside out: every ingredient, allergen, and preparation method. Be ready to describe any dish with enthusiasm. If you don't know something, say so and find out immediately — never guess." },
-          { title: "Taking Orders Efficiently", body: "Start with beverages to give guests time with the food menu. Write orders down clearly — never rely solely on memory for a full table. Repeat the order back to confirm accuracy." },
-          { title: "Handling Dietary Restrictions", body: "Take allergies seriously — always confirm with the kitchen. Suggest alternatives without making guests feel like a burden. Phrases like 'Absolutely, let me check with the chef for you' build trust." }
-        ],
-        quiz: [
-          { q: "When presenting menus, you should present them:", options: ["Closed face-down", "Open to the first page", "To the youngest guest first", "Only to adults"], answer: 1 },
-          { q: "When should you take beverage orders?", options: ["After food orders", "Before food orders", "At the same time as food", "Only when asked"], answer: 1 }
-        ]
-      },
-      3: {
-        subtitle: "Master wine presentation, cocktail service, and beverage upselling.",
-        lessons: [
-          { title: "Wine Presentation", body: "Present the bottle label facing the host before opening. Cut the foil cleanly, insert the corkscrew, and remove the cork with a single smooth pull. Pour a small taste for the host to approve before serving others clockwise around the table." },
-          { title: "Cocktail Knowledge", body: "Know your bar's signature cocktails and classic standards. Understand the difference between shaken and stirred, and when to use each. Be ready to suggest cocktails based on a guest's stated preferences." },
-          { title: "Non-Alcoholic Options", body: "Never overlook guests who don't drink alcohol. Present mocktails and premium non-alcoholic options with the same enthusiasm as cocktails. Ask 'Would you prefer something with or without alcohol tonight?'" },
-          { title: "Proper Glassware Service", body: "Always handle glassware by the stem (wine) or base (beer). Never let fingers touch the bowl. Set glasses down gently — no clanking. Replenish water glasses proactively throughout the meal." }
-        ],
-        voice: true,
-        tray: true,
-        quiz: [
-          { q: "When opening wine, you should present the label to:", options: ["The youngest guest", "The host", "The nearest guest", "No one"], answer: 1 },
-          { q: "How should you handle wine glasses?", options: ["By the bowl", "By the rim", "By the stem", "Any way is fine"], answer: 2 }
-        ]
-      },
-      4: {
-        subtitle: "Match wines to dishes and guide guests through the wine list.",
-        lessons: [
-          { title: "The Basics of Pairing", body: "The golden rule: match weight with weight. Light dishes (salads, seafood) pair with light wines (Sauvignon Blanc, Pinot Grigio). Heavy dishes (steak, lamb) pair with full-bodied reds (Cabernet Sauvignon, Syrah)." },
-          { title: "Red Wine Fundamentals", body: "Key reds to know: Pinot Noir (light, earthy), Merlot (medium, plummy), Cabernet Sauvignon (full, tannic), Syrah/Shiraz (spicy, bold). Each pairs best with different proteins and sauces." },
-          { title: "White Wine Fundamentals", body: "Key whites: Sauvignon Blanc (crisp, citrus), Chardonnay (can be buttery or crisp), Riesling (off-dry, goes with spicy food), Pinot Gris (versatile, food-friendly). Temperature matters — serve whites chilled." },
-          { title: "Guiding Guests on the Wine List", body: "Ask questions before recommending: 'Do you prefer something dry or a little fruity?' then steer toward a mid-list bottle. Never lead with the cheapest or most expensive option. Make every recommendation feel personal." }
-        ],
-        quiz: [
-          { q: "Which wine pairs best with a rich steak?", options: ["Sauvignon Blanc", "Pinot Grigio", "Cabernet Sauvignon", "Riesling"], answer: 2 },
-          { q: "A guest says they prefer 'something fruity but not too sweet'. You recommend:", options: ["Merlot", "Chardonnay", "Pinot Noir", "Sauvignon Blanc"], answer: 0 }
-        ]
-      },
-      5: {
-        subtitle: "Increase revenue naturally while genuinely enhancing the guest experience.",
-        lessons: [
-          { title: "The Right Mindset for Upselling", body: "Upselling isn't selling — it's guiding. When done well, guests feel cared for, not pressured. Your goal is to enhance their experience, which happens to benefit the restaurant. Authenticity is key." },
-          { title: "Suggestive Selling Techniques", body: "Use specific, enthusiastic language. Instead of 'Would you like a starter?' say 'Our wagyu beef tartare is incredible tonight — shall I bring one to share?' Specific beats generic every time." },
-          { title: "Timing Your Suggestions", body: "Suggest appetizers when guests are first seated. Wine when menus are open. Dessert before clearing main plates — 'Our chocolate fondant takes 12 minutes, shall I put one in for you now?'" },
-          { title: "Reading the Table", body: "Not every table wants upselling. A couple on a budget date may feel uncomfortable with constant premium suggestions. Read the energy, listen to their language, and adapt. Silence is sometimes the best service." }
-        ],
-        quiz: [
-          { q: "The best upselling approach is:", options: ["Mention every premium item", "Be specific and enthusiastic", "Ask yes/no questions", "Only suggest if asked"], answer: 1 },
-          { q: "When should you suggest dessert?", options: ["Before starters", "When clearing main plates", "At the start of the meal", "Only if they ask"], answer: 1 }
-        ]
-      },
-      6: {
-        subtitle: "Serve food correctly and keep the meal flowing at the perfect pace.",
-        lessons: [
-          { title: "Correct Food Service", body: "Serve food from the left, clear from the right — though consistency within your restaurant matters most. Announce each dish as you place it: 'This is your pan-seared halibut with lemon beurre blanc.' Never reach across a guest." },
-          { title: "Pacing the Meal", body: "A great meal has rhythm. Don't rush courses — wait until all guests have finished before clearing. Don't let the table sit with empty plates too long either. Check in after 2-3 bites of each course." },
-          { title: "Coordinating with the Kitchen", body: "Communicate clearly with the kitchen on timing, especially for large parties. If a dish is delayed, inform the guest before they have to ask. 'Your sea bass is just a couple of minutes away — I apologise for the wait.'" },
-          { title: "Carrying Plates Professionally", body: "Practice the three-plate carry: two on your left arm, one in your right hand. Never stack plates in front of guests. Use a tray for drinks and small items. Economy of motion reduces trips and accidents." }
-        ],
-        quiz: [
-          { q: "Food should be served from the:", options: ["Right", "Left", "Either side is fine", "Behind the guest"], answer: 1 },
-          { q: "When should you clear main plates?", options: ["As soon as one guest finishes", "When all guests have finished", "After 20 minutes", "When you need the space"], answer: 1 }
-        ]
-      },
-      7: {
-        subtitle: "Keep tables immaculate and resolve problems before they escalate.",
-        lessons: [
-          { title: "Proactive Table Maintenance", body: "Clear used glasses, crumb the table between courses, and replace soiled napkins. These small acts show attention to detail. The goal: the table should always look as good as when guests sat down." },
-          { title: "The Check-Back", body: "Return within 2 minutes of serving food — not to hover, but to ensure everything is right. Ask specifically: 'How is the beef for you?' is more useful than 'Is everything okay?'" },
-          { title: "Handling Complaints Gracefully", body: "Listen fully before responding. Apologise without excuses: 'I'm so sorry about that — let me take care of it right away.' Never argue, never deflect to the kitchen. Own the problem and solve it." },
-          { title: "Recovery Techniques", body: "A well-handled complaint can create a more loyal guest than a perfect meal. After resolving an issue, follow up personally. Consider a small gesture — a complimentary dessert or drink — but only when genuinely warranted." }
-        ],
-        quiz: [
-          { q: "When a guest complains about their food, you should first:", options: ["Blame the kitchen", "Argue politely", "Listen fully, then apologise", "Offer a discount immediately"], answer: 2 },
-          { q: "The check-back should happen:", options: ["After the meal", "Within 2 minutes of serving food", "Only when flagged down", "Before food arrives"], answer: 1 }
-        ]
-      },
-      8: {
-        subtitle: "Serve guests from every culture with awareness and respect.",
-        lessons: [
-          { title: "Cultural Awareness Basics", body: "Different cultures have different expectations of service. In some cultures, formal address (Mr/Mrs) is essential. In others, warmth and informality are preferred. Observe, adapt, and never assume." },
-          { title: "Dietary & Religious Requirements", body: "Be familiar with Halal, Kosher, Hindu vegetarian, and other dietary frameworks. When in doubt, ask politely and check with the kitchen. Treat these requirements as non-negotiable priorities." },
-          { title: "Language Barriers", body: "Speak clearly and slowly — not loudly. Use simple language, and have a menu available with photos if possible. A small phrasebook or translation app can de-escalate frustration immediately." },
-          { title: "VIP and Dignitary Service", body: "For VIP guests, work from a briefing sheet. Know preferred seating, dietary needs, and preferred forms of address in advance. Discretion is paramount — never discuss a VIP's presence with other guests." }
-        ],
-        quiz: [
-          { q: "When serving guests from another culture you are unfamiliar with, you should:", options: ["Treat them identically to everyone", "Observe, adapt, and ask respectfully", "Ask them to explain their culture", "Ignore cultural differences"], answer: 1 },
-          { q: "For a guest with a language barrier, you should:", options: ["Speak loudly", "Speak slowly and clearly", "Get a colleague to serve them", "Avoid the table"], answer: 1 }
-        ]
-      },
-      9: {
-        subtitle: "Create unforgettable moments for birthdays, anniversaries, and celebrations.",
-        lessons: [
-          { title: "Identifying Special Occasions", body: "When taking a reservation or during seating, note any special occasion. A simple 'Is there anything special we can do for you tonight?' opens the door. Note it in the reservation system so all staff are prepared." },
-          { title: "The Birthday Experience", body: "Coordinate with the kitchen for a complimentary dessert with a candle. Brief your team on timing — the delivery should feel spontaneous, not chaotic. A handwritten card from the team is a powerful touch." },
-          { title: "Anniversaries & Proposals", body: "For proposals, work with the guest in advance. Hiding a ring in a dessert carries legal liability — instead, offer a presentation box on a silver tray. Ensure privacy and have champagne ready to go." },
-          { title: "Group Celebrations", body: "Large groups need a pre-agreed menu and a single bill handler. Confirm both on booking. Brief the whole team before service — surprises during a group meal are rarely welcome." }
-        ],
-        quiz: [
-          { q: "When should you ask about special occasions?", options: ["At the end of the meal", "During reservation or seating", "Never, wait for guests to tell you", "When presenting the bill"], answer: 1 },
-          { q: "For a proposal, hiding the ring in food is:", options: ["A wonderful tradition", "A legal and safety risk", "Standard practice", "Encouraged"], answer: 1 }
-        ]
-      },
-      10: {
-        subtitle: "End every meal on a high note and maximise return visits.",
-        lessons: [
-          { title: "The Dessert Moment", body: "Present the dessert menu with enthusiasm — 'Our pastry chef has been making the salted caramel tart fresh today.' Even guests who say they're full often indulge when it's described well. Offer coffee and digestifs alongside." },
-          { title: "Presenting the Bill", body: "Never bring the bill unprompted — wait until it's requested. Present it in a clean bill folder. If asked to split, do so without sighing or complaint. Return change promptly and completely." },
-          { title: "The Farewell", body: "See guests out when possible. A genuine 'It was wonderful having you — I hope we'll see you again soon' is more powerful than any loyalty card. Use the guest's name if you learned it." },
-          { title: "Post-Service Rituals", body: "After service, note anything memorable: a guest's birthday, a wine they loved, a special request you handled. This feeds back into your reservation notes for next time and builds lasting loyalty." }
-        ],
-        quiz: [
-          { q: "When should you bring the bill?", options: ["As soon as main plates are cleared", "Only when requested", "After 30 minutes", "Automatically after dessert"], answer: 1 },
-          { q: "The most powerful way to encourage return visits is:", options: ["Hand out loyalty cards", "A genuine, personalised farewell", "Offer a discount", "Give a business card"], answer: 1 }
-        ]
-      },
-      11: {
-        subtitle: "Navigate the world's great wine regions and recommend with authority.",
-        lessons: [
-          { title: "France: The Benchmark", body: "Bordeaux (Cabernet/Merlot blends), Burgundy (Pinot Noir & Chardonnay), Champagne, and Rhône (Syrah & GSM blends) are the world's reference points. Know at least one producer from each region." },
-          { title: "Italy: Diversity & Complexity", body: "Barolo and Barbaresco (Piedmont) are the 'king and queen' of Italian reds. Chianti Classico (Sangiovese, Tuscany), Amarone (Veneto), and Prosecco are essential knowledge for any serious server." },
-          { title: "New World Highlights", body: "Napa Valley Cabernet, New Zealand Sauvignon Blanc, Argentine Malbec, Chilean Carménère, and Australian Shiraz represent the New World's best exports. New World wines tend to be fruit-forward and approachable." },
-          { title: "Spain & Germany", body: "Rioja (Tempranillo) and Ribera del Duero are Spain's flagship reds. Albariño is an exciting white. Germany excels in Riesling — from bone-dry Trocken to luscious Trockenbeerenauslese. Don't underestimate German wines." },
-          { title: "USA: Napa, Sonoma & Beyond", body: "California dominates US wine production. Napa Valley is world-renowned for Cabernet Sauvignon — bold, structured, and age-worthy. Sonoma County is more diverse: excellent Pinot Noir (Russian River Valley), Chardonnay, and Zinfandel. Oregon's Willamette Valley produces elegant Burgundian-style Pinot Noir. Washington State is a rising star for Cabernet, Merlot, and Riesling. When recommending US wines, Napa Cabernet signals prestige; Oregon Pinot signals finesse." },
-          { title: "Canada: Ice Wine & Beyond", body: "Canada is best known internationally for Ice Wine (Eiswein) — made from grapes frozen naturally on the vine, producing intensely sweet, honeyed wines at a fraction of the price of European equivalents. Ontario's Niagara Peninsula and British Columbia's Okanagan Valley are the two key regions. BC also produces excellent dry Pinot Noir, Chardonnay, and Riesling. When a guest asks for something unique and luxurious to finish a meal, a Canadian Ice Wine is an unforgettable suggestion." }
-        ],
-        quiz: [
-          { q: "Barolo is made from which grape?", options: ["Sangiovese", "Nebbiolo", "Barbera", "Dolcetto"], answer: 1 },
-          { q: "New World wines are generally known for being:", options: ["Earthy and austere", "Fruit-forward and approachable", "Low alcohol", "Highly tannic"], answer: 1 },
-          { q: "Napa Valley is most famous for which grape variety?", options: ["Pinot Noir", "Zinfandel", "Cabernet Sauvignon", "Chardonnay"], answer: 2 },
-          { q: "Canadian Ice Wine is made from grapes that are:", options: ["Dried in the sun", "Frozen naturally on the vine", "Harvested early", "Blended with spirits"], answer: 1 }
-        ]
-      },
-      12: {
-        subtitle: "Step into a leadership role and build a long-term hospitality career.",
-        lessons: [
-          { title: "Mentoring Junior Staff", body: "As a senior server, your habits become the team's habits. Lead by example on the floor — never visibly complain, never cut corners. Take a new team member under your wing each month and share one skill explicitly." },
-          { title: "Running a Pre-Service Briefing", body: "A great briefing covers: tonight's specials, 86'd items, VIP guests, any service challenges, and one learning point from last service. Keep it under 10 minutes. Energy in the briefing sets the energy on the floor." },
-          { title: "Managing Your Finances", body: "Track your tips over time and treat your income professionally. Set aside money for taxes if self-employed. Invest in training — a sommelier course or hospitality certification compounds your earnings significantly." },
-          { title: "Career Pathways", body: "From server you can grow into: head server, floor manager, restaurant manager, sommelier, F&B director, or open your own venue. Every senior figure in hospitality started on the floor. Document your achievements and build a hospitality CV." }
-        ],
-        quiz: [
-          { q: "A pre-service briefing should cover:", options: ["Only specials", "Specials, 86'd items, VIPs, and a learning point", "Staff complaints", "Nothing — waste of time"], answer: 1 },
-          { q: "The best investment in your hospitality career is:", options: ["Buying better shoes", "Training and certifications", "Working more hours", "Memorising menus"], answer: 1 }
-        ]
-      }
-    };
+async function pushProgressToServer(moduleId, progress, quizScore) {
+  if (!authToken) return;
+  try {
+    await fetch('/api/user/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ moduleId, progress, quizScore })
+    });
+  } catch {}
+}
 
-    function getModuleContent(id) {
-      const data = lessonData[id];
-      if (!data) return '<p class="text-zinc-400">Content coming soon.</p>';
+async function pushScenarioToServer(scenarioId) {
+  if (!authToken) return;
+  try {
+    await fetch('/api/user/scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ scenarioId })
+    });
+  } catch {}
+}
 
-      let html = '<p class="text-zinc-400 text-lg mb-8">' + data.subtitle + '</p>';
-      html += '<div class="space-y-4 mb-10">';
+// =========================================================
+// MODULES + PROGRESS
+// =========================================================
+const modules = [
+  { id:1, title:'Foundations of Exceptional Service', titleFr:"Fondements du service d'exception", emoji:'🌟' },
+  { id:2, title:'Seating, Menus & Taking Orders', titleFr:'Placement, menus & prise de commandes', emoji:'📋' },
+  { id:3, title:'Beverage Mastery: Wine & Cocktail Service', titleFr:'Maîtrise des boissons : vins & cocktails', emoji:'🍸' },
+  { id:4, title:'Wine Pairing & Advanced Beverage Knowledge', titleFr:'Accords mets-vins & connaissances avancées', emoji:'🥂' },
+  { id:5, title:'Natural & Effective Upselling', titleFr:'Vente additionnelle naturelle & efficace', emoji:'💰' },
+  { id:6, title:'Food Service & Perfect Pacing', titleFr:'Service des plats & rythme parfait', emoji:'🍽️' },
+  { id:7, title:'Table Maintenance & Problem Resolution', titleFr:"Entretien des tables & résolution de problèmes", emoji:'🧼' },
+  { id:8, title:'International Etiquette', titleFr:'Étiquette internationale', emoji:'🌍' },
+  { id:9, title:'Special Occasions Mastery', titleFr:'Maîtrise des occasions spéciales', emoji:'🎂' },
+  { id:10, title:'Closing the Experience', titleFr:"Clore l'expérience", emoji:'👋' },
+  { id:11, title:'Advanced Wine Regions', titleFr:'Régions viticoles avancées', emoji:'🌎' },
+  { id:12, title:'Server Leadership & Career', titleFr:'Leadership & carrière en service', emoji:'⭐' }
+];
 
-      data.lessons.forEach(function(l, i) {
-        const openAttr = i === 0 ? ' open' : '';
-        html += '<details class="bg-zinc-800 rounded-2xl group"' + openAttr + '>';
-        html += '<summary class="px-6 py-4 font-semibold cursor-pointer flex items-center justify-between hover:text-amber-400 list-none">';
-        html += '<span>' + (i + 1) + '. ' + l.title + '</span>';
-        html += '<span class="text-amber-400">▼</span></summary>';
-        html += '<div class="px-6 pb-6 text-zinc-300 leading-relaxed border-t border-zinc-700 pt-4">' + l.body + '</div>';
-        html += '</details>';
+let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: 0}));
+let earnedBadges = JSON.parse(localStorage.getItem('sma-badges')) || [];
+let completedScenarios = JSON.parse(localStorage.getItem('sma-scenarios')) || [];
+let currentStreak = 0;
+let bestStreak = 0;
+
+function saveProgress() { localStorage.setItem('serveMasterProgress', JSON.stringify(userProgress)); }
+function saveBadges() { localStorage.setItem('sma-badges', JSON.stringify(earnedBadges)); }
+
+function updateProgress(id, amount, quizScore) {
+  const mod = userProgress.find(m => m.id === id);
+  if (mod) mod.progress = Math.min(100, mod.progress + amount);
+  saveProgress();
+  pushProgressToServer(id, mod ? mod.progress : amount, quizScore);
+  checkBadgesLocal();
+  renderAll();
+  checkCertificate();
+}
+
+function updateStreakDisplay(current, best) {
+  currentStreak = current || 0;
+  bestStreak = best || 0;
+  document.getElementById('streak-count').textContent = currentStreak;
+  document.getElementById('dash-streak-count').textContent = currentStreak;
+  document.getElementById('dash-streak-best').textContent = bestStreak;
+  document.getElementById('streak-current').textContent = currentStreak;
+  document.getElementById('streak-best').textContent = bestStreak;
+  if (currentStreak > 0) {
+    document.getElementById('streak-display').classList.remove('hidden');
+    document.getElementById('streak-display').classList.add('flex');
+    document.getElementById('streak-card').classList.remove('hidden');
+  }
+}
+
+function updateLocalStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  const last = localStorage.getItem('sma-last-active');
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  if (last === today) return;
+  currentStreak = last === yesterday ? currentStreak + 1 : 1;
+  bestStreak = Math.max(currentStreak, bestStreak);
+  localStorage.setItem('sma-last-active', today);
+  localStorage.setItem('sma-streak', currentStreak);
+  localStorage.setItem('sma-best-streak', bestStreak);
+  updateStreakDisplay(currentStreak, bestStreak);
+}
+
+// =========================================================
+// BADGES
+// =========================================================
+const BADGE_DEFS = [
+  { id:'first_module', icon:'🎯', name:'First Steps', nameFr:'Premiers Pas', desc:'Complete your first module', descFr:'Complétez votre premier module' },
+  { id:'module_master', icon:'🏆', name:'Module Master', nameFr:'Maître des modules', desc:'Complete all 12 modules', descFr:'Complétez les 12 modules' },
+  { id:'first_scenario', icon:'🎭', name:'Scene Stealer', nameFr:'Acteur en herbe', desc:'Complete your first role-play', descFr:'Complétez votre premier jeu de rôle' },
+  { id:'scenario_ace', icon:'🌟', name:'Scenario Ace', nameFr:'As des scénarios', desc:'Complete 10 role-play scenarios', descFr:'Complétez 10 scénarios de jeu de rôle' },
+  { id:'scenario_legend', icon:'👑', name:'Scenario Legend', nameFr:'Légende des scénarios', desc:'Complete 20 role-play scenarios', descFr:'Complétez 20 scénarios' },
+  { id:'week_warrior', icon:'🔥', name:'Week Warrior', nameFr:'Guerrier de la semaine', desc:'7-day learning streak', descFr:'Série de 7 jours d\'apprentissage' },
+  { id:'month_master', icon:'💎', name:'Month Master', nameFr:'Maître du mois', desc:'30-day learning streak', descFr:'Série de 30 jours' },
+  { id:'wine_expert', icon:'🍷', name:'Wine Expert', nameFr:'Expert en vins', desc:'Complete all beverage modules', descFr:'Complétez tous les modules boissons' },
+  { id:'perfect_scorer', icon:'💯', name:'Perfect Scorer', nameFr:'Score parfait', desc:'Score 100% on 5 quizzes', descFr:'Obtenez 100% sur 5 quiz' },
+  { id:'voice_pro', icon:'🎤', name:'Voice Pro', nameFr:'Pro de la voix', desc:'Complete 3 voice sessions', descFr:'Complétez 3 sessions vocales' },
+  { id:'bilingual', icon:'🌍', name:'Bilingual', nameFr:'Bilingue', desc:'Use French mode', descFr:'Utilisez le mode français' },
+  { id:'speed_learner', icon:'⚡', name:'Speed Learner', nameFr:'Apprenant rapide', desc:'Complete 3 modules in one day', descFr:'Complétez 3 modules en un jour' },
+];
+
+function checkBadgesLocal() {
+  const completed = userProgress.filter(p => p.progress >= 100).length;
+  const scenarios = completedScenarios.length;
+  const newBadges = [];
+  if (completed >= 1 && !earnedBadges.includes('first_module')) newBadges.push('first_module');
+  if (completed >= 12 && !earnedBadges.includes('module_master')) newBadges.push('module_master');
+  if (scenarios >= 1 && !earnedBadges.includes('first_scenario')) newBadges.push('first_scenario');
+  if (scenarios >= 10 && !earnedBadges.includes('scenario_ace')) newBadges.push('scenario_ace');
+  if (scenarios >= 20 && !earnedBadges.includes('scenario_legend')) newBadges.push('scenario_legend');
+  if (currentStreak >= 7 && !earnedBadges.includes('week_warrior')) newBadges.push('week_warrior');
+  if (currentStreak >= 30 && !earnedBadges.includes('month_master')) newBadges.push('month_master');
+  const bevOk = [3,4,11].every(id => userProgress.find(p => p.id === id && p.progress >= 100));
+  if (bevOk && !earnedBadges.includes('wine_expert')) newBadges.push('wine_expert');
+  if (lang === 'fr' && !earnedBadges.includes('bilingual')) newBadges.push('bilingual');
+  newBadges.forEach(b => {
+    earnedBadges.push(b);
+    showBadgeNotification(b);
+  });
+  saveBadges();
+}
+
+function showBadgeNotification(badgeId) {
+  const def = BADGE_DEFS.find(b => b.id === badgeId);
+  if (!def) return;
+  const notif = document.getElementById('badge-notification');
+  document.getElementById('badge-notif-icon').textContent = def.icon;
+  document.getElementById('badge-notif-name').textContent = lang === 'fr' ? def.nameFr : def.name;
+  document.getElementById('badge-notif-desc').textContent = lang === 'fr' ? def.descFr : def.desc;
+  notif.classList.remove('hidden');
+  notif.classList.add('badge-pop');
+  setTimeout(() => { notif.classList.add('hidden'); notif.classList.remove('badge-pop'); }, 4000);
+}
+
+// =========================================================
+// LESSON DATA
+// =========================================================
+const lessonData = {
+  1: {
+    subtitle: "The mindset and habits that separate great servers from average ones.",
+    subtitleFr: "L'état d'esprit et les habitudes qui distinguent les grands serveurs.",
+    lessons: [
+      { title:"The Server Mindset", titleFr:"L'état d'esprit du serveur", body:"Exceptional service starts before you step on the floor. Adopt a hospitality-first mindset: every guest deserves to feel like the only person in the room. Learn to read body language, anticipate needs, and project confidence without arrogance.", bodyFr:"Un service exceptionnel commence avant même d'arriver en salle. Adoptez une mentalité centrée sur l'hospitalité : chaque client mérite de se sentir unique. Apprenez à lire le langage corporel, anticiper les besoins et projeter de la confiance sans arrogance." },
+      { title:"First Impressions", titleFr:"Premières impressions", body:"You have 7 seconds to make a first impression. A warm smile, eye contact, and a genuine greeting set the tone. Approach the table within 2 minutes of seating — delay signals neglect.", bodyFr:"Vous avez 7 secondes pour faire une première impression. Un sourire chaleureux, un contact visuel et une salutation sincère donnent le ton. Approchez la table dans les 2 minutes après l'installation — tout retard signale de la négligence." },
+      { title:"The 3-Foot Rule", titleFr:"La règle des 3 pieds", body:"Any guest within 3 feet deserves acknowledgement. A simple nod or 'I'll be right with you' prevents frustration. Never walk past a guest who is looking for help.", bodyFr:"Tout client à moins d'un mètre mérite d'être reconnu. Un simple hochement de tête ou 'Je suis à vous dans un instant' évite la frustration. Ne passez jamais devant un client qui cherche de l'aide." },
+      { title:"Professionalism Under Pressure", titleFr:"Professionnalisme sous pression", body:"Busy shifts will test you. Develop a mental reset routine — breathe, prioritize, and communicate delays honestly. Guests respect honesty far more than false promises.", bodyFr:"Les services chargés vous mettront à l'épreuve. Développez une routine de recadrage mental : respirez, priorisez et communiquez les délais honnêtement. Les clients respectent bien plus l'honnêteté que les fausses promesses." }
+    ],
+    quiz: [
+      { q:"How soon should you approach a newly seated table?", qFr:"Dans quel délai devez-vous approcher une table nouvellement installée?", options:["Within 2 minutes","When they wave","After 5 minutes","After taking another order"], optionsFr:["Dans les 2 minutes","Quand ils font signe","Après 5 minutes","Après avoir pris une autre commande"], answer:0 },
+      { q:"What does the 3-Foot Rule mean?", qFr:"Que signifie la règle des 3 pieds?", options:["Keep 3 feet from tables","Acknowledge any guest within 3 feet","Carry trays 3 feet high","Space tables 3 feet apart"], optionsFr:["Garder 3 pieds des tables","Reconnaître tout client à moins d'un mètre","Porter les plateaux à 3 pieds de hauteur","Espacer les tables de 3 pieds"], answer:1 }
+    ]
+  },
+  2: {
+    subtitle:"Guide guests smoothly from arrival to order with confidence and precision.",
+    subtitleFr:"Guidez les clients de l'arrivée à la commande avec confiance et précision.",
+    lessons:[
+      { title:"Seating Guests Correctly", titleFr:"Placer les clients correctement", body:"Always lead guests to their table — never point. Pull out chairs for guests when appropriate. Present menus open to the first page and begin from the host or guest of honour.", bodyFr:"Guidez toujours les clients vers leur table — ne pointez jamais du doigt. Tirez les chaises lorsque c'est approprié. Présentez les menus ouverts à la première page, en commençant par l'hôte ou l'invité d'honneur." },
+      { title:"Menu Knowledge", titleFr:"Connaissance du menu", body:"Know your menu inside out: every ingredient, allergen, and preparation method. Be ready to describe any dish with enthusiasm. If you don't know something, say so and find out immediately — never guess.", bodyFr:"Connaissez votre menu sur le bout des doigts : chaque ingrédient, allergène et méthode de préparation. Soyez prêt à décrire chaque plat avec enthousiasme. Si vous ne savez pas, dites-le et renseignez-vous immédiatement — ne devinez jamais." },
+      { title:"Taking Orders Efficiently", titleFr:"Prendre les commandes efficacement", body:"Start with beverages to give guests time with the food menu. Write orders down clearly — never rely solely on memory for a full table. Repeat the order back to confirm accuracy.", bodyFr:"Commencez par les boissons pour laisser les clients étudier le menu alimentaire. Notez clairement les commandes — ne comptez jamais uniquement sur la mémoire pour une table complète. Répétez la commande pour confirmer l'exactitude." },
+      { title:"Handling Dietary Restrictions", titleFr:"Gestion des restrictions alimentaires", body:"Take allergies seriously — always confirm with the kitchen. Suggest alternatives without making guests feel like a burden. Phrases like 'Absolutely, let me check with the chef for you' build trust.", bodyFr:"Prenez les allergies au sérieux — confirmez toujours avec la cuisine. Suggérez des alternatives sans que les clients se sentent un fardeau. Des formules comme 'Absolument, laissez-moi vérifier avec le chef' renforcent la confiance." }
+    ],
+    quiz:[
+      { q:"When presenting menus, you should present them:", qFr:"Lors de la présentation des menus, vous devez les présenter:", options:["Closed face-down","Open to the first page","To the youngest guest first","Only to adults"], optionsFr:["Fermés face vers le bas","Ouverts à la première page","Au plus jeune client d'abord","Aux adultes seulement"], answer:1 },
+      { q:"When should you take beverage orders?", qFr:"Quand devez-vous prendre les commandes de boissons?", options:["After food orders","Before food orders","At the same time as food","Only when asked"], optionsFr:["Après les commandes de plats","Avant les commandes de plats","En même temps que les plats","Seulement si demandé"], answer:1 }
+    ]
+  },
+  3: {
+    subtitle:"Master wine presentation, cocktail service, and beverage upselling.",
+    subtitleFr:"Maîtrisez la présentation du vin, le service des cocktails et la vente additionnelle de boissons.",
+    lessons:[
+      { title:"Wine Presentation", titleFr:"Présentation du vin", body:"Present the bottle label facing the host before opening. Cut the foil cleanly, insert the corkscrew, and remove the cork with a single smooth pull. Pour a small taste for the host to approve before serving others clockwise around the table.", bodyFr:"Présentez l'étiquette de la bouteille face à l'hôte avant d'ouvrir. Coupez le papier d'aluminium proprement, insérez le tire-bouchon et retirez le bouchon en un mouvement fluide. Versez une petite dégustation pour l'hôte avant de servir les autres dans le sens des aiguilles d'une montre." },
+      { title:"Cocktail Knowledge", titleFr:"Connaissance des cocktails", body:"Know your bar's signature cocktails and classic standards. Understand the difference between shaken and stirred, and when to use each. Be ready to suggest cocktails based on a guest's stated preferences.", bodyFr:"Connaissez les cocktails signatures de votre bar et les classiques. Comprenez la différence entre secoué et mélangé, et quand utiliser chacun. Soyez prêt à suggérer des cocktails basés sur les préférences exprimées par le client." },
+      { title:"Non-Alcoholic Options", titleFr:"Options sans alcool", body:"Never overlook guests who don't drink alcohol. Present mocktails and premium non-alcoholic options with the same enthusiasm as cocktails. Ask 'Would you prefer something with or without alcohol tonight?'", bodyFr:"Ne négligez jamais les clients qui ne consomment pas d'alcool. Présentez les mocktails et les options non alcoolisées premium avec le même enthousiasme que les cocktails. Demandez 'Préférez-vous quelque chose avec ou sans alcool ce soir?'" },
+      { title:"Proper Glassware Service", titleFr:"Service approprié de la verrerie", body:"Always handle glassware by the stem (wine) or base (beer). Never let fingers touch the bowl. Set glasses down gently — no clanking. Replenish water glasses proactively throughout the meal.", bodyFr:"Manipulez toujours la verrerie par la tige (vin) ou la base (bière). Ne laissez jamais les doigts toucher le calice. Posez les verres doucement — sans cliquetis. Remplissez les verres d'eau de façon proactive tout au long du repas." }
+    ],
+    voice:true, tray:true,
+    quiz:[
+      { q:"When opening wine, you should present the label to:", qFr:"En ouvrant le vin, vous devez présenter l'étiquette à:", options:["The youngest guest","The host","The nearest guest","No one"], optionsFr:["Le plus jeune client","L'hôte","Le client le plus proche","Personne"], answer:1 },
+      { q:"How should you handle wine glasses?", qFr:"Comment devez-vous manipuler les verres à vin?", options:["By the bowl","By the rim","By the stem","Any way is fine"], optionsFr:["Par le calice","Par le bord","Par la tige","N'importe comment"], answer:2 }
+    ]
+  },
+  4:{
+    subtitle:"Match wines to dishes and guide guests through the wine list.",
+    subtitleFr:"Associez les vins aux plats et guidez les clients à travers la carte des vins.",
+    lessons:[
+      { title:"The Basics of Pairing", titleFr:"Les bases des accords", body:"The golden rule: match weight with weight. Light dishes (salads, seafood) pair with light wines (Sauvignon Blanc, Pinot Grigio). Heavy dishes (steak, lamb) pair with full-bodied reds (Cabernet Sauvignon, Syrah).", bodyFr:"La règle d'or : associez le poids avec le poids. Les plats légers (salades, fruits de mer) s'accordent avec des vins légers (Sauvignon Blanc, Pinot Grigio). Les plats lourds (steak, agneau) s'accordent avec des rouges corsés (Cabernet Sauvignon, Syrah)." },
+      { title:"Red Wine Fundamentals", titleFr:"Fondamentaux des vins rouges", body:"Key reds to know: Pinot Noir (light, earthy), Merlot (medium, plummy), Cabernet Sauvignon (full, tannic), Syrah/Shiraz (spicy, bold). Each pairs best with different proteins and sauces.", bodyFr:"Les rouges essentiels : Pinot Noir (léger, terreux), Merlot (moyen, pruneau), Cabernet Sauvignon (corsé, tannique), Syrah/Shiraz (épicé, audacieux). Chacun s'accorde mieux avec différentes protéines et sauces." },
+      { title:"White Wine Fundamentals", titleFr:"Fondamentaux des vins blancs", body:"Key whites: Sauvignon Blanc (crisp, citrus), Chardonnay (can be buttery or crisp), Riesling (off-dry, goes with spicy food), Pinot Gris (versatile, food-friendly). Temperature matters — serve whites chilled.", bodyFr:"Les blancs essentiels : Sauvignon Blanc (vif, agrumes), Chardonnay (peut être beurré ou vif), Riesling (demi-sec, accompagne les plats épicés), Pinot Gris (polyvalent, gastronomique). La température compte — servez les blancs frais." },
+      { title:"Guiding Guests on the Wine List", titleFr:"Guider les clients sur la carte des vins", body:"Ask questions before recommending: 'Do you prefer something dry or a little fruity?' then steer toward a mid-list bottle. Never lead with the cheapest or most expensive option. Make every recommendation feel personal.", bodyFr:"Posez des questions avant de recommander : 'Préférez-vous quelque chose de sec ou légèrement fruité?' puis orientez vers une bouteille de milieu de gamme. Ne commencez jamais par l'option la moins chère ou la plus chère. Rendez chaque recommandation personnelle." }
+    ],
+    quiz:[
+      { q:"Which wine pairs best with a rich steak?", qFr:"Quel vin s'accorde le mieux avec un steak riche?", options:["Sauvignon Blanc","Pinot Grigio","Cabernet Sauvignon","Riesling"], optionsFr:["Sauvignon Blanc","Pinot Grigio","Cabernet Sauvignon","Riesling"], answer:2 },
+      { q:"A guest says they prefer 'something fruity but not too sweet'. You recommend:", qFr:"Un client dit préférer 'quelque chose de fruité mais pas trop sucré'. Vous recommandez:", options:["Merlot","Chardonnay","Pinot Noir","Sauvignon Blanc"], optionsFr:["Merlot","Chardonnay","Pinot Noir","Sauvignon Blanc"], answer:0 }
+    ]
+  },
+  5:{
+    subtitle:"Increase revenue naturally while genuinely enhancing the guest experience.",
+    subtitleFr:"Augmentez les revenus naturellement tout en améliorant l'expérience client.",
+    lessons:[
+      { title:"The Right Mindset for Upselling", titleFr:"Le bon état d'esprit pour la vente additionnelle", body:"Upselling isn't selling — it's guiding. When done well, guests feel cared for, not pressured. Your goal is to enhance their experience, which happens to benefit the restaurant. Authenticity is key.", bodyFr:"La vente additionnelle n'est pas de la vente — c'est un guidage. Bien fait, les clients se sentent pris en charge, pas sous pression. Votre objectif est d'améliorer leur expérience, ce qui profite au restaurant. L'authenticité est essentielle." },
+      { title:"Suggestive Selling Techniques", titleFr:"Techniques de vente suggestive", body:"Use specific, enthusiastic language. Instead of 'Would you like a starter?' say 'Our wagyu beef tartare is incredible tonight — shall I bring one to share?' Specific beats generic every time.", bodyFr:"Utilisez un langage spécifique et enthousiaste. Au lieu de 'Voulez-vous une entrée?' dites 'Notre tartare de bœuf wagyu est incroyable ce soir — vous en apporte-je un à partager?' Le spécifique bat le générique à chaque fois." },
+      { title:"Timing Your Suggestions", titleFr:"Bien chronométrer vos suggestions", body:"Suggest appetizers when guests are first seated. Wine when menus are open. Dessert before clearing main plates — 'Our chocolate fondant takes 12 minutes, shall I put one in for you now?'", bodyFr:"Suggérez les entrées à l'installation des clients. Le vin quand les menus sont ouverts. Le dessert avant de débarrasser les plats principaux — 'Notre fondant au chocolat prend 12 minutes, vous en commande-t-on un maintenant?'" },
+      { title:"Reading the Table", titleFr:"Lire la table", body:"Not every table wants upselling. A couple on a budget date may feel uncomfortable with constant premium suggestions. Read the energy, listen to their language, and adapt. Silence is sometimes the best service.", bodyFr:"Toutes les tables ne veulent pas de vente additionnelle. Un couple avec un budget limité peut se sentir mal à l'aise avec des suggestions premium constantes. Lisez l'énergie, écoutez leur langage et adaptez-vous. Le silence est parfois le meilleur service." }
+    ],
+    quiz:[
+      { q:"The best upselling approach is:", qFr:"La meilleure approche de vente additionnelle est:", options:["Mention every premium item","Be specific and enthusiastic","Ask yes/no questions","Only suggest if asked"], optionsFr:["Mentionner chaque article premium","Être spécifique et enthousiaste","Poser des questions fermées","Suggérer seulement si demandé"], answer:1 },
+      { q:"When should you suggest dessert?", qFr:"Quand devez-vous suggérer le dessert?", options:["Before starters","When clearing main plates","At the start of the meal","Only if they ask"], optionsFr:["Avant les entrées","En débarrassant les plats principaux","Au début du repas","Seulement si demandé"], answer:1 }
+    ]
+  },
+  6:{
+    subtitle:"Serve food correctly and keep the meal flowing at the perfect pace.",
+    subtitleFr:"Servez les plats correctement et maintenez le repas au rythme parfait.",
+    lessons:[
+      { title:"Correct Food Service", titleFr:"Service correct des plats", body:"Serve food from the left, clear from the right — though consistency within your restaurant matters most. Announce each dish as you place it: 'This is your pan-seared halibut with lemon beurre blanc.' Never reach across a guest.", bodyFr:"Servez par la gauche, débarrassez par la droite — la cohérence dans votre restaurant est primordiale. Annoncez chaque plat en le posant : 'Voici votre flétan poêlé avec beurre blanc au citron.' Ne vous penchez jamais devant un client." },
+      { title:"Pacing the Meal", titleFr:"Le rythme du repas", body:"A great meal has rhythm. Don't rush courses — wait until all guests have finished before clearing. Don't let the table sit with empty plates too long either. Check in after 2-3 bites of each course.", bodyFr:"Un grand repas a un rythme. Ne précipitez pas les plats — attendez que tous les clients aient fini avant de débarrasser. Ne laissez pas non plus la table avec des assiettes vides trop longtemps. Vérifiez après 2-3 bouchées de chaque plat." },
+      { title:"Coordinating with the Kitchen", titleFr:"Coordination avec la cuisine", body:"Communicate clearly with the kitchen on timing, especially for large parties. If a dish is delayed, inform the guest before they have to ask. 'Your sea bass is just a couple of minutes away — I apologise for the wait.'", bodyFr:"Communiquez clairement avec la cuisine sur les délais, surtout pour les grands groupes. Si un plat est retardé, informez le client avant qu'il ne doive demander. 'Votre bar est à quelques minutes — je m'excuse pour l'attente.'" },
+      { title:"Carrying Plates Professionally", titleFr:"Porter les assiettes professionnellement", body:"Practice the three-plate carry: two on your left arm, one in your right hand. Never stack plates in front of guests. Use a tray for drinks and small items. Economy of motion reduces trips and accidents.", bodyFr:"Pratiquez le transport de trois assiettes : deux sur votre bras gauche, une dans la main droite. N'empilez jamais les assiettes devant les clients. Utilisez un plateau pour les boissons et petits articles. L'économie de mouvement réduit les allers-retours et accidents." }
+    ],
+    quiz:[
+      { q:"Food should be served from the:", qFr:"Les plats doivent être servis par:", options:["Right","Left","Either side is fine","Behind the guest"], optionsFr:["La droite","La gauche","N'importe quel côté","Derrière le client"], answer:1 },
+      { q:"When should you clear main plates?", qFr:"Quand devez-vous débarrasser les plats principaux?", options:["As soon as one guest finishes","When all guests have finished","After 20 minutes","When you need the space"], optionsFr:["Dès qu'un client a fini","Quand tous les clients ont fini","Après 20 minutes","Quand vous avez besoin de place"], answer:1 }
+    ]
+  },
+  7:{
+    subtitle:"Keep tables immaculate and resolve problems before they escalate.",
+    subtitleFr:"Gardez les tables impeccables et résolvez les problèmes avant qu'ils n'escaladent.",
+    lessons:[
+      { title:"Proactive Table Maintenance", titleFr:"Entretien proactif des tables", body:"Clear used glasses, crumb the table between courses, and replace soiled napkins. These small acts show attention to detail. The goal: the table should always look as good as when guests sat down.", bodyFr:"Débarrassez les verres utilisés, brossez la table entre les plats et remplacez les serviettes salies. Ces petits gestes montrent l'attention aux détails. L'objectif : la table doit toujours paraître aussi belle qu'à l'arrivée des clients." },
+      { title:"The Check-Back", titleFr:"Le contrôle de satisfaction", body:"Return within 2 minutes of serving food — not to hover, but to ensure everything is right. Ask specifically: 'How is the beef for you?' is more useful than 'Is everything okay?'", bodyFr:"Revenez dans les 2 minutes suivant le service — pas pour surveiller, mais pour vérifier que tout va bien. Demandez spécifiquement : 'Comment trouvez-vous le bœuf?' est plus utile que 'Tout va bien?'" },
+      { title:"Handling Complaints Gracefully", titleFr:"Gérer les plaintes avec grâce", body:"Listen fully before responding. Apologise without excuses: 'I'm so sorry about that — let me take care of it right away.' Never argue, never deflect to the kitchen. Own the problem and solve it.", bodyFr:"Écoutez attentivement avant de répondre. Excusez-vous sans justifications : 'Je suis vraiment désolé — laissez-moi régler cela immédiatement.' Ne discutez jamais, ne rejetez jamais la faute sur la cuisine. Assumez le problème et résolvez-le." },
+      { title:"Recovery Techniques", titleFr:"Techniques de récupération", body:"A well-handled complaint can create a more loyal guest than a perfect meal. After resolving an issue, follow up personally. Consider a small gesture — a complimentary dessert or drink — but only when genuinely warranted.", bodyFr:"Une plainte bien gérée peut créer un client plus fidèle qu'un repas parfait. Après avoir résolu un problème, faites un suivi personnel. Envisagez un petit geste — un dessert ou une boisson offert — mais seulement quand c'est vraiment justifié." }
+    ],
+    quiz:[
+      { q:"When a guest complains about their food, you should first:", qFr:"Quand un client se plaint de sa nourriture, vous devez d'abord:", options:["Blame the kitchen","Argue politely","Listen fully, then apologise","Offer a discount immediately"], optionsFr:["Blâmer la cuisine","Argumenter poliment","Écouter attentivement, puis s'excuser","Offrir une réduction immédiatement"], answer:2 },
+      { q:"The check-back should happen:", qFr:"Le contrôle de satisfaction doit avoir lieu:", options:["After the meal","Within 2 minutes of serving food","Only when flagged down","Before food arrives"], optionsFr:["Après le repas","Dans les 2 minutes suivant le service","Seulement quand on vous appelle","Avant l'arrivée des plats"], answer:1 }
+    ]
+  },
+  8:{
+    subtitle:"Serve guests from every culture with awareness and respect.",
+    subtitleFr:"Servez des clients de toutes cultures avec sensibilisation et respect.",
+    lessons:[
+      { title:"Cultural Awareness Basics", titleFr:"Bases de la sensibilisation culturelle", body:"Different cultures have different expectations of service. In some cultures, formal address (Mr/Mrs) is essential. In others, warmth and informality are preferred. Observe, adapt, and never assume.", bodyFr:"Différentes cultures ont différentes attentes en matière de service. Dans certaines cultures, l'adresse formelle (M./Mme) est essentielle. Dans d'autres, la chaleur et l'informalité sont préférées. Observez, adaptez-vous et ne supposez jamais." },
+      { title:"Dietary & Religious Requirements", titleFr:"Exigences alimentaires et religieuses", body:"Be familiar with Halal, Kosher, Hindu vegetarian, and other dietary frameworks. When in doubt, ask politely and check with the kitchen. Treat these requirements as non-negotiable priorities.", bodyFr:"Familiarisez-vous avec le Halal, le Casher, le végétarisme hindou et autres cadres alimentaires. En cas de doute, demandez poliment et vérifiez avec la cuisine. Traitez ces exigences comme des priorités non négociables." },
+      { title:"Language Barriers", titleFr:"Barrières linguistiques", body:"Speak clearly and slowly — not loudly. Use simple language, and have a menu available with photos if possible. A small phrasebook or translation app can de-escalate frustration immediately.", bodyFr:"Parlez clairement et lentement — pas fort. Utilisez un langage simple et ayez un menu avec photos si possible. Un petit guide de phrases ou une application de traduction peut désamorcer immédiatement la frustration." },
+      { title:"VIP and Dignitary Service", titleFr:"Service des VIP et dignitaires", body:"For VIP guests, work from a briefing sheet. Know preferred seating, dietary needs, and preferred forms of address in advance. Discretion is paramount — never discuss a VIP's presence with other guests.", bodyFr:"Pour les clients VIP, travaillez à partir d'une fiche d'information. Connaissez à l'avance les préférences de place assise, les besoins alimentaires et les formes d'adresse préférées. La discrétion est primordiale — ne discutez jamais de la présence d'un VIP avec d'autres clients." }
+    ],
+    quiz:[
+      { q:"When serving guests from another culture you are unfamiliar with, you should:", qFr:"Quand vous servez des clients d'une culture que vous ne connaissez pas, vous devez:", options:["Treat them identically to everyone","Observe, adapt, and ask respectfully","Ask them to explain their culture","Ignore cultural differences"], optionsFr:["Les traiter comme tout le monde","Observer, s'adapter et demander respectueusement","Leur demander d'expliquer leur culture","Ignorer les différences culturelles"], answer:1 },
+      { q:"For a guest with a language barrier, you should:", qFr:"Pour un client avec une barrière linguistique, vous devez:", options:["Speak loudly","Speak slowly and clearly","Get a colleague to serve them","Avoid the table"], optionsFr:["Parler fort","Parler lentement et clairement","Demander à un collègue de les servir","Éviter la table"], answer:1 }
+    ]
+  },
+  9:{
+    subtitle:"Create unforgettable moments for birthdays, anniversaries, and celebrations.",
+    subtitleFr:"Créez des moments inoubliables pour les anniversaires, les noces et les célébrations.",
+    lessons:[
+      { title:"Identifying Special Occasions", titleFr:"Identifier les occasions spéciales", body:"When taking a reservation or during seating, note any special occasion. A simple 'Is there anything special we can do for you tonight?' opens the door. Note it in the reservation system so all staff are prepared.", bodyFr:"En prenant une réservation ou pendant l'installation, notez toute occasion spéciale. Un simple 'Y a-t-il quelque chose de spécial que nous pouvons faire pour vous ce soir?' ouvre la porte. Notez-le dans le système de réservation pour que tout le personnel soit préparé." },
+      { title:"The Birthday Experience", titleFr:"L'expérience d'anniversaire", body:"Coordinate with the kitchen for a complimentary dessert with a candle. Brief your team on timing — the delivery should feel spontaneous, not chaotic. A handwritten card from the team is a powerful touch.", bodyFr:"Coordonnez avec la cuisine pour un dessert offert avec une bougie. Briefez votre équipe sur le timing — la livraison doit sembler spontanée, pas chaotique. Une carte écrite à la main par l'équipe est un geste puissant." },
+      { title:"Anniversaries & Proposals", titleFr:"Anniversaires de mariage & demandes en mariage", body:"For proposals, work with the guest in advance. Hiding a ring in a dessert carries legal liability — instead, offer a presentation box on a silver tray. Ensure privacy and have champagne ready to go.", bodyFr:"Pour les demandes en mariage, travaillez avec le client à l'avance. Cacher une bague dans un dessert entraîne une responsabilité légale — proposez plutôt une boîte de présentation sur un plateau d'argent. Assurez la vie privée et ayez du champagne prêt." },
+      { title:"Group Celebrations", titleFr:"Célébrations de groupe", body:"Large groups need a pre-agreed menu and a single bill handler. Confirm both on booking. Brief the whole team before service — surprises during a group meal are rarely welcome.", bodyFr:"Les grands groupes nécessitent un menu pré-convenu et un unique responsable de la note. Confirmez les deux à la réservation. Briefez toute l'équipe avant le service — les surprises pendant un repas de groupe sont rarement les bienvenues." }
+    ],
+    quiz:[
+      { q:"When should you ask about special occasions?", qFr:"Quand devez-vous vous renseigner sur les occasions spéciales?", options:["At the end of the meal","During reservation or seating","Never, wait for guests to tell you","When presenting the bill"], optionsFr:["À la fin du repas","Lors de la réservation ou de l'installation","Jamais, attendez que les clients vous le disent","En présentant la note"], answer:1 },
+      { q:"For a proposal, hiding the ring in food is:", qFr:"Pour une demande en mariage, cacher la bague dans la nourriture est:", options:["A wonderful tradition","A legal and safety risk","Standard practice","Encouraged"], optionsFr:["Une merveilleuse tradition","Un risque légal et de sécurité","Une pratique standard","Encouragé"], answer:1 }
+    ]
+  },
+  10:{
+    subtitle:"End every meal on a high note and maximise return visits.",
+    subtitleFr:"Terminez chaque repas sur une note haute et maximisez les visites de retour.",
+    lessons:[
+      { title:"The Dessert Moment", titleFr:"Le moment du dessert", body:"Present the dessert menu with enthusiasm — 'Our pastry chef has been making the salted caramel tart fresh today.' Even guests who say they're full often indulge when it's described well. Offer coffee and digestifs alongside.", bodyFr:"Présentez le menu des desserts avec enthousiasme — 'Notre pâtissier a préparé la tarte caramel salée fraîche aujourd'hui.' Même les clients qui disent être rassasiés succombent souvent quand c'est bien décrit. Proposez café et digestifs à côté." },
+      { title:"Presenting the Bill", titleFr:"Présenter la note", body:"Never bring the bill unprompted — wait until it's requested. Present it in a clean bill folder. If asked to split, do so without sighing or complaint. Return change promptly and completely.", bodyFr:"N'apportez jamais la note sans qu'on vous le demande — attendez qu'elle soit réclamée. Présentez-la dans un porte-addition propre. Si on vous demande de diviser, faites-le sans soupirer ni vous plaindre. Rendez la monnaie rapidement et intégralement." },
+      { title:"The Farewell", titleFr:"Les adieux", body:"See guests out when possible. A genuine 'It was wonderful having you — I hope we'll see you again soon' is more powerful than any loyalty card. Use the guest's name if you learned it.", bodyFr:"Raccompagnez les clients si possible. Un sincère 'C'était un plaisir de vous accueillir — j'espère vous revoir bientôt' est plus puissant que toute carte de fidélité. Utilisez le nom du client si vous l'avez appris." },
+      { title:"Post-Service Rituals", titleFr:"Rituels après service", body:"After service, note anything memorable: a guest's birthday, a wine they loved, a special request you handled. This feeds back into your reservation notes for next time and builds lasting loyalty.", bodyFr:"Après le service, notez ce qui est mémorable : l'anniversaire d'un client, un vin qu'il a adoré, une demande spéciale que vous avez gérée. Cela alimente vos notes de réservation pour la prochaine fois et construit une fidélité durable." }
+    ],
+    quiz:[
+      { q:"When should you bring the bill?", qFr:"Quand devez-vous apporter la note?", options:["As soon as main plates are cleared","Only when requested","After 30 minutes","Automatically after dessert"], optionsFr:["Dès que les plats principaux sont débarrassés","Seulement quand on vous le demande","Après 30 minutes","Automatiquement après le dessert"], answer:1 },
+      { q:"The most powerful way to encourage return visits is:", qFr:"La façon la plus puissante d'encourager les visites de retour est:", options:["Hand out loyalty cards","A genuine, personalised farewell","Offer a discount","Give a business card"], optionsFr:["Distribuer des cartes de fidélité","Des adieux sincères et personnalisés","Offrir une réduction","Donner une carte de visite"], answer:1 }
+    ]
+  },
+  11:{
+    subtitle:"Navigate the world's great wine regions and recommend with authority.",
+    subtitleFr:"Naviguez dans les grandes régions viticoles du monde et recommandez avec autorité.",
+    lessons:[
+      { title:"France: The Benchmark", titleFr:"La France : la référence", body:"Bordeaux (Cabernet/Merlot blends), Burgundy (Pinot Noir & Chardonnay), Champagne, and Rhône (Syrah & GSM blends) are the world's reference points. Know at least one producer from each region.", bodyFr:"Bordeaux (assemblages Cabernet/Merlot), Bourgogne (Pinot Noir & Chardonnay), Champagne et Rhône (Syrah & assemblages GSM) sont les références mondiales. Connaissez au moins un producteur de chaque région." },
+      { title:"Italy: Diversity & Complexity", titleFr:"L'Italie : diversité & complexité", body:"Barolo and Barbaresco (Piedmont) are the 'king and queen' of Italian reds. Chianti Classico (Sangiovese, Tuscany), Amarone (Veneto), and Prosecco are essential knowledge for any serious server.", bodyFr:"Le Barolo et le Barbaresco (Piémont) sont le 'roi et la reine' des rouges italiens. Le Chianti Classico (Sangiovese, Toscane), l'Amarone (Vénétie) et le Prosecco sont des connaissances essentielles pour tout serveur sérieux." },
+      { title:"New World Highlights", titleFr:"Points forts du Nouveau Monde", body:"Napa Valley Cabernet, New Zealand Sauvignon Blanc, Argentine Malbec, Chilean Carménère, and Australian Shiraz represent the New World's best exports. New World wines tend to be fruit-forward and approachable.", bodyFr:"Le Cabernet de Napa Valley, le Sauvignon Blanc de Nouvelle-Zélande, le Malbec argentin, le Carménère chilien et le Shiraz australien représentent les meilleures exportations du Nouveau Monde. Les vins du Nouveau Monde sont généralement fruités et accessibles." },
+      { title:"Spain & Germany", titleFr:"Espagne & Allemagne", body:"Rioja (Tempranillo) and Ribera del Duero are Spain's flagship reds. Albariño is an exciting white. Germany excels in Riesling — from bone-dry Trocken to luscious Trockenbeerenauslese. Don't underestimate German wines.", bodyFr:"La Rioja (Tempranillo) et la Ribera del Duero sont les rouges phares d'Espagne. L'Albariño est un blanc passionnant. L'Allemagne excelle dans le Riesling — du Trocken très sec au Trockenbeerenauslese onctueux. Ne sous-estimez pas les vins allemands." },
+      { title:"Canada: Ice Wine & Beyond", titleFr:"Canada : Vin de glace & plus encore", body:"Canada is best known internationally for Ice Wine (Eiswein) — made from grapes frozen naturally on the vine, producing intensely sweet, honeyed wines. Ontario's Niagara Peninsula and British Columbia's Okanagan Valley are the two key regions. BC also produces excellent dry Pinot Noir, Chardonnay, and Riesling.", bodyFr:"Le Canada est surtout connu pour le Vin de Glace (Eiswein) — fabriqué à partir de raisins gelés naturellement sur la vigne, produisant des vins intensément sucrés et miellés. La péninsule du Niagara en Ontario et la vallée de l'Okanagan en Colombie-Britannique sont les deux régions clés. La CB produit également d'excellents Pinot Noir, Chardonnay et Riesling secs." }
+    ],
+    quiz:[
+      { q:"Barolo is made from which grape?", qFr:"Le Barolo est produit à partir de quel cépage?", options:["Sangiovese","Nebbiolo","Barbera","Dolcetto"], optionsFr:["Sangiovese","Nebbiolo","Barbera","Dolcetto"], answer:1 },
+      { q:"New World wines are generally known for being:", qFr:"Les vins du Nouveau Monde sont généralement connus pour être:", options:["Earthy and austere","Fruit-forward and approachable","Low alcohol","Highly tannic"], optionsFr:["Terreux et austères","Fruités et accessibles","Faibles en alcool","Très tanniques"], answer:1 },
+      { q:"Canadian Ice Wine is made from grapes that are:", qFr:"Le Vin de Glace canadien est produit à partir de raisins qui sont:", options:["Dried in the sun","Frozen naturally on the vine","Harvested early","Blended with spirits"], optionsFr:["Séchés au soleil","Gelés naturellement sur la vigne","Récoltés tôt","Mélangés avec des spiritueux"], answer:1 }
+    ]
+  },
+  12:{
+    subtitle:"Step into a leadership role and build a long-term hospitality career.",
+    subtitleFr:"Adoptez un rôle de leadership et construisez une carrière à long terme dans l'hôtellerie.",
+    lessons:[
+      { title:"Mentoring Junior Staff", titleFr:"Mentorer le personnel junior", body:"As a senior server, your habits become the team's habits. Lead by example on the floor — never visibly complain, never cut corners. Take a new team member under your wing each month and share one skill explicitly.", bodyFr:"En tant que serveur senior, vos habitudes deviennent les habitudes de l'équipe. Montrez l'exemple en salle — ne vous plaignez jamais visiblement, ne prenez jamais de raccourcis. Prenez un nouveau membre de l'équipe sous votre aile chaque mois et partagez explicitement une compétence." },
+      { title:"Running a Pre-Service Briefing", titleFr:"Animer un briefing pré-service", body:"A great briefing covers: tonight's specials, 86'd items, VIP guests, any service challenges, and one learning point from last service. Keep it under 10 minutes. Energy in the briefing sets the energy on the floor.", bodyFr:"Un bon briefing couvre : les spéciaux du soir, les articles épuisés, les clients VIP, tout défi de service et un point d'apprentissage du dernier service. Gardez-le sous 10 minutes. L'énergie du briefing définit l'énergie en salle." },
+      { title:"Managing Your Finances", titleFr:"Gérer vos finances", body:"Track your tips over time and treat your income professionally. Set aside money for taxes if self-employed. Invest in training — a sommelier course or hospitality certification compounds your earnings significantly.", bodyFr:"Suivez vos pourboires dans le temps et traitez vos revenus de manière professionnelle. Mettez de l'argent de côté pour les impôts si vous êtes indépendant. Investissez dans la formation — un cours de sommelier ou une certification hôtelière augmente significativement vos revenus." },
+      { title:"Career Pathways", titleFr:"Parcours de carrière", body:"From server you can grow into: head server, floor manager, restaurant manager, sommelier, F&B director, or open your own venue. Every senior figure in hospitality started on the floor. Document your achievements and build a hospitality CV.", bodyFr:"À partir du poste de serveur, vous pouvez évoluer vers : chef de rang, directeur de salle, directeur de restaurant, sommelier, directeur F&B, ou ouvrir votre propre établissement. Chaque figure senior dans l'hôtellerie a commencé en salle. Documentez vos réalisations et construisez un CV hôtelier." }
+    ],
+    quiz:[
+      { q:"A pre-service briefing should cover:", qFr:"Un briefing pré-service doit couvrir:", options:["Only specials","Specials, 86'd items, VIPs, and a learning point","Staff complaints","Nothing — waste of time"], optionsFr:["Seulement les spéciaux","Spéciaux, articles épuisés, VIP et un point d'apprentissage","Les plaintes du personnel","Rien — perte de temps"], answer:1 },
+      { q:"The best investment in your hospitality career is:", qFr:"Le meilleur investissement dans votre carrière hôtelière est:", options:["Buying better shoes","Training and certifications","Working more hours","Memorising menus"], optionsFr:["Acheter de meilleures chaussures","La formation et les certifications","Travailler plus d'heures","Mémoriser les menus"], answer:1 }
+    ]
+  }
+};
+
+// =========================================================
+// MODULE CONTENT RENDERER
+// =========================================================
+function getModuleTitle(m) { return lang === 'fr' && m.titleFr ? m.titleFr : m.title; }
+function getLessonTitle(l) { return lang === 'fr' && l.titleFr ? l.titleFr : l.title; }
+function getLessonBody(l) { return lang === 'fr' && l.bodyFr ? l.bodyFr : l.body; }
+
+function getModuleContent(id) {
+  const data = lessonData[id];
+  if (!data) return '<p class="text-zinc-400">Content coming soon.</p>';
+  const subtitle = lang === 'fr' && data.subtitleFr ? data.subtitleFr : data.subtitle;
+  let html = '<p class="text-zinc-400 text-lg mb-8">' + subtitle + '</p>';
+  html += '<div class="space-y-4 mb-10">';
+  data.lessons.forEach((l, i) => {
+    const openAttr = i === 0 ? ' open' : '';
+    html += `<details class="bg-zinc-800 rounded-2xl group"${openAttr}><summary class="px-6 py-4 font-semibold cursor-pointer flex items-center justify-between hover:text-amber-400 list-none"><span>${(i+1)}. ${getLessonTitle(l)}</span><span class="text-amber-400">▼</span></summary><div class="px-6 pb-6 text-zinc-300 leading-relaxed border-t border-zinc-700 pt-4">${getLessonBody(l)}</div></details>`;
+  });
+  html += '</div>';
+  if (id === 3) {
+    html += `<div class="mb-10"><h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4><button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">🎤 ${lang==='fr'?'Démarrer la pratique vocale':'Start Voice Practice'}</button><div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div></div>`;
+    html += buildTraySimulator();
+  }
+  if (data.quiz) {
+    const quizLabel = lang === 'fr' ? '📝 Quiz Rapide' : '📝 Quick Quiz';
+    const completeLabel = lang === 'fr' ? '✅ Marquer comme terminé' : '✅ Mark Lesson Complete';
+    html += `<div class="mt-4"><h4 class="text-xl font-semibold mb-6">${quizLabel}</h4><div class="space-y-6" id="quiz-${id}">`;
+    data.quiz.forEach((q, qi) => {
+      const question = lang === 'fr' && q.qFr ? q.qFr : q.q;
+      const options = lang === 'fr' && q.optionsFr ? q.optionsFr : q.options;
+      html += `<div class="bg-zinc-800 rounded-2xl p-6"><p class="font-medium mb-4">${(qi+1)}. ${question}</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+      options.forEach((opt, oi) => {
+        html += `<button onclick="answerQuiz(${id},${qi},${oi},${q.answer},this)" class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">${opt}</button>`;
       });
+      html += '</div></div>';
+    });
+    html += `</div><button onclick="completeLesson(${id})" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl">${completeLabel}</button></div>`;
+  }
+  return html;
+}
 
-      html += '</div>';
+function buildTraySimulator() {
+  const heading = lang === 'fr' ? '🪑 Simulateur de plateau - Équilibre' : '🪑 Tray Balance Simulator';
+  const startBtn = lang === 'fr' ? 'Démarrer la simulation' : 'Start Simulation';
+  const instrDesktop = lang === 'fr' ? 'Déplacez la souris sur le plateau pour simuler l\'inclinaison.' : 'Move your mouse over the tray to simulate tilting. On mobile, tilt your device!';
+  const instrMobile = lang === 'fr' ? 'Inclinez votre appareil pour équilibrer les verres!' : 'Tilt your device to balance the glasses!';
+  return `<div class="mb-10"><h4 class="text-xl font-semibold mb-4">${heading}</h4>
+  <div class="bg-zinc-800 p-8 rounded-3xl">
+    <div class="tray-container flex justify-center mb-6">
+      <div class="tray-board" id="tray-board">
+        <div class="tray-glass" id="tg0" style="left:40px;top:30px"></div>
+        <div class="tray-glass" id="tg1" style="right:40px;top:30px"></div>
+        <div class="tray-glass" id="tg2" style="left:50px;bottom:30px"></div>
+        <div class="tray-glass" id="tg3" style="right:50px;bottom:30px"></div>
+        <div class="tray-glass" id="tg4" style="left:110px;top:60px"></div>
+      </div>
+    </div>
+    <div class="text-center space-y-3">
+      <div id="tray-score" class="text-2xl font-bold text-amber-400">0s</div>
+      <div id="tray-status" class="text-zinc-400 text-sm">${instrDesktop}</div>
+      <button onclick="initTraySimulator()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl transition-colors">${startBtn}</button>
+    </div>
+  </div></div>`;
+}
 
-      if (id === 3) {
-        html += '<div class="mb-10">';
-        html += '<h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>';
-        html += '<button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">🎤 Start Voice Practice</button>';
-        html += '<div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div></div>';
-        html += '<div class="mb-10">';
-        html += '<h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>';
-        html += '<div class="bg-zinc-800 p-8 rounded-3xl">';
-        html += '<div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow:0 25px 50px -12px rgba(0,0,0,.5);">';
-        html += '<div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>';
-        html += '<div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>';
-        html += '<div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>';
-        html += '<div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>';
-        html += '</div></div></div>';
-      }
+// =========================================================
+// TRAY SIMULATOR
+// =========================================================
+let trayActive = false;
+let trayTimer = null;
+let traySeconds = 0;
+let tiltX = 0, tiltY = 0;
+const glassData = [
+  { x:40, y:30 }, { x:200, y:30 }, { x:50, y:100 }, { x:200, y:100 }, { x:120, y:60 }
+];
+let glassFallen = [false,false,false,false,false];
 
-      if (data.quiz) {
-        html += '<div class="mt-4"><h4 class="text-xl font-semibold mb-6">📝 Quick Quiz</h4>';
-        html += '<div class="space-y-6" id="quiz-' + id + '">';
+function initTraySimulator() {
+  trayActive = true;
+  traySeconds = 0;
+  glassFallen = [false,false,false,false,false];
+  glassData.forEach((g, i) => { glassData[i] = { x:40+(i%3)*80, y:30+(Math.floor(i/3)*80) }; });
+  glassFallen.fill(false);
+  updateTrayGlasses();
+  clearInterval(trayTimer);
+  trayTimer = setInterval(trayTick, 100);
+  document.getElementById('tray-status').textContent = lang==='fr' ? 'En équilibre... inclinez pour bouger les verres!' : 'Balancing... tilt to move glasses!';
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', handleDeviceOrientation);
+  }
+  const board = document.getElementById('tray-board');
+  if (board) {
+    board.addEventListener('mousemove', handleMouseTilt);
+    board.addEventListener('mouseleave', () => { tiltX = 0; tiltY = 0; });
+  }
+}
 
-        data.quiz.forEach(function(q, qi) {
-          html += '<div class="bg-zinc-800 rounded-2xl p-6">';
-          html += '<p class="font-medium mb-4">' + (qi + 1) + '. ' + q.q + '</p>';
-          html += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">';
-          q.options.forEach(function(opt, oi) {
-            html += '<button onclick="answerQuiz(' + id + ',' + qi + ',' + oi + ',' + q.answer + ',this)"';
-            html += ' class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">';
-            html += opt + '</button>';
-          });
-          html += '</div></div>';
-        });
+function handleDeviceOrientation(e) {
+  tiltX = Math.max(-30, Math.min(30, e.gamma || 0));
+  tiltY = Math.max(-30, Math.min(30, (e.beta || 0) - 20));
+}
 
-        html += '</div>';
-        html += '<button onclick="completeLesson(' + id + ')" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl">✅ Mark Lesson Complete</button>';
-        html += '</div>';
-      }
+function handleMouseTilt(e) {
+  const board = document.getElementById('tray-board');
+  if (!board) return;
+  const rect = board.getBoundingClientRect();
+  tiltX = ((e.clientX - rect.left) / rect.width - 0.5) * 40;
+  tiltY = ((e.clientY - rect.top) / rect.height - 0.5) * 40;
+}
 
-      return html;
+function trayTick() {
+  if (!trayActive) return;
+  const board = document.getElementById('tray-board');
+  if (board) {
+    board.style.transform = `rotateX(${-tiltY * 0.5}deg) rotateY(${tiltX * 0.5}deg)`;
+  }
+  glassData.forEach((g, i) => {
+    if (glassFallen[i]) return;
+    g.x += tiltX * 0.15;
+    g.y += tiltY * 0.15;
+    if (g.x < -10 || g.x > 260 || g.y < -10 || g.y > 155) {
+      glassFallen[i] = true;
     }
+  });
+  updateTrayGlasses();
+  const remaining = glassFallen.filter(f => !f).length;
+  if (remaining > 0) {
+    traySeconds += 0.1;
+    const scoreEl = document.getElementById('tray-score');
+    if (scoreEl) scoreEl.textContent = traySeconds.toFixed(1) + 's';
+  } else {
+    clearInterval(trayTimer);
+    trayActive = false;
+    const statusEl = document.getElementById('tray-status');
+    if (statusEl) statusEl.textContent = lang==='fr' ? 'Tous les verres sont tombés!' : 'All glasses fell!';
+  }
+}
 
-    function answerQuiz(modId, questionIdx, chosen, correct, btn) {
-      const container = btn.closest('.grid');
-      const buttons = container.querySelectorAll('.quiz-btn');
-      buttons.forEach((b, i) => {
-        b.disabled = true;
-        if (i === correct) b.classList.add('border-emerald-400', 'text-emerald-400');
-        else if (b === btn && chosen !== correct) b.classList.add('border-red-500', 'text-red-400');
-      });
+function updateTrayGlasses() {
+  glassData.forEach((g, i) => {
+    const el = document.getElementById('tg' + i);
+    if (!el) return;
+    el.style.left = g.x + 'px';
+    el.style.top = g.y + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    el.style.opacity = glassFallen[i] ? '0.2' : '1';
+    el.style.transform = glassFallen[i] ? 'rotate(90deg)' : '';
+  });
+}
+
+// =========================================================
+// VOICE ROLE-PLAY IN MODULE
+// =========================================================
+let voiceSessionCount = parseInt(localStorage.getItem('sma-voice-count') || '0');
+
+function startVoiceRoleplay() {
+  const feedback = document.getElementById('voice-feedback');
+  feedback.innerHTML = `🎤 ${lang==='fr'?'Écoute... Parlez votre upsell!':'Listening... Speak your upsell!'}`;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { feedback.innerHTML = lang==='fr'?'Voix non supportée dans ce navigateur':'Voice not supported in this browser'; return; }
+  const rec = new SpeechRecognition();
+  rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
+  rec.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    feedback.innerHTML = `✅ "${escHtml(text)}"<br><span class="text-emerald-400">${lang==='fr'?'Excellent upsell!':'You nailed the upsell!'}</span>`;
+    updateProgress(3, 30);
+    voiceSessionCount++;
+    localStorage.setItem('sma-voice-count', voiceSessionCount);
+    if (voiceSessionCount >= 3 && !earnedBadges.includes('voice_pro')) {
+      earnedBadges.push('voice_pro'); saveBadges(); showBadgeNotification('voice_pro');
     }
+  };
+  rec.onerror = () => { feedback.innerHTML = lang==='fr'?'Erreur de reconnaissance vocale':'Voice recognition error'; };
+  rec.start();
+}
 
-    function completeLesson(id) {
-      updateProgress(id, 10);
-      closeModal();
-    }
+// =========================================================
+// CHAT VOICE INPUT/OUTPUT
+// =========================================================
+let voiceModeActive = false;
+let aiSpeechEnabled = false;
+let currentChatRecognizer = null;
 
-    function startVoiceRoleplay() {
-      const feedback = document.getElementById('voice-feedback');
-      feedback.innerHTML = '🎤 Listening... Speak your upsell!';
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("Voice not supported");
-      const rec = new SpeechRecognition();
-      rec.lang = 'en-US';
-      rec.onresult = (e) => {
-        const text = e.results[0][0].transcript.toLowerCase();
-        feedback.innerHTML = `✅ Great! "${text}"<br><span class="text-emerald-400">You nailed the upsell!</span>`;
-        updateProgress(3, 30);
-      };
-      rec.start();
-    }
+function toggleVoiceMode() {
+  voiceModeActive = !voiceModeActive;
+  const btn = document.getElementById('voice-mode-btn');
+  if (btn) {
+    btn.classList.toggle('bg-red-700', voiceModeActive);
+    btn.classList.toggle('bg-zinc-800', !voiceModeActive);
+  }
+}
 
-    function drag(ev) { ev.dataTransfer.setData("text", "glass"); }
+function toggleAISpeech() {
+  aiSpeechEnabled = !aiSpeechEnabled;
+  const btn = document.getElementById('ai-speech-btn');
+  if (btn) btn.textContent = aiSpeechEnabled ? '🔇' : '🔊';
+}
 
-    // --- PRACTICE / AI ROLE-PLAY ---
-    const practiceScenarios = [
-      { id: 1, emoji: '😤', title: 'The Difficult Guest',       desc: 'De-escalate an angry, impatient guest at the door.' },
-      { id: 2, emoji: '🍷', title: 'Wine Upselling',             desc: 'Guide an uncertain couple to the right bottle.' },
-      { id: 3, emoji: '⚠️', title: 'Serious Food Allergy',       desc: 'Handle a guest with a severe nut allergy safely.' },
-      { id: 4, emoji: '⏱️', title: 'The Long Wait Complaint',    desc: 'Recover a frustrated guest waiting 45 minutes.' },
-      { id: 5, emoji: '🍮', title: 'Dessert Upselling',          desc: 'Persuade a "stuffed" guest to try a dessert.' },
-      { id: 6, emoji: '🎂', title: 'Birthday Celebration',       desc: 'Take a surprise 40th birthday booking by phone.' },
-      { id: 7, emoji: '🧾', title: 'Splitting the Bill',         desc: 'Handle a complicated 7-person split bill.' },
-      { id: 8, emoji: '⭐', title: 'VIP Guest Arrival',          desc: 'Exceed the expectations of a high-profile guest.' },
-      { id: 9, emoji: '🤔', title: 'The Indecisive Guest',       desc: 'Guide an overwhelmed guest to their perfect dish.' },
-      { id: 10, emoji: '❌', title: 'Wrong Order Delivered',     desc: 'Recover from bringing the wrong dish gracefully.' },
-    ];
+function startVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { alert(lang==='fr'?'Voix non supportée':'Voice not supported'); return; }
+  const indicator = document.getElementById('voice-recording-indicator');
+  if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
+  const rec = new SpeechRecognition();
+  rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
+  rec.continuous = false;
+  rec.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    const input = document.getElementById('chat-input');
+    if (input) { input.value = text; sendChat(); }
+    if (indicator) indicator.classList.add('hidden');
+  };
+  rec.onerror = () => { if (indicator) indicator.classList.add('hidden'); };
+  rec.onend = () => { if (indicator) indicator.classList.add('hidden'); };
+  rec.start();
+  currentChatRecognizer = rec;
+}
 
-    let chatScenarioId = null;
-    let chatHistory = [];
+function speakText(text) {
+  if (!aiSpeechEnabled) return;
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
+  synth.speak(utt);
+}
 
-    function renderScenarios() {
-      const grid = document.getElementById('scenario-grid');
-      if (!grid) return;
-      grid.innerHTML = practiceScenarios.map(function(s) {
-        return '<div onclick="startChat(' + s.id + ')" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">' +
-          '<div class="text-3xl mt-1">' + s.emoji + '</div>' +
-          '<div><div class="font-semibold text-lg mb-1">' + s.title + '</div>' +
-          '<div class="text-zinc-400 text-sm">' + s.desc + '</div></div>' +
-          '</div>';
-      }).join('');
-    }
+// =========================================================
+// PRACTICE / AI ROLE-PLAY
+// =========================================================
+const practiceScenarios = [
+  { id:1, emoji:'😤', title:'The Difficult Guest', titleFr:'Le client difficile', desc:'De-escalate an angry, impatient guest at the door.', descFr:'Désamorcez un client en colère et impatient à l\'entrée.' },
+  { id:2, emoji:'🍷', title:'Wine Upselling', titleFr:'Vente additionnelle de vin', desc:'Guide an uncertain couple to the right bottle.', descFr:'Guidez un couple incertain vers la bonne bouteille.' },
+  { id:3, emoji:'⚠️', title:'Serious Food Allergy', titleFr:'Allergie alimentaire sérieuse', desc:'Handle a guest with a severe nut allergy safely.', descFr:'Gérez en toute sécurité un client avec une allergie sévère aux noix.' },
+  { id:4, emoji:'⏱️', title:'The Long Wait Complaint', titleFr:'La plainte d\'attente', desc:'Recover a frustrated guest waiting 45 minutes.', descFr:'Récupérez un client frustré qui attend depuis 45 minutes.' },
+  { id:5, emoji:'🍮', title:'Dessert Upselling', titleFr:'Vente additionnelle de dessert', desc:"Persuade a 'stuffed' guest to try a dessert.", descFr:"Persuadez un client 'rassasié' d'essayer un dessert." },
+  { id:6, emoji:'🎂', title:'Birthday Celebration', titleFr:'Célébration d\'anniversaire', desc:'Take a surprise 40th birthday booking by phone.', descFr:'Prenez une réservation surprise de 40e anniversaire par téléphone.' },
+  { id:7, emoji:'🧾', title:'Splitting the Bill', titleFr:'Partager la note', desc:'Handle a complicated 7-person split bill.', descFr:'Gérez une note compliquée à partager entre 7 personnes.' },
+  { id:8, emoji:'⭐', title:'VIP Guest Arrival', titleFr:'Arrivée d\'un VIP', desc:'Exceed the expectations of a high-profile guest.', descFr:'Dépassez les attentes d\'un client de haut profil.' },
+  { id:9, emoji:'🤔', title:'The Indecisive Guest', titleFr:'Le client indécis', desc:'Guide an overwhelmed guest to their perfect dish.', descFr:'Guidez un client dépassé vers son plat parfait.' },
+  { id:10, emoji:'❌', title:'Wrong Order Delivered', titleFr:'Mauvaise commande livrée', desc:'Recover from bringing the wrong dish gracefully.', descFr:'Récupérez gracieusement après avoir apporté le mauvais plat.' },
+  { id:11, emoji:'🍾', title:'Premium Wine Decanting', titleFr:'Décantage de vin premium', desc:'Perform flawless tableside Barolo decanting.', descFr:'Effectuez un décantage impeccable de Barolo en salle.' },
+  { id:12, emoji:'👥', title:'Large Group Chaos', titleFr:'Chaos de grand groupe', desc:'Coordinate a party of 16 with dietary chaos.', descFr:'Coordonnez un groupe de 16 avec des restrictions alimentaires.' },
+  { id:13, emoji:'🚨', title:'Severe Allergy Emergency', titleFr:'Urgence allergie sévère', desc:'Handle a potential anaphylactic situation at the table.', descFr:'Gérez une situation anaphylactique potentielle à table.' },
+  { id:14, emoji:'💍', title:'The Marriage Proposal', titleFr:'La demande en mariage', desc:'Coordinate the perfect surprise proposal moment.', descFr:'Coordonnez le parfait moment de demande surprise.' },
+  { id:15, emoji:'💼', title:'Corporate Expense Dinner', titleFr:'Dîner de frais de représentation', desc:'Satisfy a demanding CFO\'s corporate dinner needs.', descFr:'Satisfaire les besoins du dîner corporatif d\'un DFI exigeant.' },
+  { id:16, emoji:'👶', title:'Family with Young Children', titleFr:'Famille avec de jeunes enfants', desc:'Make a family with a toddler feel welcome and at ease.', descFr:'Mettez à l\'aise une famille avec un tout-petit.' },
+  { id:17, emoji:'🌱', title:'Vegan Tasting Menu', titleFr:'Menu dégustation végane', desc:'Navigate a fully vegan tasting menu with confidence.', descFr:'Naviguez un menu dégustation entièrement végane avec confiance.' },
+  { id:18, emoji:'📝', title:'The Food Critic', titleFr:'Le critique gastronomique', desc:'Impress a discreet restaurant reviewer.', descFr:'Impressionnez un critique gastronomique discret.' },
+  { id:19, emoji:'⏰', title:'Last Orders Rush', titleFr:'Dernières commandes en urgence', desc:'Handle a guest arriving 30 minutes before kitchen close.', descFr:'Gérez un client arrivant 30 minutes avant la fermeture de la cuisine.' },
+  { id:20, emoji:'🍾', title:'Corked Wine Return', titleFr:'Retour de vin bouchonné', desc:'Handle a wine return claim professionally.', descFr:'Gérez professionnellement une réclamation de vin bouchonné.' },
+  { id:21, emoji:'🚶', title:'Dine and Dash Suspicion', titleFr:'Soupçon de fuite sans payer', desc:'Handle a suspected walk-out without confrontation.', descFr:'Gérez un départ suspect sans confrontation.' },
+  { id:22, emoji:'🏥', title:'Medical Situation', titleFr:'Situation médicale', desc:'Take control when a guest collapses at another table.', descFr:'Prenez le contrôle quand un client s\'effondre à une autre table.' },
+  { id:23, emoji:'🔊', title:'Noise Complaint', titleFr:'Plainte de bruit', desc:'Mediate between a quiet couple and a rowdy table.', descFr:'Médiez entre un couple tranquille et une table bruyante.' },
+  { id:24, emoji:'📸', title:'The Food Influencer', titleFr:'L\'influenceur gastronomique', desc:'Balance an influencer\'s requests with service flow.', descFr:'Équilibrez les demandes d\'un influenceur avec le flux du service.' },
+  { id:25, emoji:'🎓', title:'Sommelier Knowledge Test', titleFr:'Test de connaissance en sommellerie', desc:'Impress a highly knowledgeable wine guest.', descFr:'Impressionnez un client très bien informé en vins.' },
+  { id:26, emoji:'🕐', title:'Tasting Menu Timing', titleFr:'Synchronisation du menu dégustation', desc:'Coordinate a 9-course menu when time runs short.', descFr:'Coordonnez un menu 9 plats quand le temps manque.' },
+  { id:27, emoji:'🎭', title:'Post-Theatre Rush', titleFr:'Affluence post-théâtre', desc:'Manage 50 simultaneous theatre guests arriving at once.', descFr:'Gérez 50 clients de théâtre arrivant simultanément.' },
+  { id:28, emoji:'🌾', title:'Celiac Disease', titleFr:'Maladie cœliaque', desc:'Handle celiac disease concerns with medical seriousness.', descFr:'Gérez sérieusement les inquiétudes liées à la maladie cœliaque.' },
+  { id:29, emoji:'🍸', title:'The Overgenerous Drunk', titleFr:'L\'ivrogne trop généreux', desc:'Responsibly manage an intoxicated but friendly guest.', descFr:'Gérez responsablement un client en état d\'ivresse mais amical.' },
+  { id:30, emoji:'🌐', title:'Bisected Language Table', titleFr:'Table aux langues mixtes', desc:'Serve a table split between English and French speakers.', descFr:'Servez une table partagée entre anglophones et francophones.' },
+];
 
-    function startChat(scenarioId) {
-      chatScenarioId = scenarioId;
-      chatHistory = [];
-      const scenario = practiceScenarios.find(function(s) { return s.id === scenarioId; });
-      document.getElementById('chat-scenario-title').textContent = scenario.emoji + ' ' + scenario.title;
-      document.getElementById('chat-messages').innerHTML = '';
-      document.getElementById('practice-scenarios').classList.add('hidden');
-      document.getElementById('practice-chat').classList.remove('hidden');
-      sendInitialMessage();
-    }
+let chatScenarioId = null;
+let chatHistory = [];
+let firstModuleCompleted = false;
 
-    function exitChat() {
-      document.getElementById('practice-chat').classList.add('hidden');
-      document.getElementById('practice-scenarios').classList.remove('hidden');
-    }
+function renderScenarios() {
+  const grid = document.getElementById('scenario-grid');
+  if (!grid) return;
+  grid.innerHTML = practiceScenarios.map(s => {
+    const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+    const desc = lang === 'fr' && s.descFr ? s.descFr : s.desc;
+    const done = completedScenarios.includes(s.id);
+    return `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
+      ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs">✓ Done</div>' : ''}
+      <div class="text-3xl mt-1">${s.emoji}</div>
+      <div><div class="font-semibold text-base mb-1">${title}</div><div class="text-zinc-400 text-sm">${desc}</div></div>
+    </div>`;
+  }).join('');
+}
 
-    async function sendInitialMessage() {
-      appendChatMessage('assistant', '...');
-      try {
-        const res = await fetch('/api/roleplay', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin the scenario. Set the scene and start as the guest.' }] })
-        });
-        const data = await res.json();
-        chatHistory.push({ role: 'assistant', content: data.reply });
-        replaceLast(data.reply);
-      } catch (e) {
-        replaceLast('Could not connect to AI. Please ensure the server is running.');
-      }
-    }
+function startChat(scenarioId) {
+  chatScenarioId = scenarioId;
+  chatHistory = [];
+  const s = practiceScenarios.find(s => s.id === scenarioId);
+  const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+  document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('practice-scenarios').classList.add('hidden');
+  document.getElementById('practice-chat').classList.remove('hidden');
+  sendInitialMessage();
+}
 
-    async function sendChat() {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-      input.disabled = true;
-      document.getElementById('chat-send-btn').disabled = true;
+function exitChat() {
+  if (currentChatRecognizer) { try { currentChatRecognizer.stop(); } catch {} }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  document.getElementById('practice-chat').classList.add('hidden');
+  document.getElementById('practice-scenarios').classList.remove('hidden');
+}
 
-      chatHistory.push({ role: 'user', content: text });
-      appendChatMessage('user', text);
-      appendChatMessage('assistant', '...');
+async function sendInitialMessage() {
+  appendChatMessage('assistant', '...');
+  try {
+    const res = await fetch('/api/roleplay', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin the scenario. Set the scene and start as the guest.' }] })
+    });
+    const data = await res.json();
+    chatHistory.push({ role: 'assistant', content: data.reply });
+    replaceLast(data.reply);
+    const guestText = data.reply.split(/\[Coaching note:/i)[0].trim();
+    speakText(guestText);
+  } catch {
+    replaceLast(lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.');
+  }
+}
 
-      try {
-        const res = await fetch('/api/roleplay', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
-        });
-        const data = await res.json();
-        chatHistory.push({ role: 'assistant', content: data.reply });
-
-        const parts = data.reply.split(/\[Coaching note:/i);
-        const guestText = parts[0].trim();
-        const coaching = parts[1] ? parts[1].replace(/\]$/, '').trim() : null;
-
-        let html = '<p>' + escHtml(guestText) + '</p>';
-        if (coaching) {
-          html += '<div class="mt-3 bg-amber-400/10 border border-amber-400/30 rounded-xl px-4 py-3 text-sm text-amber-300"><span class="font-semibold">📋 Coaching:</span> ' + escHtml(coaching) + '</div>';
-        }
-        replaceLastHtml(html);
-      } catch (e) {
-        replaceLastHtml('<p class="text-red-400">Connection error — is the server running?</p>');
-      }
-
-      input.disabled = false;
-      document.getElementById('chat-send-btn').disabled = false;
-      input.focus();
-    }
-
-    function appendChatMessage(role, text) {
-      const box = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = role === 'user'
-        ? 'flex justify-end'
-        : 'flex justify-start';
-      div.innerHTML = '<div class="max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ' +
-        (role === 'user' ? 'bg-amber-400 text-black' : 'bg-zinc-800 text-zinc-100') + '">' +
-        escHtml(text) + '</div>';
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function replaceLast(text) {
-      const box = document.getElementById('chat-messages');
-      const last = box.lastElementChild;
-      if (last) last.querySelector('div').textContent = text;
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function replaceLastHtml(html) {
-      const box = document.getElementById('chat-messages');
-      const last = box.lastElementChild;
-      if (last) last.querySelector('div').innerHTML = html;
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // --- ONBOARDING ---
-    let obSelectedLevel = '';
-
-    function obSelectLevel(el, level) {
-      obSelectedLevel = level;
-      document.querySelectorAll('.ob-level-btn').forEach(function(b) {
-        b.classList.remove('border-amber-400', 'bg-amber-400/10');
-        b.classList.add('border-zinc-700');
-      });
-      el.classList.remove('border-zinc-700');
-      el.classList.add('border-amber-400', 'bg-amber-400/10');
-    }
-
-    function obNext(step) {
-      if (step === 1) {
-        const name = document.getElementById('ob-name').value.trim();
-        if (!name) {
-          document.getElementById('ob-name').focus();
-          document.getElementById('ob-name').classList.add('border-red-500');
-          return;
-        }
-        document.getElementById('ob-name').classList.remove('border-red-500');
-        document.getElementById('ob-step-1').classList.add('hidden');
-        document.getElementById('ob-step-2').classList.remove('hidden');
-        document.getElementById('ob-dot-1').classList.replace('bg-amber-400', 'bg-zinc-600');
-        document.getElementById('ob-dot-2').classList.replace('bg-zinc-600', 'bg-amber-400');
-      } else if (step === 2) {
-        if (!obSelectedLevel) {
-          return;
-        }
-        const name = document.getElementById('ob-name').value.trim();
-        document.getElementById('ob-ready-title').textContent = "You're all set, " + name + "!";
-        document.getElementById('ob-step-2').classList.add('hidden');
-        document.getElementById('ob-step-3').classList.remove('hidden');
-        document.getElementById('ob-dot-2').classList.replace('bg-amber-400', 'bg-zinc-600');
-        document.getElementById('ob-dot-3').classList.replace('bg-zinc-600', 'bg-amber-400');
-      }
-    }
-
-    function obFinish() {
-      const name = document.getElementById('ob-name').value.trim();
-      const user = { name: name, level: obSelectedLevel };
-      localStorage.setItem('serveMasterUser', JSON.stringify(user));
-      applyUser(user);
-      document.getElementById('onboarding').style.display = 'none';
-      renderAll();
-      navigate('dashboard');
-    }
-
-    function applyUser(user) {
-      const initials = user.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
-      const hour = new Date().getHours();
-      const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-      document.getElementById('nav-name').textContent = user.name;
-      document.getElementById('nav-level').textContent = user.level;
-      document.getElementById('nav-avatar').textContent = initials;
-      document.getElementById('dashboard-greeting').textContent = greeting + ', ' + user.name.split(' ')[0] + ' 👋';
-      document.getElementById('dashboard-sub').textContent = 'Keep going — every lesson makes you a better server.';
-    }
-
-    function openModule(id) {
-      const mod = modules.find(m => m.id === id);
-      document.getElementById('modal-title').innerHTML = `${mod.emoji} ${mod.title}`;
-      document.getElementById('modal-content').innerHTML = getModuleContent(id);
-      document.getElementById('module-modal').classList.remove('hidden');
-    }
-
-    function closeModal() { document.getElementById('module-modal').classList.add('hidden'); }
-    function navigate(screen) {
-      document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
-      document.getElementById(screen + '-screen').classList.remove('hidden');
-    }
-
-    function renderAll() {
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.disabled = true;
+  document.getElementById('chat-send-btn').disabled = true;
+  chatHistory.push({ role: 'user', content: text });
+  appendChatMessage('user', text);
+  appendChatMessage('assistant', '...');
+  try {
+    const res = await fetch('/api/roleplay', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
+    });
+    const data = await res.json();
+    chatHistory.push({ role: 'assistant', content: data.reply });
+    const parts = data.reply.split(/\[Coaching note:/i);
+    const guestText = parts[0].trim();
+    const coaching = parts[1] ? parts[1].replace(/\]$/, '').trim() : null;
+    let html = '<p>' + escHtml(guestText) + '</p>';
+    if (coaching) html += `<div class="mt-3 bg-amber-400/10 border border-amber-400/30 rounded-xl px-4 py-3 text-sm text-amber-300"><span class="font-semibold">📋 Coaching:</span> ${escHtml(coaching)}</div>`;
+    replaceLastHtml(html);
+    speakText(guestText);
+    if (chatHistory.filter(m => m.role === 'user').length === 3) {
+      completedScenarios.push(chatScenarioId);
+      localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
+      pushScenarioToServer(chatScenarioId);
+      checkBadgesLocal();
       renderScenarios();
-      const continueEl = document.getElementById('continue-modules');
-      const allEl = document.getElementById('all-modules');
-      const sidebarEl = document.getElementById('sidebar-modules');
-
-      const inProgress = modules.filter(m => {
-        const p = userProgress.find(u => u.id === m.id);
-        return p && p.progress < 100;
-      }).slice(0, 3);
-
-      continueEl.innerHTML = inProgress.map(m => {
-        const p = userProgress.find(u => u.id === m.id);
-        return `
-          <div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
-            <div class="text-4xl mb-3">${m.emoji}</div>
-            <div class="font-semibold text-lg mb-3">${m.title}</div>
-            <div class="w-full bg-zinc-700 rounded-full h-2">
-              <div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div>
-            </div>
-            <div class="text-zinc-400 text-sm mt-2">${p.progress}% complete</div>
-          </div>`;
-      }).join('');
-
-      allEl.innerHTML = modules.map(m => {
-        const p = userProgress.find(u => u.id === m.id);
-        return `
-          <div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">
-            <div class="text-3xl">${m.emoji}</div>
-            <div class="flex-1">
-              <div class="font-semibold mb-2">${m.title}</div>
-              <div class="w-full bg-zinc-700 rounded-full h-2">
-                <div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div>
-              </div>
-              <div class="text-zinc-400 text-xs mt-1">${p.progress}% complete</div>
-            </div>
-          </div>`;
-      }).join('');
-
-      sidebarEl.innerHTML = modules.map(m => {
-        const p = userProgress.find(u => u.id === m.id);
-        return `
-          <div onclick="openModule(${m.id})" class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-zinc-800 transition-all">
-            <span class="text-lg">${m.emoji}</span>
-            <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium truncate">${m.title}</div>
-              <div class="w-full bg-zinc-700 rounded-full h-1 mt-1">
-                <div class="bg-amber-400 h-1 rounded-full" style="width:${p.progress}%"></div>
-              </div>
-            </div>
-          </div>`;
-      }).join('');
     }
+  } catch {
+    replaceLastHtml(`<p class="text-red-400">${lang==='fr'?'Erreur de connexion':'Connection error'}</p>`);
+  }
+  input.disabled = false;
+  document.getElementById('chat-send-btn').disabled = false;
+  input.focus();
+}
 
-    window.onload = function() {
-      const savedUser = localStorage.getItem('serveMasterUser');
-      if (savedUser) {
-        const user = JSON.parse(savedUser);
-        applyUser(user);
-        document.getElementById('onboarding').style.display = 'none';
-        renderAll();
-        navigate('dashboard');
-      }
-    };
-  </script>
+function appendChatMessage(role, text) {
+  const box = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+  div.innerHTML = `<div class="max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${role==='user'?'bg-amber-400 text-black':'bg-zinc-800 text-zinc-100'}">${escHtml(text)}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function replaceLast(text) {
+  const box = document.getElementById('chat-messages');
+  const last = box.lastElementChild;
+  if (last) last.querySelector('div').textContent = text;
+  box.scrollTop = box.scrollHeight;
+}
+
+function replaceLastHtml(html) {
+  const box = document.getElementById('chat-messages');
+  const last = box.lastElementChild;
+  if (last) last.querySelector('div').innerHTML = html;
+  box.scrollTop = box.scrollHeight;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// =========================================================
+// QUIZ
+// =========================================================
+let quizScores = {};
+
+function answerQuiz(modId, questionIdx, chosen, correct, btn) {
+  const container = btn.closest('.grid');
+  const buttons = container.querySelectorAll('.quiz-btn');
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === correct) b.classList.add('border-emerald-400','text-emerald-400');
+    else if (b === btn && chosen !== correct) b.classList.add('border-red-500','text-red-400');
+  });
+  if (!quizScores[modId]) quizScores[modId] = { correct:0, total:0 };
+  quizScores[modId].total++;
+  if (chosen === correct) quizScores[modId].correct++;
+}
+
+function completeLesson(id) {
+  const score = quizScores[id];
+  const pct = score ? Math.round((score.correct/score.total)*100) : 0;
+  updateProgress(id, 10, pct);
+  closeModal();
+  checkCertificate();
+  if (!firstModuleCompleted && userProgress.filter(p => p.progress > 0).length === 1) {
+    firstModuleCompleted = true;
+    setTimeout(showNewsletter, 2000);
+  }
+}
+
+// =========================================================
+// CERTIFICATE
+// =========================================================
+function checkCertificate() {
+  const allDone = userProgress.every(p => p.progress >= 100);
+  const banner = document.getElementById('certificate-banner');
+  if (banner) banner.classList.toggle('hidden', !allDone);
+}
+
+function downloadCertificate() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+  doc.setFillColor(25, 9, 17);
+  doc.rect(0, 0, w, h, 'F');
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(4);
+  doc.rect(10, 10, w-20, h-20);
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(1);
+  doc.rect(14, 14, w-28, h-28);
+  doc.setTextColor(212, 175, 55);
+  doc.setFontSize(36);
+  doc.setFont('times', 'bold');
+  doc.text('ServeMaster Academy', w/2, 45, { align:'center' });
+  doc.setFontSize(14);
+  doc.setFont('times', 'italic');
+  doc.setTextColor(200, 180, 140);
+  doc.text(lang==='fr'?'Certificat de réalisation':'Certificate of Completion', w/2, 58, { align:'center' });
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(0.5);
+  doc.line(40, 65, w-40, 65);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont('times', 'normal');
+  doc.text(lang==='fr'?'Ce certificat est décerné à':'This certificate is proudly awarded to', w/2, 80, { align:'center' });
+  const user = currentUser || JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
+  const userName = user.name || 'ServeMaster Graduate';
+  doc.setFontSize(32);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(212, 175, 55);
+  doc.text(userName, w/2, 100, { align:'center' });
+  doc.line(60, 106, w-60, 106);
+  doc.setFontSize(12);
+  doc.setFont('times', 'normal');
+  doc.setTextColor(200, 200, 200);
+  const bodyText = lang==='fr'
+    ? 'pour avoir complété avec succès les 12 modules du programme de formation\nServeMaster Academy, couvrant les fondements du service exceptionnel,\nla maîtrise des boissons, les techniques de vente et le leadership.'
+    : 'for successfully completing all 12 modules of the ServeMaster Academy\ntraining programme, covering the foundations of exceptional service,\nbeverage mastery, upselling techniques, and server leadership.';
+  doc.text(bodyText, w/2, 118, { align:'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(150, 150, 150);
+  const today = new Date().toLocaleDateString(lang==='fr'?'fr-CA':'en-CA', { year:'numeric', month:'long', day:'numeric' });
+  doc.text((lang==='fr'?'Délivré le : ':'Issued: ') + today, w/2, 148, { align:'center' });
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text('servemaster.academy', w/2, h-18, { align:'center' });
+  doc.save('ServeMaster-Certificate.pdf');
+}
+
+// =========================================================
+// NEWSLETTER
+// =========================================================
+function showNewsletter() {
+  const modal = document.getElementById('newsletter-modal');
+  if (modal) modal.classList.remove('hidden');
+  const user = currentUser || JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
+  if (user.email) { const el = document.getElementById('nl-email'); if(el) el.value = user.email; }
+  if (user.name) { const el = document.getElementById('nl-name'); if(el) el.value = user.name.split(' ')[0]; }
+}
+
+function closeNewsletter() {
+  document.getElementById('newsletter-modal').classList.add('hidden');
+}
+
+async function subscribeNewsletter() {
+  const email = document.getElementById('nl-email').value.trim();
+  const firstName = document.getElementById('nl-name').value.trim();
+  if (!email) return;
+  const btn = document.getElementById('nl-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    await fetch('/api/newsletter/subscribe', {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, firstName })
+    });
+    document.getElementById('nl-form').classList.add('hidden');
+    document.getElementById('nl-success').classList.remove('hidden');
+    document.getElementById('nl-success-text').textContent = lang==='fr' ? "Vous êtes abonné! Merci." : "You're subscribed! Thank you.";
+    setTimeout(closeNewsletter, 2500);
+  } catch {
+    if (btn) { btn.disabled = false; btn.textContent = lang==='fr'?'S\'abonner':'Subscribe'; }
+  }
+}
+
+// =========================================================
+// AUTH
+// =========================================================
+function showAuthModal() {
+  document.getElementById('auth-modal').classList.remove('hidden');
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.add('hidden');
+}
+function switchAuth(tab) {
+  document.getElementById('auth-login-form').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('auth-register-form').classList.toggle('hidden', tab !== 'register');
+  document.getElementById('auth-tab-login').className = `flex-1 py-4 font-semibold text-sm transition-all ${tab==='login'?'text-amber-400 border-b-2 border-amber-400':'text-zinc-400'}`;
+  document.getElementById('auth-tab-register').className = `flex-1 py-4 font-semibold text-sm transition-all ${tab==='register'?'text-amber-400 border-b-2 border-amber-400':'text-zinc-400'}`;
+  document.getElementById('auth-error').classList.add('hidden');
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('auth-error');
+  if (!email || !password) { errEl.textContent = lang==='fr'?'Veuillez remplir tous les champs':'Please fill in all fields'; errEl.classList.remove('hidden'); return; }
+  try {
+    const res = await fetch('/api/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.classList.remove('hidden'); return; }
+    authToken = data.token;
+    localStorage.setItem('sma-token', authToken);
+    currentUser = data.user;
+    applyUserToNav(currentUser);
+    closeAuthModal();
+    await syncProgressFromServer();
+    renderAll();
+  } catch {
+    errEl.textContent = lang==='fr'?'Erreur de connexion':'Connection error';
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const errEl = document.getElementById('auth-error');
+  if (!name || !email || !password) { errEl.textContent = lang==='fr'?'Veuillez remplir tous les champs':'Please fill in all fields'; errEl.classList.remove('hidden'); return; }
+  try {
+    const user = JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
+    const res = await fetch('/api/auth/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, password, level: user.level || 'New to serving' })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.classList.remove('hidden'); return; }
+    authToken = data.token;
+    localStorage.setItem('sma-token', authToken);
+    currentUser = data.user;
+    applyUserToNav(currentUser);
+    closeAuthModal();
+    await syncProgressFromServer();
+    renderAll();
+  } catch {
+    errEl.textContent = lang==='fr'?'Erreur de connexion':'Connection error';
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method:'POST' }); } catch {}
+  authToken = null; currentUser = null;
+  localStorage.removeItem('sma-token');
+  document.getElementById('nav-name').textContent = '—';
+  document.getElementById('nav-level').textContent = 'ServeMaster Academy';
+  document.getElementById('nav-avatar').textContent = '?';
+  document.getElementById('dd-logged-in').classList.add('hidden');
+  document.getElementById('dd-logged-out').classList.remove('hidden');
+  document.getElementById('nav-manager').classList.add('hidden');
+  closeUserMenu();
+}
+
+// =========================================================
+// USER MENU
+// =========================================================
+function toggleUserMenu() {
+  document.getElementById('user-dropdown').classList.toggle('hidden');
+}
+function closeUserMenu() {
+  document.getElementById('user-dropdown').classList.add('hidden');
+}
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('user-menu').contains(e.target)) closeUserMenu();
+});
+
+// =========================================================
+// LEADERBOARD
+// =========================================================
+async function loadLeaderboard() {
+  try {
+    const res = await fetch('/api/leaderboard');
+    const data = await res.json();
+    const el = document.getElementById('leaderboard-list');
+    if (!el) return;
+    if (!data.leaderboard || !data.leaderboard.length) {
+      el.innerHTML = `<p class="text-zinc-400">${lang==='fr'?'Aucun classement disponible pour l\'instant.':'No leaderboard entries yet.'}</p>`;
+      return;
+    }
+    el.innerHTML = data.leaderboard.map((entry, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+      return `<div class="bg-zinc-900 border border-amber-900/40 rounded-2xl px-6 py-4 flex items-center gap-4">
+        <div class="text-2xl w-10 text-center">${medal}</div>
+        <div class="flex-1"><div class="font-semibold">${escHtml(entry.name)}</div>
+        <div class="text-zinc-400 text-xs mt-1">${entry.modules_completed} ${lang==='fr'?'modules':'modules'} · ${entry.scenarios_done} ${lang==='fr'?'scénarios':'scenarios'} · 🔥${entry.streak}</div></div>
+        <div class="text-amber-400 font-bold text-lg">${Math.round(entry.total_progress / 12)}%</div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+// =========================================================
+// MANAGER
+// =========================================================
+let managerData = null;
+
+async function loadManagerDashboard() {
+  if (!authToken) { document.getElementById('manager-setup').classList.remove('hidden'); return; }
+  try {
+    const res = await fetch('/api/manager/dashboard', { headers:{ Authorization:'Bearer '+authToken } });
+    if (res.status === 403) {
+      document.getElementById('manager-setup').classList.remove('hidden');
+      return;
+    }
+    const data = await res.json();
+    managerData = data;
+    document.getElementById('manager-setup').classList.add('hidden');
+    document.getElementById('manager-content').classList.remove('hidden');
+    renderManagerDashboard(data);
+  } catch {
+    document.getElementById('manager-setup').classList.remove('hidden');
+  }
+}
+
+function renderManagerDashboard(data) {
+  const { restaurant, staff } = data;
+  const avgCompletion = staff.length ? Math.round(staff.reduce((a,s) => a + parseInt(s.modules_completed), 0) / staff.length) : 0;
+  const statsEl = document.getElementById('mgr-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
+        <div class="text-3xl font-bold text-amber-400">${staff.length}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Membres du personnel':'Staff Members'}</div>
+      </div>
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
+        <div class="text-3xl font-bold text-amber-400">${avgCompletion}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Modules avg complétés':'Avg Modules Completed'}</div>
+      </div>
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
+        <div class="text-xl font-bold text-amber-400 break-all">${restaurant.invite_code}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Code d\'invitation':'Invite Code'}</div>
+      </div>`;
+  }
+  const tableEl = document.getElementById('staff-table');
+  if (!tableEl) return;
+  if (!staff.length) {
+    tableEl.innerHTML = `<p class="text-zinc-400 text-sm">${t('noStaff')}</p>`;
+    return;
+  }
+  tableEl.innerHTML = staff.map(s => {
+    const lastSeen = s.last_login ? new Date(s.last_login).toLocaleDateString() : lang==='fr'?'Jamais':'Never';
+    const pct = Math.round((parseInt(s.modules_completed) / 12) * 100);
+    return `<div class="bg-zinc-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4">
+      <div class="flex-1">
+        <div class="font-semibold">${escHtml(s.name)}</div>
+        <div class="text-zinc-400 text-xs mt-0.5">${escHtml(s.email)}</div>
+      </div>
+      <div class="flex items-center gap-6 text-sm">
+        <div class="text-center"><div class="font-bold text-amber-400">${s.modules_completed}/12</div><div class="text-zinc-500 text-xs">${lang==='fr'?'modules':'modules'}</div></div>
+        <div class="text-center"><div class="font-bold">${Math.round(s.avg_score)}%</div><div class="text-zinc-500 text-xs">${lang==='fr'?'score':'score'}</div></div>
+        <div class="text-center"><div class="font-bold">${s.scenarios_done}</div><div class="text-zinc-500 text-xs">${lang==='fr'?'scénarios':'scenarios'}</div></div>
+        <div class="text-center"><div class="font-bold">🔥${s.streak}</div><div class="text-zinc-500 text-xs">${lang==='fr'?'série':'streak'}</div></div>
+        <div class="text-center text-xs text-zinc-500">${lastSeen}</div>
+      </div>
+      <div class="w-full md:w-32">
+        <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${pct}%"></div></div>
+        <div class="text-zinc-500 text-xs mt-1">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function createRestaurant() {
+  const name = document.getElementById('restaurant-name-input').value.trim();
+  if (!name) return;
+  if (!authToken) { showAuthModal(); return; }
+  try {
+    const res = await fetch('/api/manager/create-restaurant', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+authToken},
+      body: JSON.stringify({ restaurantName: name })
+    });
+    const data = await res.json();
+    if (data.restaurant) {
+      if (currentUser) currentUser.role = 'manager';
+      document.getElementById('nav-manager').classList.remove('hidden');
+      document.getElementById('dd-manager-btn').classList.remove('hidden');
+      await loadManagerDashboard();
+    }
+  } catch {}
+}
+
+async function joinRestaurant() {
+  const code = document.getElementById('join-code-input').value.trim();
+  if (!code || !authToken) return;
+  try {
+    const res = await fetch('/api/manager/join', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+authToken},
+      body: JSON.stringify({ inviteCode: code })
+    });
+    const data = await res.json();
+    if (data.success) alert(`${lang==='fr'?'Vous avez rejoint':'Joined'}: ${data.restaurantName}`);
+  } catch {}
+}
+
+function copyInviteCode() {
+  if (!managerData) return;
+  const base = window.location.origin;
+  const code = managerData.restaurant?.invite_code || '';
+  const link = `${base}?join=${code}`;
+  navigator.clipboard.writeText(link).then(() => {
+    alert(lang==='fr'?'Lien copié!':'Invite link copied!');
+  });
+}
+
+function exportCSV() {
+  if (!managerData || !managerData.staff.length) return;
+  const headers = ['Name','Email','Modules Completed','Avg Score','Scenarios','Streak','Last Login'];
+  const rows = managerData.staff.map(s => [s.name, s.email, s.modules_completed, Math.round(s.avg_score), s.scenarios_done, s.streak, s.last_login ? new Date(s.last_login).toLocaleDateString() : 'Never']);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'staff-progress.csv';
+  a.click();
+}
+
+// =========================================================
+// ONBOARDING
+// =========================================================
+let obSelectedLevel = '';
+
+function obSelectLevel(el, level) {
+  obSelectedLevel = level;
+  document.querySelectorAll('.ob-level-btn').forEach(b => {
+    b.classList.remove('border-amber-400','bg-amber-400/10');
+    b.classList.add('border-zinc-700');
+  });
+  el.classList.remove('border-zinc-700');
+  el.classList.add('border-amber-400','bg-amber-400/10');
+}
+
+function obNext(step) {
+  if (step === 1) {
+    const name = document.getElementById('ob-name').value.trim();
+    if (!name) { document.getElementById('ob-name').classList.add('border-red-500'); return; }
+    document.getElementById('ob-name').classList.remove('border-red-500');
+    document.getElementById('ob-step-1').classList.add('hidden');
+    document.getElementById('ob-step-2').classList.remove('hidden');
+    document.getElementById('ob-dot-1').classList.replace('bg-amber-400','bg-zinc-600');
+    document.getElementById('ob-dot-2').classList.replace('bg-zinc-600','bg-amber-400');
+  } else if (step === 2) {
+    if (!obSelectedLevel) return;
+    const name = document.getElementById('ob-name').value.trim();
+    document.getElementById('ob-ready-title').textContent = (lang==='fr'?'Vous êtes prêt, ':'You\'re all set, ') + name + '!';
+    document.getElementById('ob-step-2').classList.add('hidden');
+    document.getElementById('ob-step-3').classList.remove('hidden');
+    document.getElementById('ob-dot-2').classList.replace('bg-amber-400','bg-zinc-600');
+    document.getElementById('ob-dot-3').classList.replace('bg-zinc-600','bg-amber-400');
+  }
+}
+
+function obFinish() {
+  const name = document.getElementById('ob-name').value.trim();
+  const user = { name, level: obSelectedLevel };
+  localStorage.setItem('serveMasterUser', JSON.stringify(user));
+  applyUser(user);
+  document.getElementById('onboarding').style.display = 'none';
+  renderAll();
+  navigate('dashboard');
+  updateLocalStreak();
+}
+
+function applyUser(user) {
+  const initials = user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  const hour = new Date().getHours();
+  const gr = hour < 12 ? (lang==='fr'?'Bonjour':'Good morning') : hour < 18 ? (lang==='fr'?'Bon après-midi':'Good afternoon') : (lang==='fr'?'Bonsoir':'Good evening');
+  document.getElementById('nav-name').textContent = user.name;
+  document.getElementById('nav-level').textContent = user.level;
+  document.getElementById('nav-avatar').textContent = initials;
+  document.getElementById('dashboard-greeting').textContent = gr + ', ' + user.name.split(' ')[0] + ' 👋';
+  document.getElementById('dashboard-sub').textContent = lang==='fr'?'Continuez — chaque leçon fait de vous un meilleur serveur.':'Keep going — every lesson makes you a better server.';
+}
+
+// =========================================================
+// RENDER ALL
+// =========================================================
+function openModule(id) {
+  const mod = modules.find(m => m.id === id);
+  document.getElementById('modal-title').innerHTML = mod.emoji + ' ' + getModuleTitle(mod);
+  document.getElementById('modal-content').innerHTML = getModuleContent(id);
+  document.getElementById('module-modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('module-modal').classList.add('hidden'); }
+
+function navigate(screen) {
+  document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
+  const el = document.getElementById(screen + '-screen');
+  if (el) el.classList.remove('hidden');
+  ['dashboard','learn','practice','achievements','leaderboard','manager'].forEach(s => {
+    const n = document.getElementById('nav-'+s);
+    if (n) n.classList.toggle('active', s === screen);
+  });
+  if (screen === 'leaderboard') loadLeaderboard();
+  if (screen === 'achievements') renderAchievements();
+  if (screen === 'manager') loadManagerDashboard();
+}
+
+function renderAchievements() {
+  const el = document.getElementById('badges-grid');
+  if (!el) return;
+  el.innerHTML = BADGE_DEFS.map(b => {
+    const earned = earnedBadges.includes(b.id);
+    const name = lang === 'fr' ? b.nameFr : b.name;
+    const desc = lang === 'fr' ? b.descFr : b.desc;
+    return `<div class="bg-zinc-900 border ${earned?'border-amber-500':'border-zinc-800'} rounded-2xl p-5 text-center transition-all">
+      <div class="text-4xl mb-2 ${earned?'':'opacity-30 grayscale'}">${b.icon}</div>
+      <div class="font-semibold text-sm ${earned?'text-amber-400':'text-zinc-500'}">${name}</div>
+      <div class="text-zinc-500 text-xs mt-1">${desc}</div>
+      ${earned ? '<div class="text-emerald-400 text-xs mt-2">✓ Earned</div>' : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('scenarios-done').textContent = completedScenarios.length;
+}
+
+function renderAll() {
+  renderScenarios();
+  const continueEl = document.getElementById('continue-modules');
+  const allEl = document.getElementById('all-modules');
+  const sidebarEl = document.getElementById('sidebar-modules');
+
+  const inProgress = modules.filter(m => {
+    const p = userProgress.find(u => u.id === m.id);
+    return p && p.progress < 100;
+  }).slice(0, 3);
+
+  if (continueEl) {
+    continueEl.innerHTML = inProgress.map(m => {
+      const p = userProgress.find(u => u.id === m.id);
+      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
+        <div class="text-4xl mb-3">${m.emoji}</div>
+        <div class="font-semibold text-lg mb-3">${getModuleTitle(m)}</div>
+        <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
+        <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (allEl) {
+    allEl.innerHTML = modules.map(m => {
+      const p = userProgress.find(u => u.id === m.id);
+      const done = p.progress >= 100;
+      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">
+        <div class="text-3xl">${m.emoji}</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2"><div class="font-semibold mb-2">${getModuleTitle(m)}</div>${done?'<span class="text-emerald-400 text-xs ml-1">✓</span>':''}</div>
+          <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
+          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if (sidebarEl) {
+    sidebarEl.innerHTML = modules.map(m => {
+      const p = userProgress.find(u => u.id === m.id);
+      return `<div onclick="openModule(${m.id})" class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-zinc-800 transition-all">
+        <span class="text-lg">${m.emoji}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">${getModuleTitle(m)}</div>
+          <div class="w-full bg-zinc-700 rounded-full h-1 mt-1"><div class="bg-amber-400 h-1 rounded-full" style="width:${p.progress}%"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const badgeShowcase = document.getElementById('badge-showcase');
+  const badgeGrid = document.getElementById('badge-showcase-grid');
+  if (badgeShowcase && badgeGrid && earnedBadges.length) {
+    badgeShowcase.classList.remove('hidden');
+    badgeGrid.innerHTML = earnedBadges.slice(-6).map(bid => {
+      const def = BADGE_DEFS.find(b => b.id === bid);
+      if (!def) return '';
+      return `<div class="bg-zinc-900 border border-amber-500/30 rounded-2xl px-4 py-3 flex items-center gap-3">
+        <div class="text-2xl">${def.icon}</div>
+        <div class="text-sm font-semibold text-amber-400">${lang==='fr'?def.nameFr:def.name}</div>
+      </div>`;
+    }).join('');
+  }
+  checkCertificate();
+}
+
+// =========================================================
+// INIT
+// =========================================================
+window.onload = async function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('error')) { showAuthModal(); }
+  const joinCode = urlParams.get('join');
+  if (joinCode) { localStorage.setItem('sma-pending-join', joinCode); }
+
+  setLang(lang);
+  const localStreak = parseInt(localStorage.getItem('sma-streak') || '0');
+  const localBest = parseInt(localStorage.getItem('sma-best-streak') || '0');
+  if (localStreak > 0) updateStreakDisplay(localStreak, localBest);
+
+  const savedUser = localStorage.getItem('serveMasterUser');
+  if (savedUser) {
+    const user = JSON.parse(savedUser);
+    applyUser(user);
+    document.getElementById('onboarding').style.display = 'none';
+    renderAll();
+    navigate('dashboard');
+  }
+
+  await fetchCurrentUser();
+
+  if (!savedUser && !currentUser) {
+    // show onboarding
+  } else if (savedUser || currentUser) {
+    updateLocalStreak();
+  }
+
+  const pendingJoin = localStorage.getItem('sma-pending-join');
+  if (pendingJoin && authToken) {
+    localStorage.removeItem('sma-pending-join');
+    document.getElementById('join-code-input').value = pendingJoin;
+    navigate('manager');
+  }
+};
+</script>
 </body>
 </html>
