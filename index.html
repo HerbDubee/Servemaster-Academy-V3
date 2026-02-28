@@ -16,6 +16,80 @@
   </style>
 </head>
 <body class="min-h-screen bg-zinc-950 text-white">
+
+  <!-- ONBOARDING OVERLAY -->
+  <div id="onboarding" class="fixed inset-0 bg-zinc-950 z-[200] flex items-center justify-center p-6">
+    <div class="w-full max-w-lg">
+
+      <!-- Step 1: Welcome -->
+      <div id="ob-step-1" class="text-center space-y-8">
+        <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-rose-700 rounded-3xl flex items-center justify-center text-5xl mx-auto">🍸</div>
+        <div>
+          <h1 class="heading text-5xl mb-3">Welcome to ServeMaster</h1>
+          <p class="text-zinc-400 text-lg">The professional training academy for exceptional servers.</p>
+        </div>
+        <div class="text-left space-y-2">
+          <label class="text-sm font-medium text-zinc-300">What's your name?</label>
+          <input id="ob-name" type="text" placeholder="e.g. Alex Rivera"
+            class="w-full bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 text-lg transition-colors" />
+        </div>
+        <button onclick="obNext(1)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
+          Continue →
+        </button>
+      </div>
+
+      <!-- Step 2: Experience -->
+      <div id="ob-step-2" class="hidden text-center space-y-8">
+        <div>
+          <h2 class="heading text-4xl mb-3">Your experience level</h2>
+          <p class="text-zinc-400">We'll tailor your learning path to where you are right now.</p>
+        </div>
+        <div class="space-y-3 text-left">
+          <div onclick="obSelectLevel(this,'New to serving')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+            <div class="font-semibold text-lg">🌱 New to Serving</div>
+            <div class="text-zinc-400 text-sm mt-1">I'm just getting started in hospitality</div>
+          </div>
+          <div onclick="obSelectLevel(this,'Experienced server')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+            <div class="font-semibold text-lg">⭐ Experienced Server</div>
+            <div class="text-zinc-400 text-sm mt-1">I've been serving for 1–3 years</div>
+          </div>
+          <div onclick="obSelectLevel(this,'Senior professional')" class="ob-level-btn cursor-pointer border border-zinc-700 hover:border-amber-400 rounded-2xl px-6 py-5 transition-all">
+            <div class="font-semibold text-lg">🏆 Senior Professional</div>
+            <div class="text-zinc-400 text-sm mt-1">I'm refining my craft and aiming for mastery</div>
+          </div>
+        </div>
+        <button onclick="obNext(2)" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
+          Continue →
+        </button>
+      </div>
+
+      <!-- Step 3: Ready -->
+      <div id="ob-step-3" class="hidden text-center space-y-8">
+        <div class="text-7xl">🎉</div>
+        <div>
+          <h2 class="heading text-4xl mb-3" id="ob-ready-title">You're all set!</h2>
+          <p class="text-zinc-400 text-lg" id="ob-ready-sub">Your personalised curriculum is ready. 12 modules, real skills, real results.</p>
+        </div>
+        <div class="bg-zinc-900 border border-amber-900 rounded-2xl p-6 text-left space-y-3">
+          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> 12 professional training modules</div>
+          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Interactive quizzes after every lesson</div>
+          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Voice role-play & tray simulation</div>
+          <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> Progress saved automatically</div>
+        </div>
+        <button onclick="obFinish()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors">
+          Start Learning 🍸
+        </button>
+      </div>
+
+      <!-- Step dots -->
+      <div class="flex justify-center gap-2 mt-8">
+        <div id="ob-dot-1" class="w-2 h-2 rounded-full bg-amber-400"></div>
+        <div id="ob-dot-2" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+        <div id="ob-dot-3" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- NAV -->
   <nav class="bg-black border-b border-amber-900 flex items-center justify-between px-6 py-4 sticky top-0 z-50">
     <div class="flex items-center gap-3">
@@ -32,10 +106,10 @@
     </div>
     <div class="flex items-center gap-3 bg-zinc-900 px-4 py-2 rounded-3xl">
       <div class="text-right">
-        <div class="text-sm font-semibold">Alex Rivera</div>
-        <div class="text-amber-400 text-xs">Level 16 • Master Server</div>
+        <div class="text-sm font-semibold" id="nav-name">—</div>
+        <div class="text-amber-400 text-xs" id="nav-level">ServeMaster Academy</div>
       </div>
-      <div class="w-9 h-9 bg-amber-400 rounded-2xl flex items-center justify-center text-black font-bold">AR</div>
+      <div class="w-9 h-9 bg-amber-400 rounded-2xl flex items-center justify-center text-black font-bold" id="nav-avatar">?</div>
     </div>
   </nav>
 
@@ -48,9 +122,14 @@
     <!-- Main Content -->
     <div class="flex-1 p-8" id="main-content">
       <div id="dashboard-screen" class="space-y-12">
-        <h1 class="heading text-6xl">Good evening, Alex 👋</h1>
-        <p class="text-zinc-400 text-xl">v5.1 Live on Replit — Voice & Tray ready!</p>
-        <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        <div>
+          <h1 class="heading text-6xl" id="dashboard-greeting">Welcome back 👋</h1>
+          <p class="text-zinc-400 text-xl mt-2" id="dashboard-sub">Continue where you left off.</p>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold mb-6">Continue Learning</h2>
+          <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
       </div>
 
       <div id="learn-screen" class="hidden">
@@ -357,6 +436,66 @@
 
     function drag(ev) { ev.dataTransfer.setData("text", "glass"); }
 
+    // --- ONBOARDING ---
+    let obSelectedLevel = '';
+
+    function obSelectLevel(el, level) {
+      obSelectedLevel = level;
+      document.querySelectorAll('.ob-level-btn').forEach(function(b) {
+        b.classList.remove('border-amber-400', 'bg-amber-400/10');
+        b.classList.add('border-zinc-700');
+      });
+      el.classList.remove('border-zinc-700');
+      el.classList.add('border-amber-400', 'bg-amber-400/10');
+    }
+
+    function obNext(step) {
+      if (step === 1) {
+        const name = document.getElementById('ob-name').value.trim();
+        if (!name) {
+          document.getElementById('ob-name').focus();
+          document.getElementById('ob-name').classList.add('border-red-500');
+          return;
+        }
+        document.getElementById('ob-name').classList.remove('border-red-500');
+        document.getElementById('ob-step-1').classList.add('hidden');
+        document.getElementById('ob-step-2').classList.remove('hidden');
+        document.getElementById('ob-dot-1').classList.replace('bg-amber-400', 'bg-zinc-600');
+        document.getElementById('ob-dot-2').classList.replace('bg-zinc-600', 'bg-amber-400');
+      } else if (step === 2) {
+        if (!obSelectedLevel) {
+          return;
+        }
+        const name = document.getElementById('ob-name').value.trim();
+        document.getElementById('ob-ready-title').textContent = "You're all set, " + name + "!";
+        document.getElementById('ob-step-2').classList.add('hidden');
+        document.getElementById('ob-step-3').classList.remove('hidden');
+        document.getElementById('ob-dot-2').classList.replace('bg-amber-400', 'bg-zinc-600');
+        document.getElementById('ob-dot-3').classList.replace('bg-zinc-600', 'bg-amber-400');
+      }
+    }
+
+    function obFinish() {
+      const name = document.getElementById('ob-name').value.trim();
+      const user = { name: name, level: obSelectedLevel };
+      localStorage.setItem('serveMasterUser', JSON.stringify(user));
+      applyUser(user);
+      document.getElementById('onboarding').style.display = 'none';
+      renderAll();
+      navigate('dashboard');
+    }
+
+    function applyUser(user) {
+      const initials = user.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('nav-name').textContent = user.name;
+      document.getElementById('nav-level').textContent = user.level;
+      document.getElementById('nav-avatar').textContent = initials;
+      document.getElementById('dashboard-greeting').textContent = greeting + ', ' + user.name.split(' ')[0] + ' 👋';
+      document.getElementById('dashboard-sub').textContent = 'Keep going — every lesson makes you a better server.';
+    }
+
     function openModule(id) {
       const mod = modules.find(m => m.id === id);
       document.getElementById('modal-title').innerHTML = `${mod.emoji} ${mod.title}`;
@@ -423,9 +562,15 @@
       }).join('');
     }
 
-    window.onload = () => {
-      renderAll();
-      navigate('dashboard');
+    window.onload = function() {
+      const savedUser = localStorage.getItem('serveMasterUser');
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        applyUser(user);
+        document.getElementById('onboarding').style.display = 'none';
+        renderAll();
+        navigate('dashboard');
+      }
     };
   </script>
 </body>
