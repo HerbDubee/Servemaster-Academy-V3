@@ -24,6 +24,9 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
+const whisperKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+const whisperClient = new OpenAI({ apiKey: whisperKey });
+
 function authMiddleware(req, res, next) {
   const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
@@ -404,7 +407,7 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
   try {
     const audioFile = await toFile(req.file.buffer, 'audio.webm', { type: req.file.mimetype || 'audio/webm' });
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await whisperClient.audio.transcriptions.create({
       file: audioFile,
       model: 'whisper-1',
       language: req.body.lang === 'fr' ? 'fr' : 'en',
@@ -412,7 +415,7 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     res.json({ text: transcription.text });
   } catch (err) {
     console.error('Whisper transcription error:', err.message);
-    res.status(500).json({ error: 'Transcription failed' });
+    res.status(500).json({ error: 'Transcription failed', fallback: true });
   }
 });
 
