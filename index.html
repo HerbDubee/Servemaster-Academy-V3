@@ -268,70 +268,58 @@
 
     function getModuleContent(id) {
       const data = lessonData[id];
-      if (!data) return `<p class="text-zinc-400">Content coming soon.</p>`;
+      if (!data) return '<p class="text-zinc-400">Content coming soon.</p>';
 
-      const prog = userProgress.find(u => u.id === id);
-      const currentProgress = prog ? prog.progress : 0;
+      let html = '<p class="text-zinc-400 text-lg mb-8">' + data.subtitle + '</p>';
+      html += '<div class="space-y-4 mb-10">';
 
-      let html = `
-        <p class="text-zinc-400 text-lg mb-8">${data.subtitle}</p>
-        <div class="space-y-4 mb-10">
-          ${data.lessons.map((l, i) => `
-            <details class="bg-zinc-800 rounded-2xl overflow-hidden group" ${i === 0 ? 'open' : ''}>
-              <summary class="px-6 py-4 font-semibold cursor-pointer flex items-center justify-between hover:text-amber-400 list-none">
-                <span>${i + 1}. ${l.title}</span>
-                <span class="text-amber-400 group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <div class="px-6 pb-6 text-zinc-300 leading-relaxed border-t border-zinc-700 pt-4">${l.body}</div>
-            </details>
-          `).join('')}
-        </div>`;
+      data.lessons.forEach(function(l, i) {
+        const openAttr = i === 0 ? ' open' : '';
+        html += '<details class="bg-zinc-800 rounded-2xl group"' + openAttr + '>';
+        html += '<summary class="px-6 py-4 font-semibold cursor-pointer flex items-center justify-between hover:text-amber-400 list-none">';
+        html += '<span>' + (i + 1) + '. ' + l.title + '</span>';
+        html += '<span class="text-amber-400">▼</span></summary>';
+        html += '<div class="px-6 pb-6 text-zinc-300 leading-relaxed border-t border-zinc-700 pt-4">' + l.body + '</div>';
+        html += '</details>';
+      });
+
+      html += '</div>';
 
       if (id === 3) {
-        html += `
-        <div class="mb-10">
-          <h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>
-          <button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">
-            🎤 Start Voice Practice
-          </button>
-          <div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div>
-        </div>
-        <div class="mb-10">
-          <h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>
-          <div class="bg-zinc-800 p-8 rounded-3xl">
-            <div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);">
-              <div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>
-              <div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>
-              <div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>
-              <div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>
-            </div>
-          </div>
-        </div>`;
+        html += '<div class="mb-10">';
+        html += '<h4 class="text-xl font-semibold mb-4">🎤 Voice Role-Play: Cocktail Upselling</h4>';
+        html += '<button onclick="startVoiceRoleplay()" class="w-full bg-white hover:bg-amber-100 text-black py-6 rounded-3xl font-semibold flex items-center justify-center gap-3">🎤 Start Voice Practice</button>';
+        html += '<div id="voice-feedback" class="mt-6 text-center min-h-[80px] text-sm"></div></div>';
+        html += '<div class="mb-10">';
+        html += '<h4 class="text-xl font-semibold mb-4">🪑 Tray-Carrying Simulation</h4>';
+        html += '<div class="bg-zinc-800 p-8 rounded-3xl">';
+        html += '<div id="tray" class="tray mx-auto w-80 h-52 rounded-3xl flex items-center justify-center relative" style="box-shadow:0 25px 50px -12px rgba(0,0,0,.5);">';
+        html += '<div class="absolute top-6 left-8 glass" draggable="true" ondragstart="drag(event)"></div>';
+        html += '<div class="absolute top-6 right-8 glass" draggable="true" ondragstart="drag(event)"></div>';
+        html += '<div class="absolute bottom-8 left-12 glass" draggable="true" ondragstart="drag(event)"></div>';
+        html += '<div class="absolute bottom-8 right-12 glass" draggable="true" ondragstart="drag(event)"></div>';
+        html += '</div></div></div>';
       }
 
       if (data.quiz) {
-        html += `
-        <div class="mt-4">
-          <h4 class="text-xl font-semibold mb-6">📝 Quick Quiz</h4>
-          <div class="space-y-6" id="quiz-${id}">
-            ${data.quiz.map((q, qi) => `
-              <div class="bg-zinc-800 rounded-2xl p-6">
-                <p class="font-medium mb-4">${qi + 1}. ${q.q}</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  ${q.options.map((opt, oi) => `
-                    <button onclick="answerQuiz(${id}, ${qi}, ${oi}, ${q.answer}, this)"
-                      class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">
-                      ${opt}
-                    </button>
-                  `).join('')}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-          <button onclick="completeLesson(${id})" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl">
-            ✅ Mark Lesson Complete
-          </button>
-        </div>`;
+        html += '<div class="mt-4"><h4 class="text-xl font-semibold mb-6">📝 Quick Quiz</h4>';
+        html += '<div class="space-y-6" id="quiz-' + id + '">';
+
+        data.quiz.forEach(function(q, qi) {
+          html += '<div class="bg-zinc-800 rounded-2xl p-6">';
+          html += '<p class="font-medium mb-4">' + (qi + 1) + '. ' + q.q + '</p>';
+          html += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">';
+          q.options.forEach(function(opt, oi) {
+            html += '<button onclick="answerQuiz(' + id + ',' + qi + ',' + oi + ',' + q.answer + ',this)"';
+            html += ' class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">';
+            html += opt + '</button>';
+          });
+          html += '</div></div>';
+        });
+
+        html += '</div>';
+        html += '<button onclick="completeLesson(' + id + ')" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl">✅ Mark Lesson Complete</button>';
+        html += '</div>';
       }
 
       return html;
