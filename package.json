@@ -10,6 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^7.5.0",
+    "@capacitor/core": "^8.1.0",
     "drizzle-zod": "^0.8.3",
     "express": "^5.2.1",
     "openai": "^6.25.0",

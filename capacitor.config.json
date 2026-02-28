@@ -1,0 +1,13 @@
+{
+  "appId": "com.servemaster.academy",
+  "appName": "ServeMaster Academy",
+  "webDir": "www",
+  "server": {
+    "url": "https://workspace-herbdubee.replit.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#1a1a2e"
+  }
+}
