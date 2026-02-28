@@ -57,6 +57,12 @@
         <h1 class="heading text-5xl mb-10">All Modules</h1>
         <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </div>
+
+      <div id="practice-screen" class="hidden space-y-8">
+        <h1 class="heading text-5xl">Practice</h1>
+        <p class="text-zinc-400 text-lg">Open any module from the Learn screen to start a voice or tray practice session.</p>
+        <button onclick="navigate('learn')" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold px-8 py-4 rounded-3xl">Browse Modules</button>
+      </div>
     </div>
   </div>
 
@@ -157,7 +163,56 @@
     }
 
     function renderAll() {
-      console.log("ServeMaster Academy running on Replit");
+      const continueEl = document.getElementById('continue-modules');
+      const allEl = document.getElementById('all-modules');
+      const sidebarEl = document.getElementById('sidebar-modules');
+
+      const inProgress = modules.filter(m => {
+        const p = userProgress.find(u => u.id === m.id);
+        return p && p.progress < 100;
+      }).slice(0, 3);
+
+      continueEl.innerHTML = inProgress.map(m => {
+        const p = userProgress.find(u => u.id === m.id);
+        return `
+          <div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
+            <div class="text-4xl mb-3">${m.emoji}</div>
+            <div class="font-semibold text-lg mb-3">${m.title}</div>
+            <div class="w-full bg-zinc-700 rounded-full h-2">
+              <div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div>
+            </div>
+            <div class="text-zinc-400 text-sm mt-2">${p.progress}% complete</div>
+          </div>`;
+      }).join('');
+
+      allEl.innerHTML = modules.map(m => {
+        const p = userProgress.find(u => u.id === m.id);
+        return `
+          <div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">
+            <div class="text-3xl">${m.emoji}</div>
+            <div class="flex-1">
+              <div class="font-semibold mb-2">${m.title}</div>
+              <div class="w-full bg-zinc-700 rounded-full h-2">
+                <div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div>
+              </div>
+              <div class="text-zinc-400 text-xs mt-1">${p.progress}% complete</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      sidebarEl.innerHTML = modules.map(m => {
+        const p = userProgress.find(u => u.id === m.id);
+        return `
+          <div onclick="openModule(${m.id})" class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-zinc-800 transition-all">
+            <span class="text-lg">${m.emoji}</span>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate">${m.title}</div>
+              <div class="w-full bg-zinc-700 rounded-full h-1 mt-1">
+                <div class="bg-amber-400 h-1 rounded-full" style="width:${p.progress}%"></div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     window.onload = () => {
