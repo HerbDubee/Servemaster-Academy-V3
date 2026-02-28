@@ -1047,18 +1047,10 @@ function startVoiceRoleplay() {
 // =========================================================
 // CHAT VOICE INPUT/OUTPUT
 // =========================================================
-let voiceModeActive = false;
 let aiSpeechEnabled = true;
-let currentChatRecognizer = null;
-
-function toggleVoiceMode() {
-  voiceModeActive = !voiceModeActive;
-  const btn = document.getElementById('voice-mode-btn');
-  if (btn) {
-    btn.classList.toggle('bg-red-700', voiceModeActive);
-    btn.classList.toggle('bg-zinc-800', !voiceModeActive);
-  }
-}
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
 
 function toggleAISpeech() {
   aiSpeechEnabled = !aiSpeechEnabled;
@@ -1067,29 +1059,61 @@ function toggleAISpeech() {
 }
 
 function startVoiceInput() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { alert(lang==='fr'?'Voix non supportée':'Voice not supported'); return; }
-  const indicator = document.getElementById('voice-recording-indicator');
-  const listeningText = document.getElementById('voice-listening-text');
-  if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
-  const rec = new SpeechRecognition();
-  rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
-  rec.continuous = false;
-  rec.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    const input = document.getElementById('chat-input');
-    if (input) input.value = text;
-    if (listeningText) listeningText.textContent = lang === 'fr' ? 'Envoi dans 2s...' : 'Sending in 2s...';
-    setTimeout(() => {
-      if (indicator) indicator.classList.add('hidden');
-      if (listeningText) listeningText.textContent = lang === 'fr' ? 'Écoute...' : 'Listening...';
-      sendChat();
-    }, 2000);
-  };
-  rec.onerror = () => { if (indicator) indicator.classList.add('hidden'); };
-  rec.onend = () => {};
-  rec.start();
-  currentChatRecognizer = rec;
+  if (isRecording) {
+    stopVoiceRecording();
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      isRecording = true;
+      audioChunks = [];
+      const indicator = document.getElementById('voice-recording-indicator');
+      const listeningText = document.getElementById('voice-listening-text');
+      const micBtn = document.getElementById('mic-btn');
+      if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
+      if (listeningText) listeningText.textContent = lang === 'fr' ? 'Enregistrement... (cliquez 🎤 pour arrêter)' : 'Recording... (click 🎤 to stop)';
+      if (micBtn) { micBtn.classList.remove('bg-zinc-700'); micBtn.classList.add('bg-red-600', 'animate-pulse'); }
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+      mediaRecorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        isRecording = false;
+        if (micBtn) { micBtn.classList.add('bg-zinc-700'); micBtn.classList.remove('bg-red-600', 'animate-pulse'); }
+        if (listeningText) listeningText.textContent = lang === 'fr' ? 'Transcription en cours...' : 'Transcribing...';
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
+        const formData = new FormData();
+        formData.append('audio', audioBlob, mimeType === 'audio/webm' ? 'audio.webm' : 'audio.mp4');
+        formData.append('lang', lang);
+        try {
+          const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+          const data = await res.json();
+          const input = document.getElementById('chat-input');
+          if (input && data.text) {
+            input.value = data.text;
+            if (listeningText) listeningText.textContent = lang === 'fr' ? 'Envoi dans 2s...' : 'Sending in 2s...';
+            setTimeout(() => {
+              if (indicator) indicator.classList.add('hidden');
+              if (listeningText) listeningText.textContent = lang === 'fr' ? 'Écoute...' : 'Listening...';
+              sendChat();
+            }, 2000);
+          } else {
+            if (indicator) indicator.classList.add('hidden');
+            if (listeningText) listeningText.textContent = lang === 'fr' ? 'Écoute...' : 'Listening...';
+          }
+        } catch {
+          if (indicator) indicator.classList.add('hidden');
+        }
+      };
+      mediaRecorder.start();
+    })
+    .catch(() => {
+      alert(lang === 'fr' ? 'Accès au microphone refusé. Vérifiez les permissions.' : 'Microphone access denied. Please check your browser permissions.');
+    });
+}
+
+function stopVoiceRecording() {
+  if (mediaRecorder && isRecording) mediaRecorder.stop();
 }
 
 function speakText(text) {

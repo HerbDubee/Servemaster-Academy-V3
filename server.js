@@ -3,8 +3,12 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
 const OpenAI = require('openai').default;
+const { toFile } = require('openai');
 const db = require('./db');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 const app = express();
 app.use(express.json());
@@ -393,6 +397,22 @@ app.get('/api/manager/staff/:id', authMiddleware, async (req, res) => {
     res.json({ staff: staffRes.rows[0], progress: progressRes.rows, scenarios: scenarioRes.rows, badges: badgeRes.rows });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch staff details' });
+  }
+});
+
+app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
+  try {
+    const audioFile = await toFile(req.file.buffer, 'audio.webm', { type: req.file.mimetype || 'audio/webm' });
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1',
+      language: req.body.lang === 'fr' ? 'fr' : 'en',
+    });
+    res.json({ text: transcription.text });
+  } catch (err) {
+    console.error('Whisper transcription error:', err.message);
+    res.status(500).json({ error: 'Transcription failed' });
   }
 });
 
