@@ -552,6 +552,17 @@ async function fetchCurrentUser() {
     currentUser = data.user;
     applyUserToNav(currentUser);
     await syncProgressFromServer();
+    const pendingJoin = localStorage.getItem('sma-pending-join');
+    if (pendingJoin) {
+      try {
+        await fetch('/api/manager/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+          body: JSON.stringify({ inviteCode: pendingJoin })
+        });
+      } catch {}
+      localStorage.removeItem('sma-pending-join');
+    }
   } catch {}
 }
 
@@ -1899,7 +1910,7 @@ function copyInviteCode() {
   if (!managerData) return;
   const base = window.location.origin;
   const code = managerData.restaurant?.invite_code || '';
-  const link = `${base}?join=${code}`;
+  const link = `${base}/signup?join=${code}`;
   navigator.clipboard.writeText(link).then(() => {
     alert(lang==='fr'?'Lien copié!':'Invite link copied!');
   });
