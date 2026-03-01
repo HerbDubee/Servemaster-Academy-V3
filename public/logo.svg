@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90" width="380" height="90">
+  <!-- Background -->
+  <rect width="380" height="90" rx="10" fill="#09090b"/>
+
+  <!-- Cocktail glass icon -->
+  <!-- Bowl (filled triangle) -->
+  <polygon points="14,12 66,12 40,50" fill="#f59e0b"/>
+  <!-- Bowl rim highlight -->
+  <line x1="14" y1="12" x2="66" y2="12" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Stem -->
+  <line x1="40" y1="50" x2="40" y2="68" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Base -->
+  <line x1="26" y1="68" x2="54" y2="68" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Olive garnish -->
+  <circle cx="54" cy="20" r="4" fill="#f59e0b" opacity="0.7"/>
+  <line x1="54" y1="12" x2="54" y2="24" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- ServeMaster text -->
+  <text x="86" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" fill="#fafafa" letter-spacing="0.5">ServeMaster</text>
+  <!-- Academy text -->
+  <text x="88" y="66" font-family="'Arial', 'Helvetica', sans-serif" font-size="16" font-weight="600" fill="#f59e0b" letter-spacing="5">ACADEMY</text>
+</svg>
