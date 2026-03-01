@@ -13,6 +13,7 @@ const db = require('./db');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
