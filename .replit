@@ -1,5 +1,5 @@
 entrypoint = "index.html"
-modules = ["web", "nodejs-20", "postgresql-16"]
+modules = ["web", "nodejs-20", "postgresql-16", "python-3.11"]
 
 [nix]
 channel = "stable-24_11"
@@ -57,4 +57,4 @@ externalPort = 80
 
 [agent]
 expertMode = true
-integrations = ["javascript_openai_ai_integrations:2.0.0"]
+integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0"]
