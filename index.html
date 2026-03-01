@@ -194,8 +194,8 @@
     <div onclick="navigate('dashboard')" class="nav-link" id="nav-dashboard">Dashboard</div>
     <div onclick="navigate('learn')" class="nav-link" id="nav-learn">Learn</div>
     <div onclick="navigate('practice')" class="nav-link" id="nav-practice">Practice</div>
-    <div onclick="navigate('achievements')" class="nav-link" id="nav-achievements">Badges</div>
-    <div onclick="navigate('leaderboard')" class="nav-link hidden sm:block" id="nav-leaderboard">Scores</div>
+    <div onclick="navigate('achievements')" class="nav-link" id="nav-achievements">Achievements</div>
+    <div onclick="navigate('leaderboard')" class="nav-link hidden sm:block" id="nav-leaderboard">Leaderboard</div>
     <div onclick="navigate('manager')" class="nav-link hidden" id="nav-manager">Manager</div>
   </div>
   <div class="flex items-center gap-2">
@@ -268,6 +268,7 @@
           </div>
         </div>
       </div>
+      <div id="next-module-card"></div>
       <div>
         <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
         <div id="continue-modules" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
@@ -285,6 +286,21 @@
     <div id="learn-screen" class="hidden">
       <h1 class="heading text-4xl lg:text-5xl mb-10" id="learn-title">All Modules</h1>
       <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      <div class="mt-12 bg-zinc-900 border border-amber-900/40 rounded-3xl overflow-hidden">
+        <button onclick="toggleGlossary()" class="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-zinc-800 transition-colors" id="glossary-toggle-btn">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📖</span>
+            <div>
+              <div class="font-semibold text-lg" id="glossary-heading">Hospitality Glossary</div>
+              <div class="text-zinc-400 text-sm" id="glossary-sub">25 essential terms every server should know</div>
+            </div>
+          </div>
+          <span class="text-amber-400 text-lg" id="glossary-chevron">▼</span>
+        </button>
+        <div id="glossary-body" class="hidden px-6 pb-6">
+          <div id="glossary-terms" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"></div>
+        </div>
+      </div>
     </div>
 
     <!-- PRACTICE -->
@@ -576,23 +592,24 @@ async function pushScenarioToServer(scenarioId) {
 // MODULES + PROGRESS
 // =========================================================
 const modules = [
-  { id:1, title:'Foundations of Exceptional Service', titleFr:"Fondements du service d'exception", emoji:'🌟' },
-  { id:2, title:'Seating, Menus & Taking Orders', titleFr:'Placement, menus & prise de commandes', emoji:'📋' },
-  { id:3, title:'Beverage Mastery: Wine & Cocktail Service', titleFr:'Maîtrise des boissons : vins & cocktails', emoji:'🍸' },
-  { id:4, title:'Wine Pairing & Advanced Beverage Knowledge', titleFr:'Accords mets-vins & connaissances avancées', emoji:'🥂' },
-  { id:5, title:'Natural & Effective Upselling', titleFr:'Vente additionnelle naturelle & efficace', emoji:'💰' },
-  { id:6, title:'Food Service & Perfect Pacing', titleFr:'Service des plats & rythme parfait', emoji:'🍽️' },
-  { id:7, title:'Table Maintenance & Problem Resolution', titleFr:"Entretien des tables & résolution de problèmes", emoji:'🧼' },
-  { id:8, title:'International Etiquette', titleFr:'Étiquette internationale', emoji:'🌍' },
-  { id:9, title:'Special Occasions Mastery', titleFr:'Maîtrise des occasions spéciales', emoji:'🎂' },
-  { id:10, title:'Closing the Experience', titleFr:"Clore l'expérience", emoji:'👋' },
-  { id:11, title:'Advanced Wine Regions', titleFr:'Régions viticoles avancées', emoji:'🌎' },
-  { id:12, title:'Server Leadership & Career', titleFr:'Leadership & carrière en service', emoji:'⭐' }
+  { id:1,  title:'Foundations of Exceptional Service',         titleFr:"Fondements du service d'exception",              emoji:'🌟', mins:10 },
+  { id:2,  title:'Seating, Menus & Taking Orders',            titleFr:'Placement, menus & prise de commandes',           emoji:'📋', mins:10 },
+  { id:3,  title:'Beverage Mastery: Wine & Cocktail Service', titleFr:'Maîtrise des boissons : vins & cocktails',        emoji:'🍸', mins:12 },
+  { id:4,  title:'Wine Pairing & Advanced Beverage Knowledge',titleFr:'Accords mets-vins & connaissances avancées',      emoji:'🥂', mins:12 },
+  { id:5,  title:'Natural & Effective Upselling',             titleFr:'Vente additionnelle naturelle & efficace',         emoji:'💰', mins:10 },
+  { id:6,  title:'Food Service & Perfect Pacing',             titleFr:'Service des plats & rythme parfait',              emoji:'🍽️', mins:10 },
+  { id:7,  title:'Table Maintenance & Problem Resolution',    titleFr:"Entretien des tables & résolution de problèmes",  emoji:'🧼', mins:10 },
+  { id:8,  title:'International Etiquette',                   titleFr:'Étiquette internationale',                        emoji:'🌍', mins:8  },
+  { id:9,  title:'Special Occasions Mastery',                 titleFr:'Maîtrise des occasions spéciales',                emoji:'🎂', mins:10 },
+  { id:10, title:'Closing the Experience',                    titleFr:"Clore l'expérience",                              emoji:'👋', mins:8  },
+  { id:11, title:'Advanced Wine Regions',                     titleFr:'Régions viticoles avancées',                      emoji:'🌎', mins:12 },
+  { id:12, title:'Server Leadership & Career',                titleFr:'Leadership & carrière en service',                emoji:'⭐', mins:10 }
 ];
 
 let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: 0}));
 let earnedBadges = JSON.parse(localStorage.getItem('sma-badges')) || [];
 let completedScenarios = JSON.parse(localStorage.getItem('sma-scenarios')) || [];
+let savedQuizScores = JSON.parse(localStorage.getItem('sma-quiz-scores')) || {};
 let currentStreak = 0;
 let bestStreak = 0;
 
@@ -1156,56 +1173,97 @@ function speakText(text) {
 // =========================================================
 // PRACTICE / AI ROLE-PLAY
 // =========================================================
+const SCENARIO_CATEGORIES = [
+  { id:'guest',    label:'Guest Relations',    labelFr:'Relations clients',       color:'blue'   },
+  { id:'beverage', label:'Wine & Beverage',    labelFr:'Vins & boissons',         color:'purple' },
+  { id:'occasion', label:'Special Occasions',  labelFr:'Occasions spéciales',     color:'pink'   },
+  { id:'pressure', label:'Rush & Pressure',    labelFr:'Rush & pression',         color:'orange' },
+  { id:'safety',   label:'Health & Safety',    labelFr:'Santé & sécurité',        color:'red'    },
+];
+const DIFFICULTY_STYLES = {
+  Beginner:     { label:'Beginner',     labelFr:'Débutant',     cls:'bg-emerald-900/60 text-emerald-300 border-emerald-700' },
+  Intermediate: { label:'Intermediate', labelFr:'Intermédiaire',cls:'bg-amber-900/60 text-amber-300 border-amber-700'     },
+  Advanced:     { label:'Advanced',     labelFr:'Avancé',       cls:'bg-red-900/60 text-red-300 border-red-700'           },
+};
 const practiceScenarios = [
-  { id:1, emoji:'😤', title:'The Difficult Guest', titleFr:'Le client difficile', desc:'De-escalate an angry, impatient guest at the door.', descFr:'Désamorcez un client en colère et impatient à l\'entrée.' },
-  { id:2, emoji:'🍷', title:'Wine Upselling', titleFr:'Vente additionnelle de vin', desc:'Guide an uncertain couple to the right bottle.', descFr:'Guidez un couple incertain vers la bonne bouteille.' },
-  { id:3, emoji:'⚠️', title:'Serious Food Allergy', titleFr:'Allergie alimentaire sérieuse', desc:'Handle a guest with a severe nut allergy safely.', descFr:'Gérez en toute sécurité un client avec une allergie sévère aux noix.' },
-  { id:4, emoji:'⏱️', title:'The Long Wait Complaint', titleFr:'La plainte d\'attente', desc:'Recover a frustrated guest waiting 45 minutes.', descFr:'Récupérez un client frustré qui attend depuis 45 minutes.' },
-  { id:5, emoji:'🍮', title:'Dessert Upselling', titleFr:'Vente additionnelle de dessert', desc:"Persuade a 'stuffed' guest to try a dessert.", descFr:"Persuadez un client 'rassasié' d'essayer un dessert." },
-  { id:6, emoji:'🎂', title:'Birthday Celebration', titleFr:'Célébration d\'anniversaire', desc:'Take a surprise 40th birthday booking by phone.', descFr:'Prenez une réservation surprise de 40e anniversaire par téléphone.' },
-  { id:7, emoji:'🧾', title:'Splitting the Bill', titleFr:'Partager la note', desc:'Handle a complicated 7-person split bill.', descFr:'Gérez une note compliquée à partager entre 7 personnes.' },
-  { id:8, emoji:'⭐', title:'VIP Guest Arrival', titleFr:'Arrivée d\'un VIP', desc:'Exceed the expectations of a high-profile guest.', descFr:'Dépassez les attentes d\'un client de haut profil.' },
-  { id:9, emoji:'🤔', title:'The Indecisive Guest', titleFr:'Le client indécis', desc:'Guide an overwhelmed guest to their perfect dish.', descFr:'Guidez un client dépassé vers son plat parfait.' },
-  { id:10, emoji:'❌', title:'Wrong Order Delivered', titleFr:'Mauvaise commande livrée', desc:'Recover from bringing the wrong dish gracefully.', descFr:'Récupérez gracieusement après avoir apporté le mauvais plat.' },
-  { id:11, emoji:'🍾', title:'Premium Wine Decanting', titleFr:'Décantage de vin premium', desc:'Perform flawless tableside Barolo decanting.', descFr:'Effectuez un décantage impeccable de Barolo en salle.' },
-  { id:12, emoji:'👥', title:'Large Group Chaos', titleFr:'Chaos de grand groupe', desc:'Coordinate a party of 16 with dietary chaos.', descFr:'Coordonnez un groupe de 16 avec des restrictions alimentaires.' },
-  { id:13, emoji:'🚨', title:'Severe Allergy Emergency', titleFr:'Urgence allergie sévère', desc:'Handle a potential anaphylactic situation at the table.', descFr:'Gérez une situation anaphylactique potentielle à table.' },
-  { id:14, emoji:'💍', title:'The Marriage Proposal', titleFr:'La demande en mariage', desc:'Coordinate the perfect surprise proposal moment.', descFr:'Coordonnez le parfait moment de demande surprise.' },
-  { id:15, emoji:'💼', title:'Corporate Expense Dinner', titleFr:'Dîner de frais de représentation', desc:'Satisfy a demanding CFO\'s corporate dinner needs.', descFr:'Satisfaire les besoins du dîner corporatif d\'un DFI exigeant.' },
-  { id:16, emoji:'👶', title:'Family with Young Children', titleFr:'Famille avec de jeunes enfants', desc:'Make a family with a toddler feel welcome and at ease.', descFr:'Mettez à l\'aise une famille avec un tout-petit.' },
-  { id:17, emoji:'🌱', title:'Vegan Tasting Menu', titleFr:'Menu dégustation végane', desc:'Navigate a fully vegan tasting menu with confidence.', descFr:'Naviguez un menu dégustation entièrement végane avec confiance.' },
-  { id:18, emoji:'📝', title:'The Food Critic', titleFr:'Le critique gastronomique', desc:'Impress a discreet restaurant reviewer.', descFr:'Impressionnez un critique gastronomique discret.' },
-  { id:19, emoji:'⏰', title:'Last Orders Rush', titleFr:'Dernières commandes en urgence', desc:'Handle a guest arriving 30 minutes before kitchen close.', descFr:'Gérez un client arrivant 30 minutes avant la fermeture de la cuisine.' },
-  { id:20, emoji:'🍾', title:'Corked Wine Return', titleFr:'Retour de vin bouchonné', desc:'Handle a wine return claim professionally.', descFr:'Gérez professionnellement une réclamation de vin bouchonné.' },
-  { id:21, emoji:'🚶', title:'Dine and Dash Suspicion', titleFr:'Soupçon de fuite sans payer', desc:'Handle a suspected walk-out without confrontation.', descFr:'Gérez un départ suspect sans confrontation.' },
-  { id:22, emoji:'🏥', title:'Medical Situation', titleFr:'Situation médicale', desc:'Take control when a guest collapses at another table.', descFr:'Prenez le contrôle quand un client s\'effondre à une autre table.' },
-  { id:23, emoji:'🔊', title:'Noise Complaint', titleFr:'Plainte de bruit', desc:'Mediate between a quiet couple and a rowdy table.', descFr:'Médiez entre un couple tranquille et une table bruyante.' },
-  { id:24, emoji:'📸', title:'The Food Influencer', titleFr:'L\'influenceur gastronomique', desc:'Balance an influencer\'s requests with service flow.', descFr:'Équilibrez les demandes d\'un influenceur avec le flux du service.' },
-  { id:25, emoji:'🎓', title:'Sommelier Knowledge Test', titleFr:'Test de connaissance en sommellerie', desc:'Impress a highly knowledgeable wine guest.', descFr:'Impressionnez un client très bien informé en vins.' },
-  { id:26, emoji:'🕐', title:'Tasting Menu Timing', titleFr:'Synchronisation du menu dégustation', desc:'Coordinate a 9-course menu when time runs short.', descFr:'Coordonnez un menu 9 plats quand le temps manque.' },
-  { id:27, emoji:'🎭', title:'Post-Theatre Rush', titleFr:'Affluence post-théâtre', desc:'Manage 50 simultaneous theatre guests arriving at once.', descFr:'Gérez 50 clients de théâtre arrivant simultanément.' },
-  { id:28, emoji:'🌾', title:'Celiac Disease', titleFr:'Maladie cœliaque', desc:'Handle celiac disease concerns with medical seriousness.', descFr:'Gérez sérieusement les inquiétudes liées à la maladie cœliaque.' },
-  { id:29, emoji:'🍸', title:'The Overgenerous Drunk', titleFr:'L\'ivrogne trop généreux', desc:'Responsibly manage an intoxicated but friendly guest.', descFr:'Gérez responsablement un client en état d\'ivresse mais amical.' },
-  { id:30, emoji:'🌐', title:'Bisected Language Table', titleFr:'Table aux langues mixtes', desc:'Serve a table split between English and French speakers.', descFr:'Servez une table partagée entre anglophones et francophones.' },
+  { id:1,  emoji:'😤', title:'The Difficult Guest',        titleFr:'Le client difficile',                 desc:'De-escalate an angry, impatient guest at the door.',            descFr:'Désamorcez un client en colère et impatient à l\'entrée.',                   category:'guest',    difficulty:'Beginner'     },
+  { id:2,  emoji:'🍷', title:'Wine Upselling',             titleFr:'Vente additionnelle de vin',          desc:'Guide an uncertain couple to the right bottle.',                descFr:'Guidez un couple incertain vers la bonne bouteille.',                         category:'beverage', difficulty:'Beginner'     },
+  { id:3,  emoji:'⚠️', title:'Serious Food Allergy',       titleFr:'Allergie alimentaire sérieuse',       desc:'Handle a guest with a severe nut allergy safely.',              descFr:'Gérez en toute sécurité un client avec une allergie sévère aux noix.',        category:'safety',   difficulty:'Intermediate' },
+  { id:4,  emoji:'⏱️', title:'The Long Wait Complaint',    titleFr:'La plainte d\'attente',               desc:'Recover a frustrated guest waiting 45 minutes.',                descFr:'Récupérez un client frustré qui attend depuis 45 minutes.',                   category:'guest',    difficulty:'Beginner'     },
+  { id:5,  emoji:'🍮', title:'Dessert Upselling',          titleFr:'Vente additionnelle de dessert',      desc:"Persuade a 'stuffed' guest to try a dessert.",                  descFr:"Persuadez un client 'rassasié' d'essayer un dessert.",                        category:'guest',    difficulty:'Beginner'     },
+  { id:6,  emoji:'🎂', title:'Birthday Celebration',       titleFr:'Célébration d\'anniversaire',         desc:'Take a surprise 40th birthday booking by phone.',               descFr:'Prenez une réservation surprise de 40e anniversaire par téléphone.',          category:'occasion', difficulty:'Beginner'     },
+  { id:7,  emoji:'🧾', title:'Splitting the Bill',         titleFr:'Partager la note',                    desc:'Handle a complicated 7-person split bill.',                     descFr:'Gérez une note compliquée à partager entre 7 personnes.',                     category:'guest',    difficulty:'Intermediate' },
+  { id:8,  emoji:'⭐', title:'VIP Guest Arrival',          titleFr:'Arrivée d\'un VIP',                   desc:'Exceed the expectations of a high-profile guest.',              descFr:'Dépassez les attentes d\'un client de haut profil.',                          category:'occasion', difficulty:'Intermediate' },
+  { id:9,  emoji:'🤔', title:'The Indecisive Guest',       titleFr:'Le client indécis',                   desc:'Guide an overwhelmed guest to their perfect dish.',             descFr:'Guidez un client dépassé vers son plat parfait.',                             category:'guest',    difficulty:'Beginner'     },
+  { id:10, emoji:'❌', title:'Wrong Order Delivered',      titleFr:'Mauvaise commande livrée',            desc:'Recover from bringing the wrong dish gracefully.',              descFr:'Récupérez gracieusement après avoir apporté le mauvais plat.',                category:'guest',    difficulty:'Beginner'     },
+  { id:11, emoji:'🍾', title:'Premium Wine Decanting',     titleFr:'Décantage de vin premium',            desc:'Perform flawless tableside Barolo decanting.',                  descFr:'Effectuez un décantage impeccable de Barolo en salle.',                       category:'beverage', difficulty:'Advanced'     },
+  { id:12, emoji:'👥', title:'Large Group Chaos',          titleFr:'Chaos de grand groupe',               desc:'Coordinate a party of 16 with dietary chaos.',                  descFr:'Coordonnez un groupe de 16 avec des restrictions alimentaires.',               category:'pressure', difficulty:'Advanced'     },
+  { id:13, emoji:'🚨', title:'Severe Allergy Emergency',   titleFr:'Urgence allergie sévère',             desc:'Handle a potential anaphylactic situation at the table.',        descFr:'Gérez une situation anaphylactique potentielle à table.',                     category:'safety',   difficulty:'Advanced'     },
+  { id:14, emoji:'💍', title:'The Marriage Proposal',      titleFr:'La demande en mariage',               desc:'Coordinate the perfect surprise proposal moment.',              descFr:'Coordonnez le parfait moment de demande surprise.',                           category:'occasion', difficulty:'Intermediate' },
+  { id:15, emoji:'💼', title:'Corporate Expense Dinner',   titleFr:'Dîner de frais de représentation',   desc:'Satisfy a demanding CFO\'s corporate dinner needs.',             descFr:'Satisfaire les besoins du dîner corporatif d\'un DFI exigeant.',               category:'occasion', difficulty:'Intermediate' },
+  { id:16, emoji:'👶', title:'Family with Young Children', titleFr:'Famille avec de jeunes enfants',      desc:'Make a family with a toddler feel welcome and at ease.',         descFr:'Mettez à l\'aise une famille avec un tout-petit.',                            category:'guest',    difficulty:'Beginner'     },
+  { id:17, emoji:'🌱', title:'Vegan Tasting Menu',         titleFr:'Menu dégustation végane',             desc:'Navigate a fully vegan tasting menu with confidence.',           descFr:'Naviguez un menu dégustation entièrement végane avec confiance.',             category:'beverage', difficulty:'Intermediate' },
+  { id:18, emoji:'📝', title:'The Food Critic',            titleFr:'Le critique gastronomique',           desc:'Impress a discreet restaurant reviewer.',                       descFr:'Impressionnez un critique gastronomique discret.',                            category:'occasion', difficulty:'Advanced'     },
+  { id:19, emoji:'⏰', title:'Last Orders Rush',           titleFr:'Dernières commandes en urgence',      desc:'Handle a guest arriving 30 minutes before kitchen close.',      descFr:'Gérez un client arrivant 30 minutes avant la fermeture de la cuisine.',       category:'pressure', difficulty:'Intermediate' },
+  { id:20, emoji:'🍾', title:'Corked Wine Return',         titleFr:'Retour de vin bouchonné',             desc:'Handle a wine return claim professionally.',                    descFr:'Gérez professionnellement une réclamation de vin bouchonné.',                 category:'beverage', difficulty:'Intermediate' },
+  { id:21, emoji:'🚶', title:'Dine and Dash Suspicion',    titleFr:'Soupçon de fuite sans payer',         desc:'Handle a suspected walk-out without confrontation.',            descFr:'Gérez un départ suspect sans confrontation.',                                 category:'safety',   difficulty:'Intermediate' },
+  { id:22, emoji:'🏥', title:'Medical Situation',          titleFr:'Situation médicale',                  desc:'Take control when a guest collapses at another table.',          descFr:'Prenez le contrôle quand un client s\'effondre à une autre table.',           category:'safety',   difficulty:'Advanced'     },
+  { id:23, emoji:'🔊', title:'Noise Complaint',            titleFr:'Plainte de bruit',                    desc:'Mediate between a quiet couple and a rowdy table.',             descFr:'Médiez entre un couple tranquille et une table bruyante.',                    category:'guest',    difficulty:'Intermediate' },
+  { id:24, emoji:'📸', title:'The Food Influencer',        titleFr:'L\'influenceur gastronomique',        desc:'Balance an influencer\'s requests with service flow.',           descFr:'Équilibrez les demandes d\'un influenceur avec le flux du service.',           category:'guest',    difficulty:'Intermediate' },
+  { id:25, emoji:'🎓', title:'Sommelier Knowledge Test',   titleFr:'Test de connaissance en sommellerie', desc:'Impress a highly knowledgeable wine guest.',                    descFr:'Impressionnez un client très bien informé en vins.',                          category:'beverage', difficulty:'Advanced'     },
+  { id:26, emoji:'🕐', title:'Tasting Menu Timing',        titleFr:'Synchronisation du menu dégustation', desc:'Coordinate a 9-course menu when time runs short.',              descFr:'Coordonnez un menu 9 plats quand le temps manque.',                           category:'pressure', difficulty:'Advanced'     },
+  { id:27, emoji:'🎭', title:'Post-Theatre Rush',          titleFr:'Affluence post-théâtre',              desc:'Manage 50 simultaneous theatre guests arriving at once.',        descFr:'Gérez 50 clients de théâtre arrivant simultanément.',                         category:'pressure', difficulty:'Advanced'     },
+  { id:28, emoji:'🌾', title:'Celiac Disease',             titleFr:'Maladie cœliaque',                    desc:'Handle celiac disease concerns with medical seriousness.',       descFr:'Gérez sérieusement les inquiétudes liées à la maladie cœliaque.',             category:'safety',   difficulty:'Intermediate' },
+  { id:29, emoji:'🍸', title:'The Overgenerous Drunk',     titleFr:'L\'ivrogne trop généreux',            desc:'Responsibly manage an intoxicated but friendly guest.',          descFr:'Gérez responsablement un client en état d\'ivresse mais amical.',              category:'safety',   difficulty:'Advanced'     },
+  { id:30, emoji:'🌐', title:'Bisected Language Table',    titleFr:'Table aux langues mixtes',            desc:'Serve a table split between English and French speakers.',       descFr:'Servez une table partagée entre anglophones et francophones.',                category:'guest',    difficulty:'Intermediate' },
 ];
 
 let chatScenarioId = null;
 let chatHistory = [];
 let firstModuleCompleted = false;
+let scenarioCoachingNotes = [];
 
 function renderScenarios() {
   const grid = document.getElementById('scenario-grid');
+  const practiceTitle = document.getElementById('practice-sub');
   if (!grid) return;
-  grid.innerHTML = practiceScenarios.map(s => {
-    const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
-    const desc = lang === 'fr' && s.descFr ? s.descFr : s.desc;
-    const done = completedScenarios.includes(s.id);
-    return `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
-      ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs">✓ Done</div>' : ''}
-      <div class="text-3xl mt-1">${s.emoji}</div>
-      <div><div class="font-semibold text-base mb-1">${title}</div><div class="text-zinc-400 text-sm">${desc}</div></div>
-    </div>`;
-  }).join('');
+
+  const trayLabel = lang === 'fr' ? 'Simulateur de plateau' : 'Tray Balance Simulator';
+  const trayDesc  = lang === 'fr' ? 'Entraînez votre équilibre avec le simulateur de plateau gyroscopique. Inclinez votre appareil ou bougez la souris.' : 'Train your balance with the gyroscope tray simulator. Tilt your device or move your mouse.';
+  const trayBtn   = lang === 'fr' ? 'Ouvrir le simulateur →' : 'Open Simulator →';
+  let html = `<div class="col-span-full bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-600 hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex items-center gap-5" onclick="openModule(6)">
+    <div class="text-4xl">🪑</div>
+    <div class="flex-1"><div class="font-semibold text-base mb-1">${trayLabel}</div><div class="text-zinc-400 text-sm">${trayDesc}</div></div>
+    <div class="text-amber-400 text-sm font-semibold whitespace-nowrap">${trayBtn}</div>
+  </div>`;
+
+  SCENARIO_CATEGORIES.forEach(cat => {
+    const catScenarios = practiceScenarios.filter(s => s.category === cat.id);
+    if (!catScenarios.length) return;
+    const catLabel = lang === 'fr' ? cat.labelFr : cat.label;
+    html += `<div class="col-span-full mt-4 mb-1"><h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-400">${catLabel}</h3></div>`;
+    catScenarios.forEach(s => {
+      const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+      const desc  = lang === 'fr' && s.descFr  ? s.descFr  : s.desc;
+      const done  = completedScenarios.includes(s.id);
+      const diff  = DIFFICULTY_STYLES[s.difficulty] || DIFFICULTY_STYLES.Beginner;
+      const diffLabel = lang === 'fr' ? diff.labelFr : diff.label;
+      html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
+        ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">✓ Done</div>' : ''}
+        <div class="text-3xl mt-1">${s.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-base mb-1 pr-10">${title}</div>
+          <div class="text-zinc-400 text-sm mb-2">${desc}</div>
+          <span class="inline-block text-xs px-2 py-0.5 rounded-lg border ${diff.cls}">${diffLabel}</span>
+        </div>
+      </div>`;
+    });
+  });
+
+  grid.innerHTML = html;
+  if (practiceTitle) practiceTitle.textContent = lang === 'fr'
+    ? 'Choisissez un scénario. Vous jouez le serveur — l\'IA joue le client.'
+    : 'Choose a scenario. You play the server — the AI plays the guest.';
 }
 
 function startChat(scenarioId) {
@@ -1215,6 +1273,11 @@ function startChat(scenarioId) {
   const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
   document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
   document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-input').disabled = false;
+  document.getElementById('chat-send-btn').disabled = false;
+  const summaryEl = document.getElementById('scenario-summary');
+  if (summaryEl) summaryEl.remove();
+  scenarioCoachingNotes = [];
   document.getElementById('practice-scenarios').classList.add('hidden');
   document.getElementById('practice-chat').classList.remove('hidden');
   sendInitialMessage();
@@ -1246,9 +1309,11 @@ async function sendInitialMessage() {
     });
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });
-    const cleanReply = stripMarkdown(data.reply);
-    replaceLast(cleanReply);
-    const guestText = cleanReply.split(/\[Coaching note:/i)[0].trim();
+    const clean = stripMarkdown(data.reply);
+    const parts = clean.split(/\[Coaching note:/i);
+    const guestText = parts[0].trim();
+    if (parts[1]) scenarioCoachingNotes.push(parts[1].replace(/\]$/, '').trim());
+    replaceLast(guestText);
     speakText(guestText);
   } catch {
     replaceLast(lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.');
@@ -1275,16 +1340,17 @@ async function sendChat() {
     const parts = stripMarkdown(data.reply).split(/\[Coaching note:/i);
     const guestText = parts[0].trim();
     const coaching = parts[1] ? parts[1].replace(/\]$/, '').trim() : null;
-    let html = '<p>' + escHtml(guestText) + '</p>';
-    if (coaching) html += `<div class="mt-3 bg-amber-400/10 border border-amber-400/30 rounded-xl px-4 py-3 text-sm text-amber-300"><span class="font-semibold">📋 Coaching:</span> ${escHtml(coaching)}</div>`;
-    replaceLastHtml(html);
+    if (coaching) scenarioCoachingNotes.push(coaching);
+    replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
     speakText(guestText);
-    if (chatHistory.filter(m => m.role === 'user').length === 3) {
+    const userTurns = chatHistory.filter(m => m.role === 'user').length;
+    if (userTurns === 3) {
       completedScenarios.push(chatScenarioId);
       localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
       pushScenarioToServer(chatScenarioId);
       checkBadgesLocal();
       renderScenarios();
+      showScenarioSummary();
     }
   } catch {
     replaceLastHtml(`<p class="text-red-400">${lang==='fr'?'Erreur de connexion':'Connection error'}</p>`);
@@ -1292,6 +1358,29 @@ async function sendChat() {
   input.disabled = false;
   document.getElementById('chat-send-btn').disabled = false;
   input.focus();
+}
+
+function showScenarioSummary() {
+  const chatEl = document.getElementById('practice-chat');
+  if (!chatEl) return;
+  const existing = document.getElementById('scenario-summary');
+  if (existing) existing.remove();
+  const heading     = lang === 'fr' ? '📋 Résumé de la session' : '📋 Session Summary';
+  const subheading  = lang === 'fr' ? 'Voici vos notes de coaching :' : 'Here\'s your coaching feedback:';
+  const noNotes     = lang === 'fr' ? 'Excellent travail — aucune correction nécessaire !' : 'Excellent work — no corrections needed!';
+  const tryAgain    = lang === 'fr' ? 'Essayer un autre scénario →' : 'Try another scenario →';
+  const notesHtml = scenarioCoachingNotes.length
+    ? '<ol class="list-decimal list-inside space-y-2 text-sm text-zinc-300">' + scenarioCoachingNotes.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ol>'
+    : `<p class="text-emerald-400 text-sm">${noNotes}</p>`;
+  const summary = document.createElement('div');
+  summary.id = 'scenario-summary';
+  summary.className = 'mt-6 bg-amber-400/10 border border-amber-400/30 rounded-3xl p-6 space-y-4';
+  summary.innerHTML = `<h3 class="font-semibold text-lg text-amber-300">${heading}</h3>
+    <p class="text-zinc-400 text-sm">${subheading}</p>
+    ${notesHtml}
+    <button onclick="exitChat()" class="mt-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl text-sm transition-colors">${tryAgain}</button>`;
+  chatEl.appendChild(summary);
+  summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function appendChatMessage(role, text) {
@@ -1342,6 +1431,12 @@ function answerQuiz(modId, questionIdx, chosen, correct, btn) {
 function completeLesson(id) {
   const score = quizScores[id];
   const pct = score ? Math.round((score.correct/score.total)*100) : 0;
+  if (pct > 0) {
+    if (!savedQuizScores[id] || pct > savedQuizScores[id]) {
+      savedQuizScores[id] = pct;
+      localStorage.setItem('sma-quiz-scores', JSON.stringify(savedQuizScores));
+    }
+  }
   updateProgress(id, 10, pct);
   closeModal();
   checkCertificate();
@@ -1352,8 +1447,64 @@ function completeLesson(id) {
 }
 
 // =========================================================
-// CERTIFICATE
+// GLOSSARY
 // =========================================================
+const glossaryTerms = [
+  { term:'Mise en place',    termFr:'Mise en place',      def:'Everything in its place. The preparation and organisation of all equipment and ingredients before service begins.',                                               defFr:'Tout à sa place. La préparation et l\'organisation de tout le matériel et des ingrédients avant le début du service.' },
+  { term:"86'd",             termFr:'86 / Épuisé',        def:'When an item is sold out or unavailable. "We\'re 86\'d on the halibut" means it\'s off the menu for the night.',                                               defFr:'Quand un article est épuisé ou indisponible. "On est 86 sur la sole" signifie qu\'il n\'est plus disponible ce soir.' },
+  { term:'Covers',           termFr:'Couverts',           def:'The number of guests served. "We did 200 covers tonight" means 200 individual guests were seated and served.',                                                    defFr:'Le nombre de clients servis. "On a fait 200 couverts ce soir" signifie que 200 clients individuels ont été servis.' },
+  { term:'Degustation',      termFr:'Dégustation',        def:'A tasting menu — a series of small, curated dishes that showcase the chef\'s style, typically 5–12 courses.',                                                    defFr:'Un menu dégustation — une série de petits plats soigneusement sélectionnés présentant le style du chef, généralement 5 à 12 services.' },
+  { term:'Sommelier',        termFr:'Sommelier',          def:'A trained wine professional responsible for curating wine lists, advising guests on pairings, and managing the cellar.',                                          defFr:'Un professionnel formé aux vins, responsable de la carte des vins, des conseils aux clients sur les accords et de la gestion de la cave.' },
+  { term:"Maître d'",        termFr:"Maître d'hôtel",     def:'The head of the front-of-house team. Responsible for seating, reservations, and ensuring the overall guest experience meets the restaurant\'s standards.',       defFr:'Le responsable de l\'équipe de salle. Responsable du placement, des réservations et de la qualité de l\'expérience client.' },
+  { term:'Amuse-bouche',     termFr:'Amuse-bouche',       def:'A small, complimentary bite-sized appetiser sent from the kitchen before the meal begins — intended to "amuse the mouth".',                                      defFr:'Une petite bouchée offerte par la cuisine avant le début du repas — destinée à "amuser la bouche".' },
+  { term:'Entrée',           termFr:'Entrée',             def:'In North America, the main course. In Europe, the starter or first course. Always confirm regional usage with your management team.',                             defFr:'En Amérique du Nord, le plat principal. En Europe, le plat d\'entrée ou premier service. Confirmez toujours l\'usage régional avec votre équipe.' },
+  { term:'Intermezzo',       termFr:'Intermezzo',         def:'A small palate cleanser — often a sorbet — served between courses to reset the guest\'s palate before the next dish.',                                           defFr:'Un petit nettoyeur de palais — souvent un sorbet — servi entre deux plats pour rafraîchir le palais avant le plat suivant.' },
+  { term:'Tronc',            termFr:'Tronc',              def:'A shared tipping pool where all gratuities are collected centrally and distributed among staff according to a set formula.',                                      defFr:'Un système de partage des pourboires où toutes les gratifications sont collectées et distribuées selon une formule définie.' },
+  { term:'Upselling',        termFr:'Vente additionnelle',def:'Encouraging guests to choose higher-value items — a premium wine, a supplement, or a dessert — in a natural, guest-focused way.',                               defFr:'Encourager les clients à choisir des articles de plus grande valeur — un vin premium, un supplément ou un dessert — de manière naturelle et centrée sur le client.' },
+  { term:'Cross-selling',    termFr:'Vente croisée',      def:'Suggesting complementary items to accompany a guest\'s order, such as recommending a wine pairing with a main course.',                                          defFr:'Suggérer des articles complémentaires pour accompagner la commande d\'un client, comme recommander un accord vin avec un plat.' },
+  { term:'Turn time',        termFr:'Temps de rotation',  def:'The time it takes to seat, serve, and clear a table for the next party. High-volume restaurants carefully manage turn times to maximise covers.',                defFr:'Le temps nécessaire pour asseoir, servir et débarrasser une table pour le prochain groupe. Les restaurants à fort volume gèrent soigneusement les rotations.' },
+  { term:'Side work',        termFr:'Travail annexe',     def:'Tasks performed outside of direct table service — restocking, polishing cutlery, folding napkins, rolling silverware. Usually done at opening or closing.',      defFr:'Tâches effectuées en dehors du service direct — réapprovisionnement, polissage des couverts, pliage des serviettes. Effectuées généralement à l\'ouverture ou la fermeture.' },
+  { term:'POS',              termFr:'Caisse / POS',       def:'Point of Sale — the computer system used to enter orders, split bills, and process payments. Examples include Toast, Square, and Lightspeed.',                   defFr:'Point de vente — le système informatique utilisé pour saisir les commandes, partager les notes et traiter les paiements.' },
+  { term:'Chit',             termFr:'Bon de commande',    def:'A printed or handwritten order ticket passed from the server to the kitchen. "Put in a chit for table 5" means send the order.',                                 defFr:'Un ticket de commande imprimé ou manuscrit transmis du serveur à la cuisine. "Mets un bon pour la table 5" signifie envoie la commande.' },
+  { term:'Family meal',      termFr:'Repas du personnel', def:'A meal prepared and eaten by the restaurant\'s staff before service begins. A tradition in most restaurants to fuel the team.',                                   defFr:'Un repas préparé et consommé par le personnel du restaurant avant le début du service. Une tradition dans la plupart des restaurants.' },
+  { term:'Palate',           termFr:'Palais',             def:'A person\'s ability to taste and identify flavours. Developing your palate means learning to recognise tasting notes in food and wine.',                         defFr:'La capacité d\'une personne à goûter et identifier les saveurs. Développer son palais signifie apprendre à reconnaître les notes de dégustation.' },
+  { term:'Tannins',          termFr:'Tanins',             def:'Natural compounds found in grape skins, seeds, and oak. They create a drying, grippy sensation in red wines and act as a preservative.',                         defFr:'Composés naturels présents dans les peaux, graines de raisin et chêne. Ils créent une sensation de sécheresse dans les vins rouges et agissent comme conservateur.' },
+  { term:'Corked',           termFr:'Bouchonné',          def:'A wine fault caused by TCA contamination from a flawed cork. The wine smells musty, like wet cardboard or damp basement. The bottle should be replaced.',       defFr:'Un défaut du vin causé par une contamination TCA d\'un bouchon défectueux. Le vin sent le moisi, comme du carton mouillé. La bouteille doit être remplacée.' },
+  { term:'Decanting',        termFr:'Décantation',        def:'Pouring wine slowly from its bottle into a decanter to separate sediment and allow the wine to breathe and open up its aromas.',                                 defFr:'Verser le vin lentement de sa bouteille dans une carafe pour séparer le dépôt et permettre au vin de s\'oxygéner et développer ses arômes.' },
+  { term:'Toast point',      termFr:'Canapé / Toast',     def:'A small, crisp piece of bread served as a base for canapés or appetisers. Getting the timing right means they arrive warm and crisp, not soggy.',              defFr:'Un petit morceau de pain croustillant servant de base pour les canapés ou amuse-bouches. Le bon timing garantit qu\'ils arrivent chauds et croustillants.' },
+  { term:'Blind tasting',    termFr:'Dégustation à l\'aveugle', def:'Tasting a wine without knowing its identity — grape variety, region, or producer — to develop an unbiased palate and improve deduction skills.',       defFr:'Déguster un vin sans connaître son identité — cépage, région ou producteur — pour développer un palais impartial.' },
+  { term:'Service charge',   termFr:'Frais de service',   def:'A mandatory or discretionary percentage added to the bill, typically 10–20%, intended to compensate front-of-house staff for their service.',                    defFr:'Un pourcentage obligatoire ou discrétionnaire ajouté à la note, généralement 10 à 20%, destiné à rémunérer le personnel de salle.' },
+  { term:'Gratuity',         termFr:'Pourboire',          def:'A voluntary tip left by a guest in appreciation of service. Distinct from a mandatory service charge, a gratuity is given at the guest\'s discretion.',         defFr:'Un pourboire volontaire laissé par un client en remerciement du service. Distinct des frais de service obligatoires, le pourboire est laissé à la discrétion du client.' },
+];
+
+let glossaryOpen = false;
+
+function toggleGlossary() {
+  glossaryOpen = !glossaryOpen;
+  const body = document.getElementById('glossary-body');
+  const chevron = document.getElementById('glossary-chevron');
+  if (body) body.classList.toggle('hidden', !glossaryOpen);
+  if (chevron) chevron.textContent = glossaryOpen ? '▲' : '▼';
+  if (glossaryOpen) renderGlossary();
+}
+
+function renderGlossary() {
+  const el = document.getElementById('glossary-terms');
+  if (!el) return;
+  el.innerHTML = glossaryTerms.map(t => {
+    const term = lang === 'fr' ? t.termFr : t.term;
+    const def  = lang === 'fr' ? t.defFr  : t.def;
+    return `<div class="bg-zinc-800 rounded-2xl p-4">
+      <div class="font-semibold text-amber-300 mb-1">${term}</div>
+      <div class="text-zinc-400 text-sm leading-relaxed">${def}</div>
+    </div>`;
+  }).join('');
+  const heading = document.getElementById('glossary-heading');
+  const sub = document.getElementById('glossary-sub');
+  if (heading) heading.textContent = lang === 'fr' ? 'Glossaire de l\'hôtellerie' : 'Hospitality Glossary';
+  if (sub) sub.textContent = lang === 'fr' ? '25 termes essentiels que tout serveur devrait connaître' : '25 essential terms every server should know';
+}
+
 function checkCertificate() {
   const allDone = userProgress.every(p => p.progress >= 100);
   const banner = document.getElementById('certificate-banner');
@@ -1792,21 +1943,63 @@ function renderAchievements() {
 
 function renderAll() {
   renderScenarios();
+  const nextCardEl = document.getElementById('next-module-card');
   const continueEl = document.getElementById('continue-modules');
   const allEl = document.getElementById('all-modules');
   const sidebarEl = document.getElementById('sidebar-modules');
+
+  const nextModule = modules.find(m => {
+    const p = userProgress.find(u => u.id === m.id);
+    return p && p.progress < 100;
+  });
 
   const inProgress = modules.filter(m => {
     const p = userProgress.find(u => u.id === m.id);
     return p && p.progress < 100;
   }).slice(0, 3);
 
+  if (nextCardEl) {
+    if (nextModule) {
+      const p = userProgress.find(u => u.id === nextModule.id);
+      const minsLabel = lang === 'fr' ? `~${nextModule.mins} min` : `~${nextModule.mins} min`;
+      const stepLabel = lang === 'fr' ? `Étape ${nextModule.id} sur 12` : `Step ${nextModule.id} of 12`;
+      const btnLabel = lang === 'fr' ? (p.progress > 0 ? 'Continuer →' : 'Commencer →') : (p.progress > 0 ? 'Continue →' : 'Start →');
+      const heading = lang === 'fr' ? (p.progress > 0 ? 'Reprendre là où vous avez arrêté' : 'Commencez par ici') : (p.progress > 0 ? 'Pick up where you left off' : 'Start here');
+      nextCardEl.innerHTML = `<div onclick="openModule(${nextModule.id})" class="cursor-pointer bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 hover:border-amber-400 rounded-3xl p-6 flex items-center gap-6 mb-2 transition-all">
+        <div class="text-5xl">${nextModule.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">${heading}</div>
+          <div class="font-semibold text-xl mb-2">${getModuleTitle(nextModule)}</div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-zinc-400 text-xs">${stepLabel}</span>
+            <span class="text-zinc-600">•</span>
+            <span class="text-zinc-400 text-xs">⏱ ${minsLabel}</span>
+          </div>
+          <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full transition-all" style="width:${p.progress}%"></div></div>
+          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+        </div>
+        <div class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm">${btnLabel}</div>
+      </div>`;
+    } else {
+      nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-emerald-900/30 to-zinc-900 border border-emerald-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
+        <div class="text-5xl">🎓</div>
+        <div><div class="text-emerald-400 font-semibold text-lg">${lang==='fr'?'Tous les modules complétés !':'All modules complete!'}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Téléchargez votre certificat ci-dessous.':'Download your certificate below.'}</div></div>
+      </div>`;
+    }
+  }
+
   if (continueEl) {
     continueEl.innerHTML = inProgress.map(m => {
       const p = userProgress.find(u => u.id === m.id);
+      const qs = savedQuizScores[m.id];
       return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
-        <div class="text-4xl mb-3">${m.emoji}</div>
-        <div class="font-semibold text-lg mb-3">${getModuleTitle(m)}</div>
+        <div class="flex justify-between items-start mb-3">
+          <div class="text-4xl">${m.emoji}</div>
+          ${qs != null ? `<span class="text-xs px-2 py-1 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
+        </div>
+        <div class="font-semibold text-lg mb-1">${getModuleTitle(m)}</div>
+        <div class="text-zinc-500 text-xs mb-3">⏱ ~${m.mins} min</div>
         <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
         <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
       </div>`;
@@ -1814,13 +2007,23 @@ function renderAll() {
   }
 
   if (allEl) {
-    allEl.innerHTML = modules.map(m => {
+    allEl.innerHTML = modules.map((m, idx) => {
       const p = userProgress.find(u => u.id === m.id);
       const done = p.progress >= 100;
-      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start">
-        <div class="text-3xl">${m.emoji}</div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2"><div class="font-semibold mb-2">${getModuleTitle(m)}</div>${done?'<span class="text-emerald-400 text-xs ml-1">✓</span>':''}</div>
+      const qs = savedQuizScores[m.id];
+      const orderNum = idx + 1;
+      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
+        <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
+        <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="font-semibold mb-1">${getModuleTitle(m)}</div>
+            ${done?'<span class="text-emerald-400 text-xs">✓</span>':''}
+          </div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
+            ${qs != null ? `<span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
+          </div>
           <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
           <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
         </div>
