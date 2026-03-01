@@ -216,8 +216,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
     await updateStreak(user.id);
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-    res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax' });
-    res.redirect('/app');
+    res.redirect('/login?token=' + encodeURIComponent(token));
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.redirect('/login?error=google_auth_failed');
