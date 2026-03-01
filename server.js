@@ -90,21 +90,6 @@ function optionalAuth(req, res, next) {
   next();
 }
 
-// ── TEMP: one-time role promotion (remove after use) ──────────────────────────
-app.get('/api/admin/promote', async (req, res) => {
-  const { email, secret } = req.query;
-  if (secret !== 'SMA-SETUP-2026') return res.status(403).json({ error: 'Forbidden' });
-  if (!email) return res.status(400).json({ error: 'Email required' });
-  try {
-    const result = await db.query(
-      "UPDATE users SET role = 'admin' WHERE email = $1 RETURNING id, name, email, role",
-      [email.toLowerCase()]
-    );
-    if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
-    res.json({ success: true, user: result.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
 // ── Page routes ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
