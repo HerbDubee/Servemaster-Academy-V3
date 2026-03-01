@@ -514,6 +514,7 @@ let currentUser = null;
 let authToken = localStorage.getItem('sma-token') || null;
 
 function hasPaidPlan() {
+  if (currentUser?.role === 'admin') return true;
   const plan = currentUser?.effective_plan || currentUser?.subscription_status;
   return plan && plan !== 'free';
 }
@@ -571,7 +572,7 @@ function applyUserToNav(user) {
   }
   const upgradeLink = document.getElementById('dd-upgrade-link');
   if (upgradeLink) upgradeLink.classList.toggle('hidden', hasPaidPlan());
-  if (user.role === 'manager') {
+  if (user.role === 'manager' || user.role === 'admin') {
     document.getElementById('nav-manager').classList.remove('hidden');
     document.getElementById('dd-manager-btn').classList.remove('hidden');
   }

@@ -23,8 +23,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'servemaster-secret-key-2025';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 
-const STRIPE_MONTHLY_PRICE_ID = process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1T68eiEYo1GIbgr0JGPS6Bi5';
-const STRIPE_ANNUAL_PRICE_ID = process.env.STRIPE_ANNUAL_PRICE_ID || 'price_1T68eiEYo1GIbgr0vlIaYema';
 const STRIPE_PREMIUM_MONTHLY_ID = process.env.STRIPE_PREMIUM_MONTHLY_ID || '';
 const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
 const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
@@ -430,8 +428,6 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
     premium_annual:  STRIPE_PREMIUM_ANNUAL_ID,
     starter_team:    STRIPE_STARTER_TEAM_ID,
     pro_team:        STRIPE_PRO_TEAM_ID,
-    monthly:         STRIPE_MONTHLY_PRICE_ID,
-    annual:          STRIPE_ANNUAL_PRICE_ID,
   };
   const priceId = priceMap[plan];
   if (!priceId) return res.status(400).json({ error: 'Invalid plan' });
