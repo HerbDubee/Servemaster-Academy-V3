@@ -439,7 +439,7 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
   try {
     const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
-    if (isTeamPlan && user.role !== 'manager') {
+    if (isTeamPlan && user.role !== 'manager' && user.role !== 'admin') {
       return res.status(403).json({ error: 'Team plans require a Manager account. Create a restaurant first.' });
     }
     const stripe = await getUncachableStripeClient();
@@ -451,7 +451,7 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
     }
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const metadata = { plan, userId: String(user.id) };
-    if (isTeamPlan) metadata.restaurantId = String(user.restaurant_id);
+    if (isTeamPlan && user.restaurant_id) metadata.restaurantId = String(user.restaurant_id);
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
