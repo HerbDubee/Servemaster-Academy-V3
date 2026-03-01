@@ -45,3 +45,11 @@ externalPort = 80
 [agent]
 expertMode = true
 integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0"]
+
+[userenv]
+
+[userenv.shared]
+STRIPE_PREMIUM_MONTHLY_ID = "price_1T69MUEYo1GIbgr0GjmBhQbL"
+STRIPE_PREMIUM_ANNUAL_ID = "price_1T69MUEYo1GIbgr0Vx79VBn2"
+STRIPE_STARTER_TEAM_ID = "price_1T69MVEYo1GIbgr0b3DSeEXF"
+STRIPE_PRO_TEAM_ID = "price_1T69MVEYo1GIbgr0dfPsj7My"

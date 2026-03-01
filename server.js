@@ -24,6 +24,17 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 
 const STRIPE_MONTHLY_PRICE_ID = process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1T68eiEYo1GIbgr0JGPS6Bi5';
 const STRIPE_ANNUAL_PRICE_ID = process.env.STRIPE_ANNUAL_PRICE_ID || 'price_1T68eiEYo1GIbgr0vlIaYema';
+const STRIPE_PREMIUM_MONTHLY_ID = process.env.STRIPE_PREMIUM_MONTHLY_ID || '';
+const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
+const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
+const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
+
+const PLAN_TIER_ORDER = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+function highestPlan(a, b) {
+  const ai = PLAN_TIER_ORDER.indexOf(a || 'free');
+  const bi = PLAN_TIER_ORDER.indexOf(b || 'free');
+  return ai >= bi ? (a || 'free') : (b || 'free');
+}
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -139,7 +150,14 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
     const result = await db.query('SELECT id, name, email, role, experience_level, restaurant_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
-    res.json({ user: result.rows[0] });
+    const user = result.rows[0];
+    let restaurantPlan = 'free';
+    if (user.restaurant_id) {
+      const rRes = await db.query('SELECT plan FROM restaurants WHERE id = $1', [user.restaurant_id]);
+      restaurantPlan = rRes.rows[0]?.plan || 'free';
+    }
+    user.effective_plan = highestPlan(user.subscription_status, restaurantPlan);
+    res.json({ user });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user' });
   }
@@ -402,10 +420,23 @@ app.get('/api/payments/publishable-key', async (req, res) => {
 
 app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
   const { plan } = req.body;
-  const priceId = plan === 'annual' ? STRIPE_ANNUAL_PRICE_ID : STRIPE_MONTHLY_PRICE_ID;
+  const priceMap = {
+    premium_monthly: STRIPE_PREMIUM_MONTHLY_ID,
+    premium_annual:  STRIPE_PREMIUM_ANNUAL_ID,
+    starter_team:    STRIPE_STARTER_TEAM_ID,
+    pro_team:        STRIPE_PRO_TEAM_ID,
+    monthly:         STRIPE_MONTHLY_PRICE_ID,
+    annual:          STRIPE_ANNUAL_PRICE_ID,
+  };
+  const priceId = priceMap[plan];
+  if (!priceId) return res.status(400).json({ error: 'Invalid plan' });
+  const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
   try {
     const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
+    if (isTeamPlan && user.role !== 'manager') {
+      return res.status(403).json({ error: 'Team plans require a Manager account. Create a restaurant first.' });
+    }
     const stripe = await getUncachableStripeClient();
     let customerId = user.stripe_customer_id;
     if (!customerId) {
@@ -414,11 +445,14 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       await db.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [customerId, user.id]);
     }
     const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const metadata = { plan, userId: String(user.id) };
+    if (isTeamPlan) metadata.restaurantId = String(user.restaurant_id);
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
+      metadata,
       success_url: `${baseUrl}/api/payments/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
     });
@@ -433,13 +467,26 @@ app.get('/api/payments/success', async (req, res) => {
   const { session_id } = req.query;
   try {
     const stripe = await getUncachableStripeClient();
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const session = await stripe.checkout.sessions.retrieve(session_id, { expand: ['metadata'] });
     if (session.payment_status === 'paid' || session.status === 'complete') {
       const customerId = session.customer;
-      await db.query(
-        "UPDATE users SET subscription_status = 'pro', stripe_subscription_id = $1 WHERE stripe_customer_id = $2",
-        [session.subscription, customerId]
-      );
+      const plan = session.metadata?.plan || 'premium';
+      const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
+      if (isTeamPlan && session.metadata?.restaurantId) {
+        await db.query(
+          'UPDATE restaurants SET plan = $1 WHERE id = $2',
+          [plan, parseInt(session.metadata.restaurantId)]
+        );
+        await db.query(
+          'UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2',
+          [session.subscription, customerId]
+        );
+      } else {
+        await db.query(
+          'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
+          [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
+        );
+      }
     }
     res.redirect('/app?upgraded=1');
   } catch (err) {
@@ -452,31 +499,47 @@ app.get('/api/payments/cancel', (req, res) => res.redirect('/pricing'));
 
 app.get('/api/payments/status', authMiddleware, async (req, res) => {
   try {
-    const result = await db.query('SELECT subscription_status FROM users WHERE id = $1', [req.user.id]);
-    res.json({ status: result.rows[0]?.subscription_status || 'free' });
+    const result = await db.query('SELECT subscription_status, restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const user = result.rows[0];
+    let restaurantPlan = 'free';
+    if (user?.restaurant_id) {
+      const rRes = await db.query('SELECT plan FROM restaurants WHERE id = $1', [user.restaurant_id]);
+      restaurantPlan = rRes.rows[0]?.plan || 'free';
+    }
+    const effective_plan = highestPlan(user?.subscription_status, restaurantPlan);
+    res.json({ status: user?.subscription_status || 'free', effective_plan });
   } catch (err) { res.status(500).json({ error: 'Failed to check subscription' }); }
 });
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 app.get('/api/admin/overview', adminMiddleware, async (req, res) => {
   try {
-    const [users, new7d, new30d, active7d, proSubs, subs, scenarios, modules, contacts] = await Promise.all([
+    const [users, new7d, new30d, active7d, tierCounts, teamCounts, subs, scenarios, modules, contacts] = await Promise.all([
       db.query('SELECT COUNT(*) as cnt FROM users'),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '7 days'"),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '30 days'"),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE last_login > NOW() - INTERVAL '7 days'"),
-      db.query("SELECT COUNT(*) as cnt FROM users WHERE subscription_status = 'pro'"),
+      db.query("SELECT subscription_status, COUNT(*) as cnt FROM users GROUP BY subscription_status"),
+      db.query("SELECT plan, COUNT(*) as cnt FROM restaurants WHERE plan != 'free' GROUP BY plan"),
       db.query('SELECT COUNT(*) as cnt FROM email_subscribers WHERE active = TRUE'),
       db.query('SELECT COUNT(*) as cnt FROM scenario_scores'),
       db.query('SELECT COUNT(*) as cnt FROM user_progress WHERE progress >= 100'),
       db.query('SELECT COUNT(*) as cnt FROM contact_messages'),
     ]);
+    const byTier = {};
+    tierCounts.rows.forEach(r => { byTier[r.subscription_status || 'free'] = parseInt(r.cnt); });
+    const byTeam = {};
+    teamCounts.rows.forEach(r => { byTeam[r.plan] = parseInt(r.cnt); });
     res.json({
       total_users: parseInt(users.rows[0].cnt),
       new_users_7d: parseInt(new7d.rows[0].cnt),
       new_users_30d: parseInt(new30d.rows[0].cnt),
       active_users_7d: parseInt(active7d.rows[0].cnt),
-      pro_subscribers: parseInt(proSubs.rows[0].cnt),
+      free_users: byTier['free'] || 0,
+      premium_subscribers: byTier['premium'] || 0,
+      starter_team_locations: byTeam['starter_team'] || 0,
+      pro_team_locations: byTeam['pro_team'] || 0,
+      enterprise_accounts: byTier['enterprise'] || 0,
       newsletter_subs: parseInt(subs.rows[0].cnt),
       scenarios_completed: parseInt(scenarios.rows[0].cnt),
       modules_completed: parseInt(modules.rows[0].cnt),

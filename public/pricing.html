@@ -6,7 +6,13 @@
 <title>Pricing — ServeMaster Academy</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; } .heading { font-family: 'Playfair Display', serif; }</style>
+<style>
+body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+.heading { font-family: 'Playfair Display', serif; }
+details summary::-webkit-details-marker { display: none; }
+details summary::after { content: '+'; float: right; font-size: 1.2rem; color: #a1a1aa; transition: transform 0.2s; }
+details[open] summary::after { content: '−'; }
+</style>
 </head>
 <body>
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
@@ -26,85 +32,170 @@
   </div>
 </nav>
 
-<main class="max-w-5xl mx-auto px-4 py-20">
-  <div class="text-center mb-12">
-    <h1 class="heading text-5xl font-black mb-4">Simple, honest pricing</h1>
-    <p class="text-zinc-400 text-xl">Start free. Upgrade when you're ready for everything.</p>
+<main class="max-w-7xl mx-auto px-4 py-20">
 
-    <!-- Toggle -->
+  <!-- Header -->
+  <div class="text-center mb-14">
+    <h1 class="heading text-5xl font-black mb-4">Simple, honest pricing</h1>
+    <p class="text-zinc-400 text-xl max-w-2xl mx-auto">Start free. Upgrade when you're ready. Every plan built for real restaurant teams.</p>
+
+    <!-- Toggle (only affects Premium Individual) -->
     <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-1 mt-8">
-      <button id="btn-monthly" onclick="setPlan('monthly')" class="px-5 py-2 rounded-xl text-sm font-semibold bg-amber-400 text-black transition-colors">Monthly</button>
-      <button id="btn-annual" onclick="setPlan('annual')" class="px-5 py-2 rounded-xl text-sm font-semibold text-zinc-400 transition-colors">Annual <span class="text-emerald-400 ml-1">Save 34%</span></button>
+      <button id="btn-monthly" onclick="setBilling('monthly')" class="px-5 py-2 rounded-xl text-sm font-semibold bg-amber-400 text-black transition-colors">Monthly</button>
+      <button id="btn-annual" onclick="setBilling('annual')" class="px-5 py-2 rounded-xl text-sm font-semibold text-zinc-400 transition-colors">Annual <span class="text-emerald-400 ml-1">Save 26%</span></button>
     </div>
+    <p class="text-zinc-500 text-xs mt-2">Annual billing applies to Premium Individual only</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-    <!-- Free -->
-    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-      <div class="mb-6">
-        <div class="text-zinc-400 text-sm font-medium mb-1">FREE</div>
-        <div class="text-4xl font-bold">$0</div>
-        <div class="text-zinc-500 text-sm">forever</div>
+  <!-- Pricing cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+
+    <!-- FREE -->
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-7 flex flex-col">
+      <div class="mb-5">
+        <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">FREE</div>
+        <div class="text-4xl font-bold mb-1">$0</div>
+        <div class="text-zinc-500 text-sm">forever — no credit card</div>
       </div>
-      <ul class="space-y-3 text-sm mb-8">
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 3 training modules</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 5 AI roleplay scenarios</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Progress tracking</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Badges & streaks</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Voice roleplay</span></li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">All 30 scenarios</span></li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Completion certificate</span></li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Leaderboard</span></li>
+      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> 3 training modules</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> 5 AI roleplay scenarios</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Progress tracking</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Badges &amp; streaks</li>
+        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Voice roleplay</span></li>
+        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">All 30 scenarios</span></li>
+        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Certificate</span></li>
       </ul>
-      <a href="/signup" class="block text-center border border-zinc-700 hover:border-amber-400 text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors">Get Started Free</a>
+      <a href="/signup" class="block text-center border border-zinc-700 hover:border-amber-400 text-white font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Get Started Free</a>
     </div>
 
-    <!-- Pro -->
-    <div class="bg-gradient-to-b from-amber-950/40 to-zinc-900 border border-amber-500/50 rounded-3xl p-8 relative">
-      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
-      <div class="mb-6">
-        <div class="text-amber-400 text-sm font-medium mb-1">PRO</div>
-        <div id="price-display" class="text-4xl font-bold">$19<span class="text-xl font-medium text-zinc-400">/mo</span></div>
-        <div id="price-sub" class="text-zinc-500 text-sm">billed monthly, cancel anytime</div>
+    <!-- PREMIUM INDIVIDUAL -->
+    <div class="bg-gradient-to-b from-amber-950/50 to-zinc-900 border border-amber-500/60 rounded-3xl p-7 flex flex-col relative xl:col-span-1">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">BEST VALUE</div>
+      <div class="mb-5">
+        <div class="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">PREMIUM INDIVIDUAL</div>
+        <div id="premium-price" class="text-4xl font-bold mb-1">$7.99<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div id="premium-sub" class="text-zinc-500 text-sm">billed monthly, cancel anytime</div>
       </div>
-      <ul class="space-y-3 text-sm mb-8">
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 12 training modules</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 30 AI roleplay scenarios</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Full voice conversation mode</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Tray balancing simulator</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Completion certificate</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Global leaderboard</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Hospitality glossary</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> EN / FR bilingual</li>
+      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> All 12 training modules</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> All 30 AI roleplay scenarios</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Full voice conversation mode</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Completion certificate</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Global leaderboard</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> EN / FR bilingual</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Hospitality glossary</li>
       </ul>
-      <button onclick="startCheckout()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3.5 rounded-2xl transition-colors">Subscribe Now →</button>
+      <button onclick="startCheckout('premium')" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
     </div>
+
+    <!-- STARTER TEAM -->
+    <div class="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-3xl p-7 flex flex-col transition-colors">
+      <div class="mb-5">
+        <div class="text-zinc-300 text-xs font-semibold uppercase tracking-wider mb-2">STARTER TEAM</div>
+        <div class="text-4xl font-bold mb-1">$69<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div class="text-zinc-500 text-sm">per location, up to 10 staff</div>
+      </div>
+      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Premium</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Up to 10 staff accounts</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Team progress dashboard</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Staff performance analytics</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> CSV progress export</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Invite link management</li>
+        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Custom scenarios</span></li>
+      </ul>
+      <button onclick="startCheckout('starter_team')" class="w-full border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-white font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
+      <p class="text-zinc-600 text-xs text-center mt-3">Requires Manager account</p>
+    </div>
+
+    <!-- PRO TEAM -->
+    <div class="bg-gradient-to-b from-zinc-800 to-zinc-900 border border-zinc-600 rounded-3xl p-7 flex flex-col relative">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-300 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">MOST POPULAR FOR TEAMS</div>
+      <div class="mb-5">
+        <div class="text-zinc-200 text-xs font-semibold uppercase tracking-wider mb-2">PRO TEAM</div>
+        <div class="text-4xl font-bold mb-1">$149<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div class="text-zinc-500 text-sm">per location, unlimited staff</div>
+      </div>
+      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Starter</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Unlimited staff accounts</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom scenario builder</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Advanced analytics</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Priority support</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Onboarding call included</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Early access to new features</li>
+      </ul>
+      <button onclick="startCheckout('pro_team')" class="w-full bg-white hover:bg-zinc-200 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
+      <p class="text-zinc-600 text-xs text-center mt-3">Requires Manager account</p>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="bg-zinc-900/50 border border-zinc-700 border-dashed rounded-3xl p-7 flex flex-col">
+      <div class="mb-5">
+        <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">ENTERPRISE</div>
+        <div class="text-4xl font-bold mb-1 text-zinc-300">Custom</div>
+        <div class="text-zinc-500 text-sm">multi-location &amp; white label</div>
+      </div>
+      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Pro Team</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Multiple locations</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> White label branding</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Dedicated account manager</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom SLA &amp; uptime</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Staff SSO / directory sync</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom billing terms</li>
+      </ul>
+      <a href="/contact" class="block text-center border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-zinc-300 font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Contact Us →</a>
+    </div>
+
+  </div>
+
+  <!-- Plan comparison note -->
+  <div class="mt-10 text-center">
+    <p class="text-zinc-500 text-sm">All prices in USD. Team plans billed per location per month. <a href="/contact" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
   </div>
 
   <!-- FAQ -->
-  <div class="max-w-2xl mx-auto mt-20 space-y-4">
-    <h2 class="heading text-2xl font-bold text-center mb-8">Frequently asked questions</h2>
+  <div class="max-w-2xl mx-auto mt-20 space-y-3">
+    <h2 class="heading text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
+
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm">Can I cancel anytime?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes, absolutely. You can cancel your Pro subscription at any time from your account settings. You'll keep Pro access until the end of your current billing period.</p>
+      <summary class="font-semibold text-sm py-1">What's included in the Free tier?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 training modules and 5 AI roleplay scenarios — no time limit, no credit card. It's a genuine free tier, not a trial. Upgrade when you're ready for everything.</p>
     </details>
+
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm">Is there a free trial for Pro?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 modules and 5 scenarios — no time limit. It's a genuine free tier, not a trial. Upgrade to Pro whenever you're ready for the full experience.</p>
+      <summary class="font-semibold text-sm py-1">How does annual billing work for Premium Individual?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $59/year — equivalent to $4.92/month — saving you 26% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
     </details>
+
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm">What payment methods do you accept?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">We accept all major credit and debit cards (Visa, Mastercard, Amex), as well as Apple Pay and Google Pay where supported. Payments are processed securely by Stripe.</p>
+      <summary class="font-semibold text-sm py-1">How do team plans work?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Team plans are for restaurant managers. You create a Manager account, set up your restaurant, then subscribe to a Starter or Pro Team plan. You get an invite link to share with your staff — when they join, they automatically get full access through your location's plan. Each location is billed separately.</p>
     </details>
+
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm">What's the difference between monthly and annual?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing works out to $12.42/month (vs $19/month) — you save 34% by paying upfront for a full year. Features are identical either way.</p>
+      <summary class="font-semibold text-sm py-1">Can staff on a team plan use the app independently?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each staff member has their own account with their own progress, badges, streak, and certificate. The team plan simply unlocks full access for everyone connected to that location.</p>
     </details>
+
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm">Can my whole restaurant team use ServeMaster?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each team member creates their own account. Restaurant managers can create a team and track everyone's progress from the Manager Dashboard (included in Pro).</p>
+      <summary class="font-semibold text-sm py-1">Can I cancel anytime?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes. You can cancel any subscription at any time. You'll keep access until the end of your current billing period. Team plan cancellations affect all staff in that location at the end of the period.</p>
+    </details>
+
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm py-1">What payment methods are accepted?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">All major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay where supported. Payments are processed securely by Stripe. Enterprise customers can arrange invoice-based billing.</p>
+    </details>
+
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm py-1">What is Enterprise pricing?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Enterprise is custom-quoted based on number of locations, staff count, and features required (white labelling, SSO, SLA, etc.). <a href="/contact" class="text-amber-400 hover:underline">Contact us</a> and we'll put together a proposal within one business day.</p>
     </details>
   </div>
+
 </main>
 
 <footer class="border-t border-zinc-800 py-10 mt-20">
@@ -121,40 +212,56 @@
 </footer>
 
 <script>
-let selectedPlan = 'monthly';
+let billing = 'monthly';
 
-function setPlan(plan) {
-  selectedPlan = plan;
-  const monthly = document.getElementById('btn-monthly');
-  const annual = document.getElementById('btn-annual');
-  const priceDisplay = document.getElementById('price-display');
-  const priceSub = document.getElementById('price-sub');
-  if (plan === 'monthly') {
-    monthly.classList.add('bg-amber-400','text-black'); monthly.classList.remove('text-zinc-400');
-    annual.classList.remove('bg-amber-400','text-black'); annual.classList.add('text-zinc-400');
-    priceDisplay.innerHTML = '$19<span class="text-xl font-medium text-zinc-400">/mo</span>';
-    priceSub.textContent = 'billed monthly, cancel anytime';
+function setBilling(mode) {
+  billing = mode;
+  const btnM = document.getElementById('btn-monthly');
+  const btnA = document.getElementById('btn-annual');
+  const priceEl = document.getElementById('premium-price');
+  const subEl = document.getElementById('premium-sub');
+  if (mode === 'monthly') {
+    btnM.classList.add('bg-amber-400','text-black'); btnM.classList.remove('text-zinc-400');
+    btnA.classList.remove('bg-amber-400','text-black'); btnA.classList.add('text-zinc-400');
+    priceEl.innerHTML = '$7.99<span class="text-xl font-medium text-zinc-400">/mo</span>';
+    subEl.textContent = 'billed monthly, cancel anytime';
   } else {
-    annual.classList.add('bg-amber-400','text-black'); annual.classList.remove('text-zinc-400');
-    monthly.classList.remove('bg-amber-400','text-black'); monthly.classList.add('text-zinc-400');
-    priceDisplay.innerHTML = '$149<span class="text-xl font-medium text-zinc-400">/yr</span>';
-    priceSub.textContent = '$12.42/month — save 34% vs monthly';
+    btnA.classList.add('bg-amber-400','text-black'); btnA.classList.remove('text-zinc-400');
+    btnM.classList.remove('bg-amber-400','text-black'); btnM.classList.add('text-zinc-400');
+    priceEl.innerHTML = '$59<span class="text-xl font-medium text-zinc-400">/yr</span>';
+    subEl.textContent = '$4.92/month — save 26% vs monthly';
   }
 }
 
-async function startCheckout() {
+async function startCheckout(planType) {
   const token = localStorage.getItem('sma-token');
-  if (!token) { window.location.href = '/signup?redirect=pricing'; return; }
+  if (!token) {
+    window.location.href = '/signup?redirect=pricing';
+    return;
+  }
+  let plan = planType;
+  if (planType === 'premium') {
+    plan = billing === 'annual' ? 'premium_annual' : 'premium_monthly';
+  }
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
   try {
     const res = await fetch('/api/payments/create-checkout', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ plan: selectedPlan })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ plan })
     });
     const data = await res.json();
-    if (data.url) { window.location.href = data.url; }
-    else { alert('Could not start checkout. Please try again.'); }
-  } catch { alert('Connection error. Please try again.'); }
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(data.error || 'Could not start checkout. Please try again.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Subscribe →'; }
+    }
+  } catch {
+    alert('Connection error. Please try again.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Subscribe →'; }
+  }
 }
 </script>
 </body>

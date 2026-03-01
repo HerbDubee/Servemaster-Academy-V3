@@ -512,17 +512,29 @@ function applyLangStrings() {
 let currentUser = null;
 let authToken = localStorage.getItem('sma-token') || null;
 
-function isPro() {
-  return currentUser && currentUser.subscription_status === 'pro';
+function hasPaidPlan() {
+  const plan = currentUser?.effective_plan || currentUser?.subscription_status;
+  return plan && plan !== 'free';
+}
+
+function isTeamPlan() {
+  const plan = currentUser?.effective_plan || currentUser?.subscription_status;
+  return plan === 'starter_team' || plan === 'pro_team' || plan === 'enterprise';
+}
+
+function planDisplayName() {
+  const plan = currentUser?.effective_plan || currentUser?.subscription_status || 'free';
+  const names = { free: 'Free', premium: 'Premium', pro: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+  return names[plan] || 'Free';
 }
 
 function showUpgradePrompt(label) {
-  const upgradeLabel = lang === 'fr' ? 'Passer à Pro →' : 'Upgrade to Pro →';
-  const lockedLabel  = lang === 'fr' ? `🔒 ${label} — Réservé aux membres Pro` : `🔒 ${label} — Pro Members Only`;
+  const upgradeLabel = lang === 'fr' ? 'Voir les forfaits →' : 'See Plans →';
+  const lockedLabel  = lang === 'fr' ? `🔒 ${label} — Forfait payant requis` : `🔒 ${label} — Paid Plan Required`;
   return `<div class="col-span-full bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
     <div class="text-4xl mb-3">🔒</div>
     <div class="font-semibold text-lg mb-2 text-amber-300">${lockedLabel}</div>
-    <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à Pro pour accéder à tous les modules, scénarios, la voix, les certificats et plus encore.':'Upgrade to Pro for all modules, scenarios, voice roleplay, certificates and more.'}</div>
+    <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à Premium ou à un forfait équipe pour accéder à tous les modules, scénarios, la voix, les certificats et plus encore.':'Upgrade to Premium or a Team Plan to unlock all modules, scenarios, voice roleplay, certificates and more.'}</div>
     <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${upgradeLabel}</a>
   </div>`;
 }
@@ -550,13 +562,14 @@ function applyUserToNav(user) {
   document.getElementById('dd-logged-out').classList.add('hidden');
   const planBadge = document.getElementById('dd-plan-badge');
   if (planBadge) {
-    planBadge.textContent = user.subscription_status === 'pro' ? '⭐ Pro' : 'Free';
-    planBadge.className = user.subscription_status === 'pro'
+    const isPaid = hasPaidPlan();
+    planBadge.textContent = isPaid ? `⭐ ${planDisplayName()}` : 'Free';
+    planBadge.className = isPaid
       ? 'text-xs px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30 font-semibold'
       : 'text-xs px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-400 font-semibold';
   }
   const upgradeLink = document.getElementById('dd-upgrade-link');
-  if (upgradeLink) upgradeLink.classList.toggle('hidden', user.subscription_status === 'pro');
+  if (upgradeLink) upgradeLink.classList.toggle('hidden', hasPaidPlan());
   if (user.role === 'manager') {
     document.getElementById('nav-manager').classList.remove('hidden');
     document.getElementById('dd-manager-btn').classList.remove('hidden');
@@ -1096,10 +1109,10 @@ function toggleAISpeech() {
 }
 
 function startVoiceInput() {
-  if (!isPro()) {
+  if (!hasPaidPlan()) {
     alert(lang === 'fr'
-      ? '🔒 La pratique vocale est réservée aux membres Pro. Visitez /pricing pour mettre à niveau.'
-      : '🔒 Voice practice is a Pro feature. Visit /pricing to upgrade.');
+      ? '🔒 La pratique vocale est réservée aux membres payants. Visitez /pricing pour mettre à niveau.'
+      : '🔒 Voice practice requires a Premium or Team plan. Visit /pricing to upgrade.');
     window.location.href = '/pricing';
     return;
   }
@@ -1282,7 +1295,7 @@ function renderScenarios() {
       const done  = completedScenarios.includes(s.id);
       const diff  = DIFFICULTY_STYLES[s.difficulty] || DIFFICULTY_STYLES.Beginner;
       const diffLabel = lang === 'fr' ? diff.labelFr : diff.label;
-      const locked = !isPro() && scenariosShown >= FREE_SCENARIO_LIMIT;
+      const locked = !hasPaidPlan() && scenariosShown >= FREE_SCENARIO_LIMIT;
       scenariosShown++;
       if (locked) {
         if (!proGateShown) {
@@ -1552,7 +1565,7 @@ function checkCertificate() {
   const allDone = userProgress.every(p => p.progress >= 100);
   const banner = document.getElementById('certificate-banner');
   if (!banner) return;
-  if (allDone && !isPro()) {
+  if (allDone && !hasPaidPlan()) {
     banner.classList.remove('hidden');
     banner.innerHTML = `<div class="flex-1">
       <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Earned!</div>
@@ -1565,7 +1578,7 @@ function checkCertificate() {
 }
 
 function downloadCertificate() {
-  if (!isPro()) { window.location.href = '/pricing'; return; }
+  if (!hasPaidPlan()) { window.location.href = '/pricing'; return; }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
   const w = doc.internal.pageSize.getWidth();
@@ -1747,12 +1760,12 @@ document.addEventListener('click', (e) => {
 async function loadLeaderboard() {
   const el = document.getElementById('leaderboard-list');
   if (!el) return;
-  if (!isPro()) {
+  if (!hasPaidPlan()) {
     el.innerHTML = `<div class="bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
       <div class="text-4xl mb-3">🏆</div>
-      <div class="font-semibold text-lg mb-2 text-amber-300">🔒 ${lang==='fr'?'Classement mondial — Pro uniquement':'Global Leaderboard — Pro Only'}</div>
-      <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à Pro pour voir et rejoindre le classement mondial.':'Upgrade to Pro to see and join the global leaderboard.'}</div>
-      <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>
+      <div class="font-semibold text-lg mb-2 text-amber-300">🔒 ${lang==='fr'?'Classement mondial — Abonnement requis':'Global Leaderboard — Paid Plan Required'}</div>
+      <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à un forfait payant pour voir et rejoindre le classement mondial.':'Upgrade to a paid plan to see and join the global leaderboard.'}</div>
+      <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${lang==='fr'?'Voir les forfaits →':'See Plans →'}</a>
     </div>`;
     return;
   }
@@ -1961,7 +1974,7 @@ function applyUser(user) {
 // RENDER ALL
 // =========================================================
 function openModule(id) {
-  if (!isPro() && id > 3) {
+  if (!hasPaidPlan() && id > 3) {
     window.location.href = '/pricing';
     return;
   }
@@ -2067,13 +2080,13 @@ function renderAll() {
 
   if (allEl) {
     const freeModuleLimit = 3;
-    const proModulesLocked = !isPro() && modules.length > freeModuleLimit;
+    const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
     allEl.innerHTML = modules.map((m, idx) => {
       const p = userProgress.find(u => u.id === m.id);
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
       const orderNum = idx + 1;
-      const locked = !isPro() && idx >= freeModuleLimit;
+      const locked = !hasPaidPlan() && idx >= freeModuleLimit;
       if (locked) {
         return `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
           <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>

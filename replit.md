@@ -28,24 +28,31 @@ A professional hospitality training platform — full multi-page marketing site 
 
 ## Subscription Model
 
-- **Free**: 3 modules, 5 scenarios, progress tracking, badges/streaks
-- **Pro** ($19/mo or $149/yr): All 12 modules, all 30 scenarios, voice roleplay, completion certificate, global leaderboard
+| Tier | Price | Who |
+|------|-------|-----|
+| Free | $0 | Individual — 3 modules, 5 scenarios |
+| Premium Individual | $7.99/mo or $59/yr | Individual — all content |
+| Starter Team | $69/mo per location | Manager + up to 10 staff |
+| Pro Team | $149/mo per location | Manager + unlimited staff + analytics |
+| Enterprise | Contact sales | Multi-location + white label |
 
-Pro gating enforced in `app.html` via `isPro()` helper:
-- Modules 4–12 show greyed-out locked cards → `/pricing`
-- Scenarios 6–30 show upgrade prompt after scenario 5
-- Voice input blocked for free users
-- Certificate download blocked for free users
-- Leaderboard shows upgrade prompt for free users
-- User dropdown shows plan badge (Free / ⭐ Pro) and "Upgrade to Pro" link (hidden for Pro users)
+- **Individual plans** set `users.subscription_status` = `premium`
+- **Team plans** set `restaurants.plan` = `starter_team` or `pro_team`; staff inherit access via `restaurant_id`
+- `/api/auth/me` computes and returns `effective_plan` = highest of (user plan OR restaurant plan)
+- Gating in `app.html` via `hasPaidPlan()` (any non-free tier) and `isTeamPlan()` helpers
+- Plan badge in nav dropdown shows correct tier name (Free / Premium / Starter Team / Pro Team / Enterprise)
 
-## Stripe
+## Stripe Price IDs
 
-- Monthly price ID: `price_1T68eiEYo1GIbgr0JGPS6Bi5` ($19/mo)
-- Annual price ID: `price_1T68eiEYo1GIbgr0vlIaYema` ($149/yr)
-- Checkout route: `POST /api/payments/create-checkout`
-- Success route: `GET /api/payments/success` → upgrades user in DB → redirects to `/app?upgraded=1`
-- Cancel route: `GET /api/payments/cancel` → redirects to `/pricing`
+- Legacy Monthly: `price_1T68eiEYo1GIbgr0JGPS6Bi5` ($19/mo — kept for backwards compat)
+- Legacy Annual: `price_1T68eiEYo1GIbgr0vlIaYema` ($149/yr — kept for backwards compat)
+- `STRIPE_PREMIUM_MONTHLY_ID` = `price_1T69MUEYo1GIbgr0GjmBhQbL` ($7.99/mo)
+- `STRIPE_PREMIUM_ANNUAL_ID` = `price_1T69MUEYo1GIbgr0Vx79VBn2` ($59/yr)
+- `STRIPE_STARTER_TEAM_ID` = `price_1T69MVEYo1GIbgr0b3DSeEXF` ($69/mo)
+- `STRIPE_PRO_TEAM_ID` = `price_1T69MVEYo1GIbgr0dfPsj7My` ($149/mo)
+- Checkout: `POST /api/payments/create-checkout` — accepts plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`
+- Success: `GET /api/payments/success` → updates user or restaurant plan in DB → redirects to `/app?upgraded=1`
+- Cancel: `GET /api/payments/cancel` → redirects to `/pricing`
 - Webhook: `POST /api/stripe/webhook` (must be before `express.json()`)
 
 ## Admin Dashboard
