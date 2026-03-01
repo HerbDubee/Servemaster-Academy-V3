@@ -29,6 +29,11 @@ const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
 const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
 const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'kirk@servemasteracademy.ca';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
+const HELLO_EMAIL = process.env.HELLO_EMAIL || 'hello@servemasteracademy.ca';
+const INFO_EMAIL = process.env.INFO_EMAIL || 'info@servemasteracademy.ca';
+
 const PLAN_TIER_ORDER = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
 function highestPlan(a, b) {
   const ai = PLAN_TIER_ORDER.indexOf(a || 'free');
