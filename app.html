@@ -217,10 +217,14 @@
     <div id="user-dropdown" class="hidden absolute top-16 right-4 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl min-w-48 overflow-hidden z-50">
       <div id="dd-logged-in" class="hidden">
         <div class="px-4 py-3 border-b border-zinc-800">
-          <div class="text-sm font-semibold" id="dd-name"></div>
+          <div class="flex items-center gap-2 mb-0.5">
+            <div class="text-sm font-semibold" id="dd-name"></div>
+            <span id="dd-plan-badge" class="text-xs px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-400 font-semibold">Free</span>
+          </div>
           <div class="text-zinc-400 text-xs" id="dd-email"></div>
           <div class="text-emerald-400 text-xs mt-1">☁ Synced</div>
         </div>
+        <a id="dd-upgrade-link" href="/pricing" onclick="closeUserMenu()" class="block w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-zinc-800 transition-colors">⭐ Upgrade to Pro</a>
         <button onclick="navigate('manager');closeUserMenu()" id="dd-manager-btn" class="hidden w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🏢 Manager Dashboard</button>
         <button onclick="showNewsletter();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">📬 Newsletter</button>
         <button onclick="doLogout()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors">Sign Out</button>
@@ -508,6 +512,21 @@ function applyLangStrings() {
 let currentUser = null;
 let authToken = localStorage.getItem('sma-token') || null;
 
+function isPro() {
+  return currentUser && currentUser.subscription_status === 'pro';
+}
+
+function showUpgradePrompt(label) {
+  const upgradeLabel = lang === 'fr' ? 'Passer à Pro →' : 'Upgrade to Pro →';
+  const lockedLabel  = lang === 'fr' ? `🔒 ${label} — Réservé aux membres Pro` : `🔒 ${label} — Pro Members Only`;
+  return `<div class="col-span-full bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
+    <div class="text-4xl mb-3">🔒</div>
+    <div class="font-semibold text-lg mb-2 text-amber-300">${lockedLabel}</div>
+    <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à Pro pour accéder à tous les modules, scénarios, la voix, les certificats et plus encore.':'Upgrade to Pro for all modules, scenarios, voice roleplay, certificates and more.'}</div>
+    <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${upgradeLabel}</a>
+  </div>`;
+}
+
 async function fetchCurrentUser() {
   if (!authToken) return;
   try {
@@ -529,6 +548,15 @@ function applyUserToNav(user) {
   document.getElementById('dd-email').textContent = user.email || '';
   document.getElementById('dd-logged-in').classList.remove('hidden');
   document.getElementById('dd-logged-out').classList.add('hidden');
+  const planBadge = document.getElementById('dd-plan-badge');
+  if (planBadge) {
+    planBadge.textContent = user.subscription_status === 'pro' ? '⭐ Pro' : 'Free';
+    planBadge.className = user.subscription_status === 'pro'
+      ? 'text-xs px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30 font-semibold'
+      : 'text-xs px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-400 font-semibold';
+  }
+  const upgradeLink = document.getElementById('dd-upgrade-link');
+  if (upgradeLink) upgradeLink.classList.toggle('hidden', user.subscription_status === 'pro');
   if (user.role === 'manager') {
     document.getElementById('nav-manager').classList.remove('hidden');
     document.getElementById('dd-manager-btn').classList.remove('hidden');
@@ -1068,6 +1096,13 @@ function toggleAISpeech() {
 }
 
 function startVoiceInput() {
+  if (!isPro()) {
+    alert(lang === 'fr'
+      ? '🔒 La pratique vocale est réservée aux membres Pro. Visitez /pricing pour mettre à niveau.'
+      : '🔒 Voice practice is a Pro feature. Visit /pricing to upgrade.');
+    window.location.href = '/pricing';
+    return;
+  }
   if (isRecording) {
     stopVoiceRecording();
     return;
@@ -1232,6 +1267,10 @@ function renderScenarios() {
     <div class="text-amber-400 text-sm font-semibold whitespace-nowrap">${trayBtn}</div>
   </div>`;
 
+  const FREE_SCENARIO_LIMIT = 5;
+  let scenariosShown = 0;
+  let proGateShown = false;
+
   SCENARIO_CATEGORIES.forEach(cat => {
     const catScenarios = practiceScenarios.filter(s => s.category === cat.id);
     if (!catScenarios.length) return;
@@ -1243,6 +1282,15 @@ function renderScenarios() {
       const done  = completedScenarios.includes(s.id);
       const diff  = DIFFICULTY_STYLES[s.difficulty] || DIFFICULTY_STYLES.Beginner;
       const diffLabel = lang === 'fr' ? diff.labelFr : diff.label;
+      const locked = !isPro() && scenariosShown >= FREE_SCENARIO_LIMIT;
+      scenariosShown++;
+      if (locked) {
+        if (!proGateShown) {
+          proGateShown = true;
+          html += showUpgradePrompt(lang === 'fr' ? '25 scénarios supplémentaires' : '25 more scenarios');
+        }
+        return;
+      }
       html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
         ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">✓ Done</div>' : ''}
         <div class="text-3xl mt-1">${s.emoji}</div>
@@ -1503,10 +1551,21 @@ function renderGlossary() {
 function checkCertificate() {
   const allDone = userProgress.every(p => p.progress >= 100);
   const banner = document.getElementById('certificate-banner');
-  if (banner) banner.classList.toggle('hidden', !allDone);
+  if (!banner) return;
+  if (allDone && !isPro()) {
+    banner.classList.remove('hidden');
+    banner.innerHTML = `<div class="flex-1">
+      <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Earned!</div>
+      <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Félicitations ! Passez à Pro pour télécharger votre certificat.':'Congratulations! Upgrade to Pro to download your certificate.'}</div>
+    </div>
+    <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap text-sm">${lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>`;
+  } else {
+    banner.classList.toggle('hidden', !allDone);
+  }
 }
 
 function downloadCertificate() {
+  if (!isPro()) { window.location.href = '/pricing'; return; }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
   const w = doc.internal.pageSize.getWidth();
@@ -1664,15 +1723,9 @@ async function doRegister() {
 
 async function doLogout() {
   try { await fetch('/api/auth/logout', { method:'POST' }); } catch {}
-  authToken = null; currentUser = null;
   localStorage.removeItem('sma-token');
-  document.getElementById('nav-name').textContent = '—';
-  document.getElementById('nav-level').textContent = 'ServeMaster Academy';
-  document.getElementById('nav-avatar').textContent = '?';
-  document.getElementById('dd-logged-in').classList.add('hidden');
-  document.getElementById('dd-logged-out').classList.remove('hidden');
-  document.getElementById('nav-manager').classList.add('hidden');
-  closeUserMenu();
+  localStorage.removeItem('serveMasterUser');
+  window.location.href = '/';
 }
 
 // =========================================================
@@ -1692,11 +1745,20 @@ document.addEventListener('click', (e) => {
 // LEADERBOARD
 // =========================================================
 async function loadLeaderboard() {
+  const el = document.getElementById('leaderboard-list');
+  if (!el) return;
+  if (!isPro()) {
+    el.innerHTML = `<div class="bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
+      <div class="text-4xl mb-3">🏆</div>
+      <div class="font-semibold text-lg mb-2 text-amber-300">🔒 ${lang==='fr'?'Classement mondial — Pro uniquement':'Global Leaderboard — Pro Only'}</div>
+      <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à Pro pour voir et rejoindre le classement mondial.':'Upgrade to Pro to see and join the global leaderboard.'}</div>
+      <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>
+    </div>`;
+    return;
+  }
   try {
     const res = await fetch('/api/leaderboard');
     const data = await res.json();
-    const el = document.getElementById('leaderboard-list');
-    if (!el) return;
     if (!data.leaderboard || !data.leaderboard.length) {
       el.innerHTML = `<p class="text-zinc-400">${lang==='fr'?'Aucun classement disponible pour l\'instant.':'No leaderboard entries yet.'}</p>`;
       return;
@@ -1899,6 +1961,10 @@ function applyUser(user) {
 // RENDER ALL
 // =========================================================
 function openModule(id) {
+  if (!isPro() && id > 3) {
+    window.location.href = '/pricing';
+    return;
+  }
   const mod = modules.find(m => m.id === id);
   document.getElementById('modal-title').innerHTML = mod.emoji + ' ' + getModuleTitle(mod);
   document.getElementById('modal-content').innerHTML = getModuleContent(id);
@@ -2000,11 +2066,27 @@ function renderAll() {
   }
 
   if (allEl) {
+    const freeModuleLimit = 3;
+    const proModulesLocked = !isPro() && modules.length > freeModuleLimit;
     allEl.innerHTML = modules.map((m, idx) => {
       const p = userProgress.find(u => u.id === m.id);
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
       const orderNum = idx + 1;
+      const locked = !isPro() && idx >= freeModuleLimit;
+      if (locked) {
+        return `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
+          <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
+          <div class="text-3xl mt-0.5 ml-7 grayscale">${m.emoji}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <div class="font-semibold mb-1 text-zinc-400">${getModuleTitle(m)}</div>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20">PRO</span>
+            </div>
+            <div class="text-zinc-500 text-xs">⏱ ~${m.mins} min &nbsp;•&nbsp; 🔒 ${lang==='fr'?'Réservé Pro':'Pro only'}</div>
+          </div>
+        </div>`;
+      }
       return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
         <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
         <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
@@ -2022,6 +2104,9 @@ function renderAll() {
         </div>
       </div>`;
     }).join('');
+    if (proModulesLocked) {
+      allEl.innerHTML += showUpgradePrompt(lang === 'fr' ? '9 modules supplémentaires' : '9 more modules');
+    }
   }
 
   const badgeShowcase = document.getElementById('badge-showcase');
@@ -2044,8 +2129,14 @@ function renderAll() {
 // INIT
 // =========================================================
 window.onload = async function() {
+  const token = localStorage.getItem('sma-token');
+  if (!token) { window.location.href = '/login'; return; }
+
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('error')) { showAuthModal(); }
+  if (urlParams.get('upgraded') === '1') {
+    setTimeout(() => alert('🎉 You\'re now Pro! All features are unlocked.'), 800);
+  }
+
   const joinCode = urlParams.get('join');
   if (joinCode) { localStorage.setItem('sma-pending-join', joinCode); }
 
@@ -2065,11 +2156,13 @@ window.onload = async function() {
 
   await fetchCurrentUser();
 
-  if (!savedUser && !currentUser) {
-    // show onboarding
-  } else if (savedUser || currentUser) {
-    updateLocalStreak();
+  if (!currentUser) {
+    window.location.href = '/login';
+    return;
   }
+
+  document.getElementById('onboarding').style.display = 'none';
+  updateLocalStreak();
 
   const pendingJoin = localStorage.getItem('sma-pending-join');
   if (pendingJoin && authToken) {

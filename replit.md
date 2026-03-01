@@ -1,90 +1,111 @@
 # ServeMaster Academy
 
-A professional hospitality training web app for restaurant servers, with full auth, gamification, bilingual support, and manager tools.
+A professional hospitality training platform — full multi-page marketing site + auth-gated training SPA + Stripe-powered Pro tier + hidden admin dashboard.
 
 ## Architecture
 
-- `index.html` — Full single-page application (all screens, logic, i18n)
-- `server.js` — Express backend (port 5000); auth, progress sync, OpenAI roleplay, manager API
+- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe payments, admin APIs, webhooks
+- `app.html` — Training SPA (auth-gated at `/app`; served only to logged-in users)
+- `index.html` — Legacy copy of app.html (kept for reference; not served)
+- `admin.html` — Owner dashboard at `/admin` (requires admin JWT role)
+- `public/` — Marketing HTML pages (home, about, features, pricing, contact, login, signup)
+- `stripeClient.js` — Replit Stripe connector helpers (getUncachableStripeClient, getStripeSync, getStripePublishableKey)
 - `db.js` — PostgreSQL connection pool (Replit built-in Neon database)
-- `www/` — Minimal placeholder used as Capacitor webDir for Android builds
-- `android/` — Capacitor Android project (open in Android Studio to build APK)
-- `capacitor.config.json` — Capacitor config; update `server.url` before building APK
-- `BUILD_APK.md` — Step-by-step instructions for building the Android APK
+
+## Routes
+
+| Path | Serves |
+|------|--------|
+| `/` | `public/home.html` (marketing home) |
+| `/about` | `public/about.html` |
+| `/features` | `public/features.html` |
+| `/pricing` | `public/pricing.html` |
+| `/contact` | `public/contact.html` |
+| `/login` | `public/login.html` |
+| `/signup` | `public/signup.html` |
+| `/app` | `app.html` (training SPA, auth-gated client-side) |
+| `/admin` | `admin.html` (owner dashboard, 401 if no admin token) |
+
+## Subscription Model
+
+- **Free**: 3 modules, 5 scenarios, progress tracking, badges/streaks
+- **Pro** ($19/mo or $149/yr): All 12 modules, all 30 scenarios, voice roleplay, completion certificate, global leaderboard
+
+Pro gating enforced in `app.html` via `isPro()` helper:
+- Modules 4–12 show greyed-out locked cards → `/pricing`
+- Scenarios 6–30 show upgrade prompt after scenario 5
+- Voice input blocked for free users
+- Certificate download blocked for free users
+- Leaderboard shows upgrade prompt for free users
+- User dropdown shows plan badge (Free / ⭐ Pro) and "Upgrade to Pro" link (hidden for Pro users)
+
+## Stripe
+
+- Monthly price ID: `price_1T68eiEYo1GIbgr0JGPS6Bi5` ($19/mo)
+- Annual price ID: `price_1T68eiEYo1GIbgr0vlIaYema` ($149/yr)
+- Checkout route: `POST /api/payments/create-checkout`
+- Success route: `GET /api/payments/success` → upgrades user in DB → redirects to `/app?upgraded=1`
+- Cancel route: `GET /api/payments/cancel` → redirects to `/pricing`
+- Webhook: `POST /api/stripe/webhook` (must be before `express.json()`)
+
+## Admin Dashboard
+
+Access: Set `role = 'admin'` in DB for your email, then visit `/admin`.
+API endpoints (all require admin JWT):
+- `GET /api/admin/overview` — stats (users, revenue, activity)
+- `GET /api/admin/users` — user list with plan + progress
+- `GET /api/admin/modules` — module completion stats
+- `GET /api/admin/newsletter` — subscriber list
+- `GET /api/admin/restaurants` — restaurant accounts
+- `GET /api/admin/contacts` — contact form submissions
 
 ## Features
 
 ### Core Training
 - 12 learning modules with expandable lessons, FR/EN translations, and quizzes
-- Progress tracking synced to PostgreSQL when logged in, localStorage fallback
-- 3-step onboarding (name + experience level)
+- Progress tracking synced to PostgreSQL; localStorage fallback
+- 30 AI roleplay scenarios categorised by difficulty
 
 ### User Accounts
 - Email + password registration and login
-- Google OAuth login (requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET env vars)
-- JWT token auth (30-day sessions via httpOnly cookies + localStorage)
+- Google OAuth login (requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET)
+- JWT token auth (30-day sessions; stored in localStorage as `sma-token`)
 - Cross-device progress sync via PostgreSQL
 
-### AI Practice
-- 30 role-play scenarios (IDs 1-30) covering all hospitality situations
-- Full voice input: microphone button uses Web Speech API SpeechRecognition
-- AI voice output: SpeechSynthesis reads guest responses aloud (toggleable)
-- Per-turn coaching feedback from AI guest
-
 ### Gamification
-- Daily login streaks (tracked in DB + localStorage fallback)
-- 12 badges with unlock logic (first module, scenario ace, wine expert, etc.)
-- Toast notifications when badges are earned
-- Leaderboard page (top 20 users by total progress)
+- Daily login streaks
+- 12 badges with unlock logic
+- Leaderboard (Pro only)
 
-### Completion Certificate
-- Beautiful PDF certificate generated client-side via jsPDF
-- Triggered when all 12 modules reach 100% progress
-- Bilingual (EN/FR): certificate language matches app language
-
-### Email Newsletter
-- Email capture modal (shown after first module completion)
-- Stores in email_subscribers table
-- Accessible from nav user menu and dashboard
-
-### Restaurant Manager Dashboard
-- Create a restaurant profile (generates invite code)
-- Staff join via invite link/code
-- View all staff: modules completed, avg score, scenarios, streak, last active
-- Export staff progress as CSV
-- Invite link copy button
-
-### Tray Balance Simulator
-- DeviceOrientation API (gyroscope) on mobile — tilt device to move glasses
-- Mouse-based tilt on desktop — move mouse over tray
-- 5 glasses, physics-based sliding, time score
-
-### French Language Version
-- Full EN/FR toggle in nav (🇬🇧 / 🇫🇷)
-- All UI strings, module titles, lesson content, scenario descriptions translated
-- Voice recognition switches to fr-FR in French mode
-- Persisted in localStorage
+### Other
+- Completion certificate PDF via jsPDF (Pro only)
+- EN/FR language toggle (persisted in localStorage)
+- Restaurant Manager dashboard (invite code system)
+- Tray Balance Simulator (gyroscope/mouse)
+- 25-term bilingual hospitality glossary
+- Newsletter email capture
 
 ## Key Environment Variables
 
 - `AI_INTEGRATIONS_OPENAI_API_KEY` — Replit OpenAI integration (auto-injected)
 - `AI_INTEGRATIONS_OPENAI_BASE_URL` — Replit OpenAI integration (auto-injected)
+- `OPENAI_API_KEY` — Direct OpenAI key for Whisper voice transcription
 - `DATABASE_URL` — Replit built-in PostgreSQL (auto-injected)
-- `JWT_SECRET` — Secret for JWT signing (defaults to hardcoded value; set in secrets for production)
-- `GOOGLE_CLIENT_ID` — Google OAuth app client ID (optional; Google login disabled if not set)
-- `GOOGLE_CLIENT_SECRET` — Google OAuth app client secret (optional)
+- `JWT_SECRET` — Secret for JWT signing (set in Secrets for production)
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth (optional)
 
 ## Database Schema
 
-- `users` — Accounts (email/password + Google OAuth)
+- `users` — Accounts; columns include `subscription_status` (free/pro), `stripe_customer_id`, `stripe_subscription_id`, `role`
 - `user_progress` — Module progress + quiz scores per user
 - `streaks` — Daily login streak tracking
 - `badges` — Earned badge records
 - `scenario_scores` — Completed role-play session records
 - `restaurants` — Manager restaurant profiles + invite codes
 - `email_subscribers` — Newsletter signups
+- `contact_messages` — Contact form submissions
 
 ## Deployment
 
-- Autoscale deployment: `node server.js`
-- Android APK: update `server.url` in `capacitor.config.json`, then `npx cap sync android`
+- Workflow: `node server.js` on port 5000
+- Stripe webhook registered automatically via `stripeSync.findOrCreateManagedWebhook()` on startup

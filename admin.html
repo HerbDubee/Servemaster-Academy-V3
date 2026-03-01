@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — ServeMaster Academy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+.heading { font-family: 'Playfair Display', serif; }
+.section { display: none; }
+.section.active { display: block; }
+.nav-item { cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #a1a1aa; transition: all 0.15s; }
+.nav-item:hover { background: #27272a; color: #fff; }
+.nav-item.active { background: #78350f; color: #fbbf24; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div id="auth-check" class="min-h-screen flex items-center justify-center">
+  <div class="text-zinc-400 text-sm">Verifying access...</div>
+</div>
+
+<div id="admin-shell" class="hidden min-h-screen flex flex-col">
+  <!-- Top bar -->
+  <header class="bg-zinc-950 border-b border-zinc-800 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🍸</span>
+      <div>
+        <div class="heading font-bold text-white">ServeMaster <span class="text-amber-400">Admin</span></div>
+        <div class="text-xs text-zinc-500">Owner Dashboard</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="admin-name" class="text-zinc-400 text-sm"></span>
+      <button onclick="doLogout()" class="text-zinc-500 hover:text-red-400 text-sm transition-colors">Sign out</button>
+    </div>
+  </header>
+
+  <div class="flex flex-1">
+    <!-- Sidebar nav -->
+    <aside class="w-52 bg-zinc-950 border-r border-zinc-800 p-4 space-y-1 flex-shrink-0 hidden md:block">
+      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">📊 Overview</div>
+      <div class="nav-item" onclick="showSection('users')" id="nav-users">👤 Users</div>
+      <div class="nav-item" onclick="showSection('modules')" id="nav-modules">📚 Modules</div>
+      <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
+      <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
+      <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
+    </aside>
+
+    <!-- Mobile nav -->
+    <div class="md:hidden w-full overflow-x-auto border-b border-zinc-800 flex gap-1 px-3 py-2 bg-zinc-950">
+      <button onclick="showSection('overview')" class="nav-item active whitespace-nowrap" id="mnav-overview">📊</button>
+      <button onclick="showSection('users')" class="nav-item whitespace-nowrap" id="mnav-users">👤</button>
+      <button onclick="showSection('modules')" class="nav-item whitespace-nowrap" id="mnav-modules">📚</button>
+      <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
+      <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
+      <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
+    </div>
+
+    <!-- Main content -->
+    <main class="flex-1 p-6 overflow-auto">
+
+      <!-- OVERVIEW -->
+      <div id="section-overview" class="section active">
+        <h1 class="heading text-3xl font-bold mb-8">Overview</h1>
+        <div id="overview-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="section-users" class="section">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="heading text-3xl font-bold">Users</h1>
+          <input id="user-search" oninput="filterUsers()" type="text" placeholder="Search name or email..." class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-56">
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Email</th>
+                  <th class="px-4 py-3 text-left">Plan</th>
+                  <th class="px-4 py-3 text-left">Role</th>
+                  <th class="px-4 py-3 text-left">Modules</th>
+                  <th class="px-4 py-3 text-left">Joined</th>
+                  <th class="px-4 py-3 text-left">Last Login</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="7" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULES -->
+      <div id="section-modules" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Module Stats</h1>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Module</th>
+                  <th class="px-4 py-3 text-left">Completions</th>
+                  <th class="px-4 py-3 text-left">Avg Quiz Score</th>
+                  <th class="px-4 py-3 text-left">Avg Progress</th>
+                </tr>
+              </thead>
+              <tbody id="modules-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEWSLETTER -->
+      <div id="section-newsletter" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Newsletter Subscribers</h1>
+        <div id="newsletter-count" class="text-zinc-400 text-sm mb-4"></div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Email</th>
+                  <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Subscribed</th>
+                </tr>
+              </thead>
+              <tbody id="newsletter-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="3" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESTAURANTS -->
+      <div id="section-restaurants" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Manager Accounts & Restaurants</h1>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Restaurant</th>
+                  <th class="px-4 py-3 text-left">Owner</th>
+                  <th class="px-4 py-3 text-left">Invite Code</th>
+                  <th class="px-4 py-3 text-left">Staff</th>
+                  <th class="px-4 py-3 text-left">Created</th>
+                </tr>
+              </thead>
+              <tbody id="restaurants-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACTS -->
+      <div id="section-contacts" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Contact Messages</h1>
+        <div id="contacts-list" class="space-y-4">
+          <div class="text-zinc-500 text-sm">Loading...</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const MODULE_NAMES = ['Service Foundations','Menu Knowledge','Wine Essentials','Beverage Mastery','Upselling Techniques','Tray & Posture','Allergy Awareness','Guest Psychology','Tableside Etiquette','POS & Billing','Wine Service Advanced','Floor Leadership'];
+
+let token = localStorage.getItem('sma-token') || '';
+let allUsers = [];
+
+async function init() {
+  try {
+    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) { window.location.href = '/login'; return; }
+    const { user } = await res.json();
+    if (user.role !== 'admin') { window.location.href = '/'; return; }
+    document.getElementById('admin-name').textContent = user.name;
+    document.getElementById('auth-check').classList.add('hidden');
+    document.getElementById('admin-shell').classList.remove('hidden');
+    loadAll();
+  } catch { window.location.href = '/login'; }
+}
+
+async function apiFetch(path) {
+  const res = await fetch(path, { headers: { Authorization: 'Bearer ' + token } });
+  return res.json();
+}
+
+async function loadAll() {
+  loadOverview();
+  loadUsers();
+  loadModules();
+  loadNewsletter();
+  loadRestaurants();
+  loadContacts();
+}
+
+async function loadOverview() {
+  try {
+    const data = await apiFetch('/api/admin/overview');
+    document.getElementById('overview-cards').innerHTML = `
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Total Users</div><div class="text-3xl font-bold">${data.total_users}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Pro Subscribers</div><div class="text-3xl font-bold text-amber-400">${data.pro_subscribers}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">New Users (7d)</div><div class="text-3xl font-bold text-emerald-400">${data.new_users_7d}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Active (7d)</div><div class="text-3xl font-bold">${data.active_users_7d}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Newsletter Subs</div><div class="text-3xl font-bold">${data.newsletter_subs}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Scenarios Done</div><div class="text-3xl font-bold">${data.scenarios_completed}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Modules Completed</div><div class="text-3xl font-bold">${data.modules_completed}</div></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Contact Messages</div><div class="text-3xl font-bold">${data.contact_messages}</div></div>
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Est. MRR (Pro)</div><div class="text-3xl font-bold text-amber-400">$${(data.pro_subscribers * 19).toLocaleString()}</div></div>
+    `;
+  } catch (e) { console.error(e); }
+}
+
+async function loadUsers() {
+  try {
+    const data = await apiFetch('/api/admin/users');
+    allUsers = data.users || [];
+    renderUsers(allUsers);
+  } catch (e) { console.error(e); }
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-zinc-500">No users found.</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr class="hover:bg-zinc-800/50 transition-colors">
+      <td class="px-4 py-3 font-medium">${esc(u.name || '—')}</td>
+      <td class="px-4 py-3 text-zinc-400">${esc(u.email)}</td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.subscription_status === 'pro' ? 'bg-amber-400/20 text-amber-300' : 'bg-zinc-700 text-zinc-300'}">${u.subscription_status || 'free'}</span></td>
+      <td class="px-4 py-3 text-zinc-400 text-xs">${u.role}</td>
+      <td class="px-4 py-3">${u.modules_completed || 0} / 12</td>
+      <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.created_at)}</td>
+      <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.last_login)}</td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  renderUsers(allUsers.filter(u => (u.name || '').toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+}
+
+async function loadModules() {
+  try {
+    const data = await apiFetch('/api/admin/modules');
+    const tbody = document.getElementById('modules-tbody');
+    if (!data.modules.length) { tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">No data yet.</td></tr>'; return; }
+    tbody.innerHTML = data.modules.map(m => `
+      <tr class="hover:bg-zinc-800/50 transition-colors">
+        <td class="px-4 py-3 font-medium">${m.module_id}. ${MODULE_NAMES[m.module_id - 1] || 'Module ' + m.module_id}</td>
+        <td class="px-4 py-3">${m.completions}</td>
+        <td class="px-4 py-3">${m.avg_quiz_score || '—'}%</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-2"><div class="flex-1 bg-zinc-700 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full" style="width:${m.avg_progress || 0}%"></div></div><span class="text-xs text-zinc-400">${m.avg_progress || 0}%</span></div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function loadNewsletter() {
+  try {
+    const data = await apiFetch('/api/admin/newsletter');
+    const subs = data.subscribers || [];
+    document.getElementById('newsletter-count').textContent = `${subs.length} active subscriber${subs.length !== 1 ? 's' : ''}`;
+    const tbody = document.getElementById('newsletter-tbody');
+    if (!subs.length) { tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-zinc-500">No subscribers yet.</td></tr>'; return; }
+    tbody.innerHTML = subs.map(s => `
+      <tr class="hover:bg-zinc-800/50 transition-colors">
+        <td class="px-4 py-3">${esc(s.email)}</td>
+        <td class="px-4 py-3 text-zinc-400">${esc(s.first_name || '—')}</td>
+        <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(s.created_at)}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function loadRestaurants() {
+  try {
+    const data = await apiFetch('/api/admin/restaurants');
+    const restaurants = data.restaurants || [];
+    const tbody = document.getElementById('restaurants-tbody');
+    if (!restaurants.length) { tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">No restaurants yet.</td></tr>'; return; }
+    tbody.innerHTML = restaurants.map(r => `
+      <tr class="hover:bg-zinc-800/50 transition-colors">
+        <td class="px-4 py-3 font-medium">${esc(r.name)}</td>
+        <td class="px-4 py-3 text-zinc-400">${esc(r.owner_name)} <span class="text-zinc-600 text-xs">${esc(r.owner_email)}</span></td>
+        <td class="px-4 py-3"><code class="bg-zinc-800 px-2 py-0.5 rounded text-xs text-amber-300">${r.invite_code}</code></td>
+        <td class="px-4 py-3">${r.staff_count}</td>
+        <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(r.created_at)}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function loadContacts() {
+  try {
+    const data = await apiFetch('/api/admin/contacts');
+    const msgs = data.messages || [];
+    const container = document.getElementById('contacts-list');
+    if (!msgs.length) { container.innerHTML = '<div class="text-zinc-500 text-sm">No contact messages yet.</div>'; return; }
+    container.innerHTML = msgs.map(m => `
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-2">
+          <div><span class="font-semibold">${esc(m.name)}</span> <span class="text-zinc-500 text-sm">&lt;${esc(m.email)}&gt;</span></div>
+          <div class="text-zinc-500 text-xs">${fmtDate(m.created_at)}</div>
+        </div>
+        <p class="text-zinc-300 text-sm leading-relaxed">${esc(m.message)}</p>
+      </div>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  const mNavEl = document.getElementById('mnav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (mNavEl) mNavEl.classList.add('active');
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  localStorage.removeItem('sma-token');
+  localStorage.removeItem('serveMasterUser');
+  window.location.href = '/login';
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+}
+
+init();
+</script>
+</body>
+</html>

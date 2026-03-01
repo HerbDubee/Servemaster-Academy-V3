@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — ServeMaster Academy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; } .heading { font-family: 'Playfair Display', serif; }</style>
+</head>
+<body>
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><span class="text-2xl">🍸</span><span class="heading text-xl font-bold text-white">ServeMaster <span class="text-amber-400">ACADEMY</span></span></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="text-white">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/login" class="text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-4 py-20">
+  <div class="text-center mb-12">
+    <h1 class="heading text-5xl font-black mb-4">Simple, honest pricing</h1>
+    <p class="text-zinc-400 text-xl">Start free. Upgrade when you're ready for everything.</p>
+
+    <!-- Toggle -->
+    <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-1 mt-8">
+      <button id="btn-monthly" onclick="setPlan('monthly')" class="px-5 py-2 rounded-xl text-sm font-semibold bg-amber-400 text-black transition-colors">Monthly</button>
+      <button id="btn-annual" onclick="setPlan('annual')" class="px-5 py-2 rounded-xl text-sm font-semibold text-zinc-400 transition-colors">Annual <span class="text-emerald-400 ml-1">Save 34%</span></button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+    <!-- Free -->
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+      <div class="mb-6">
+        <div class="text-zinc-400 text-sm font-medium mb-1">FREE</div>
+        <div class="text-4xl font-bold">$0</div>
+        <div class="text-zinc-500 text-sm">forever</div>
+      </div>
+      <ul class="space-y-3 text-sm mb-8">
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 3 training modules</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 5 AI roleplay scenarios</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Progress tracking</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Badges & streaks</li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Voice roleplay</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">All 30 scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Completion certificate</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✗</span> <span class="text-zinc-500">Leaderboard</span></li>
+      </ul>
+      <a href="/signup" class="block text-center border border-zinc-700 hover:border-amber-400 text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors">Get Started Free</a>
+    </div>
+
+    <!-- Pro -->
+    <div class="bg-gradient-to-b from-amber-950/40 to-zinc-900 border border-amber-500/50 rounded-3xl p-8 relative">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
+      <div class="mb-6">
+        <div class="text-amber-400 text-sm font-medium mb-1">PRO</div>
+        <div id="price-display" class="text-4xl font-bold">$19<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div id="price-sub" class="text-zinc-500 text-sm">billed monthly, cancel anytime</div>
+      </div>
+      <ul class="space-y-3 text-sm mb-8">
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 12 training modules</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 30 AI roleplay scenarios</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Full voice conversation mode</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Tray balancing simulator</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Completion certificate</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Global leaderboard</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Hospitality glossary</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> EN / FR bilingual</li>
+      </ul>
+      <button onclick="startCheckout()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3.5 rounded-2xl transition-colors">Subscribe Now →</button>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="max-w-2xl mx-auto mt-20 space-y-4">
+    <h2 class="heading text-2xl font-bold text-center mb-8">Frequently asked questions</h2>
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm">Can I cancel anytime?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes, absolutely. You can cancel your Pro subscription at any time from your account settings. You'll keep Pro access until the end of your current billing period.</p>
+    </details>
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm">Is there a free trial for Pro?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 modules and 5 scenarios — no time limit. It's a genuine free tier, not a trial. Upgrade to Pro whenever you're ready for the full experience.</p>
+    </details>
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm">What payment methods do you accept?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">We accept all major credit and debit cards (Visa, Mastercard, Amex), as well as Apple Pay and Google Pay where supported. Payments are processed securely by Stripe.</p>
+    </details>
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm">What's the difference between monthly and annual?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing works out to $12.42/month (vs $19/month) — you save 34% by paying upfront for a full year. Features are identical either way.</p>
+    </details>
+    <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
+      <summary class="font-semibold text-sm">Can my whole restaurant team use ServeMaster?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each team member creates their own account. Restaurant managers can create a team and track everyone's progress from the Manager Dashboard (included in Pro).</p>
+    </details>
+  </div>
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><span class="text-xl">🍸</span><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6">
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/login" class="hover:text-white transition-colors">Login</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+let selectedPlan = 'monthly';
+
+function setPlan(plan) {
+  selectedPlan = plan;
+  const monthly = document.getElementById('btn-monthly');
+  const annual = document.getElementById('btn-annual');
+  const priceDisplay = document.getElementById('price-display');
+  const priceSub = document.getElementById('price-sub');
+  if (plan === 'monthly') {
+    monthly.classList.add('bg-amber-400','text-black'); monthly.classList.remove('text-zinc-400');
+    annual.classList.remove('bg-amber-400','text-black'); annual.classList.add('text-zinc-400');
+    priceDisplay.innerHTML = '$19<span class="text-xl font-medium text-zinc-400">/mo</span>';
+    priceSub.textContent = 'billed monthly, cancel anytime';
+  } else {
+    annual.classList.add('bg-amber-400','text-black'); annual.classList.remove('text-zinc-400');
+    monthly.classList.remove('bg-amber-400','text-black'); monthly.classList.add('text-zinc-400');
+    priceDisplay.innerHTML = '$149<span class="text-xl font-medium text-zinc-400">/yr</span>';
+    priceSub.textContent = '$12.42/month — save 34% vs monthly';
+  }
+}
+
+async function startCheckout() {
+  const token = localStorage.getItem('sma-token');
+  if (!token) { window.location.href = '/signup?redirect=pricing'; return; }
+  try {
+    const res = await fetch('/api/payments/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ plan: selectedPlan })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { alert('Could not start checkout. Please try again.'); }
+  } catch { alert('Connection error. Please try again.'); }
+}
+</script>
+</body>
+</html>
