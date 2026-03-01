@@ -234,13 +234,8 @@
 </nav>
 
 <div class="flex">
-  <!-- Sidebar -->
-  <div class="w-64 bg-zinc-900 border-r border-amber-900 min-h-screen p-4 hidden lg:block">
-    <div id="sidebar-modules" class="space-y-1"></div>
-  </div>
-
   <!-- Main Content -->
-  <div class="flex-1 p-4 lg:p-8 min-w-0" id="main-content">
+  <div class="w-full p-4 lg:p-8 min-w-0" id="main-content">
 
     <!-- DASHBOARD -->
     <div id="dashboard-screen" class="space-y-10">
@@ -1946,8 +1941,6 @@ function renderAll() {
   const nextCardEl = document.getElementById('next-module-card');
   const continueEl = document.getElementById('continue-modules');
   const allEl = document.getElementById('all-modules');
-  const sidebarEl = document.getElementById('sidebar-modules');
-
   const nextModule = modules.find(m => {
     const p = userProgress.find(u => u.id === m.id);
     return p && p.progress < 100;
@@ -2026,19 +2019,6 @@ function renderAll() {
           </div>
           <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
           <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  if (sidebarEl) {
-    sidebarEl.innerHTML = modules.map(m => {
-      const p = userProgress.find(u => u.id === m.id);
-      return `<div onclick="openModule(${m.id})" class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-zinc-800 transition-all">
-        <span class="text-lg">${m.emoji}</span>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">${getModuleTitle(m)}</div>
-          <div class="w-full bg-zinc-700 rounded-full h-1 mt-1"><div class="bg-amber-400 h-1 rounded-full" style="width:${p.progress}%"></div></div>
         </div>
       </div>`;
     }).join('');
