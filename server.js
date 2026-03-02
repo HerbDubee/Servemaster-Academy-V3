@@ -110,6 +110,22 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
+app.get('/api/admin/bootstrap', async (req, res) => {
+  const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY || 'sma-admin-2026';
+  const { key, email } = req.query;
+  if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  try {
+    const result = await db.query('SELECT id, email, role FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found', email });
+    const user = result.rows[0];
+    await db.query("UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE id = $1", [user.id]);
+    res.json({ success: true, message: `${user.email} is now admin + premium`, id: user.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name, level } = req.body;
