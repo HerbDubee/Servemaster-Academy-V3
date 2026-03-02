@@ -675,6 +675,49 @@ app.post('/api/roleplay', async (req, res) => {
   }
 });
 
+app.post('/api/roleplay/summary', async (req, res) => {
+  const { scenarioId, messages } = req.body;
+  const scenario = scenarios[scenarioId];
+  if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
+  const systemPrompt = `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
+
+Scenario: "${scenario.title}"
+
+You will be given the full conversation between the server (user) and the simulated customer (assistant). Review what the server actually said — their word choices, tone, phrasing, and actions — and provide a structured critique.
+
+RULES:
+- Be direct and specific. Reference exactly what the server said or failed to say.
+- Do NOT retell or summarise the scenario plot.
+- Do NOT be vague. "Good empathy" is not acceptable — say "You acknowledged the wait with 'I completely understand your frustration' which was the right move."
+- Identify real mistakes, missed upsell moments, poor phrasing, or protocol gaps.
+- If the server did something wrong, say so clearly.
+- Keep each bullet point to one concrete observation.
+
+Respond with valid JSON only, in this exact format:
+{
+  "verdict": "One direct sentence summarising overall performance — honest, not flattering",
+  "right": ["Specific strength referencing what was said", "Another strength if applicable"],
+  "wrong": ["Specific mistake or missed opportunity referencing actual dialogue", "Another gap if applicable"],
+  "tip": "One concrete, actionable coaching tip for what to do differently or better next time"
+}`;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: 'Here is the conversation to review:\n\n' + messages.filter(m => m.role === 'user').map((m, i) => `Server turn ${i+1}: "${m.content}"`).join('\n') }
+      ],
+    });
+    const raw = completion.choices[0].message.content || '{}';
+    const parsed = JSON.parse(raw);
+    res.json(parsed);
+  } catch (err) {
+    console.error('Summary AI error:', err.message);
+    res.status(500).json({ error: 'Summary failed' });
+  }
+});
+
 // ── Catch-all: /app/* ─────────────────────────────────────────────────────────
 app.get('/app/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 

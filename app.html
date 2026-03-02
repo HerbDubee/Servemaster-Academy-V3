@@ -1431,27 +1431,64 @@ async function sendChat() {
   input.focus();
 }
 
-function showScenarioSummary() {
+async function showScenarioSummary() {
   const chatEl = document.getElementById('practice-chat');
   if (!chatEl) return;
   const existing = document.getElementById('scenario-summary');
   if (existing) existing.remove();
-  const heading     = lang === 'fr' ? '📋 Résumé de la session' : '📋 Session Summary';
-  const subheading  = lang === 'fr' ? 'Voici vos notes de coaching :' : 'Here\'s your coaching feedback:';
-  const noNotes     = lang === 'fr' ? 'Excellent travail — aucune correction nécessaire !' : 'Excellent work — no corrections needed!';
-  const tryAgain    = lang === 'fr' ? 'Essayer un autre scénario →' : 'Try another scenario →';
-  const notesHtml = scenarioCoachingNotes.length
-    ? '<ol class="list-decimal list-inside space-y-2 text-sm text-zinc-300">' + scenarioCoachingNotes.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ol>'
-    : `<p class="text-emerald-400 text-sm">${noNotes}</p>`;
+  const heading  = lang === 'fr' ? '📋 Bilan du formateur' : '📋 Trainer\'s Verdict';
+  const tryAgain = lang === 'fr' ? 'Essayer un autre scénario →' : 'Try another scenario →';
+
   const summary = document.createElement('div');
   summary.id = 'scenario-summary';
-  summary.className = 'mt-6 bg-amber-400/10 border border-amber-400/30 rounded-3xl p-6 space-y-4';
-  summary.innerHTML = `<h3 class="font-semibold text-lg text-amber-300">${heading}</h3>
-    <p class="text-zinc-400 text-sm">${subheading}</p>
-    ${notesHtml}
+  summary.className = 'mt-6 bg-zinc-900 border border-zinc-700 rounded-3xl p-6 space-y-5';
+  summary.innerHTML = `
+    <h3 class="font-semibold text-lg text-amber-300">${heading}</h3>
+    <div id="summary-body" class="flex items-center gap-3 text-zinc-400 text-sm">
+      <svg class="animate-spin h-5 w-5 text-amber-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+      ${lang === 'fr' ? 'Analyse en cours…' : 'Analysing your performance…'}
+    </div>
     <button onclick="exitChat()" class="mt-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl text-sm transition-colors">${tryAgain}</button>`;
   chatEl.appendChild(summary);
   summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const res = await fetch('/api/roleplay/summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) throw new Error(data.error || 'Failed');
+
+    const rightItems = Array.isArray(data.right) && data.right.length
+      ? data.right.map(r => `<li class="flex gap-2"><span class="text-emerald-400 shrink-0">✓</span><span>${escHtml(r)}</span></li>`).join('')
+      : `<li class="text-zinc-500">${lang === 'fr' ? 'Rien de notable.' : 'Nothing notable.'}</li>`;
+    const wrongItems = Array.isArray(data.wrong) && data.wrong.length
+      ? data.wrong.map(w => `<li class="flex gap-2"><span class="text-red-400 shrink-0">✗</span><span>${escHtml(w)}</span></li>`).join('')
+      : `<li class="text-zinc-500">${lang === 'fr' ? 'Aucune erreur majeure.' : 'No major errors.'}</li>`;
+
+    document.getElementById('summary-body').innerHTML = `
+      <p class="italic text-zinc-300 text-sm border-l-2 border-amber-400 pl-3">${escHtml(data.verdict || '')}</p>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2">${lang === 'fr' ? 'Ce que vous avez bien fait' : 'What you did right'}</div>
+        <ul class="space-y-1.5 text-sm text-zinc-200">${rightItems}</ul>
+      </div>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2">${lang === 'fr' ? 'Ce qu\'il faut améliorer' : 'What to improve'}</div>
+        <ul class="space-y-1.5 text-sm text-zinc-200">${wrongItems}</ul>
+      </div>
+      <div class="bg-amber-400/10 border border-amber-400/20 rounded-2xl px-4 py-3">
+        <span class="text-amber-400 font-semibold text-xs uppercase tracking-wider">${lang === 'fr' ? '💡 Conseil pour la prochaine fois' : '💡 Tip for next time'}</span>
+        <p class="text-amber-200 text-sm mt-1">${escHtml(data.tip || '')}</p>
+      </div>`;
+  } catch {
+    const fallback = scenarioCoachingNotes.length
+      ? '<ol class="list-decimal list-inside space-y-2 text-sm text-zinc-300">' + scenarioCoachingNotes.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ol>'
+      : `<p class="text-zinc-400 text-sm">${lang === 'fr' ? 'Impossible de charger l\'analyse.' : 'Could not load detailed analysis.'}</p>`;
+    document.getElementById('summary-body').innerHTML = fallback;
+  }
 }
 
 function appendChatMessage(role, text) {
