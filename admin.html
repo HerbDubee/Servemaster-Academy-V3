@@ -193,14 +193,14 @@ let allUsers = [];
 async function init() {
   try {
     const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
-    if (!res.ok) { window.location.href = '/login'; return; }
+    if (!res.ok) { window.location.href = '/login?next=/admin'; return; }
     const { user } = await res.json();
     if (user.role !== 'admin') { window.location.href = '/'; return; }
     document.getElementById('admin-name').textContent = user.name;
     document.getElementById('auth-check').classList.add('hidden');
     document.getElementById('admin-shell').classList.remove('hidden');
     loadAll();
-  } catch { window.location.href = '/login'; }
+  } catch { window.location.href = '/login?next=/admin'; }
 }
 
 async function apiFetch(path) {

@@ -65,6 +65,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const joinCode = urlParams.get('join');
 const googleToken = urlParams.get('token');
+const nextUrl = urlParams.get('next') || '/app';
 
 if (joinCode) {
   localStorage.setItem('sma-pending-join', joinCode);
@@ -86,10 +87,10 @@ if (googleToken) {
       body: JSON.stringify({ inviteCode: pendingJoin })
     }).finally(() => {
       localStorage.removeItem('sma-pending-join');
-      window.location.href = '/app';
+      window.location.href = nextUrl;
     });
   } else {
-    window.location.href = '/app';
+    window.location.href = nextUrl;
   }
 } else if (urlParams.get('error')) {
   const el = document.getElementById('error-msg');
@@ -125,7 +126,7 @@ async function doLogin(e) {
       } catch {}
     }
 
-    window.location.href = '/app';
+    window.location.href = nextUrl;
   } catch {
     errEl.textContent = 'Connection error. Please try again.';
     errEl.classList.remove('hidden');
