@@ -163,7 +163,8 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
       const rRes = await db.query('SELECT plan FROM restaurants WHERE id = $1', [user.restaurant_id]);
       restaurantPlan = rRes.rows[0]?.plan || 'free';
     }
-    user.effective_plan = highestPlan(user.subscription_status, restaurantPlan);
+    user.effective_plan = user.role === 'admin' ? 'premium' : highestPlan(user.subscription_status, restaurantPlan);
+    if (user.role === 'admin') user.subscription_status = 'premium';
     res.json({ user });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user' });
@@ -706,7 +707,7 @@ Respond with valid JSON only, in this exact format:
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: 'Here is the conversation to review:\n\n' + messages.filter(m => m.role === 'user').map((m, i) => `Server turn ${i+1}: "${m.content}"`).join('\n') }
+        { role: 'user', content: 'Here is the full conversation to review:\n\n' + messages.map(m => `${m.role === 'user' ? 'SERVER' : 'CUSTOMER'}: ${m.content}`).join('\n\n') }
       ],
     });
     const raw = completion.choices[0].message.content || '{}';
