@@ -168,6 +168,10 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     const result = await db.query('SELECT id, name, email, role, experience_level, restaurant_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
     const user = result.rows[0];
+    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
+      await db.query("UPDATE users SET role = 'admin' WHERE id = $1", [user.id]);
+      user.role = 'admin';
+    }
     let restaurantPlan = 'free';
     if (user.restaurant_id) {
       const rRes = await db.query('SELECT plan FROM restaurants WHERE id = $1', [user.restaurant_id]);
