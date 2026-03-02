@@ -1337,12 +1337,10 @@ function speakText(text) {
 // =========================================================
 // PRACTICE / AI ROLE-PLAY
 // =========================================================
-const SCENARIO_CATEGORIES = [
-  { id:'guest',    label:'Guest Relations',    labelFr:'Relations clients',       color:'blue'   },
-  { id:'beverage', label:'Wine & Beverage',    labelFr:'Vins & boissons',         color:'purple' },
-  { id:'occasion', label:'Special Occasions',  labelFr:'Occasions spéciales',     color:'pink'   },
-  { id:'pressure', label:'Rush & Pressure',    labelFr:'Rush & pression',         color:'orange' },
-  { id:'safety',   label:'Health & Safety',    labelFr:'Santé & sécurité',        color:'red'    },
+const DIFFICULTY_LEVELS = [
+  { key:'Beginner',     label:'Beginner',     labelFr:'Débutant',      hdrCls:'text-emerald-400', borderCls:'border-emerald-800/40' },
+  { key:'Intermediate', label:'Intermediate', labelFr:'Intermédiaire', hdrCls:'text-amber-400',   borderCls:'border-amber-800/40'   },
+  { key:'Advanced',     label:'Advanced',     labelFr:'Avancé',        hdrCls:'text-red-400',     borderCls:'border-red-800/40'     },
 ];
 const DIFFICULTY_STYLES = {
   Beginner:     { label:'Beginner',     labelFr:'Débutant',     cls:'bg-emerald-900/60 text-emerald-300 border-emerald-700' },
@@ -1350,36 +1348,24 @@ const DIFFICULTY_STYLES = {
   Advanced:     { label:'Advanced',     labelFr:'Avancé',       cls:'bg-red-900/60 text-red-300 border-red-700'           },
 };
 const practiceScenarios = [
-  { id:1,  emoji:'😤', title:'The Difficult Guest',        titleFr:'Le client difficile',                 desc:'De-escalate an angry, impatient guest at the door.',            descFr:'Désamorcez un client en colère et impatient à l\'entrée.',                   category:'guest',    difficulty:'Beginner'     },
-  { id:2,  emoji:'🍷', title:'Wine Upselling',             titleFr:'Vente additionnelle de vin',          desc:'Guide an uncertain couple to the right bottle.',                descFr:'Guidez un couple incertain vers la bonne bouteille.',                         category:'beverage', difficulty:'Beginner'     },
-  { id:3,  emoji:'⚠️', title:'Serious Food Allergy',       titleFr:'Allergie alimentaire sérieuse',       desc:'Handle a guest with a severe nut allergy safely.',              descFr:'Gérez en toute sécurité un client avec une allergie sévère aux noix.',        category:'safety',   difficulty:'Intermediate' },
-  { id:4,  emoji:'⏱️', title:'The Long Wait Complaint',    titleFr:'La plainte d\'attente',               desc:'Recover a frustrated guest waiting 45 minutes.',                descFr:'Récupérez un client frustré qui attend depuis 45 minutes.',                   category:'guest',    difficulty:'Beginner'     },
-  { id:5,  emoji:'🍮', title:'Dessert Upselling',          titleFr:'Vente additionnelle de dessert',      desc:"Persuade a 'stuffed' guest to try a dessert.",                  descFr:"Persuadez un client 'rassasié' d'essayer un dessert.",                        category:'guest',    difficulty:'Beginner'     },
-  { id:6,  emoji:'🎂', title:'Birthday Celebration',       titleFr:'Célébration d\'anniversaire',         desc:'Take a surprise 40th birthday booking by phone.',               descFr:'Prenez une réservation surprise de 40e anniversaire par téléphone.',          category:'occasion', difficulty:'Beginner'     },
-  { id:7,  emoji:'🧾', title:'Splitting the Bill',         titleFr:'Partager la note',                    desc:'Handle a complicated 7-person split bill.',                     descFr:'Gérez une note compliquée à partager entre 7 personnes.',                     category:'guest',    difficulty:'Intermediate' },
-  { id:8,  emoji:'⭐', title:'VIP Guest Arrival',          titleFr:'Arrivée d\'un VIP',                   desc:'Exceed the expectations of a high-profile guest.',              descFr:'Dépassez les attentes d\'un client de haut profil.',                          category:'occasion', difficulty:'Intermediate' },
-  { id:9,  emoji:'🤔', title:'The Indecisive Guest',       titleFr:'Le client indécis',                   desc:'Guide an overwhelmed guest to their perfect dish.',             descFr:'Guidez un client dépassé vers son plat parfait.',                             category:'guest',    difficulty:'Beginner'     },
-  { id:10, emoji:'❌', title:'Wrong Order Delivered',      titleFr:'Mauvaise commande livrée',            desc:'Recover from bringing the wrong dish gracefully.',              descFr:'Récupérez gracieusement après avoir apporté le mauvais plat.',                category:'guest',    difficulty:'Beginner'     },
-  { id:11, emoji:'🍾', title:'Premium Wine Decanting',     titleFr:'Décantage de vin premium',            desc:'Perform flawless tableside Barolo decanting.',                  descFr:'Effectuez un décantage impeccable de Barolo en salle.',                       category:'beverage', difficulty:'Advanced'     },
-  { id:12, emoji:'👥', title:'Large Group Chaos',          titleFr:'Chaos de grand groupe',               desc:'Coordinate a party of 16 with dietary chaos.',                  descFr:'Coordonnez un groupe de 16 avec des restrictions alimentaires.',               category:'pressure', difficulty:'Advanced'     },
-  { id:13, emoji:'🚨', title:'Severe Allergy Emergency',   titleFr:'Urgence allergie sévère',             desc:'Handle a potential anaphylactic situation at the table.',        descFr:'Gérez une situation anaphylactique potentielle à table.',                     category:'safety',   difficulty:'Advanced'     },
-  { id:14, emoji:'💍', title:'The Marriage Proposal',      titleFr:'La demande en mariage',               desc:'Coordinate the perfect surprise proposal moment.',              descFr:'Coordonnez le parfait moment de demande surprise.',                           category:'occasion', difficulty:'Intermediate' },
-  { id:15, emoji:'💼', title:'Corporate Expense Dinner',   titleFr:'Dîner de frais de représentation',   desc:'Satisfy a demanding CFO\'s corporate dinner needs.',             descFr:'Satisfaire les besoins du dîner corporatif d\'un DFI exigeant.',               category:'occasion', difficulty:'Intermediate' },
-  { id:16, emoji:'👶', title:'Family with Young Children', titleFr:'Famille avec de jeunes enfants',      desc:'Make a family with a toddler feel welcome and at ease.',         descFr:'Mettez à l\'aise une famille avec un tout-petit.',                            category:'guest',    difficulty:'Beginner'     },
-  { id:17, emoji:'🌱', title:'Vegan Tasting Menu',         titleFr:'Menu dégustation végane',             desc:'Navigate a fully vegan tasting menu with confidence.',           descFr:'Naviguez un menu dégustation entièrement végane avec confiance.',             category:'beverage', difficulty:'Intermediate' },
-  { id:18, emoji:'📝', title:'The Food Critic',            titleFr:'Le critique gastronomique',           desc:'Impress a discreet restaurant reviewer.',                       descFr:'Impressionnez un critique gastronomique discret.',                            category:'occasion', difficulty:'Advanced'     },
-  { id:19, emoji:'⏰', title:'Last Orders Rush',           titleFr:'Dernières commandes en urgence',      desc:'Handle a guest arriving 30 minutes before kitchen close.',      descFr:'Gérez un client arrivant 30 minutes avant la fermeture de la cuisine.',       category:'pressure', difficulty:'Intermediate' },
-  { id:20, emoji:'🍾', title:'Corked Wine Return',         titleFr:'Retour de vin bouchonné',             desc:'Handle a wine return claim professionally.',                    descFr:'Gérez professionnellement une réclamation de vin bouchonné.',                 category:'beverage', difficulty:'Intermediate' },
-  { id:21, emoji:'🚶', title:'Dine and Dash Suspicion',    titleFr:'Soupçon de fuite sans payer',         desc:'Handle a suspected walk-out without confrontation.',            descFr:'Gérez un départ suspect sans confrontation.',                                 category:'safety',   difficulty:'Intermediate' },
-  { id:22, emoji:'🏥', title:'Medical Situation',          titleFr:'Situation médicale',                  desc:'Take control when a guest collapses at another table.',          descFr:'Prenez le contrôle quand un client s\'effondre à une autre table.',           category:'safety',   difficulty:'Advanced'     },
-  { id:23, emoji:'🔊', title:'Noise Complaint',            titleFr:'Plainte de bruit',                    desc:'Mediate between a quiet couple and a rowdy table.',             descFr:'Médiez entre un couple tranquille et une table bruyante.',                    category:'guest',    difficulty:'Intermediate' },
-  { id:24, emoji:'📸', title:'The Food Influencer',        titleFr:'L\'influenceur gastronomique',        desc:'Balance an influencer\'s requests with service flow.',           descFr:'Équilibrez les demandes d\'un influenceur avec le flux du service.',           category:'guest',    difficulty:'Intermediate' },
-  { id:25, emoji:'🎓', title:'Sommelier Knowledge Test',   titleFr:'Test de connaissance en sommellerie', desc:'Impress a highly knowledgeable wine guest.',                    descFr:'Impressionnez un client très bien informé en vins.',                          category:'beverage', difficulty:'Advanced'     },
-  { id:26, emoji:'🕐', title:'Tasting Menu Timing',        titleFr:'Synchronisation du menu dégustation', desc:'Coordinate a 9-course menu when time runs short.',              descFr:'Coordonnez un menu 9 plats quand le temps manque.',                           category:'pressure', difficulty:'Advanced'     },
-  { id:27, emoji:'🎭', title:'Post-Theatre Rush',          titleFr:'Affluence post-théâtre',              desc:'Manage 50 simultaneous theatre guests arriving at once.',        descFr:'Gérez 50 clients de théâtre arrivant simultanément.',                         category:'pressure', difficulty:'Advanced'     },
-  { id:28, emoji:'🌾', title:'Celiac Disease',             titleFr:'Maladie cœliaque',                    desc:'Handle celiac disease concerns with medical seriousness.',       descFr:'Gérez sérieusement les inquiétudes liées à la maladie cœliaque.',             category:'safety',   difficulty:'Intermediate' },
-  { id:29, emoji:'🍸', title:'The Overgenerous Drunk',     titleFr:'L\'ivrogne trop généreux',            desc:'Responsibly manage an intoxicated but friendly guest.',          descFr:'Gérez responsablement un client en état d\'ivresse mais amical.',              category:'safety',   difficulty:'Advanced'     },
-  { id:30, emoji:'🌐', title:'Bisected Language Table',    titleFr:'Table aux langues mixtes',            desc:'Serve a table split between English and French speakers.',       descFr:'Servez une table partagée entre anglophones et francophones.',                category:'guest',    difficulty:'Intermediate' },
+  { id:1,  emoji:'😤', title:'The Difficult Guest',        titleFr:'Le client difficile',                 desc:'De-escalate an angry, impatient guest at the door.',            descFr:'Désamorcez un client en colère et impatient à l\'entrée.',                   difficulty:'Beginner'     },
+  { id:2,  emoji:'🍷', title:'Wine Upselling',             titleFr:'Vente additionnelle de vin',          desc:'Guide an uncertain couple to the right bottle.',                descFr:'Guidez un couple incertain vers la bonne bouteille.',                         difficulty:'Beginner'     },
+  { id:4,  emoji:'⏱️', title:'The Long Wait Complaint',    titleFr:'La plainte d\'attente',               desc:'Recover a frustrated guest waiting 45 minutes.',                descFr:'Récupérez un client frustré qui attend depuis 45 minutes.',                   difficulty:'Beginner'     },
+  { id:6,  emoji:'🎂', title:'Birthday Celebration',       titleFr:'Célébration d\'anniversaire',         desc:'Take a surprise 40th birthday booking by phone.',               descFr:'Prenez une réservation surprise de 40e anniversaire par téléphone.',          difficulty:'Beginner'     },
+  { id:9,  emoji:'🤔', title:'The Indecisive Guest',       titleFr:'Le client indécis',                   desc:'Guide an overwhelmed guest to their perfect dish.',             descFr:'Guidez un client dépassé vers son plat parfait.',                             difficulty:'Beginner'     },
+  { id:10, emoji:'❌', title:'Wrong Order Delivered',      titleFr:'Mauvaise commande livrée',            desc:'Recover from bringing the wrong dish gracefully.',              descFr:'Récupérez gracieusement après avoir apporté le mauvais plat.',                difficulty:'Beginner'     },
+  { id:7,  emoji:'🧾', title:'Splitting the Bill',         titleFr:'Partager la note',                    desc:'Handle a complicated 7-person split bill.',                     descFr:'Gérez une note compliquée à partager entre 7 personnes.',                     difficulty:'Intermediate' },
+  { id:14, emoji:'💍', title:'The Marriage Proposal',      titleFr:'La demande en mariage',               desc:'Coordinate the perfect surprise proposal moment.',              descFr:'Coordonnez le parfait moment de demande surprise.',                           difficulty:'Intermediate' },
+  { id:17, emoji:'🌱', title:'Vegan Tasting Menu',         titleFr:'Menu dégustation végane',             desc:'Navigate a fully vegan tasting menu with confidence.',           descFr:'Naviguez un menu dégustation entièrement végane avec confiance.',             difficulty:'Intermediate' },
+  { id:19, emoji:'⏰', title:'Last Orders Rush',           titleFr:'Dernières commandes en urgence',      desc:'Handle a guest arriving 30 minutes before kitchen close.',      descFr:'Gérez un client arrivant 30 minutes avant la fermeture de la cuisine.',       difficulty:'Intermediate' },
+  { id:23, emoji:'🔊', title:'Noise Complaint',            titleFr:'Plainte de bruit',                    desc:'Mediate between a quiet couple and a rowdy table.',             descFr:'Médiez entre un couple tranquille et une table bruyante.',                    difficulty:'Intermediate' },
+  { id:28, emoji:'🌾', title:'Celiac Disease',             titleFr:'Maladie cœliaque',                    desc:'Handle celiac disease concerns with medical seriousness.',       descFr:'Gérez sérieusement les inquiétudes liées à la maladie cœliaque.',             difficulty:'Intermediate' },
+  { id:11, emoji:'🍾', title:'Premium Wine Decanting',     titleFr:'Décantage de vin premium',            desc:'Perform flawless tableside Barolo decanting.',                  descFr:'Effectuez un décantage impeccable de Barolo en salle.',                       difficulty:'Advanced'     },
+  { id:12, emoji:'👥', title:'Large Group Chaos',          titleFr:'Chaos de grand groupe',               desc:'Coordinate a party of 16 with dietary chaos.',                  descFr:'Coordonnez un groupe de 16 avec des restrictions alimentaires.',               difficulty:'Advanced'     },
+  { id:13, emoji:'🚨', title:'Severe Allergy Emergency',   titleFr:'Urgence allergie sévère',             desc:'Handle a potential anaphylactic situation at the table.',        descFr:'Gérez une situation anaphylactique potentielle à table.',                     difficulty:'Advanced'     },
+  { id:18, emoji:'📝', title:'The Food Critic',            titleFr:'Le critique gastronomique',           desc:'Impress a discreet restaurant reviewer.',                       descFr:'Impressionnez un critique gastronomique discret.',                            difficulty:'Advanced'     },
+  { id:22, emoji:'🏥', title:'Medical Situation',          titleFr:'Situation médicale',                  desc:'Take control when a guest collapses at another table.',          descFr:'Prenez le contrôle quand un client s\'effondre à une autre table.',           difficulty:'Advanced'     },
+  { id:25, emoji:'🎓', title:'Sommelier Knowledge Test',   titleFr:'Test de connaissance en sommellerie', desc:'Impress a highly knowledgeable wine guest.',                    descFr:'Impressionnez un client très bien informé en vins.',                          difficulty:'Advanced'     },
 ];
 
 let chatScenarioId = null;
@@ -1405,12 +1391,12 @@ function renderScenarios() {
   let scenariosShown = 0;
   let proGateShown = false;
 
-  SCENARIO_CATEGORIES.forEach(cat => {
-    const catScenarios = practiceScenarios.filter(s => s.category === cat.id);
-    if (!catScenarios.length) return;
-    const catLabel = lang === 'fr' ? cat.labelFr : cat.label;
-    html += `<div class="col-span-full mt-4 mb-1"><h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-400">${catLabel}</h3></div>`;
-    catScenarios.forEach(s => {
+  DIFFICULTY_LEVELS.forEach(level => {
+    const levelScenarios = practiceScenarios.filter(s => s.difficulty === level.key);
+    if (!levelScenarios.length) return;
+    const levelLabel = lang === 'fr' ? level.labelFr : level.label;
+    html += `<div class="col-span-full mt-4 mb-1"><h3 class="text-sm font-semibold uppercase tracking-wider ${level.hdrCls}">${levelLabel}</h3></div>`;
+    levelScenarios.forEach(s => {
       const title = lang === 'fr' && s.titleFr ? s.titleFr : s.title;
       const desc  = lang === 'fr' && s.descFr  ? s.descFr  : s.desc;
       const done  = completedScenarios.includes(s.id);
@@ -1421,11 +1407,11 @@ function renderScenarios() {
       if (locked) {
         if (!proGateShown) {
           proGateShown = true;
-          html += showUpgradePrompt(lang === 'fr' ? '25 scénarios supplémentaires' : '25 more scenarios');
+          html += showUpgradePrompt(lang === 'fr' ? '13 scénarios supplémentaires' : '13 more scenarios');
         }
         return;
       }
-      html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
+      html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':level.borderCls} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
         ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">✓ Done</div>' : ''}
         <div class="text-3xl mt-1">${s.emoji}</div>
         <div class="flex-1 min-w-0">
