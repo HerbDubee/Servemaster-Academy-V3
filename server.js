@@ -31,7 +31,7 @@ const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
 const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
 const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'kirk@servemasteracademy.ca';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'herb.dubee@gmail.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || 'hello@servemasteracademy.ca';
 const INFO_EMAIL = process.env.INFO_EMAIL || 'info@servemasteracademy.ca';
@@ -145,6 +145,10 @@ app.post('/api/auth/login', async (req, res) => {
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
     await updateStreak(user.id);
+    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
+      await db.query("UPDATE users SET role = 'admin' WHERE id = $1", [user.id]);
+      user.role = 'admin';
+    }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
     res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, experience_level: user.experience_level, subscription_status: user.subscription_status || 'free' }, token });
@@ -223,6 +227,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     } else { user = userResult.rows[0]; }
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
     await updateStreak(user.id);
+    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
+      await db.query("UPDATE users SET role = 'admin' WHERE id = $1", [user.id]);
+      user.role = 'admin';
+    }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.redirect('/login?token=' + encodeURIComponent(token));
   } catch (err) {
