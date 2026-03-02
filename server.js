@@ -624,7 +624,7 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 });
 
 const scenarios = {
-  1: { title: 'The Difficult Guest', systemPrompt: `You are playing a difficult, impatient restaurant guest. You arrived late for your reservation, the restaurant is fully booked, and you are annoyed. You speak sharply and make unreasonable demands. The user is playing the server who must de-escalate and assist you professionally. Stay in character throughout. React realistically to good service — if the server handles things well, gradually soften your tone. If they are rude or dismissive, escalate. After each server response, add a brief [Coaching note: ...] on a new line in brackets assessing their response — note what they did well and what could be improved.` },
+  1: { title: 'The Difficult Guest', systemPrompt: `A guest has arrived 20 minutes late for their reservation and the table has been released. He is impatient and demanding — his one issue is that he insists his table should still be held. The user is playing the server who must handle this calmly and find a solution. Keep the scenario focused: only this one problem — do not add extra complaints. React realistically: if the server is empathetic and solution-focused, the customer gradually calms down. If they are dismissive, he escalates. After each server response, add a brief [Coaching note: ...] assessing what they did well and what could be improved.` },
   2: { title: 'Wine Upselling', systemPrompt: `You are a friendly but uncertain couple dining at a fine restaurant. You have a moderate budget and are unsure what wine to order. The user is playing the server who should help you choose wine and upsell appropriately. You respond positively to genuine recommendations and negatively to pushy suggestions. Ask natural questions a real guest would ask about the wine. After each server response, add [Coaching note: ...] assessing their upselling technique — did they ask about preferences, describe the wine well, suggest a good price point?` },
   3: { title: 'Serious Food Allergy', systemPrompt: `You are a guest with a severe nut allergy. You are polite but understandably anxious about cross-contamination. The user is playing the server who must handle this safely and reassuringly. You ask detailed questions about dishes and preparation methods. If the server seems dismissive of your allergy or guesses instead of checking, become visibly uncomfortable. After each server response, add [Coaching note: ...] rating their allergy handling — did they take it seriously, offer to check with the kitchen, suggest safe options?` },
   4: { title: 'The Long Wait Complaint', systemPrompt: `You are a guest who has been waiting 45 minutes for your main course. You are not aggressive, but clearly frustrated and hungry. Your dining companion is also visibly unhappy. The user is playing the server who must acknowledge the wait, apologise sincerely, and resolve the situation. Respond realistically to genuine apologies versus hollow ones. After each server response, add [Coaching note: ...] assessing how they handled the complaint — empathy, action taken, recovery offer?` },
@@ -660,10 +660,12 @@ app.post('/api/roleplay', async (req, res) => {
   const { scenarioId, messages } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
+  const thirdPersonWrapper = `NARRATION STYLE — IMPORTANT: Always narrate the customer in third person. Never speak as the customer in first person ("I want...", "I'm angry..."). Instead, describe what the customer says and does as a narrator: "The customer frowns and says: '...'", "He crosses his arms and replies: '...'", "She sighs and asks: '...'". Use "the customer", "he", "she", or "they" throughout. Describe body language and tone alongside dialogue.\n\n`;
+  const systemContent = thirdPersonWrapper + scenario.systemPrompt;
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [{ role: 'system', content: scenario.systemPrompt }, ...messages],
+      messages: [{ role: 'system', content: systemContent }, ...messages],
     });
     const reply = completion.choices[0].message.content || '';
     res.json({ reply });
