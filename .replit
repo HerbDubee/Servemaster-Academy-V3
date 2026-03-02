@@ -59,3 +59,6 @@ HELLO_EMAIL = "hello@servemasteracademy.ca"
 INFO_EMAIL = "info@servemasteracademy.ca"
 GOOGLE_CLIENT_ID = "259760364257-rdc5nf11ovhk1b5l2mul34kgq71h1jbc.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "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"
+
+[userenv.production]
+APP_URL = "https://servemasteracademy.ca"

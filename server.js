@@ -203,9 +203,10 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
 
 app.get('/api/auth/google', (req, res) => {
   if (!GOOGLE_CLIENT_ID) return res.redirect('/login?error=google_not_configured');
+  const BASE_URL = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: `${req.protocol}://${req.get('host')}/api/auth/google/callback`,
+    redirect_uri: `${BASE_URL}/api/auth/google/callback`,
     response_type: 'code',
     scope: 'openid email profile',
     access_type: 'offline'
@@ -217,12 +218,13 @@ app.get('/api/auth/google/callback', async (req, res) => {
   const { code } = req.query;
   if (!code) return res.redirect('/login?error=google_auth_failed');
   try {
+    const BASE_URL = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code, client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${req.protocol}://${req.get('host')}/api/auth/google/callback`,
+        redirect_uri: `${BASE_URL}/api/auth/google/callback`,
         grant_type: 'authorization_code'
       })
     });
