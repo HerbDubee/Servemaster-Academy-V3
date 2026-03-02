@@ -1069,9 +1069,9 @@ function getModuleContent(id) {
     data.quiz.forEach((q, qi) => {
       const question = lang === 'fr' && q.qFr ? q.qFr : q.q;
       const options = lang === 'fr' && q.optionsFr ? q.optionsFr : q.options;
-      html += `<div class="bg-zinc-800 rounded-2xl p-6"><p class="font-medium mb-4">${(qi+1)}. ${question}</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+      html += `<div class="bg-zinc-800 rounded-2xl p-6"><p class="font-medium mb-4">${(qi+1)}. ${question}</p><div class="grid grid-cols-1 gap-3">`;
       options.forEach((opt, oi) => {
-        html += `<button onclick="answerQuiz(${id},${qi},${oi},${q.answer},this)" class="quiz-btn text-left px-4 py-3 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-sm">${opt}</button>`;
+        html += `<button onclick="answerQuiz(${id},${qi},${oi},${q.answer},this)" class="quiz-btn text-left px-5 py-4 rounded-xl border border-zinc-600 hover:border-amber-400 hover:text-amber-400 transition-all text-base leading-snug whitespace-normal">${opt}</button>`;
       });
       html += '</div></div>';
     });
