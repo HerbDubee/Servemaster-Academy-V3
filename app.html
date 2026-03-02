@@ -314,8 +314,8 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="scenario-grid"></div>
       </div>
-      <div id="practice-chat" class="hidden space-y-6">
-        <div class="flex items-center gap-4 flex-wrap">
+      <div id="practice-chat" class="hidden flex flex-col" style="min-height: calc(100dvh - 56px);">
+        <div class="flex items-center gap-4 flex-wrap py-2">
           <button onclick="exitChat()" class="text-zinc-400 hover:text-amber-400 flex items-center gap-2 text-sm" id="chat-back">← Back</button>
           <div class="flex-1">
             <h2 class="heading text-2xl lg:text-3xl" id="chat-scenario-title"></h2>
@@ -325,15 +325,16 @@
             <button onclick="toggleAISpeech()" id="ai-speech-btn" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-sm transition-colors" title="Toggle customer voice">🔇</button>
           </div>
         </div>
-        <div id="chat-messages" class="space-y-4 min-h-[55vh] max-h-[65vh] overflow-y-auto pr-2"></div>
-        <div class="flex gap-3 flex-wrap">
-          <input id="chat-input" type="text" placeholder="Type your response as the server..."
+        <div id="chat-messages" class="space-y-4 flex-1 overflow-y-auto pr-2 py-2" style="min-height: 200px;"></div>
+        <div class="mt-auto pt-3 flex gap-3 flex-wrap">
+          <input id="chat-input" type="text" inputmode="text" autocomplete="off" placeholder="Type your response as the server..."
             class="flex-1 min-w-0 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
-            onkeydown="if(event.key==='Enter') sendChat()" />
+            onkeydown="if(event.key==='Enter') sendChat()"
+            onfocus="setTimeout(()=>document.getElementById('chat-messages').scrollTo(0,999999),300)" />
           <button onclick="startVoiceInput()" id="mic-btn" class="bg-zinc-700 hover:bg-zinc-600 text-white px-5 py-4 rounded-2xl transition-colors text-lg" title="Speak your response">🎤</button>
-          <button onclick="sendChat()" id="chat-send-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors" id="send-label">Send</button>
+          <button onclick="sendChat()" id="chat-send-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors">Send</button>
         </div>
-        <div id="voice-recording-indicator" class="hidden items-center gap-3 text-sm text-red-400">
+        <div id="voice-recording-indicator" class="hidden items-center gap-3 text-sm text-red-400 pt-2">
           <div class="w-3 h-3 bg-red-500 rounded-full pulse-rec"></div>
           <span id="voice-listening-text">Listening...</span>
         </div>
