@@ -1264,7 +1264,7 @@ function startVoiceInput() {
         formData.append('audio', audioBlob, mimeType === 'audio/webm' ? 'audio.webm' : 'audio.mp4');
         formData.append('lang', lang);
         try {
-          const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+          const res = await fetch('/api/transcribe', { method: 'POST', headers: { Authorization: 'Bearer ' + authToken }, body: formData });
           const data = await res.json();
           const input = document.getElementById('chat-input');
           if (data.fallback) {
@@ -1481,15 +1481,12 @@ async function sendInitialMessage() {
   appendChatMessage('assistant', '...');
   try {
     const res = await fetch('/api/roleplay', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin the scenario. Set the scene and start as the guest.' }] })
     });
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });
-    const clean = stripMarkdown(data.reply);
-    const parts = clean.split(/\[Coaching note:/i);
-    const guestText = parts[0].trim();
-    if (parts[1]) scenarioCoachingNotes.push(parts[1].replace(/\]$/, '').trim());
+    const guestText = stripMarkdown(data.reply).trim();
     replaceLast(guestText);
     speakText(guestText);
   } catch {
@@ -1509,15 +1506,12 @@ async function sendChat() {
   appendChatMessage('assistant', '...');
   try {
     const res = await fetch('/api/roleplay', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
     });
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });
-    const parts = stripMarkdown(data.reply).split(/\[Coaching note:/i);
-    const guestText = parts[0].trim();
-    const coaching = parts[1] ? parts[1].replace(/\]$/, '').trim() : null;
-    if (coaching) scenarioCoachingNotes.push(coaching);
+    const guestText = stripMarkdown(data.reply).trim();
     replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
     speakText(guestText);
     const userTurns = chatHistory.filter(m => m.role === 'user').length;
@@ -1561,7 +1555,7 @@ async function showScenarioSummary() {
   try {
     const res = await fetch('/api/roleplay/summary', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
       body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory })
     });
     const data = await res.json();
