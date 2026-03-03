@@ -102,7 +102,7 @@ details[open] summary::after { content: '−'; }
       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">BEST VALUE</div>
       <div class="mb-5">
         <div class="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">PREMIUM INDIVIDUAL</div>
-        <div id="premium-price" class="text-4xl font-bold mb-1">$7.99<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div id="premium-price" class="text-4xl font-bold mb-1">$19<span class="text-xl font-medium text-zinc-400">/mo</span></div>
         <div id="premium-sub" class="text-zinc-500 text-sm">billed monthly, cancel anytime</div>
       </div>
       <ul class="space-y-2.5 text-sm mb-8 flex-1">
@@ -121,7 +121,7 @@ details[open] summary::after { content: '−'; }
     <div class="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-3xl p-7 flex flex-col transition-colors">
       <div class="mb-5">
         <div class="text-zinc-300 text-xs font-semibold uppercase tracking-wider mb-2">STARTER TEAM</div>
-        <div class="text-4xl font-bold mb-1">$69<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div class="text-4xl font-bold mb-1">$99<span class="text-xl font-medium text-zinc-400">/mo</span></div>
         <div class="text-zinc-500 text-sm">per location, up to 10 staff</div>
       </div>
       <ul class="space-y-2.5 text-sm mb-8 flex-1">
@@ -142,7 +142,7 @@ details[open] summary::after { content: '−'; }
       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-300 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">MOST POPULAR FOR TEAMS</div>
       <div class="mb-5">
         <div class="text-zinc-200 text-xs font-semibold uppercase tracking-wider mb-2">PRO TEAM</div>
-        <div class="text-4xl font-bold mb-1">$149<span class="text-xl font-medium text-zinc-400">/mo</span></div>
+        <div class="text-4xl font-bold mb-1">$199<span class="text-xl font-medium text-zinc-400">/mo</span></div>
         <div class="text-zinc-500 text-sm">per location, unlimited staff</div>
       </div>
       <ul class="space-y-2.5 text-sm mb-8 flex-1">
@@ -195,7 +195,7 @@ details[open] summary::after { content: '−'; }
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
       <summary class="font-semibold text-sm py-1">How does annual billing work for Premium Individual?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $59/year — equivalent to $4.92/month — saving you 26% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $149/year — equivalent to $12.42/month — saving you 35% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
@@ -254,13 +254,13 @@ function setBilling(mode) {
   if (mode === 'monthly') {
     btnM.classList.add('bg-amber-400','text-black'); btnM.classList.remove('text-zinc-400');
     btnA.classList.remove('bg-amber-400','text-black'); btnA.classList.add('text-zinc-400');
-    priceEl.innerHTML = '$7.99<span class="text-xl font-medium text-zinc-400">/mo</span>';
+    priceEl.innerHTML = '$19<span class="text-xl font-medium text-zinc-400">/mo</span>';
     subEl.textContent = 'billed monthly, cancel anytime';
   } else {
     btnA.classList.add('bg-amber-400','text-black'); btnA.classList.remove('text-zinc-400');
     btnM.classList.remove('bg-amber-400','text-black'); btnM.classList.add('text-zinc-400');
-    priceEl.innerHTML = '$59<span class="text-xl font-medium text-zinc-400">/yr</span>';
-    subEl.textContent = '$4.92/month — save 26% vs monthly';
+    priceEl.innerHTML = '$149<span class="text-xl font-medium text-zinc-400">/yr</span>';
+    subEl.textContent = 'billed annually, cancel anytime';
   }
 }
 
