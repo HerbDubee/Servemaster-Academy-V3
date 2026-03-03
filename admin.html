@@ -49,6 +49,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
       <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
       <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
+      <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -59,6 +60,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
       <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
       <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
+      <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
     </div>
 
     <!-- Main content -->
@@ -180,6 +182,64 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
       </div>
 
+      <!-- INVITE CODES -->
+      <div id="section-invites" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Invite Codes</h1>
+
+        <!-- Generator card -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8 max-w-xl">
+          <h2 class="font-semibold text-white mb-4">Generate a New Code</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1">Plan</label>
+              <select id="ic-plan" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="premium">Premium (Full Access)</option>
+                <option value="starter_team">Starter Team</option>
+                <option value="pro_team">Pro Team</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1">Max Uses</label>
+              <input id="ic-uses" type="number" min="0" value="1" placeholder="1" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+              <p class="text-xs text-zinc-500 mt-1">0 = unlimited</p>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1">Expires (optional)</label>
+              <input id="ic-expires" type="date" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+          </div>
+          <button onclick="generateInviteCode()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Generate Code</button>
+          <div id="ic-result" class="mt-4 hidden">
+            <p class="text-xs text-zinc-400 mb-1">New code generated:</p>
+            <div class="flex items-center gap-2">
+              <code id="ic-result-code" class="bg-zinc-800 text-amber-400 font-mono text-lg px-4 py-2 rounded-xl flex-1"></code>
+              <button onclick="copyInviteLink()" class="bg-zinc-700 hover:bg-zinc-600 text-white text-xs px-3 py-2 rounded-xl transition-colors">Copy Link</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Codes table -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Code</th>
+                  <th class="px-4 py-3 text-left">Plan</th>
+                  <th class="px-4 py-3 text-left">Uses</th>
+                  <th class="px-4 py-3 text-left">Expires</th>
+                  <th class="px-4 py-3 text-left">Redeemed By</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invites-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="6" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -215,6 +275,7 @@ async function loadAll() {
   loadNewsletter();
   loadRestaurants();
   loadContacts();
+  loadInvites();
 }
 
 async function loadOverview() {
@@ -331,6 +392,87 @@ async function loadContacts() {
         <p class="text-zinc-300 text-sm leading-relaxed">${esc(m.message)}</p>
       </div>
     `).join('');
+  } catch (e) { console.error(e); }
+}
+
+let lastGeneratedCode = '';
+
+async function generateInviteCode() {
+  const plan = document.getElementById('ic-plan').value;
+  const maxUses = parseInt(document.getElementById('ic-uses').value) || 1;
+  const expiresAt = document.getElementById('ic-expires').value || null;
+  try {
+    const res = await fetch('/api/admin/invite-codes', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, maxUses, expiresAt })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to generate code'); return; }
+    lastGeneratedCode = data.code;
+    document.getElementById('ic-result-code').textContent = data.code;
+    document.getElementById('ic-result').classList.remove('hidden');
+    loadInvites();
+  } catch (e) { alert('Error generating code'); }
+}
+
+function copyInviteLink() {
+  const link = `https://servemasteracademy.ca/app?invite=${lastGeneratedCode}`;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Link', 2000);
+  });
+}
+
+async function deleteInviteCode(code) {
+  if (!confirm(`Delete invite code ${code}? This cannot be undone.`)) return;
+  const res = await fetch(`/api/admin/invite-codes/${encodeURIComponent(code)}`, {
+    method: 'DELETE', headers: { Authorization: 'Bearer ' + token }
+  });
+  if (res.ok) loadInvites();
+  else alert('Failed to delete code');
+}
+
+async function loadInvites() {
+  try {
+    const data = await apiFetch('/api/admin/invite-codes');
+    const codes = data.codes || [];
+    const tbody = document.getElementById('invites-tbody');
+    if (!codes.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-zinc-500">No invite codes yet. Generate one above.</td></tr>';
+      return;
+    }
+    const planLabel = { premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+    tbody.innerHTML = codes.map(c => {
+      const redeemers = c.redeemers || [];
+      const redeemersHtml = redeemers.length
+        ? redeemers.map(r => `<div class="text-xs text-zinc-300">${esc(r.email)}</div>`).join('')
+        : '<span class="text-zinc-600 text-xs">None yet</span>';
+      const maxLabel = c.max_uses >= 999999 ? '∞' : c.max_uses;
+      const usedPct = c.max_uses >= 999999 ? 0 : Math.min(100, (c.uses_count / c.max_uses) * 100);
+      const expired = c.expires_at && new Date(c.expires_at) < new Date();
+      return `
+        <tr class="hover:bg-zinc-800/50 transition-colors">
+          <td class="px-4 py-3"><code class="font-mono text-amber-400 text-xs">${esc(c.code)}</code></td>
+          <td class="px-4 py-3 text-xs">${planLabel[c.plan] || c.plan}</td>
+          <td class="px-4 py-3 text-xs">
+            <div class="flex items-center gap-2">
+              <span>${c.uses_count} / ${maxLabel}</span>
+              ${c.max_uses < 999999 ? `<div class="w-12 bg-zinc-700 rounded-full h-1"><div class="bg-amber-400 h-1 rounded-full" style="width:${usedPct}%"></div></div>` : ''}
+            </div>
+          </td>
+          <td class="px-4 py-3 text-xs ${expired ? 'text-red-400' : 'text-zinc-400'}">${c.expires_at ? fmtDate(c.expires_at) + (expired ? ' (expired)' : '') : '—'}</td>
+          <td class="px-4 py-3">${redeemersHtml}</td>
+          <td class="px-4 py-3">
+            <div class="flex gap-2 flex-wrap">
+              <button onclick="navigator.clipboard.writeText('https://servemasteracademy.ca/app?invite=${esc(c.code)}').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Link',1500)})" class="text-xs bg-zinc-700 hover:bg-zinc-600 px-2 py-1 rounded-lg transition-colors">Copy Link</button>
+              <button onclick="deleteInviteCode('${esc(c.code)}')" class="text-xs bg-red-900/50 hover:bg-red-800/70 text-red-300 px-2 py-1 rounded-lg transition-colors">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   } catch (e) { console.error(e); }
 }
 

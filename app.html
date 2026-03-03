@@ -91,6 +91,24 @@
   </div>
 </div>
 
+<!-- INVITE CODE MODAL -->
+<div id="invite-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[260] flex items-center justify-center p-4">
+  <div class="bg-zinc-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-amber-900/40">
+    <div class="text-center mb-6">
+      <div class="text-5xl mb-3">🎟</div>
+      <h2 class="heading text-2xl mb-1">Redeem Invite Code</h2>
+      <p class="text-zinc-400 text-sm">Enter your invite code to unlock full access.</p>
+    </div>
+    <input id="invite-code-input" type="text" placeholder="SMA-XXXX-XXXX" maxlength="20"
+      class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-center font-mono text-lg text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 uppercase mb-3"
+      oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')redeemInviteCode()">
+    <div id="invite-error" class="hidden text-red-400 text-sm text-center mb-3"></div>
+    <div id="invite-success" class="hidden text-emerald-400 text-sm text-center mb-3 font-semibold"></div>
+    <button onclick="redeemInviteCode()" id="invite-redeem-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">Redeem Code</button>
+    <button onclick="closeInviteModal()" class="w-full text-zinc-400 hover:text-white text-sm py-2 transition-colors">Cancel</button>
+  </div>
+</div>
+
 <!-- NEWSLETTER MODAL -->
 <div id="newsletter-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[250] flex items-center justify-center p-4">
   <div class="bg-zinc-900 w-full max-w-md rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-900/40">
@@ -227,6 +245,7 @@
           <div class="text-emerald-400 text-xs mt-1">☁ Synced</div>
         </div>
         <a id="dd-upgrade-link" href="/pricing" onclick="closeUserMenu()" class="block w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-zinc-800 transition-colors">⭐ Upgrade to Pro</a>
+        <button onclick="openInviteModal();closeUserMenu()" id="dd-invite-btn" class="w-full text-left px-4 py-3 text-sm text-emerald-400 hover:bg-zinc-800 transition-colors">🎟 Redeem Invite Code</button>
         <button onclick="navigate('manager');closeUserMenu()" id="dd-manager-btn" class="hidden w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🏢 Manager Dashboard</button>
         <button onclick="showNewsletter();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">📬 Newsletter</button>
         <a href="mailto:support@servemasteracademy.ca" class="block w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🛟 Get Support</a>
@@ -1770,6 +1789,65 @@ function downloadCertificate() {
 }
 
 // =========================================================
+// INVITE CODE
+// =========================================================
+function openInviteModal(prefill) {
+  const modal = document.getElementById('invite-modal');
+  modal.classList.remove('hidden');
+  document.getElementById('invite-error').classList.add('hidden');
+  document.getElementById('invite-success').classList.add('hidden');
+  document.getElementById('invite-redeem-btn').disabled = false;
+  document.getElementById('invite-redeem-btn').textContent = 'Redeem Code';
+  if (prefill) document.getElementById('invite-code-input').value = prefill;
+}
+
+function closeInviteModal() {
+  document.getElementById('invite-modal').classList.add('hidden');
+}
+
+async function redeemInviteCode() {
+  const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('invite-error');
+  const okEl = document.getElementById('invite-success');
+  const btn = document.getElementById('invite-redeem-btn');
+  errEl.classList.add('hidden');
+  okEl.classList.add('hidden');
+  if (!code) { errEl.textContent = 'Please enter a code.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Redeeming...';
+  try {
+    const token = localStorage.getItem('sma-token') || '';
+    const res = await fetch('/api/invite/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Invalid code.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Redeem Code';
+      return;
+    }
+    const planNames = { premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+    okEl.textContent = `Success! Your account has been upgraded to ${planNames[data.plan] || data.plan}. Enjoy full access!`;
+    okEl.classList.remove('hidden');
+    btn.textContent = 'Done!';
+    if (currentUser) { currentUser.subscription_status = data.plan; currentUser.effective_plan = data.effective_plan; }
+    const stored = JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
+    stored.subscription_status = data.plan; stored.effective_plan = data.effective_plan;
+    localStorage.setItem('serveMasterUser', JSON.stringify(stored));
+    updateUserUI(currentUser || stored);
+    setTimeout(closeInviteModal, 2500);
+  } catch (e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Redeem Code';
+  }
+}
+
 // NEWSLETTER
 // =========================================================
 function showNewsletter() {
@@ -2291,6 +2369,9 @@ window.onload = async function() {
 
   const joinCode = urlParams.get('join');
   if (joinCode) { localStorage.setItem('sma-pending-join', joinCode); }
+
+  const inviteParam = urlParams.get('invite');
+  if (inviteParam) { setTimeout(() => openInviteModal(inviteParam.toUpperCase()), 1000); }
 
   setLang(lang);
   const localStreak = parseInt(localStorage.getItem('sma-streak') || '0');

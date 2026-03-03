@@ -644,6 +644,67 @@ app.get('/api/admin/contacts', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch contacts' }); }
 });
 
+// ── Invite code admin routes ──────────────────────────────────────────────────
+app.post('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
+  try {
+    const { plan = 'premium', maxUses = 1, expiresAt } = req.body;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const code = `SMA-${part()}-${part()}`;
+    await db.query(
+      'INSERT INTO invite_codes (code, plan, max_uses, expires_at, created_by) VALUES ($1, $2, $3, $4, $5)',
+      [code, plan, maxUses === 0 ? 999999 : maxUses, expiresAt || null, req.user.id]
+    );
+    res.json({ code });
+  } catch (err) { res.status(500).json({ error: 'Failed to create invite code' }); }
+});
+
+app.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
+  try {
+    const codes = await db.query(`
+      SELECT ic.*, u.email as creator_email,
+        COALESCE(json_agg(json_build_object('email', ru.email, 'redeemed_at', r.redeemed_at)) FILTER (WHERE r.id IS NOT NULL), '[]') as redeemers
+      FROM invite_codes ic
+      LEFT JOIN users u ON u.id = ic.created_by
+      LEFT JOIN invite_code_redemptions r ON r.code = ic.code
+      LEFT JOIN users ru ON ru.id = r.user_id
+      GROUP BY ic.code, u.email
+      ORDER BY ic.created_at DESC
+    `);
+    res.json({ codes: codes.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
+});
+
+app.delete('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
+  try {
+    await db.query('DELETE FROM invite_codes WHERE code = $1', [req.params.code]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to delete invite code' }); }
+});
+
+// ── Invite code redeem (user) ─────────────────────────────────────────────────
+app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'Code required' });
+    const codeRes = await db.query('SELECT * FROM invite_codes WHERE code = $1', [code.trim().toUpperCase()]);
+    if (!codeRes.rows.length) return res.status(404).json({ error: 'Invalid invite code' });
+    const ic = codeRes.rows[0];
+    if (ic.expires_at && new Date(ic.expires_at) < new Date()) return res.status(400).json({ error: 'This invite code has expired' });
+    if (ic.uses_count >= ic.max_uses) return res.status(400).json({ error: 'This invite code has reached its usage limit' });
+    const already = await db.query('SELECT id FROM invite_code_redemptions WHERE code = $1 AND user_id = $2', [ic.code, req.user.id]);
+    if (already.rows.length) return res.status(400).json({ error: 'You have already redeemed this code' });
+    await db.query('INSERT INTO invite_code_redemptions (code, user_id) VALUES ($1, $2)', [ic.code, req.user.id]);
+    await db.query('UPDATE invite_codes SET uses_count = uses_count + 1 WHERE code = $1', [ic.code]);
+    await db.query('UPDATE users SET subscription_status = $1 WHERE id = $2', [ic.plan, req.user.id]);
+    const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const user = userRes.rows[0];
+    const restaurant = user.restaurant_id ? (await db.query('SELECT * FROM restaurants WHERE id = $1', [user.restaurant_id])).rows[0] : null;
+    const effective_plan = highestPlan(user.subscription_status, restaurant?.plan);
+    res.json({ ok: true, plan: ic.plan, effective_plan });
+  } catch (err) { res.status(500).json({ error: 'Failed to redeem invite code' }); }
+});
+
 // ── AI routes ─────────────────────────────────────────────────────────────────
 app.post('/api/transcribe', authMiddleware, upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
