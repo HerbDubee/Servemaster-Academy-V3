@@ -126,6 +126,21 @@ app.get('/api/admin/bootstrap', async (req, res) => {
   }
 });
 
+app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
+  const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY || 'sma-admin-2026';
+  const { key } = req.query;
+  if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
+  try {
+    await db.query("UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE id = $1", [req.user.id]);
+    const userRes = await db.query('SELECT id, email, role FROM users WHERE id = $1', [req.user.id]);
+    const user = userRes.rows[0];
+    console.log(`Self-grant admin: ${user.email}`);
+    res.json({ success: true, email: user.email, role: user.role });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name, level } = req.body;

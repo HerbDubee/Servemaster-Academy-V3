@@ -24,11 +24,29 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
   <div class="text-zinc-400 text-sm">Verifying access...</div>
 </div>
 
+<div id="access-denied" class="hidden min-h-screen flex items-center justify-center p-4">
+  <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+    <div class="text-5xl mb-4">🔐</div>
+    <h2 class="heading text-2xl font-bold mb-2">Admin Access Required</h2>
+    <p class="text-zinc-400 text-sm mb-6">You are logged in but your account does not have admin privileges yet.</p>
+    <div class="bg-zinc-800 rounded-2xl px-4 py-3 mb-6 text-left">
+      <div class="text-xs text-zinc-500 mb-1">Logged in as</div>
+      <div id="denied-email" class="text-amber-400 font-mono text-sm font-semibold"></div>
+      <div class="text-xs text-zinc-500 mt-1">Role: <span id="denied-role" class="text-zinc-300"></span></div>
+    </div>
+    <button id="grant-btn" onclick="grantSelfAdmin()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">
+      Grant Admin Access to This Account
+    </button>
+    <div id="grant-msg" class="hidden text-sm mb-3"></div>
+    <button onclick="doLogout()" class="w-full text-zinc-400 hover:text-white text-sm py-2 transition-colors">Sign out &amp; try another account</button>
+  </div>
+</div>
+
 <div id="admin-shell" class="hidden min-h-screen flex flex-col">
   <!-- Top bar -->
   <header class="bg-zinc-950 border-b border-zinc-800 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <span class="text-2xl">🍸</span>
+      <img src="/logo.png" alt="ServeMaster Academy" class="w-9 h-9 rounded-xl object-cover">
       <div>
         <div class="heading font-bold text-white">ServeMaster <span class="text-amber-400">Admin</span></div>
         <div class="text-xs text-zinc-500">Owner Dashboard</div>
@@ -255,12 +273,50 @@ async function init() {
     const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
     if (!res.ok) { window.location.href = '/login?next=/admin'; return; }
     const { user } = await res.json();
-    if (user.role !== 'admin') { window.location.href = '/'; return; }
+    if (user.role !== 'admin') {
+      document.getElementById('denied-email').textContent = user.email || '(unknown)';
+      document.getElementById('denied-role').textContent = user.role || 'user';
+      document.getElementById('auth-check').classList.add('hidden');
+      document.getElementById('access-denied').classList.remove('hidden');
+      return;
+    }
     document.getElementById('admin-name').textContent = user.name;
     document.getElementById('auth-check').classList.add('hidden');
     document.getElementById('admin-shell').classList.remove('hidden');
     loadAll();
   } catch { window.location.href = '/login?next=/admin'; }
+}
+
+async function grantSelfAdmin() {
+  const btn = document.getElementById('grant-btn');
+  const msg = document.getElementById('grant-msg');
+  btn.disabled = true;
+  btn.textContent = 'Granting access...';
+  msg.classList.add('hidden');
+  try {
+    const res = await fetch('/api/admin/grant-self?key=sma-admin-2026', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'Failed to grant access.';
+      msg.className = 'text-red-400 text-sm mb-3';
+      msg.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Grant Admin Access to This Account';
+      return;
+    }
+    msg.textContent = `Success! ${data.email} is now admin. Reloading...`;
+    msg.className = 'text-emerald-400 text-sm mb-3';
+    msg.classList.remove('hidden');
+    setTimeout(() => window.location.reload(), 1500);
+  } catch (e) {
+    msg.textContent = 'Connection error. Please try again.';
+    msg.className = 'text-red-400 text-sm mb-3';
+    msg.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Grant Admin Access to This Account';
+  }
 }
 
 async function apiFetch(path) {
