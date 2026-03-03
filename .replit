@@ -63,6 +63,7 @@ SMTP_HOST = "mail.privateemail.com"
 SMTP_USER = "kirk_adamson@servemasteracademy.ca"
 SMTP_PASS = "@#1jesus"
 SMTP_PORT = "465"
+JWT_SECRET = "8ac855866b99a339bd313d36a3d4d7798dea0ee71291d7f882c67f90515296b0f664fc5e97a9c6d37ea8ae075e70ff44"
 
 [userenv.production]
 APP_URL = "https://servemasteracademy.ca"

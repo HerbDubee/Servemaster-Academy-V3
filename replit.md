@@ -1,118 +1,113 @@
 # ServeMaster Academy
 
-A professional hospitality training platform — full multi-page marketing site + auth-gated training SPA + Stripe-powered Pro tier + hidden admin dashboard.
+A professional hospitality training platform at `servemasteracademy.ca` — full multi-page marketing site + Google/email auth + training SPA + Stripe pricing + hidden admin dashboard.
 
 ## Architecture
 
-- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe payments, admin APIs, webhooks
-- `app.html` — Training SPA (auth-gated at `/app`; served only to logged-in users)
-- `index.html` — Legacy copy of app.html (kept for reference; not served)
-- `admin.html` — Owner dashboard at `/admin` (requires admin JWT role)
-- `public/` — Marketing HTML pages (home, about, features, pricing, contact, login, signup)
-- `stripeClient.js` — Replit Stripe connector helpers (getUncachableStripeClient, getStripeSync, getStripePublishableKey)
-- `db.js` — PostgreSQL connection pool (Replit built-in Neon database)
+- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe, admin APIs, webhooks, nodemailer
+- `app.html` — Training SPA (auth-gated at `/app`)
+- `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
+- `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
+- `stripeClient.js` — Replit Stripe connector helpers
+- `db.js` — PostgreSQL connection pool (Replit built-in)
 
-## Routes
+## Pages
 
-| Path | Serves |
-|------|--------|
-| `/` | `public/home.html` (marketing home) |
+| Path | File |
+|------|------|
+| `/` | `public/home.html` |
 | `/about` | `public/about.html` |
 | `/features` | `public/features.html` |
 | `/pricing` | `public/pricing.html` |
 | `/contact` | `public/contact.html` |
 | `/login` | `public/login.html` |
 | `/signup` | `public/signup.html` |
-| `/app` | `app.html` (training SPA, auth-gated client-side) |
-| `/admin` | `admin.html` (owner dashboard, 401 if no admin token) |
+| `/privacy` | `public/privacy.html` |
+| `/terms` | `public/terms.html` |
+| `/brand` | `public/brand.html` |
+| `/app` | `app.html` (training SPA) |
+| `/admin` | `admin.html` (admin dashboard) |
 
 ## Subscription Model
 
-| Tier | Price | Who |
-|------|-------|-----|
-| Free | $0 | Individual — 3 modules, 5 scenarios |
-| Premium Individual | $7.99/mo or $59/yr | Individual — all content |
-| Starter Team | $69/mo per location | Manager + up to 10 staff |
-| Pro Team | $149/mo per location | Manager + unlimited staff + analytics |
-| Enterprise | Contact sales | Multi-location + white label |
+| Tier | Price | Stripe Price ID |
+|------|-------|----------------|
+| Free | $0 | — |
+| Individual Monthly | $19/mo | `price_1T6zoHExNgORioBpkHFfppKN` |
+| Individual Yearly | $149/yr | `price_1T6zmiExNgORioBp78rqoHQF` |
+| Team | $99/mo | `price_1T6zlYExNgORioBp06MwjAnO` |
+| Pro Team | $199/mo | `price_1T700zExNgORioBp0eD0BZo1` |
+| Enterprise | Custom | Contact sales form (modal on pricing page) |
 
-- **Individual plans** set `users.subscription_status` = `premium`
-- **Team plans** set `restaurants.plan` = `starter_team` or `pro_team`; staff inherit access via `restaurant_id`
-- `/api/auth/me` computes and returns `effective_plan` = highest of (user plan OR restaurant plan)
-- Gating in `app.html` via `hasPaidPlan()` (any non-free tier) and `isTeamPlan()` helpers
-- Plan badge in nav dropdown shows correct tier name (Free / Premium / Starter Team / Pro Team / Enterprise)
+Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`
 
-## Stripe Price IDs
+## Admin Access
 
-- Legacy Monthly: `price_1T68eiEYo1GIbgr0JGPS6Bi5` ($19/mo — kept for backwards compat)
-- Legacy Annual: `price_1T68eiEYo1GIbgr0vlIaYema` ($149/yr — kept for backwards compat)
-- `STRIPE_PREMIUM_MONTHLY_ID` = `price_1T69MUEYo1GIbgr0GjmBhQbL` ($7.99/mo)
-- `STRIPE_PREMIUM_ANNUAL_ID` = `price_1T69MUEYo1GIbgr0Vx79VBn2` ($59/yr)
-- `STRIPE_STARTER_TEAM_ID` = `price_1T69MVEYo1GIbgr0b3DSeEXF` ($69/mo)
-- `STRIPE_PRO_TEAM_ID` = `price_1T69MVEYo1GIbgr0dfPsj7My` ($149/mo)
-- Checkout: `POST /api/payments/create-checkout` — accepts plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`
-- Success: `GET /api/payments/success` → updates user or restaurant plan in DB → redirects to `/app?upgraded=1`
-- Cancel: `GET /api/payments/cancel` → redirects to `/pricing`
-- Webhook: `POST /api/stripe/webhook` (must be before `express.json()`)
-
-## Admin Dashboard
-
-Access: Set `role = 'admin'` in DB for your email, then visit `/admin`.
-API endpoints (all require admin JWT):
-- `GET /api/admin/overview` — stats (users, revenue, activity)
-- `GET /api/admin/users` — user list with plan + progress
-- `GET /api/admin/modules` — module completion stats
-- `GET /api/admin/newsletter` — subscriber list
-- `GET /api/admin/restaurants` — restaurant accounts
-- `GET /api/admin/contacts` — contact form submissions
-
-## Features
-
-### Core Training
-- 12 learning modules with expandable lessons, FR/EN translations, and quizzes
-- Progress tracking synced to PostgreSQL; localStorage fallback
-- 30 AI roleplay scenarios categorised by difficulty
-
-### User Accounts
-- Email + password registration and login
-- Google OAuth login (requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET)
-- JWT token auth (30-day sessions; stored in localStorage as `sma-token`)
-- Cross-device progress sync via PostgreSQL
-
-### Gamification
-- Daily login streaks
-- 12 badges with unlock logic
-- Leaderboard (Pro only)
-
-### Other
-- Completion certificate PDF via jsPDF (Pro only)
-- EN/FR language toggle (persisted in localStorage)
-- Restaurant Manager dashboard (invite code system)
-- Tray Balance Simulator (gyroscope/mouse)
-- 25-term bilingual hospitality glossary
-- Newsletter email capture
+- Visit `/admin` → if not admin, shows diagnostic panel → click "Grant Admin Access to This Account"
+- `adminMiddleware` verifies role from **database** (not JWT) — so role upgrades take effect immediately without re-login
+- `ADMIN_EMAIL` env var gets admin role auto-granted on server startup
 
 ## Key Environment Variables
 
-- `AI_INTEGRATIONS_OPENAI_API_KEY` — Replit OpenAI integration (auto-injected)
-- `AI_INTEGRATIONS_OPENAI_BASE_URL` — Replit OpenAI integration (auto-injected)
-- `OPENAI_API_KEY` — Direct OpenAI key for Whisper voice transcription
-- `DATABASE_URL` — Replit built-in PostgreSQL (auto-injected)
-- `JWT_SECRET` — Secret for JWT signing (set in Secrets for production)
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth (optional)
+| Variable | Purpose |
+|----------|---------|
+| `JWT_SECRET` | JWT signing secret (set as shared env var) |
+| `AI_INTEGRATIONS_OPENAI_API_KEY` | Replit OpenAI integration (auto-injected) |
+| `AI_INTEGRATIONS_OPENAI_BASE_URL` | Replit OpenAI integration (auto-injected) |
+| `DATABASE_URL` | Replit PostgreSQL (auto-injected) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `STRIPE_PREMIUM_MONTHLY_ID` | Stripe price ID |
+| `STRIPE_PREMIUM_ANNUAL_ID` | Stripe price ID |
+| `STRIPE_STARTER_TEAM_ID` | Stripe price ID |
+| `STRIPE_PRO_TEAM_ID` | Stripe price ID |
+| `ADMIN_EMAIL` | Auto-granted admin on startup |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_PORT` | Nodemailer (enterprise inquiry emails) |
+| `APP_URL` | `https://servemasteracademy.ca` (production) |
 
-## Database Schema
+## Database Tables
 
-- `users` — Accounts; columns include `subscription_status` (free/pro), `stripe_customer_id`, `stripe_subscription_id`, `role`
-- `user_progress` — Module progress + quiz scores per user
-- `streaks` — Daily login streak tracking
-- `badges` — Earned badge records
-- `scenario_scores` — Completed role-play session records
-- `restaurants` — Manager restaurant profiles + invite codes
-- `email_subscribers` — Newsletter signups
-- `contact_messages` — Contact form submissions
+| Table | Purpose |
+|-------|---------|
+| `users` | Accounts — email, google_id, role, subscription_status, stripe IDs |
+| `user_progress` | Module progress + quiz scores |
+| `streaks` | Daily login streak tracking |
+| `badges` | Earned badge records |
+| `scenario_scores` | Completed roleplay sessions |
+| `restaurants` | Manager restaurant profiles |
+| `invite_codes` | Admin-generated invite codes |
+| `invite_code_redemptions` | Code redemption log |
+| `email_subscribers` | Newsletter signups |
+| `contact_messages` | Contact + enterprise inquiry submissions |
+| `sessions` | (legacy, unused) |
+
+## Security
+
+- JWT_SECRET: set as shared env var (48-byte hex)
+- adminMiddleware: DB role lookup on every admin request
+- Security headers: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy
+- Bootstrap endpoint disabled (returns 410)
+- Trial expiry check: validates `trial_end` is non-null before comparison
+
+## Analytics & Tracking
+
+- Google Analytics: `G-1BPWXRYVXS` on all 12 pages
+- ContentSquare: `2e14c5cc7ec76` on all 12 pages
+- `trial_start` GA event fires on email signup and Google OAuth new user
+
+## Features
+
+- 12 training modules, 30 AI roleplay scenarios (3 difficulty levels)
+- Whisper voice transcription for voice roleplay
+- EN/FR bilingual toggle
+- Gamification: streaks, 12 badges, leaderboard
+- Completion certificate
+- Restaurant Manager dashboard + staff invite system
+- Admin invite code generator
+- Newsletter capture + enterprise inquiry modal (nodemailer)
+- Stripe subscription + trial expiry enforcement
 
 ## Deployment
 
 - Workflow: `node server.js` on port 5000
-- Stripe webhook registered automatically via `stripeSync.findOrCreateManagedWebhook()` on startup
+- Deploy target: Autoscale
+- Domain: `servemasteracademy.ca`

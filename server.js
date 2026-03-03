@@ -80,6 +80,14 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // ── Auth middleware ────────────────────────────────────────────────────────────
 function authMiddleware(req, res, next) {
   const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
@@ -126,20 +134,8 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
-app.get('/api/admin/bootstrap', async (req, res) => {
-  const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY || 'sma-admin-2026';
-  const { key, email } = req.query;
-  if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
-  if (!email) return res.status(400).json({ error: 'Email required' });
-  try {
-    const result = await db.query('SELECT id, email, role FROM users WHERE LOWER(email) = LOWER($1)', [email]);
-    if (!result.rows.length) return res.status(404).json({ error: 'User not found', email });
-    const user = result.rows[0];
-    await db.query("UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE id = $1", [user.id]);
-    res.json({ success: true, message: `${user.email} is now admin + premium`, id: user.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get('/api/admin/bootstrap', (req, res) => {
+  res.status(410).json({ error: 'This endpoint has been disabled. Use /admin to grant access.' });
 });
 
 app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
@@ -341,7 +337,7 @@ app.post('/api/user/progress', authMiddleware, async (req, res) => {
     if (user?.stripe_subscription_id) {
       try {
         const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
-        if (subscription.status !== 'active' && subscription.trial_end < Date.now() / 1000) {
+        if (subscription.status !== 'active' && subscription.trial_end && subscription.trial_end < Date.now() / 1000) {
           return res.status(402).json({ error: 'Trial expired', redirect: '/pricing' });
         }
       } catch (stripeErr) {
