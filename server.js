@@ -132,10 +132,12 @@ app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
   if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
   try {
     await db.query("UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE id = $1", [req.user.id]);
-    const userRes = await db.query('SELECT id, email, role FROM users WHERE id = $1', [req.user.id]);
+    const userRes = await db.query('SELECT id, email, name, role FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
+    const newToken = jwt.sign({ id: user.id, email: user.email, name: user.name, role: 'admin' }, JWT_SECRET, { expiresIn: '30d' });
+    res.cookie('token', newToken, COOKIE_OPTS);
     console.log(`Self-grant admin: ${user.email}`);
-    res.json({ success: true, email: user.email, role: user.role });
+    res.json({ success: true, email: user.email, role: 'admin', token: newToken });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

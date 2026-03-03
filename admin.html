@@ -309,6 +309,7 @@ async function grantSelfAdmin() {
     msg.textContent = `Success! ${data.email} is now admin. Reloading...`;
     msg.className = 'text-emerald-400 text-sm mb-3';
     msg.classList.remove('hidden');
+    if (data.token) { localStorage.setItem('sma-token', data.token); token = data.token; }
     setTimeout(() => window.location.reload(), 1500);
   } catch (e) {
     msg.textContent = 'Connection error. Please try again.';
