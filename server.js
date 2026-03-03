@@ -324,6 +324,18 @@ app.post('/api/user/progress', authMiddleware, async (req, res) => {
   const { moduleId, progress, quizScore } = req.body;
   if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
   try {
+    const userRes = await db.query('SELECT stripe_subscription_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
+    const user = userRes.rows[0];
+    if (user?.stripe_subscription_id) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
+        if (subscription.status !== 'active' && subscription.trial_end < Date.now() / 1000) {
+          return res.status(402).json({ error: 'Trial expired', redirect: '/pricing' });
+        }
+      } catch (stripeErr) {
+        console.warn('Stripe subscription check failed:', stripeErr.message);
+      }
+    }
     const completed = progress >= 100 ? new Date() : null;
     await db.query(`
       INSERT INTO user_progress (user_id, module_id, progress, quiz_score, completed_at)

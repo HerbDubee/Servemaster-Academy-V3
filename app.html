@@ -649,11 +649,15 @@ async function syncProgressFromServer() {
 async function pushProgressToServer(moduleId, progress, quizScore) {
   if (!authToken) return;
   try {
-    await fetch('/api/user/progress', {
+    const res = await fetch('/api/user/progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
       body: JSON.stringify({ moduleId, progress, quizScore })
     });
+    if (res.status === 402) {
+      const data = await res.json().catch(() => ({}));
+      window.location.href = data.redirect || '/pricing';
+    }
   } catch {}
 }
 
