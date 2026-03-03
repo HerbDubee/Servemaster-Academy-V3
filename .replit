@@ -60,7 +60,7 @@ INFO_EMAIL = "info@servemasteracademy.ca"
 GOOGLE_CLIENT_ID = "259760364257-rdc5nf11ovhk1b5l2mul34kgq71h1jbc.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "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"
 SMTP_HOST = "mail.privateemail.com"
-SMTP_USER = "14daytrial@servemasteracademy.ca"
+SMTP_USER = "kirk_adamson@servemasteracademy.ca"
 SMTP_PASS = "@#1jesus"
 SMTP_PORT = "465"
 
