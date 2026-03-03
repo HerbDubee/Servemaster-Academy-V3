@@ -265,7 +265,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const profileRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokens.access_token}`);
     const profile = await profileRes.json();
     let userResult = await db.query('SELECT * FROM users WHERE google_id = $1', [profile.sub]);
-    let user;
+    let user; let isNewUser = false;
     if (!userResult.rows.length) {
       const existing = await db.query('SELECT * FROM users WHERE email = $1', [profile.email]);
       if (existing.rows.length) {
@@ -277,6 +277,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
           [profile.email, profile.sub, profile.name, 'New to serving']
         );
         user = ins.rows[0];
+        isNewUser = true;
         await db.query('INSERT INTO streaks (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [user.id]);
       }
     } else { user = userResult.rows[0]; }
@@ -287,7 +288,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
       user.role = 'admin';
     }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-    res.redirect('/login?token=' + encodeURIComponent(token));
+    const signupFlag = isNewUser ? '&signup=1' : '';
+    res.redirect('/login?token=' + encodeURIComponent(token) + signupFlag);
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.redirect('/login?error=google_auth_failed');

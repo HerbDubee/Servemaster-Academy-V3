@@ -2379,6 +2379,10 @@ window.onload = async function() {
   if (urlParams.get('upgraded') === '1') {
     setTimeout(() => alert('🎉 You\'re now Pro! All features are unlocked.'), 800);
   }
+  if (urlParams.get('signup') === '1') {
+    if (typeof gtag !== 'undefined') gtag('event', 'trial_start', { method: 'google' });
+    history.replaceState({}, '', window.location.pathname);
+  }
 
   const joinCode = urlParams.get('join');
   if (joinCode) { localStorage.setItem('sma-pending-join', joinCode); }

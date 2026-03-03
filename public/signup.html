@@ -131,6 +131,7 @@ async function doSignup(e) {
       } catch {}
     }
 
+    if (typeof gtag !== 'undefined') gtag('event', 'trial_start', { method: 'free' });
     window.location.href = '/app';
   } catch {
     errEl.textContent = 'Connection error. Please try again.';

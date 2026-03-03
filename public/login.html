@@ -91,7 +91,9 @@ document.getElementById('google-link').addEventListener('click', () => {
 if (googleToken) {
   localStorage.setItem('sma-token', googleToken);
   const storedNext = localStorage.getItem('sma-auth-next');
-  const redirectTo = storedNext || nextUrl;
+  const isNewSignup = urlParams.get('signup') === '1';
+  let redirectTo = storedNext || nextUrl;
+  if (isNewSignup && !redirectTo.includes('signup=1')) redirectTo += (redirectTo.includes('?') ? '&' : '?') + 'signup=1';
   localStorage.removeItem('sma-auth-next');
   const pendingJoin = localStorage.getItem('sma-pending-join');
   if (pendingJoin) {
