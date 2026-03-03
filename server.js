@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
+const nodemailer = require('nodemailer');
 const OpenAI = require('openai').default;
 const { toFile } = require('openai');
 const { runMigrations } = require('stripe-replit-sync');
@@ -35,6 +36,15 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'herb.dubee@gmail.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || 'hello@servemasteracademy.ca';
 const INFO_EMAIL = process.env.INFO_EMAIL || 'info@servemasteracademy.ca';
+
+const mailer = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    })
+  : null;
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
@@ -424,6 +434,30 @@ app.post('/api/contact', async (req, res) => {
     await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), message]);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Failed to send message' }); }
+});
+
+app.post('/api/enterprise-request', async (req, res) => {
+  const { name, email, company, locations, message } = req.body;
+  if (!name || !email || !company) return res.status(400).json({ error: 'Name, email and company are required' });
+  try {
+    const fullMessage = `Company: ${company}\nLocations: ${locations || 'Not specified'}\n\n${message || ''}`.trim();
+    await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[ENTERPRISE] ${fullMessage}`]);
+    if (mailer) {
+      await mailer.sendMail({
+        from: `"ServeMaster Academy" <${HELLO_EMAIL}>`,
+        to: ADMIN_EMAIL,
+        subject: `Enterprise Inquiry from ${company} — ${name}`,
+        text: `New enterprise request:\n\nName: ${name}\nEmail: ${email}\nCompany: ${company}\nLocations: ${locations || 'Not specified'}\n\nMessage:\n${message || 'No message provided'}`,
+        html: `<h2>New Enterprise Inquiry</h2><table style="font-family:sans-serif;font-size:14px"><tr><td><b>Name</b></td><td>${name}</td></tr><tr><td><b>Email</b></td><td>${email}</td></tr><tr><td><b>Company</b></td><td>${company}</td></tr><tr><td><b>Locations</b></td><td>${locations || 'Not specified'}</td></tr></table><p><b>Message:</b><br>${(message || 'No message provided').replace(/\n/g, '<br>')}</p>`
+      });
+    } else {
+      console.log(`[Enterprise request — no SMTP] ${name} <${email}> | ${company} | ${locations}`);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Enterprise request error:', err.message);
+    res.status(500).json({ error: 'Failed to send request' });
+  }
 });
 
 // ── Manager routes ────────────────────────────────────────────────────────────

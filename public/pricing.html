@@ -174,7 +174,7 @@ details[open] summary::after { content: '−'; }
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Staff SSO / directory sync</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom billing terms</li>
       </ul>
-      <a href="/contact" class="block text-center border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-zinc-300 font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Contact Us →</a>
+      <button onclick="openEnterpriseModal()" class="w-full border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-zinc-300 font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Contact Sales →</button>
     </div>
 
   </div>
@@ -242,8 +242,68 @@ details[open] summary::after { content: '−'; }
   </div>
 </footer>
 
+<!-- Enterprise Modal -->
+<div id="enterprise-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md relative">
+    <button onclick="closeEnterpriseModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">×</button>
+    <h2 class="text-xl font-bold mb-1">Enterprise Inquiry</h2>
+    <p class="text-zinc-400 text-sm mb-6">Tell us about your organization and we'll get back to you within one business day.</p>
+    <form id="ent-form" onsubmit="submitEnterprise(event)" class="space-y-4">
+      <input id="ent-name" type="text" required placeholder="Your name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-email" type="email" required placeholder="Work email" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-company" type="text" required placeholder="Company / restaurant group name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-locations" type="text" placeholder="Number of locations" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <textarea id="ent-message" rows="3" placeholder="Anything else you'd like us to know? (optional)" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm resize-none"></textarea>
+      <button type="submit" id="ent-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Send Inquiry →</button>
+      <p id="ent-success" class="text-emerald-400 text-sm text-center hidden">Sent! We'll be in touch within one business day.</p>
+      <p id="ent-error" class="text-red-400 text-sm text-center hidden">Something went wrong. Please try again.</p>
+    </form>
+  </div>
+</div>
+
 <script>
 let billing = 'monthly';
+
+function openEnterpriseModal() {
+  document.getElementById('enterprise-modal').classList.remove('hidden');
+  document.getElementById('enterprise-modal').classList.add('flex');
+}
+function closeEnterpriseModal() {
+  document.getElementById('enterprise-modal').classList.add('hidden');
+  document.getElementById('enterprise-modal').classList.remove('flex');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEnterpriseModal(); });
+
+async function submitEnterprise(e) {
+  e.preventDefault();
+  const btn = document.getElementById('ent-btn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  document.getElementById('ent-success').classList.add('hidden');
+  document.getElementById('ent-error').classList.add('hidden');
+  try {
+    const res = await fetch('/api/enterprise-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('ent-name').value,
+        email: document.getElementById('ent-email').value,
+        company: document.getElementById('ent-company').value,
+        locations: document.getElementById('ent-locations').value,
+        message: document.getElementById('ent-message').value
+      })
+    });
+    if (res.ok) {
+      document.getElementById('ent-success').classList.remove('hidden');
+      document.getElementById('ent-form').reset();
+      setTimeout(closeEnterpriseModal, 3000);
+    } else {
+      document.getElementById('ent-error').classList.remove('hidden');
+    }
+  } catch {
+    document.getElementById('ent-error').classList.remove('hidden');
+  }
+  btn.disabled = false; btn.textContent = 'Send Inquiry →';
+}
 
 function setBilling(mode) {
   billing = mode;
