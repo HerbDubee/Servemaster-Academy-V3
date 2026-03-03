@@ -78,14 +78,20 @@ function authMiddleware(req, res, next) {
   catch { res.status(401).json({ error: 'Invalid token' }); }
 }
 
-function adminMiddleware(req, res, next) {
+async function adminMiddleware(req, res, next) {
   const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     req.user = jwt.verify(token, JWT_SECRET);
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access only' });
+    const { rows } = await db.query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    if (!rows.length || rows[0].role !== 'admin') return res.status(403).json({ error: 'Admin access only' });
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' }); }
+  } catch (e) {
+    if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Server error' });
+  }
 }
 
 function optionalAuth(req, res, next) {
