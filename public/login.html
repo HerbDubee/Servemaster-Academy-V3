@@ -12,7 +12,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 <nav class="bg-zinc-950 border-b border-zinc-800 px-4 py-4 flex items-center justify-between">
-  <a href="/" class="flex items-center gap-2"><span class="text-2xl">🍸</span><span class="heading text-xl font-bold text-white">ServeMaster <span class="text-amber-400">ACADEMY</span></span></a>
+  <a href="/" class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-9 h-9 rounded-xl object-cover"><span class="heading text-xl font-bold text-white">ServeMaster <span class="text-amber-400">ACADEMY</span></span></a>
   <a id="signup-link" href="/signup" class="text-zinc-400 hover:text-white text-sm transition-colors">No account? Sign up →</a>
 </nav>
 
@@ -72,13 +72,18 @@ if (joinCode) {
   document.getElementById('invite-banner').classList.remove('hidden');
   document.getElementById('signup-link').href = `/signup?join=${joinCode}`;
   document.getElementById('signup-link-2').href = `/signup?join=${joinCode}`;
-  document.getElementById('google-link').addEventListener('click', () => {
-    localStorage.setItem('sma-pending-join', joinCode);
-  });
 }
+
+document.getElementById('google-link').addEventListener('click', () => {
+  if (joinCode) localStorage.setItem('sma-pending-join', joinCode);
+  if (nextUrl && nextUrl !== '/app') localStorage.setItem('sma-auth-next', nextUrl);
+});
 
 if (googleToken) {
   localStorage.setItem('sma-token', googleToken);
+  const storedNext = localStorage.getItem('sma-auth-next');
+  const redirectTo = storedNext || nextUrl;
+  localStorage.removeItem('sma-auth-next');
   const pendingJoin = localStorage.getItem('sma-pending-join');
   if (pendingJoin) {
     fetch('/api/manager/join', {
@@ -87,10 +92,10 @@ if (googleToken) {
       body: JSON.stringify({ inviteCode: pendingJoin })
     }).finally(() => {
       localStorage.removeItem('sma-pending-join');
-      window.location.href = nextUrl;
+      window.location.href = redirectTo;
     });
   } else {
-    window.location.href = nextUrl;
+    window.location.href = redirectTo;
   }
 } else if (urlParams.get('error')) {
   const el = document.getElementById('error-msg');

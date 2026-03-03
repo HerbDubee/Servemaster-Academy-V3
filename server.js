@@ -846,5 +846,12 @@ async function initStripe() {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`ServeMaster Academy running on port ${PORT}`);
+  try {
+    const updated = await db.query(
+      "UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE email = $1 AND role != 'admin' RETURNING email",
+      [ADMIN_EMAIL]
+    );
+    if (updated.rows.length) console.log(`Admin role granted to ${ADMIN_EMAIL} on startup`);
+  } catch (e) {}
   await initStripe();
 });
