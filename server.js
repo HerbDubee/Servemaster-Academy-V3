@@ -7,7 +7,6 @@ const multer = require('multer');
 const nodemailer = require('nodemailer');
 const OpenAI = require('openai').default;
 const { toFile } = require('openai');
-const { runMigrations } = require('stripe-replit-sync');
 const { getUncachableStripeClient, getStripePublishableKey, getStripeSync } = require('./stripeClient');
 const db = require('./db');
 
@@ -57,8 +56,8 @@ function highestPlan(a, b) {
 }
 
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined,
 });
 const whisperKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
 const whisperClient = new OpenAI({ apiKey: whisperKey });
@@ -896,14 +895,18 @@ async function initStripe() {
   try {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) return console.warn('No DATABASE_URL, skipping Stripe init');
-    await runMigrations({ databaseUrl });
-    const stripeSync = await getStripeSync();
-    const domains = process.env.REPLIT_DOMAINS?.split(',')[0];
-    if (domains) {
-      const webhookUrl = `https://${domains}/api/stripe/webhook`;
+    const isReplit = !!process.env.REPLIT_DOMAINS;
+    if (isReplit) {
+      const { runMigrations } = require('stripe-replit-sync');
+      await runMigrations({ databaseUrl });
+      const stripeSync = await getStripeSync();
+      const domain = process.env.REPLIT_DOMAINS.split(',')[0];
+      const webhookUrl = `https://${domain}/api/stripe/webhook`;
       await stripeSync.findOrCreateManagedWebhook(webhookUrl);
+      stripeSync.syncBackfill().catch(e => console.error('Stripe backfill error:', e.message));
+    } else {
+      console.log('Non-Replit environment — Stripe webhook must be registered manually in the Stripe dashboard.');
     }
-    stripeSync.syncBackfill().catch(e => console.error('Stripe backfill error:', e.message));
     console.log('Stripe initialized');
   } catch (err) {
     console.warn('Stripe init warning (non-fatal):', err.message);

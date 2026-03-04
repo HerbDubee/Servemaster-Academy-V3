@@ -48,6 +48,9 @@ async function getStripePublishableKey() {
 
 let stripeSync = null;
 async function getStripeSync() {
+  if (!process.env.REPLIT_DOMAINS) {
+    throw new Error('getStripeSync() is only available in Replit environments');
+  }
   if (!stripeSync) {
     const { StripeSync } = require('stripe-replit-sync');
     const { secretKey } = await getCredentials();
