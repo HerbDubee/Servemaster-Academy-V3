@@ -5,10 +5,14 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
 const OpenAI = require('openai').default;
 const { toFile } = require('openai');
 const { getUncachableStripeClient, getStripePublishableKey, getStripeSync } = require('./stripeClient');
 const db = require('./db');
+
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Please try again in 15 minutes.' } });
+const aiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many AI requests. Please slow down.' } });
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -231,7 +235,7 @@ app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
 });
 
 // ── Auth routes ───────────────────────────────────────────────────────────────
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   const { email, password, name, level } = req.body;
   if (!email || !password || !name) return res.status(400).json({ error: 'Missing required fields' });
   try {
@@ -253,7 +257,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Missing credentials' });
   try {
@@ -305,7 +309,7 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   }
 });
 
-app.get('/api/auth/google', (req, res) => {
+app.get('/api/auth/google', authLimiter, (req, res) => {
   if (!GOOGLE_CLIENT_ID) return res.redirect('/login?error=google_not_configured');
   const BASE_URL = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const params = new URLSearchParams({
@@ -848,7 +852,7 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 });
 
 // ── AI routes ─────────────────────────────────────────────────────────────────
-app.post('/api/transcribe', authMiddleware, upload.single('audio'), async (req, res) => {
+app.post('/api/transcribe', authMiddleware, aiLimiter, upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
   try {
     const audioFile = await toFile(req.file.buffer, 'audio.webm', { type: req.file.mimetype || 'audio/webm' });
@@ -896,7 +900,7 @@ const scenarios = {
   30: { title: 'Bisected Language Table', systemPrompt: `You are the leader of a table where 4 guests speak only French and 4 guests speak only English. You speak both. You are relaying orders but getting confused, and the non-English speakers are pointing at the menu looking confused. The user is playing the server who must serve this table with grace — using you as translator when needed, using visual menus, adapting their communication style.` }
 };
 
-app.post('/api/roleplay', authMiddleware, async (req, res) => {
+app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
   const { scenarioId, messages } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
@@ -915,7 +919,7 @@ app.post('/api/roleplay', authMiddleware, async (req, res) => {
   }
 });
 
-app.post('/api/roleplay/summary', authMiddleware, async (req, res) => {
+app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) => {
   const { scenarioId, messages } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
