@@ -55,12 +55,23 @@ function highestPlan(a, b) {
   return ai >= bi ? (a || 'free') : (b || 'free');
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined,
-});
-const whisperKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-const whisperClient = new OpenAI({ apiKey: whisperKey });
+let _openai = null;
+function getOpenAI() {
+  if (_openai) return _openai;
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
+  _openai = new OpenAI({ apiKey, baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined });
+  return _openai;
+}
+
+let _whisper = null;
+function getWhisper() {
+  if (_whisper) return _whisper;
+  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
+  _whisper = new OpenAI({ apiKey });
+  return _whisper;
+}
 
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -776,7 +787,7 @@ app.post('/api/transcribe', authMiddleware, upload.single('audio'), async (req, 
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
   try {
     const audioFile = await toFile(req.file.buffer, 'audio.webm', { type: req.file.mimetype || 'audio/webm' });
-    const transcription = await whisperClient.audio.transcriptions.create({
+    const transcription = await getWhisper().audio.transcriptions.create({
       file: audioFile, model: 'whisper-1',
       language: req.body.lang === 'fr' ? 'fr' : 'en',
     });
@@ -827,7 +838,7 @@ app.post('/api/roleplay', authMiddleware, async (req, res) => {
   const thirdPersonWrapper = `NARRATION STYLE — IMPORTANT: Always narrate the customer in third person. Never speak as the customer in first person ("I want...", "I'm angry..."). Instead, describe what the customer says and does as a narrator: "The customer frowns and says: '...'", "He crosses his arms and replies: '...'", "She sighs and asks: '...'". Use "the customer", "he", "she", or "they" throughout. Describe body language and tone alongside dialogue.\n\n`;
   const systemContent = thirdPersonWrapper + scenario.systemPrompt;
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'system', content: systemContent }, ...messages],
     });
@@ -865,7 +876,7 @@ Respond with valid JSON only, in this exact format:
   "tip": "One concrete, actionable coaching tip for what to do differently or better next time"
 }`;
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       response_format: { type: 'json_object' },
       messages: [
