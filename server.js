@@ -77,14 +77,80 @@ function getWhisper() {
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const signature = req.headers['stripe-signature'];
   if (!signature) return res.status(400).json({ error: 'Missing stripe-signature' });
+  const sig = Array.isArray(signature) ? signature[0] : signature;
+
+  if (process.env.REPLIT_DOMAINS) {
+    try {
+      const sync = await getStripeSync();
+      await sync.processWebhook(req.body, sig);
+      return res.status(200).json({ received: true });
+    } catch (err) {
+      console.error('Webhook error (Replit):', err.message);
+      return res.status(400).json({ error: 'Webhook processing error' });
+    }
+  }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not set');
+    return res.status(500).json({ error: 'Webhook secret not configured' });
+  }
+
+  let event;
   try {
-    const sync = await getStripeSync();
-    const sig = Array.isArray(signature) ? signature[0] : signature;
-    await sync.processWebhook(req.body, sig);
+    const stripe = await getUncachableStripeClient();
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        if (session.payment_status === 'paid' || session.status === 'complete') {
+          const customerId = session.customer;
+          const plan = session.metadata?.plan || 'premium';
+          const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
+          if (isTeamPlan && session.metadata?.restaurantId) {
+            await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [plan, parseInt(session.metadata.restaurantId)]);
+            await db.query('UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2', [session.subscription, customerId]);
+          } else {
+            await db.query(
+              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
+              [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
+            );
+          }
+        }
+        break;
+      }
+      case 'customer.subscription.updated': {
+        const sub = event.data.object;
+        if (sub.status === 'active') {
+          await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['premium', sub.id]);
+        } else if (sub.status === 'canceled' || sub.status === 'unpaid') {
+          await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['free', sub.id]);
+          await db.query("UPDATE restaurants SET plan = 'free' WHERE (SELECT stripe_subscription_id FROM users WHERE users.restaurant_id = restaurants.id LIMIT 1) = $1", [sub.id]);
+        }
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        await db.query('UPDATE users SET subscription_status = $1, stripe_subscription_id = NULL WHERE stripe_subscription_id = $2', ['free', sub.id]);
+        await db.query("UPDATE restaurants SET plan = 'free' WHERE (SELECT stripe_subscription_id FROM users WHERE users.restaurant_id = restaurants.id LIMIT 1) = $1", [sub.id]);
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        console.warn('Payment failed for customer:', invoice.customer);
+        break;
+      }
+    }
     res.status(200).json({ received: true });
   } catch (err) {
-    console.error('Webhook error:', err.message);
-    res.status(400).json({ error: 'Webhook processing error' });
+    console.error('Webhook handler error:', err.message);
+    res.status(500).json({ error: 'Webhook handler failed' });
   }
 });
 
