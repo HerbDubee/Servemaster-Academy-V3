@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">ServeMaster Academy</string>
-    <string name="title_activity_main">ServeMaster Academy</string>
-    <string name="package_name">com.servemaster.academy</string>
-    <string name="custom_url_scheme">com.servemaster.academy</string>
-</resources>

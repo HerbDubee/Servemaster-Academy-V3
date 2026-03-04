@@ -34,7 +34,6 @@ const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'herb.dubee@gmail.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || 'hello@servemasteracademy.ca';
-const INFO_EMAIL = process.env.INFO_EMAIL || 'info@servemasteracademy.ca';
 
 const mailer = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
   ? nodemailer.createTransport({
