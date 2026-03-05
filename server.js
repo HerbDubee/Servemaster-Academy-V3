@@ -11,10 +11,18 @@ const { toFile } = require('openai');
 const { getUncachableStripeClient, getStripePublishableKey, getStripeSync } = require('./stripeClient');
 const db = require('./db');
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Please try again in 15 minutes.' } });
-const aiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many AI requests. Please slow down.' } });
+const authLimiter    = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Please try again in 15 minutes.' } });
+const aiLimiter      = rateLimit({ windowMs: 15 * 60 * 1000, max: 30,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many AI requests. Please slow down.' } });
+const contactLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5,   standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-m4a', 'video/webm'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
 
 const app = express();
 app.set('trust proxy', 1);
@@ -163,6 +171,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (IS_PROD) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 
@@ -495,7 +504,7 @@ app.get('/api/leaderboard', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch leaderboard' }); }
 });
 
-app.post('/api/newsletter/subscribe', async (req, res) => {
+app.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
   const { email, firstName } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
   try {
@@ -504,7 +513,7 @@ app.post('/api/newsletter/subscribe', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Subscription failed' }); }
 });
 
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) return res.status(400).json({ error: 'All fields required' });
   try {
@@ -513,7 +522,7 @@ app.post('/api/contact', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to send message' }); }
 });
 
-app.post('/api/enterprise-request', async (req, res) => {
+app.post('/api/enterprise-request', contactLimiter, async (req, res) => {
   const { name, email, company, locations, message } = req.body;
   if (!name || !email || !company) return res.status(400).json({ error: 'Name, email and company are required' });
   try {
