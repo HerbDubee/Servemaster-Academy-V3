@@ -31,10 +31,8 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.warn('⚠️  WARNING: JWT_SECRET env var is not set. Using insecure fallback. Set JWT_SECRET in production!');
-  return 'servemaster-secret-key-2025';
-})();
+if (!process.env.JWT_SECRET) throw new Error('FATAL: JWT_SECRET env var is not set. Server cannot start securely.');
+const JWT_SECRET = process.env.JWT_SECRET;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 
@@ -43,8 +41,8 @@ const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
 const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
 const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'herb.dubee@gmail.com';
-const HELLO_EMAIL = process.env.HELLO_EMAIL || 'hello@servemasteracademy.ca';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+const HELLO_EMAIL = process.env.HELLO_EMAIL || '';
 
 const mailer = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
   ? nodemailer.createTransport({
@@ -227,7 +225,8 @@ app.get('/api/admin/bootstrap', (req, res) => {
 });
 
 app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
-  const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY || 'sma-admin-2026';
+  const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY;
+  if (!BOOTSTRAP_KEY) return res.status(503).json({ error: 'Bootstrap not configured on this server.' });
   const { key } = req.query;
   if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
   try {
