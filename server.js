@@ -639,8 +639,8 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
-      success_url: `${baseUrl}/api/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      success_url: 'https://servemasteracademy.ca',
+      cancel_url: 'https://servemasteracademy.ca',
     });
     res.json({ url: session.url });
   } catch (err) {
