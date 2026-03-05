@@ -639,7 +639,7 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
-      success_url: 'https://servemasteracademy.ca',
+      success_url: 'https://servemasteracademy.ca/trial-started.html',
       cancel_url: 'https://servemasteracademy.ca',
     });
     res.json({ url: session.url });
