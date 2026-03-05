@@ -204,6 +204,7 @@ app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'p
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'signup.html')));
+app.get('/trial-started', (req, res) => res.sendFile(path.join(__dirname, 'public', 'trial-started.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'public', 'terms.html')));
 app.get('/brand', (req, res) => res.sendFile(path.join(__dirname, 'public', 'brand.html')));
@@ -639,7 +640,7 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
-      success_url: 'https://servemasteracademy.ca/trial-started.html',
+      success_url: 'https://servemasteracademy.ca/trial-started',
       cancel_url: 'https://servemasteracademy.ca',
     });
     res.json({ url: session.url });
