@@ -67,121 +67,98 @@ details[open] summary::after { content: '−'; }
     <h1 class="heading text-5xl font-black mb-4">Simple, honest pricing</h1>
     <p class="text-zinc-400 text-xl max-w-2xl mx-auto">Start free. Upgrade when you're ready. Every plan built for real restaurant teams.</p>
 
-    <!-- Toggle (only affects Premium Individual) -->
-    <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-1 mt-8">
-      <button id="btn-monthly" onclick="setBilling('monthly')" class="px-5 py-2 rounded-xl text-sm font-semibold bg-amber-400 text-black transition-colors">Monthly</button>
-      <button id="btn-annual" onclick="setBilling('annual')" class="px-5 py-2 rounded-xl text-sm font-semibold text-zinc-400 transition-colors">Annual <span class="text-emerald-400 ml-1">Save 26%</span></button>
+  </div>
+
+  <!-- Currency selector -->
+  <div class="mt-10 text-center">
+    <label class="text-sm text-zinc-400 block mb-3">Select Currency:</label>
+    <div class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-1">
+      <button id="btn-cad" onclick="setCurrency('CAD')" class="px-5 py-2 rounded-xl text-sm font-semibold bg-amber-400 text-black transition-colors">🇨🇦 CAD</button>
+      <button id="btn-usd" onclick="setCurrency('USD')" class="px-5 py-2 rounded-xl text-sm font-semibold text-zinc-400 transition-colors">🇺🇸 USD</button>
     </div>
-    <p class="text-zinc-500 text-xs mt-2">Annual billing applies to Premium Individual only</p>
+    <p class="text-zinc-600 text-xs mt-2">USD prices are approximate. Checkout is processed in CAD.</p>
   </div>
 
   <!-- Pricing cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8" id="pricing-cards">
 
-    <!-- FREE -->
-    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-7 flex flex-col">
-      <div class="mb-5">
-        <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">FREE</div>
-        <div class="text-4xl font-bold mb-1">$0</div>
-        <div class="text-zinc-500 text-sm">forever — no credit card</div>
-      </div>
-      <ul class="space-y-2.5 text-sm mb-8 flex-1">
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> 3 training modules</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> 5 AI roleplay scenarios</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Progress tracking</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Badges &amp; streaks</li>
-        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Voice roleplay</span></li>
-        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">All 30 scenarios</span></li>
-        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Certificate</span></li>
-      </ul>
-      <a href="/signup" class="block text-center border border-zinc-700 hover:border-amber-400 text-white font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Get Started Free</a>
-    </div>
-
-    <!-- PREMIUM INDIVIDUAL -->
-    <div class="bg-gradient-to-b from-amber-950/50 to-zinc-900 border border-amber-500/60 rounded-3xl p-7 flex flex-col relative xl:col-span-1">
+    <!-- Individual Monthly -->
+    <div class="bg-gradient-to-b from-amber-950/50 to-zinc-900 border border-amber-500/60 rounded-3xl p-8 text-center flex flex-col relative">
       <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">BEST VALUE</div>
-      <div class="mb-5">
-        <div class="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">PREMIUM INDIVIDUAL</div>
-        <div id="premium-price" class="text-4xl font-bold mb-1">$19<span class="text-xl font-medium text-zinc-400">/mo</span></div>
-        <div id="premium-sub" class="text-zinc-500 text-sm">billed monthly, cancel anytime</div>
-      </div>
-      <ul class="space-y-2.5 text-sm mb-8 flex-1">
+      <h3 class="text-xl font-semibold text-amber-400 uppercase tracking-wider text-xs mb-4 mt-2">Individual Monthly</h3>
+      <p class="text-5xl font-bold mt-2 price-display" data-base-cad="19" data-period="mo">
+        <span class="price-amount">$19</span> <span class="text-xl text-zinc-400 currency-label">CAD / mo</span>
+      </p>
+      <p class="text-sm text-amber-400 mt-2">14-day free trial · No credit card</p>
+      <ul class="space-y-2 text-sm mt-6 mb-6 flex-1 text-left">
         <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> All 12 training modules</li>
         <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> All 30 AI roleplay scenarios</li>
-        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Full voice conversation mode</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Voice conversation mode</li>
         <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Completion certificate</li>
-        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Global leaderboard</li>
-        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> EN / FR bilingual</li>
-        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> Hospitality glossary</li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">✓</span> EN / FR / ES trilingual</li>
       </ul>
-      <button onclick="startCheckout('premium')" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
+      <button onclick="startCheckout('premium_monthly')" class="mt-auto w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-2xl transition-colors text-sm">Start 14-Day Free Trial</button>
     </div>
 
-    <!-- STARTER TEAM -->
-    <div class="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-3xl p-7 flex flex-col transition-colors">
-      <div class="mb-5">
-        <div class="text-zinc-300 text-xs font-semibold uppercase tracking-wider mb-2">STARTER TEAM</div>
-        <div class="text-4xl font-bold mb-1">$99<span class="text-xl font-medium text-zinc-400">/mo</span></div>
-        <div class="text-zinc-500 text-sm">per location, up to 10 staff</div>
-      </div>
-      <ul class="space-y-2.5 text-sm mb-8 flex-1">
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Premium</li>
+    <!-- Individual Yearly -->
+    <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
+      <h3 class="text-xl font-semibold text-zinc-300 uppercase tracking-wider text-xs mb-4 mt-2">Individual Yearly</h3>
+      <p class="text-5xl font-bold mt-2 price-display" data-base-cad="149" data-period="yr">
+        <span class="price-amount">$149</span> <span class="text-xl text-zinc-400 currency-label">CAD / yr</span>
+      </p>
+      <p class="text-sm text-emerald-400 mt-2">Save ~37% · 14-day free trial</p>
+      <ul class="space-y-2 text-sm mt-6 mb-6 flex-1 text-left">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Monthly</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> ~$12.42 / month equivalent</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Billed once per year</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Cancel before renewal</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> All features identical</li>
+      </ul>
+      <button onclick="startCheckout('premium_annual')" class="mt-auto w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-2xl transition-colors text-sm">Start 14-Day Free Trial</button>
+    </div>
+
+    <!-- Team Monthly -->
+    <div class="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-3xl p-8 text-center flex flex-col transition-colors">
+      <h3 class="text-xl font-semibold text-zinc-300 uppercase tracking-wider text-xs mb-4 mt-2">Starter Team</h3>
+      <p class="text-5xl font-bold mt-2 price-display" data-base-cad="99" data-period="mo">
+        <span class="price-amount">$99</span> <span class="text-xl text-zinc-400 currency-label">CAD / mo</span>
+      </p>
+      <p class="text-sm text-zinc-400 mt-2">Up to 10 staff · 14-day free trial</p>
+      <ul class="space-y-2 text-sm mt-6 mb-6 flex-1 text-left">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Individual</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Up to 10 staff accounts</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Team progress dashboard</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Staff performance analytics</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> CSV progress export</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Invite link management</li>
-        <li class="flex items-start gap-2"><span class="text-zinc-600 mt-0.5">✗</span><span class="text-zinc-500">Custom scenarios</span></li>
       </ul>
-      <button onclick="startCheckout('starter_team')" class="w-full border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-white font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
+      <button onclick="startCheckout('starter_team')" class="mt-auto w-full border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-white font-semibold py-4 rounded-2xl transition-colors text-sm">Start 14-Day Free Trial</button>
       <p class="text-zinc-600 text-xs text-center mt-3">Requires Manager account</p>
     </div>
 
-    <!-- PRO TEAM -->
-    <div class="bg-gradient-to-b from-zinc-800 to-zinc-900 border border-zinc-600 rounded-3xl p-7 flex flex-col relative">
-      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-300 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">MOST POPULAR FOR TEAMS</div>
-      <div class="mb-5">
-        <div class="text-zinc-200 text-xs font-semibold uppercase tracking-wider mb-2">PRO TEAM</div>
-        <div class="text-4xl font-bold mb-1">$199<span class="text-xl font-medium text-zinc-400">/mo</span></div>
-        <div class="text-zinc-500 text-sm">per location, unlimited staff</div>
-      </div>
-      <ul class="space-y-2.5 text-sm mb-8 flex-1">
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Starter</li>
+    <!-- Pro-Team Monthly -->
+    <div class="bg-gradient-to-b from-zinc-800 to-zinc-900 border border-zinc-600 rounded-3xl p-8 text-center flex flex-col relative">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-300 text-black text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">FOR TEAMS</div>
+      <h3 class="text-xl font-semibold text-zinc-200 uppercase tracking-wider text-xs mb-4 mt-2">Pro Team</h3>
+      <p class="text-5xl font-bold mt-2 price-display" data-base-cad="199" data-period="mo">
+        <span class="price-amount">$199</span> <span class="text-xl text-zinc-400 currency-label">CAD / mo</span>
+      </p>
+      <p class="text-sm text-zinc-400 mt-2">Unlimited staff · 14-day free trial</p>
+      <ul class="space-y-2 text-sm mt-6 mb-6 flex-1 text-left">
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Starter Team</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Unlimited staff accounts</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom scenario builder</li>
         <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Advanced analytics</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Priority support</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Onboarding call included</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Early access to new features</li>
+        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Priority support &amp; onboarding</li>
       </ul>
-      <button onclick="startCheckout('pro_team')" class="w-full bg-white hover:bg-zinc-200 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Subscribe →</button>
+      <button onclick="startCheckout('pro_team')" class="mt-auto w-full bg-white hover:bg-zinc-200 text-black font-bold py-4 rounded-2xl transition-colors text-sm">Start 14-Day Free Trial</button>
       <p class="text-zinc-600 text-xs text-center mt-3">Requires Manager account</p>
-    </div>
-
-    <!-- ENTERPRISE -->
-    <div class="bg-zinc-900/50 border border-zinc-700 border-dashed rounded-3xl p-7 flex flex-col">
-      <div class="mb-5">
-        <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">ENTERPRISE</div>
-        <div class="text-4xl font-bold mb-1 text-zinc-300">Custom</div>
-        <div class="text-zinc-500 text-sm">multi-location &amp; white label</div>
-      </div>
-      <ul class="space-y-2.5 text-sm mb-8 flex-1">
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Everything in Pro Team</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Multiple locations</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> White label branding</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Dedicated account manager</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom SLA &amp; uptime</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Staff SSO / directory sync</li>
-        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">✓</span> Custom billing terms</li>
-      </ul>
-      <button onclick="openEnterpriseModal()" class="w-full border border-zinc-600 hover:border-amber-400 hover:text-amber-400 text-zinc-300 font-semibold px-4 py-3 rounded-2xl transition-colors text-sm">Contact Sales →</button>
     </div>
 
   </div>
 
   <!-- Plan comparison note -->
-  <div class="mt-10 text-center">
-    <p class="text-zinc-500 text-sm">All prices in USD. Team plans billed per location per month. <a href="/contact" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
+  <div class="mt-8 text-center">
+    <p class="text-zinc-500 text-sm">Prices shown in CAD by default. Team plans billed per location per month. <a href="/contact" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
   </div>
 
   <!-- FAQ -->
@@ -262,8 +239,7 @@ details[open] summary::after { content: '−'; }
 </div>
 
 <script>
-let billing = 'monthly';
-
+// ── Enterprise modal ────────────────────────────────────────────────────
 function openEnterpriseModal() {
   document.getElementById('enterprise-modal').classList.remove('hidden');
   document.getElementById('enterprise-modal').classList.add('flex');
@@ -305,34 +281,12 @@ async function submitEnterprise(e) {
   btn.disabled = false; btn.textContent = 'Send Inquiry →';
 }
 
-function setBilling(mode) {
-  billing = mode;
-  const btnM = document.getElementById('btn-monthly');
-  const btnA = document.getElementById('btn-annual');
-  const priceEl = document.getElementById('premium-price');
-  const subEl = document.getElementById('premium-sub');
-  if (mode === 'monthly') {
-    btnM.classList.add('bg-amber-400','text-black'); btnM.classList.remove('text-zinc-400');
-    btnA.classList.remove('bg-amber-400','text-black'); btnA.classList.add('text-zinc-400');
-    priceEl.innerHTML = '$19<span class="text-xl font-medium text-zinc-400">/mo</span>';
-    subEl.textContent = 'billed monthly, cancel anytime';
-  } else {
-    btnA.classList.add('bg-amber-400','text-black'); btnA.classList.remove('text-zinc-400');
-    btnM.classList.remove('bg-amber-400','text-black'); btnM.classList.add('text-zinc-400');
-    priceEl.innerHTML = '$149<span class="text-xl font-medium text-zinc-400">/yr</span>';
-    subEl.textContent = 'billed annually, cancel anytime';
-  }
-}
-
-async function startCheckout(planType) {
+// ── Checkout ────────────────────────────────────────────────────────────
+async function startCheckout(plan) {
   const token = localStorage.getItem('sma-token');
   if (!token) {
     window.location.href = '/signup?redirect=pricing';
     return;
-  }
-  let plan = planType;
-  if (planType === 'premium') {
-    plan = billing === 'annual' ? 'premium_annual' : 'premium_monthly';
   }
   const btn = event?.target;
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
@@ -347,11 +301,37 @@ async function startCheckout(planType) {
       window.location.href = data.url;
     } else {
       alert(data.error || 'Could not start checkout. Please try again.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Subscribe →'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
     }
   } catch {
     alert('Connection error. Please try again.');
-    if (btn) { btn.disabled = false; btn.textContent = 'Subscribe →'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
+  }
+}
+
+// ── Currency toggle ─────────────────────────────────────────────────────
+const USD_RATE = 0.73;
+
+function setCurrency(currency) {
+  const isUSD = currency === 'USD';
+  const rate = isUSD ? USD_RATE : 1;
+
+  document.querySelectorAll('.price-display').forEach(el => {
+    const base = parseFloat(el.dataset.baseCad);
+    const period = el.dataset.period;
+    const converted = Math.round(base * rate);
+    el.querySelector('.price-amount').textContent = '$' + converted;
+    el.querySelector('.currency-label').textContent = currency + ' / ' + period;
+  });
+
+  const btnCad = document.getElementById('btn-cad');
+  const btnUsd = document.getElementById('btn-usd');
+  if (isUSD) {
+    btnUsd.classList.add('bg-amber-400', 'text-black'); btnUsd.classList.remove('text-zinc-400');
+    btnCad.classList.remove('bg-amber-400', 'text-black'); btnCad.classList.add('text-zinc-400');
+  } else {
+    btnCad.classList.add('bg-amber-400', 'text-black'); btnCad.classList.remove('text-zinc-400');
+    btnUsd.classList.remove('bg-amber-400', 'text-black'); btnUsd.classList.add('text-zinc-400');
   }
 }
 </script>
