@@ -266,15 +266,17 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 10);
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
     const result = await db.query(
-      'INSERT INTO users (email, password_hash, name, experience_level) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-      [email.toLowerCase(), hash, name, level || 'New to serving']
+      'INSERT INTO users (email, password_hash, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, role, trial_ends_at, is_trial_active',
+      [email.toLowerCase(), hash, name, level || 'New to serving', trialEndsAt, true]
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ error: 'Registration failed' });
@@ -371,9 +373,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
         await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [profile.sub, existing.rows[0].id]);
         user = existing.rows[0];
       } else {
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
         const ins = await db.query(
-          'INSERT INTO users (email, google_id, name, experience_level) VALUES ($1, $2, $3, $4) RETURNING *',
-          [profile.email, profile.sub, profile.name, 'New to serving']
+          'INSERT INTO users (email, google_id, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+          [profile.email, profile.sub, profile.name, 'New to serving', trialEndsAt, true]
         );
         user = ins.rows[0];
         isNewUser = true;
