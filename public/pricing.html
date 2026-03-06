@@ -25,6 +25,19 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 details summary::-webkit-details-marker { display: none; }
 details summary::after { content: '+'; float: right; font-size: 1.2rem; color: #a1a1aa; transition: transform 0.2s; }
 details[open] summary::after { content: '−'; }
+
+    @media (max-width: 1024px) {
+      nav {
+        flex-direction: column;
+        padding: 1rem;
+      }
+      .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+    }
 </style>
 </head>
 <body>
