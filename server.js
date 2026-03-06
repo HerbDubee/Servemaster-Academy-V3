@@ -220,6 +220,15 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
+app.get('/api/stripe/publishable-key', async (req, res) => {
+  try {
+    const key = await getStripePublishableKey();
+    res.json({ publishableKey: key });
+  } catch {
+    res.status(500).json({ error: 'Unable to fetch key' });
+  }
+});
+
 app.get('/api/admin/bootstrap', (req, res) => {
   res.status(410).json({ error: 'This endpoint has been disabled. Use /admin to grant access.' });
 });
