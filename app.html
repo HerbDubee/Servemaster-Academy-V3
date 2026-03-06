@@ -606,10 +606,15 @@ function showUpgradePrompt(label) {
 }
 
 async function fetchCurrentUser() {
-  if (!authToken) return;
   try {
-    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + authToken } });
-    if (!res.ok) { authToken = null; localStorage.removeItem('sma-token'); return; }
+    const headers = {};
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+    const res = await fetch('/api/auth/me', { headers, credentials: 'include' });
+    if (!res.ok) {
+      authToken = null;
+      localStorage.removeItem('sma-token');
+      return;
+    }
     const data = await res.json();
     currentUser = data.user;
     applyUserToNav(currentUser);
