@@ -13,6 +13,9 @@
       nav_blog: 'Blog',
       nav_login: 'Log in',
       nav_cta: 'Get Started Free',
+      nav_privacy: "Privacy Policy",
+      nav_terms: "Terms",
+      nav_support: "Support",
 
       home_hero: 'Great service<br>shouldn\'t be rare.',
       home_hero_sub: 'ServeMaster Academy trains hospitality professionals with AI role‑play, voice practice, and 12 expert modules — in English, French, and Spanish.',
@@ -253,6 +256,9 @@
       nav_blog: 'Blogue',
       nav_login: 'Se connecter',
       nav_cta: 'Commencer gratuitement',
+      nav_privacy: "Politique de confidentialité",
+      nav_terms: "Conditions",
+      nav_support: "Assistance",
 
       home_hero: 'Un excellent service<br>ne devrait pas être rare.',
       home_hero_sub: 'ServeMaster Academy forme les professionnels de l\'hôtellerie avec des jeux de rôle IA, la pratique vocale et 12 modules experts — en anglais, français et espagnol.',
@@ -492,6 +498,9 @@
       nav_blog: 'Blog',
       nav_login: 'Iniciar sesión',
       nav_cta: 'Empieza gratis',
+      nav_privacy: "Política de privacidad",
+      nav_terms: "Términos",
+      nav_support: "Soporte",
 
       home_hero: 'El buen servicio<br>no debería ser raro.',
       home_hero_sub: 'ServeMaster Academy forma a profesionales de la hostelería con juego de rol IA, práctica de voz y 12 módulos expertos — en inglés, francés y español.',
@@ -732,7 +741,9 @@
     '/managers': 'nav_managers',
     '/blog': 'nav_blog',
     '/login': 'nav_login',
-    '/signup': 'nav_cta'
+    '/signup': 'nav_cta',
+    '/privacy': 'nav_privacy',
+    '/terms': 'nav_terms'
   };
 
   function getCurrentLang() {
@@ -758,7 +769,7 @@
       if (t[key] !== undefined) el.placeholder = t[key];
     });
 
-    document.querySelectorAll('nav a').forEach(function (a) {
+    document.querySelectorAll('nav a, footer a').forEach(function (a) {
       try {
         var path = new URL(a.href, window.location.origin).pathname;
         var key = NAV_HREF_MAP[path];
