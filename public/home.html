@@ -38,6 +38,13 @@
 </style>
 </head>
 <body>
+
+<!-- TRIAL BANNER -->
+<div id="trial-banner" class="bg-amber-900 py-3 text-center text-sm font-medium hidden">
+  You have <span id="days-left" class="font-bold"></span> days left in your free trial &bull;
+  <a href="/pricing" class="underline hover:text-amber-200 transition-colors">Upgrade now to keep access</a>
+</div>
+
 <!-- NAV -->
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -81,22 +88,27 @@
 <script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
 
 <!-- HERO -->
-<section class="max-w-7xl mx-auto px-4 pt-24 pb-20 text-center">
-  <div class="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/30 text-amber-300 text-sm font-medium px-4 py-2 rounded-full mb-8">
-    <span>🎓</span> Trusted by servers across North America
+<section class="bg-gradient-to-br from-amber-900 via-amber-950 to-zinc-950 py-24">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <h1 class="heading text-6xl md:text-7xl font-bold leading-tight mb-8">
+      Great service shouldn't be rare.
+    </h1>
+    <p class="text-2xl text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+      I'm Kirk Adamson, a lifelong fine-dining aficionado. I built ServeMaster Academy because I kept seeing the same problem: servers who wanted to excel, but simply weren't taught how.
+    </p>
+    <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold text-xl py-5 px-14 rounded-3xl transition-colors">Start 14-Day Free Trial</a>
+      <a href="/features" class="border border-zinc-600 hover:border-amber-400 text-white font-semibold text-xl py-5 px-10 rounded-3xl transition-colors">See How It Works</a>
+    </div>
+    <p class="text-zinc-500 text-sm mt-5">No credit card required. Free tier includes 3 modules &amp; 5 AI scenarios.</p>
   </div>
-  <h1 class="heading text-5xl md:text-7xl font-black leading-tight mb-6">
-    Train smarter.<br><span class="amber-grad">Serve better.</span>
-  </h1>
-  <p class="text-zinc-400 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-    ServeMaster Academy gives restaurant servers the AI-powered training they need — realistic roleplay scenarios, expert modules, voice practice, and a completion certificate.
-  </p>
-  <div class="flex flex-col sm:flex-row gap-4 justify-center">
-    <a href="/signup" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-4 rounded-2xl text-lg transition-colors">Get Started Free →</a>
-    <a href="/features" class="border border-zinc-700 hover:border-amber-400 text-white font-semibold px-8 py-4 rounded-2xl text-lg transition-colors">See Features</a>
-  </div>
-  <p class="text-zinc-500 text-sm mt-4">No credit card required. Free tier includes 3 modules &amp; 5 scenarios.</p>
 </section>
+
+<!-- FREE TIER CALLOUT -->
+<div class="bg-zinc-900 py-8 text-center border-b border-zinc-800">
+  <p class="text-xl font-medium">Start completely free — no credit card required.</p>
+  <p class="text-sm text-zinc-400 mt-2">Access 3 full modules + 5 AI role-play scenarios forever.</p>
+</div>
 
 <!-- FEATURES GRID -->
 <section class="max-w-7xl mx-auto px-4 py-20">
@@ -126,35 +138,70 @@
   </div>
 </section>
 
+<!-- FOUNDER STORY -->
+<section class="py-20 bg-zinc-900 border-t border-zinc-800">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <img src="/logo.png" alt="Kirk Adamson" class="w-24 h-24 rounded-full mx-auto mb-8 border-4 border-amber-400 object-cover">
+    <h2 class="heading text-4xl font-bold mb-6">Hi, I'm Kirk Adamson</h2>
+    <p class="text-xl text-zinc-300 leading-relaxed">
+      I'm a lifelong fine-dining aficionado and foodie. Over the years I watched service standards slowly decline in restaurants I loved. Servers wanted to do better — they just weren't being taught the fundamentals.
+    </p>
+    <p class="mt-6 text-amber-400 font-medium text-lg">So I built ServeMaster Academy to fix that.</p>
+  </div>
+</section>
+
 <!-- TESTIMONIALS -->
-<section class="bg-zinc-900 py-20">
+<section class="bg-black py-20">
   <div class="max-w-7xl mx-auto px-4">
-    <h2 class="heading text-3xl md:text-4xl font-bold text-center mb-14">What servers are saying</h2>
+    <h2 class="heading text-3xl md:text-4xl font-bold text-center mb-14">Trusted by servers &amp; restaurants across North America</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-zinc-800 rounded-3xl p-6">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
         <div class="text-amber-400 text-lg mb-3">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-4">"The AI roleplay is genuinely challenging. After two weeks of practice, I handled a difficult VIP table with total confidence. My tips went up noticeably."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-400 font-bold">S</div>
-          <div><div class="font-semibold text-sm">Sarah M.</div><div class="text-zinc-500 text-xs">Fine dining server, Toronto</div></div>
-        </div>
+        <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic">"Wine sales up 31% in the first month. The AI role-play is unreal."</p>
+        <div class="font-semibold text-sm">— Sarah M., Server, Vancouver</div>
       </div>
-      <div class="bg-zinc-800 rounded-3xl p-6">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
         <div class="text-amber-400 text-lg mb-3">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-4">"I used the wine module to prep for my sommelier interview. The bilingual French/English toggle was perfect — I passed first attempt."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-400 font-bold">M</div>
-          <div><div class="font-semibold text-sm">Marc L.</div><div class="text-zinc-500 text-xs">Server, Montreal</div></div>
-        </div>
+        <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic">"Cut onboarding from 6 weeks to 12 days. The manager dashboard is a game-changer."</p>
+        <div class="font-semibold text-sm">— David L., GM, Toronto (3 locations)</div>
       </div>
-      <div class="bg-zinc-800 rounded-3xl p-6">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
         <div class="text-amber-400 text-lg mb-3">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-4">"I train my whole team with the manager dashboard. Onboarding new staff used to take weeks — now they're floor-ready in days."</p>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-400 font-bold">J</div>
-          <div><div class="font-semibold text-sm">James R.</div><div class="text-zinc-500 text-xs">Restaurant manager, Vancouver</div></div>
-        </div>
+        <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic">"Finally, real training on special occasions. Guests are noticing the difference."</p>
+        <div class="font-semibold text-sm">— Elena R., Owner, Montreal Fine Dining</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG TEASER -->
+<section class="py-20 bg-zinc-900 border-t border-zinc-800">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="heading text-3xl font-bold text-center mb-12">Server Tips &amp; Resources</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <a href="/blog/wine-service-tips" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
+        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3">Wine Service</p>
+        <h3 class="font-bold text-lg mb-2">How to Sell Wine Confidently Without Being Pushy</h3>
+        <p class="text-sm text-zinc-400">5 techniques — with real scripts — that increase check averages without the hard sell.</p>
+      </a>
+      <a href="/blog/special-occasions" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
+        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3">Guest Experience</p>
+        <h3 class="font-bold text-lg mb-2">Mastering Anniversary &amp; Birthday Tables</h3>
+        <p class="text-sm text-zinc-400">Six steps to turning a milestone dinner into a memory the guest talks about for years.</p>
+      </a>
+      <a href="/blog/tray-technique" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
+        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3">Skills &amp; Technique</p>
+        <h3 class="font-bold text-lg mb-2">The Professional Tray Technique That Never Spills</h3>
+        <p class="text-sm text-zinc-400">Load, lift, carry, set down — the physical mechanics most servers were never properly taught.</p>
+      </a>
+      <a href="/blog/server-career" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
+        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3">Career Development</p>
+        <h3 class="font-bold text-lg mb-2">From Server to Manager: Real Career Path</h3>
+        <p class="text-sm text-zinc-400">The 4-stage timeline I built into ServeMaster Academy — and what separates fast-track servers from everyone else.</p>
+      </a>
+    </div>
+    <div class="text-center mt-10">
+      <a href="/blog" class="text-amber-400 hover:text-amber-300 font-medium transition-colors">View all articles →</a>
     </div>
   </div>
 </section>
@@ -211,6 +258,21 @@ async function submitNewsletter(e) {
     document.getElementById('nl-form').reset();
   } catch {}
 }
+
+async function showTrialBanner() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.trialDaysLeft > 0 && !data.isPaid) {
+      document.getElementById('trial-banner').classList.remove('hidden');
+      document.getElementById('days-left').textContent = data.trialDaysLeft;
+    }
+  } catch {}
+}
+showTrialBanner();
 </script>
 </body>
 </html>
