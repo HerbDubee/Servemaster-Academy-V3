@@ -44,7 +44,7 @@ externalPort = 80
 
 [agent]
 expertMode = true
-integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0"]
+integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0", "resend:1.0.0"]
 
 [userenv]
 
