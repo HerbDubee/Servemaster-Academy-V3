@@ -484,6 +484,12 @@ const STRINGS = {
     dayStreak: 'day streak', streakBestLabel: 'Best',
     dashNewsletterBtn: '📬 Get monthly tips newsletter',
     noStaff: 'No staff have joined yet. Share the invite code to get started.',
+    grMorning: 'Good morning', grAfternoon: 'Good afternoon', grEvening: 'Good evening',
+    dashSub: 'Keep going — every lesson makes you a better server.',
+    pickUpLabel: 'Pick up where you left off', startHereLabel: 'Start here',
+    stepOf: 'Step {n} of 12', startCta: 'Start →', pctComplete: 'complete',
+    allCompleteTitle: 'All modules complete!', allCompleteSub: 'Download your certificate below.',
+    proOnly: 'Pro only', upgradeLabel: '9 more modules', earnedLabel: '✓ Earned',
   },
   fr: {
     welcome: 'Bienvenue à ServeMaster', welcomeSub: "L'académie de formation professionnelle pour serveurs d'exception.",
@@ -515,6 +521,12 @@ const STRINGS = {
     dayStreak: 'jours de série', streakBestLabel: 'Meilleure',
     dashNewsletterBtn: '📬 Newsletter mensuelle',
     noStaff: "Aucun membre du personnel n'a encore rejoint. Partagez le code d'invitation pour commencer.",
+    grMorning: 'Bonjour', grAfternoon: 'Bon après-midi', grEvening: 'Bonsoir',
+    dashSub: 'Continuez — chaque leçon fait de vous un meilleur serveur.',
+    pickUpLabel: 'Reprendre là où vous avez arrêté', startHereLabel: 'Commencez par ici',
+    stepOf: 'Étape {n} sur 12', startCta: 'Commencer →', pctComplete: 'complété',
+    allCompleteTitle: 'Tous les modules complétés !', allCompleteSub: 'Téléchargez votre certificat ci-dessous.',
+    proOnly: 'Réservé Pro', upgradeLabel: '9 modules supplémentaires', earnedLabel: '✓ Obtenu',
   },
   es: {
     welcome: 'Bienvenido a ServeMaster', welcomeSub: 'La academia de formación profesional para meseros de excepción.',
@@ -546,6 +558,12 @@ const STRINGS = {
     dayStreak: 'días de racha', streakBestLabel: 'Mejor',
     dashNewsletterBtn: '📬 Boletín mensual de consejos',
     noStaff: 'Ningún miembro del personal se ha unido todavía. Comparte el código de invitación para comenzar.',
+    grMorning: 'Buenos días', grAfternoon: 'Buenas tardes', grEvening: 'Buenas noches',
+    dashSub: 'Sigue adelante — cada lección te hace un mejor mesero.',
+    pickUpLabel: 'Retoma donde lo dejaste', startHereLabel: 'Comienza aquí',
+    stepOf: 'Paso {n} de 12', startCta: 'Iniciar →', pctComplete: 'completado',
+    allCompleteTitle: '¡Todos los módulos completados!', allCompleteSub: 'Descarga tu certificado a continuación.',
+    proOnly: 'Solo Pro', upgradeLabel: '9 módulos más', earnedLabel: '✓ Obtenido',
   }
 };
 let lang = localStorage.getItem('sma-lang') || 'en';
@@ -786,7 +804,7 @@ const BADGE_DEFS = [
   { id:'first_scenario', icon:'🎭', name:'Scene Stealer', nameFr:'Acteur en herbe', nameEs:'Protagonista', desc:'Complete your first role-play', descFr:'Complétez votre premier jeu de rôle', descEs:'Completa tu primer juego de rol' },
   { id:'scenario_ace', icon:'🌟', name:'Scenario Ace', nameFr:'As des scénarios', nameEs:'As de Escenarios', desc:'Complete 10 role-play scenarios', descFr:'Complétez 10 scénarios de jeu de rôle', descEs:'Completa 10 escenarios de juego de rol' },
   { id:'scenario_legend', icon:'👑', name:'Scenario Legend', nameFr:'Légende des scénarios', nameEs:'Leyenda de Escenarios', desc:'Complete 20 role-play scenarios', descFr:'Complétez 20 scénarios', descEs:'Completa 20 escenarios de juego de rol' },
-  { id:'week_warrior', icon:'🔥', name:'Week Warrior', nameFr:'Guerrier de la semaine', nameEs:'Guerrero Semanal', desc:'7-day learning streak', descFr:'Série de 7 jours d\'apprentissage' },
+  { id:'week_warrior', icon:'🔥', name:'Week Warrior', nameFr:'Guerrier de la semaine', nameEs:'Guerrero Semanal', desc:'7-day learning streak', descFr:'Série de 7 jours d\'apprentissage', descEs:'Racha de aprendizaje de 7 días' },
   { id:'month_master', icon:'💎', name:'Month Master', nameFr:'Maître du mois', nameEs:'Maestro del Mes', desc:'30-day learning streak', descFr:'Série de 30 jours', descEs:'Racha de aprendizaje de 30 días' },
   { id:'wine_expert', icon:'🍷', name:'Wine Expert', nameFr:'Expert en vins', nameEs:'Experto en Vinos', desc:'Complete all beverage modules', descFr:'Complétez tous les modules boissons', descEs:'Completa todos los módulos de bebidas' },
   { id:'perfect_scorer', icon:'💯', name:'Perfect Scorer', nameFr:'Score parfait', nameEs:'Puntuación Perfecta', desc:'Score 100% on 5 quizzes', descFr:'Obtenez 100% sur 5 quiz', descEs:'Obtén 100% en 5 cuestionarios' },
@@ -1784,9 +1802,9 @@ function checkCertificate() {
     banner.classList.remove('hidden');
     banner.innerHTML = `<div class="flex-1">
       <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Earned!</div>
-      <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Félicitations ! Passez à Pro pour télécharger votre certificat.':'Congratulations! Upgrade to Pro to download your certificate.'}</div>
+      <div class="text-zinc-400 text-sm mt-1">${lang==='es'?'¡Felicidades! Actualiza a Pro para descargar tu certificado.':lang==='fr'?'Félicitations ! Passez à Pro pour télécharger votre certificat.':'Congratulations! Upgrade to Pro to download your certificate.'}</div>
     </div>
-    <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap text-sm">${lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>`;
+    <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap text-sm">${lang==='es'?'Cambiar a Pro →':lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>`;
   } else {
     banner.classList.toggle('hidden', !allDone);
   }
@@ -2037,9 +2055,9 @@ async function loadLeaderboard() {
   if (!hasPaidPlan()) {
     el.innerHTML = `<div class="bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
       <div class="text-4xl mb-3">🏆</div>
-      <div class="font-semibold text-lg mb-2 text-amber-300">🔒 ${lang==='fr'?'Classement mondial — Abonnement requis':'Global Leaderboard — Paid Plan Required'}</div>
-      <div class="text-zinc-400 text-sm mb-5">${lang==='fr'?'Passez à un forfait payant pour voir et rejoindre le classement mondial.':'Upgrade to a paid plan to see and join the global leaderboard.'}</div>
-      <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${lang==='fr'?'Voir les forfaits →':'See Plans →'}</a>
+      <div class="font-semibold text-lg mb-2 text-amber-300">🔒 ${lang==='es'?'Tabla de líderes global — Plan de pago requerido':lang==='fr'?'Classement mondial — Abonnement requis':'Global Leaderboard — Paid Plan Required'}</div>
+      <div class="text-zinc-400 text-sm mb-5">${lang==='es'?'Actualiza a un plan de pago para ver y unirte a la tabla de líderes.':lang==='fr'?'Passez à un forfait payant pour voir et rejoindre le classement mondial.':'Upgrade to a paid plan to see and join the global leaderboard.'}</div>
+      <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${lang==='es'?'Ver planes →':lang==='fr'?'Voir les forfaits →':'See Plans →'}</a>
     </div>`;
     return;
   }
@@ -2093,11 +2111,11 @@ function renderManagerDashboard(data) {
     statsEl.innerHTML = `
       <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
         <div class="text-3xl font-bold text-amber-400">${staff.length}</div>
-        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Membres du personnel':'Staff Members'}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='es'?'Miembros del personal':lang==='fr'?'Membres du personnel':'Staff Members'}</div>
       </div>
       <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
         <div class="text-3xl font-bold text-amber-400">${avgCompletion}</div>
-        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Modules avg complétés':'Avg Modules Completed'}</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='es'?'Módulos completados (promedio)':lang==='fr'?'Modules avg complétés':'Avg Modules Completed'}</div>
       </div>
       <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 text-center">
         <div class="text-xl font-bold text-amber-400 break-all">${restaurant.invite_code}</div>
@@ -2236,12 +2254,12 @@ function obFinish() {
 function applyUser(user) {
   const initials = user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   const hour = new Date().getHours();
-  const gr = hour < 12 ? (lang==='fr'?'Bonjour':'Good morning') : hour < 18 ? (lang==='fr'?'Bon après-midi':'Good afternoon') : (lang==='fr'?'Bonsoir':'Good evening');
+  const gr = hour < 12 ? t('grMorning') : hour < 18 ? t('grAfternoon') : t('grEvening');
   document.getElementById('nav-name').textContent = user.name;
   document.getElementById('nav-level').textContent = user.level;
   document.getElementById('nav-avatar').textContent = initials;
   document.getElementById('dashboard-greeting').textContent = gr + ', ' + user.name.split(' ')[0] + ' 👋';
-  document.getElementById('dashboard-sub').textContent = lang==='fr'?'Continuez — chaque leçon fait de vous un meilleur serveur.':'Keep going — every lesson makes you a better server.';
+  document.getElementById('dashboard-sub').textContent = t('dashSub');
 }
 
 // =========================================================
@@ -2277,13 +2295,13 @@ function renderAchievements() {
   if (!el) return;
   el.innerHTML = BADGE_DEFS.map(b => {
     const earned = earnedBadges.includes(b.id);
-    const name = lang === 'fr' ? b.nameFr : b.name;
-    const desc = lang === 'fr' ? b.descFr : b.desc;
+    const name = lang === 'es' ? (b.nameEs || b.name) : lang === 'fr' ? b.nameFr : b.name;
+    const desc = lang === 'es' ? (b.descEs || b.desc) : lang === 'fr' ? b.descFr : b.desc;
     return `<div class="bg-zinc-900 border ${earned?'border-amber-500':'border-zinc-800'} rounded-2xl p-5 text-center transition-all">
       <div class="text-4xl mb-2 ${earned?'':'opacity-30 grayscale'}">${b.icon}</div>
       <div class="font-semibold text-sm ${earned?'text-amber-400':'text-zinc-500'}">${name}</div>
       <div class="text-zinc-500 text-xs mt-1">${desc}</div>
-      ${earned ? '<div class="text-emerald-400 text-xs mt-2">✓ Earned</div>' : ''}
+      ${earned ? `<div class="text-emerald-400 text-xs mt-2">${t('earnedLabel')}</div>` : ''}
     </div>`;
   }).join('');
   document.getElementById('scenarios-done').textContent = completedScenarios.length;
@@ -2307,10 +2325,10 @@ function renderAll() {
   if (nextCardEl) {
     if (nextModule) {
       const p = userProgress.find(u => u.id === nextModule.id);
-      const minsLabel = lang === 'fr' ? `~${nextModule.mins} min` : `~${nextModule.mins} min`;
-      const stepLabel = lang === 'fr' ? `Étape ${nextModule.id} sur 12` : `Step ${nextModule.id} of 12`;
-      const btnLabel = lang === 'fr' ? (p.progress > 0 ? 'Continuer →' : 'Commencer →') : (p.progress > 0 ? 'Continue →' : 'Start →');
-      const heading = lang === 'fr' ? (p.progress > 0 ? 'Reprendre là où vous avez arrêté' : 'Commencez par ici') : (p.progress > 0 ? 'Pick up where you left off' : 'Start here');
+      const minsLabel = `~${nextModule.mins} min`;
+      const stepLabel = t('stepOf').replace('{n}', nextModule.id);
+      const btnLabel = p.progress > 0 ? t('continueBtn') : t('startCta');
+      const heading = p.progress > 0 ? t('pickUpLabel') : t('startHereLabel');
       nextCardEl.innerHTML = `<div onclick="openModule(${nextModule.id})" class="cursor-pointer bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 hover:border-amber-400 rounded-3xl p-6 flex items-center gap-6 mb-2 transition-all">
         <div class="text-5xl">${nextModule.emoji}</div>
         <div class="flex-1 min-w-0">
@@ -2322,15 +2340,15 @@ function renderAll() {
             <span class="text-zinc-400 text-xs">⏱ ${minsLabel}</span>
           </div>
           <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full transition-all" style="width:${p.progress}%"></div></div>
-          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${t('pctComplete')}</div>
         </div>
         <div class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm">${btnLabel}</div>
       </div>`;
     } else {
       nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-emerald-900/30 to-zinc-900 border border-emerald-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
         <div class="text-5xl">🎓</div>
-        <div><div class="text-emerald-400 font-semibold text-lg">${lang==='fr'?'Tous les modules complétés !':'All modules complete!'}</div>
-        <div class="text-zinc-400 text-sm mt-1">${lang==='fr'?'Téléchargez votre certificat ci-dessous.':'Download your certificate below.'}</div></div>
+        <div><div class="text-emerald-400 font-semibold text-lg">${t('allCompleteTitle')}</div>
+        <div class="text-zinc-400 text-sm mt-1">${t('allCompleteSub')}</div></div>
       </div>`;
     }
   }
@@ -2347,7 +2365,7 @@ function renderAll() {
         <div class="font-semibold text-lg mb-1">${getModuleTitle(m)}</div>
         <div class="text-zinc-500 text-xs mb-3">⏱ ~${m.mins} min</div>
         <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
-        <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+        <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${t('pctComplete')}</div>
       </div>`;
     }).join('');
   }
@@ -2370,7 +2388,7 @@ function renderAll() {
               <div class="font-semibold mb-1 text-zinc-400">${getModuleTitle(m)}</div>
               <span class="text-xs px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20">PRO</span>
             </div>
-            <div class="text-zinc-500 text-xs">⏱ ~${m.mins} min &nbsp;•&nbsp; 🔒 ${lang==='fr'?'Réservé Pro':'Pro only'}</div>
+            <div class="text-zinc-500 text-xs">⏱ ~${m.mins} min &nbsp;•&nbsp; 🔒 ${t('proOnly')}</div>
           </div>
         </div>`;
       }
@@ -2387,12 +2405,12 @@ function renderAll() {
             ${qs != null ? `<span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
           </div>
           <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
-          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${lang==='fr'?'complété':'complete'}</div>
+          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${t('pctComplete')}</div>
         </div>
       </div>`;
     }).join('');
     if (proModulesLocked) {
-      allEl.innerHTML += showUpgradePrompt(lang === 'fr' ? '9 modules supplémentaires' : '9 more modules');
+      allEl.innerHTML += showUpgradePrompt(t('upgradeLabel'));
     }
   }
 
@@ -2405,7 +2423,7 @@ function renderAll() {
       if (!def) return '';
       return `<div class="bg-zinc-900 border border-amber-500/30 rounded-2xl px-4 py-3 flex items-center gap-3">
         <div class="text-2xl">${def.icon}</div>
-        <div class="text-sm font-semibold text-amber-400">${lang==='fr'?def.nameFr:def.name}</div>
+        <div class="text-sm font-semibold text-amber-400">${lang==='es'?(def.nameEs||def.name):lang==='fr'?def.nameFr:def.name}</div>
       </div>`;
     }).join('');
   }
