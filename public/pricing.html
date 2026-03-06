@@ -84,15 +84,15 @@ details[open] summary::after { content: '−'; }
   <!-- Header -->
   <div class="text-center mb-14">
     <h1 data-i18n="pricing_h1" class="heading text-5xl font-black mb-4">Simple, honest pricing</h1>
-    <p class="text-zinc-400 text-xl max-w-2xl mx-auto">Start free. Upgrade when you're ready. Every plan built for real restaurant teams.</p>
+    <p class="text-zinc-400 text-xl max-w-2xl mx-auto" data-i18n="pricing_sub">Start free. Upgrade when you're ready. Every plan built for real restaurant teams.</p>
 
   </div>
 
   <!-- Currency selector -->
   <div class="mt-12 text-center">
-    <label class="text-sm text-zinc-400 block mb-4">Select Currency:</label>
+    <label class="text-sm text-zinc-400 block mb-4" data-i18n="pricing_currency_label">Select Currency:</label>
     <div id="currency-selector" class="inline-block mx-auto"></div>
-    <p id="currency-note" class="text-zinc-600 text-xs mt-2 hidden">USD prices shown for reference. Checkout is processed in CAD.</p>
+    <p id="currency-note" class="text-zinc-600 text-xs mt-2 hidden" data-i18n="pricing_currency_note">USD prices shown for reference. Checkout is processed in CAD.</p>
   </div>
 
   <!-- Pricing cards -->
@@ -100,73 +100,73 @@ details[open] summary::after { content: '−'; }
 
     <!-- Free -->
     <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Free</h3>
-      <p class="text-sm text-zinc-400 mt-1">Individual servers</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_free_h">Free</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_free_sub">Individual servers</p>
       <p class="text-5xl font-bold mt-6">$0</p>
-      <p class="text-sm text-zinc-400 mt-2">3 modules + 5 role-plays • Forever free</p>
+      <p class="text-sm text-zinc-400 mt-2" data-i18n="pricing_free_desc">3 modules + 5 role-plays • Forever free</p>
       <a href="/signup"
          class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-6 rounded-3xl transition-colors block text-center">
-        Get Started Free
+        <span data-i18n="pricing_free_btn">Get Started Free</span>
       </a>
     </div>
 
     <!-- Premium Individual Monthly -->
     <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Premium Individual Monthly</h3>
-      <p class="text-sm text-zinc-400 mt-1">Career servers</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_prem_mo_h">Premium Individual Monthly</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_prem_mo_sub">Career servers</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2">Full access, voice, certificates • 14-day free trial</p>
+      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_prem_mo_desc">Full access, voice, certificates • 14-day free trial</p>
       <button onclick="checkout('price_1T6zoHExNgORioBpkHFfppKN')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        Start 14-Day Free Trial
+        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
     </div>
 
     <!-- Premium Individual Yearly -->
     <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Premium Individual Yearly</h3>
-      <p class="text-sm text-zinc-400 mt-1">Long-term users</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_prem_yr_h">Premium Individual Yearly</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_prem_yr_sub">Long-term users</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
-      <p class="text-sm text-amber-400 mt-2">~$12.42/mo • Save ~35% • 14-day free trial</p>
+      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_prem_yr_desc">~$12.42/mo • Save ~35% • 14-day free trial</p>
       <button onclick="checkout('price_1T6zmiExNgORioBp78rqoHQF')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        Start 14-Day Free Trial
+        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
     </div>
 
     <!-- Starter Team -->
     <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Starter Team</h3>
-      <p class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_starter_h">Starter Team</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_starter_sub">Small–medium restaurants</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2">Up to 10 staff • Per location • 14-day free trial</p>
+      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_starter_desc">Up to 10 staff • Per location • 14-day free trial</p>
       <button onclick="checkout('price_1T6zlYExNgORioBp06MwjAnO')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        Start 14-Day Free Trial
+        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
     </div>
 
     <!-- Pro Team -->
     <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Pro Team</h3>
-      <p class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_pro_h">Pro Team</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_pro_sub">Mid-size chains</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2">Unlimited staff • Custom scenarios • 14-day free trial</p>
+      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_pro_desc">Unlimited staff • Custom scenarios • 14-day free trial</p>
       <button onclick="checkout('price_1T700zExNgORioBp0eD0BZo1')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        Start 14-Day Free Trial
+        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
     </div>
 
     <!-- Enterprise -->
     <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Enterprise</h3>
-      <p class="text-sm text-zinc-400 mt-1">Large chains</p>
-      <p class="text-5xl font-bold mt-6">Custom</p>
-      <p class="text-sm text-zinc-400 mt-2">Multi-location • White-label • SSO</p>
+      <h3 class="text-2xl font-semibold" data-i18n="pricing_ent_h">Enterprise</h3>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_ent_sub">Large chains</p>
+      <p class="text-5xl font-bold mt-6" data-i18n="pricing_ent_price">Custom</p>
+      <p class="text-sm text-zinc-400 mt-2" data-i18n="pricing_ent_desc">Multi-location • White-label • SSO</p>
       <button onclick="openEnterpriseModal()"
               class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-6 rounded-3xl transition-colors">
-        Contact Us
+        <span data-i18n="pricing_ent_btn">Contact Us</span>
       </button>
     </div>
 
@@ -174,46 +174,46 @@ details[open] summary::after { content: '−'; }
 
   <!-- Plan comparison note -->
   <div class="mt-8 text-center">
-    <p class="text-zinc-500 text-sm">Team plans billed per location per month. <a href="/contact" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
+    <p class="text-zinc-500 text-sm"><span data-i18n="pricing_team_note">Team plans billed per location per month.</span> <a href="/contact" class="text-amber-400 hover:underline" data-i18n="pricing_team_link">Questions? Talk to us.</a></p>
   </div>
 
   <!-- FAQ -->
   <div class="max-w-2xl mx-auto mt-20 space-y-3">
-    <h2 class="heading text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
+    <h2 class="heading text-3xl font-bold text-center mb-10" data-i18n="pricing_faq_h">Frequently asked questions</h2>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What's included in the Free tier?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 training modules and 5 AI roleplay scenarios — no time limit, no credit card. It's a genuine free tier, not a trial. Upgrade when you're ready for everything.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq1_q">What's included in the Free tier?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq1_a">The Free tier gives you permanent access to 3 training modules and 5 AI roleplay scenarios — no time limit, no credit card. It's a genuine free tier, not a trial. Upgrade when you're ready for everything.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">How does annual billing work for Premium Individual?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $149/year — equivalent to $12.42/month — saving you 35% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq2_q">How does annual billing work for Premium Individual?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq2_a">Annual billing for Premium Individual costs $149/year — equivalent to $12.42/month — saving you 35% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">How do team plans work?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Team plans are for restaurant managers. You create a Manager account, set up your restaurant, then subscribe to a Starter or Pro Team plan. You get an invite link to share with your staff — when they join, they automatically get full access through your location's plan. Each location is billed separately.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq3_q">How do team plans work?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq3_a">Team plans are for restaurant managers. You create a Manager account, set up your restaurant, then subscribe to a Starter or Pro Team plan. You get an invite link to share with your staff — when they join, they automatically get full access through your location's plan. Each location is billed separately.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">Can staff on a team plan use the app independently?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each staff member has their own account with their own progress, badges, streak, and certificate. The team plan simply unlocks full access for everyone connected to that location.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq4_q">Can staff on a team plan use the app independently?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq4_a">Yes — each staff member has their own account with their own progress, badges, streak, and certificate. The team plan simply unlocks full access for everyone connected to that location.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">Can I cancel anytime?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes. You can cancel any subscription at any time. You'll keep access until the end of your current billing period. Team plan cancellations affect all staff in that location at the end of the period.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq5_q">Can I cancel anytime?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq5_a">Yes. You can cancel any subscription at any time. You'll keep access until the end of your current billing period. Team plan cancellations affect all staff in that location at the end of the period.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What payment methods are accepted?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">All major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay where supported. Payments are processed securely by Stripe. Enterprise customers can arrange invoice-based billing.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq6_q">What payment methods are accepted?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed" data-i18n="pricing_faq6_a">All major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay where supported. Payments are processed securely by Stripe. Enterprise customers can arrange invoice-based billing.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What is Enterprise pricing?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Enterprise is custom-quoted based on number of locations, staff count, and features required (white labelling, SSO, SLA, etc.). <a href="/contact" class="text-amber-400 hover:underline">Contact us</a> and we'll put together a proposal within one business day.</p>
+      <summary class="font-semibold text-sm py-1" data-i18n="pricing_faq7_q">What is Enterprise pricing?</summary>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed"><span data-i18n="pricing_faq7_a">Enterprise is custom-quoted based on number of locations, staff count, and features required (white labelling, SSO, SLA, etc.).</span> <a href="/contact" class="text-amber-400 hover:underline">Contact us</a> and we'll put together a proposal within one business day.</p>
     </details>
   </div>
 
@@ -247,17 +247,17 @@ details[open] summary::after { content: '−'; }
 <div id="enterprise-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
   <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md relative">
     <button onclick="closeEnterpriseModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">×</button>
-    <h2 class="text-xl font-bold mb-1">Enterprise Inquiry</h2>
-    <p class="text-zinc-400 text-sm mb-6">Tell us about your organization and we'll get back to you within one business day.</p>
+    <h2 class="text-xl font-bold mb-1" data-i18n="pricing_ent_modal_h">Enterprise Inquiry</h2>
+    <p class="text-zinc-400 text-sm mb-6" data-i18n="pricing_ent_modal_sub">Tell us about your organization and we'll get back to you within one business day.</p>
     <form id="ent-form" onsubmit="submitEnterprise(event)" class="space-y-4">
-      <input id="ent-name" type="text" required placeholder="Your name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-email" type="email" required placeholder="Work email" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-company" type="text" required placeholder="Company / restaurant group name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-locations" type="text" placeholder="Number of locations" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <textarea id="ent-message" rows="3" placeholder="Anything else you'd like us to know? (optional)" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm resize-none"></textarea>
-      <button type="submit" id="ent-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Send Inquiry →</button>
-      <p id="ent-success" class="text-emerald-400 text-sm text-center hidden">Sent! We'll be in touch within one business day.</p>
-      <p id="ent-error" class="text-red-400 text-sm text-center hidden">Something went wrong. Please try again.</p>
+      <input id="ent-name" type="text" required placeholder="Your name" data-i18n-placeholder="pricing_ent_name_ph" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-email" type="email" required placeholder="Work email" data-i18n-placeholder="pricing_ent_email_ph" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-company" type="text" required placeholder="Company / restaurant group name" data-i18n-placeholder="pricing_ent_company_ph" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-locations" type="text" placeholder="Number of locations" data-i18n-placeholder="pricing_ent_loc_ph" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <textarea id="ent-message" rows="3" placeholder="Anything else you'd like us to know? (optional)" data-i18n-placeholder="pricing_ent_msg_ph" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm resize-none"></textarea>
+      <button type="submit" id="ent-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm" data-i18n="pricing_ent_send_btn">Send Inquiry →</button>
+      <p id="ent-success" class="text-emerald-400 text-sm text-center hidden" data-i18n="pricing_ent_ok">Sent! We'll be in touch within one business day.</p>
+      <p id="ent-error" class="text-red-400 text-sm text-center hidden" data-i18n="pricing_ent_err">Something went wrong. Please try again.</p>
     </form>
   </div>
 </div>
