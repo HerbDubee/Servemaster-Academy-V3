@@ -11,7 +11,7 @@
     gtag('config', 'G-1BPWXRYVXS');
   </script>
 <meta charset="UTF-8">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.png" type="image/png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Log In — ServeMaster Academy</title>
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 12 interactive modules. Earn your server certificate and level up your career.">
@@ -55,6 +55,7 @@
       <p class="text-zinc-400" data-i18n="login_sub">Sign in to continue your training</p>
     </div>
 
+    <div id="reset-success" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm rounded-2xl px-4 py-3 mb-5" data-i18n="login_reset_success">Password updated successfully — please sign in.</div>
     <div id="error-msg" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-2xl px-4 py-3 mb-5"></div>
 
     <a id="google-link" href="/api/auth/google" class="flex items-center justify-center gap-3 w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-medium px-6 py-3.5 rounded-2xl transition-colors mb-4">
@@ -80,12 +81,16 @@
       <button type="submit" id="login-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-4 rounded-2xl transition-colors" data-i18n="login_btn">Sign in →</button>
     </form>
 
-    <p class="text-center text-zinc-500 text-sm mt-6"><span data-i18n="login_no_acct">Don't have an account?</span> <a id="signup-link-2" href="/signup" class="text-amber-400 hover:text-amber-300 font-medium" data-i18n="login_signup_link">Sign up free</a></p>
+    <p class="text-center mt-4"><a href="/forgot-password" class="text-zinc-500 hover:text-amber-400 text-sm transition-colors" data-i18n="login_forgot">Forgot your password?</a></p>
+    <p class="text-center text-zinc-500 text-sm mt-3"><span data-i18n="login_no_acct">Don't have an account?</span> <a id="signup-link-2" href="/signup" class="text-amber-400 hover:text-amber-300 font-medium" data-i18n="login_signup_link">Sign up free</a></p>
   </div>
 </main>
 
 <script>
 const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('reset') === '1') {
+  document.getElementById('reset-success').classList.remove('hidden');
+}
 const joinCode = urlParams.get('join');
 const googleToken = urlParams.get('token');
 const nextUrl = urlParams.get('next') || '/app';

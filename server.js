@@ -255,6 +255,8 @@ app.get('/trial-started', (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'public', 'terms.html')));
 app.get('/brand', (req, res) => res.sendFile(path.join(__dirname, 'public', 'brand.html')));
+app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html')));
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
@@ -377,6 +379,72 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ success: true });
+});
+
+app.post('/api/forgot-password', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  try {
+    await db.query(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id serial PRIMARY KEY,
+      user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token varchar(64) NOT NULL UNIQUE,
+      expires_at timestamptz NOT NULL,
+      used boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT NOW()
+    )`);
+    const userRes = await db.query('SELECT id, name, email FROM users WHERE email = $1 AND password_hash IS NOT NULL', [email.toLowerCase()]);
+    if (userRes.rows.length) {
+      const user = userRes.rows[0];
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
+      await db.query('INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)', [user.id, token, expires]);
+      const resetLink = `https://servemasteracademy.ca/reset-password?token=${token}`;
+      await resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: user.email,
+        subject: 'Reset your ServeMaster Academy password',
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">We received a request to reset your ServeMaster Academy password. Click the button below to choose a new one. This link expires in 1 hour.</p>
+          <p style="margin-bottom:32px;"><a href="${resetLink}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Reset My Password</a></p>
+          <p style="font-size:14px;color:#a3a3a3;line-height:1.7;margin-bottom:16px;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
+          <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+          <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+          <p style="font-size:12px;color:#666;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+        </div>`
+      });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Forgot password error:', err.message);
+    res.json({ success: true });
+  }
+});
+
+app.post('/api/reset-password', authLimiter, async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
+  if (newPassword.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  try {
+    const tokenRes = await db.query(
+      'SELECT * FROM password_reset_tokens WHERE token = $1 AND used = false AND expires_at > NOW()',
+      [token]
+    );
+    if (!tokenRes.rows.length) {
+      return res.status(400).json({ error: 'This reset link is invalid or has expired.', expired: true });
+    }
+    const resetToken = tokenRes.rows[0];
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, resetToken.user_id]);
+    await db.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [resetToken.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Reset password error:', err.message);
+    res.status(500).json({ error: 'Password reset failed. Please try again.' });
+  }
 });
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
