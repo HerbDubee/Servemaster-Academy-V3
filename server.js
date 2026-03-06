@@ -497,6 +497,41 @@ app.post('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to save progress' }); }
 });
 
+app.get('/api/modules', authMiddleware, checkTrial, async (req, res) => {
+  const ALL_MODULES = [
+    { id:1,  title:'Foundations of Exceptional Service',          titleFr:"Fondements du service d'exception",             titleEs:'Fundamentos del Servicio Excepcional',       emoji:'🌟', mins:10 },
+    { id:2,  title:'Seating, Menus & Taking Orders',             titleFr:'Placement, menus & prise de commandes',          titleEs:'Acomodar, Menús y Tomar Pedidos',            emoji:'📋', mins:10 },
+    { id:3,  title:'Beverage Mastery: Wine & Cocktail Service',  titleFr:'Maîtrise des boissons : vins & cocktails',       titleEs:'Dominio de Bebidas: Vino y Cócteles',        emoji:'🍸', mins:12 },
+    { id:4,  title:'Wine Pairing & Advanced Beverage Knowledge', titleFr:'Accords mets-vins & connaissances avancées',     titleEs:'Maridaje de Vinos y Conocimiento Avanzado',  emoji:'🥂', mins:12 },
+    { id:5,  title:'Natural & Effective Upselling',              titleFr:'Vente additionnelle naturelle & efficace',        titleEs:'Venta Sugestiva Natural y Efectiva',         emoji:'💰', mins:10 },
+    { id:6,  title:'Food Service & Perfect Pacing',              titleFr:'Service des plats & rythme parfait',             titleEs:'Servicio de Alimentos y Ritmo Perfecto',     emoji:'🍽️', mins:10 },
+    { id:7,  title:'Table Maintenance & Problem Resolution',     titleFr:"Entretien des tables & résolution de problèmes", titleEs:'Mantenimiento de Mesas y Resolución de Problemas', emoji:'🧼', mins:10 },
+    { id:8,  title:'International Etiquette',                    titleFr:'Étiquette internationale',                       titleEs:'Etiqueta Internacional',                     emoji:'🌍', mins:8  },
+    { id:9,  title:'Special Occasions Mastery',                  titleFr:'Maîtrise des occasions spéciales',               titleEs:'Dominio de Ocasiones Especiales',            emoji:'🎂', mins:10 },
+    { id:10, title:'Closing the Experience',                     titleFr:"Clore l'expérience",                             titleEs:'Cerrar la Experiencia',                      emoji:'👋', mins:8  },
+    { id:11, title:'Advanced Wine Regions',                      titleFr:'Régions viticoles avancées',                     titleEs:'Regiones Vitivinícolas Avanzadas',           emoji:'🌎', mins:12 },
+    { id:12, title:'Server Leadership & Career',                 titleFr:'Leadership & carrière en service',               titleEs:'Liderazgo del Mesero y Carrera Profesional', emoji:'⭐', mins:10 }
+  ];
+  try {
+    const { rows } = await db.query(
+      'SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1',
+      [req.user.id]
+    );
+    const progressMap = {};
+    rows.forEach(r => { progressMap[r.module_id] = { progress: r.progress, quizScore: r.quiz_score, completedAt: r.completed_at }; });
+    const modules = ALL_MODULES.map(m => ({
+      ...m,
+      progress: progressMap[m.id]?.progress ?? 0,
+      quizScore: progressMap[m.id]?.quizScore ?? null,
+      completedAt: progressMap[m.id]?.completedAt ?? null
+    }));
+    res.json({ modules });
+  } catch (err) {
+    console.error('Modules fetch error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch modules' });
+  }
+});
+
 app.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res) => {
   const { scenarioId } = req.body;
   if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
