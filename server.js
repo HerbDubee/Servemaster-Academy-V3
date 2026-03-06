@@ -331,7 +331,15 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, experience_level: user.experience_level, subscription_status: user.subscription_status || 'free' }, token });
+    const daysLeft = user.trial_ends_at
+      ? Math.max(0, Math.ceil((new Date(user.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24)))
+      : 0;
+    res.json({
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, experience_level: user.experience_level, subscription_status: user.subscription_status || 'free' },
+      token,
+      trialDaysLeft: daysLeft,
+      message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
+    });
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ error: 'Login failed' });
@@ -345,7 +353,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name, email, role, experience_level, restaurant_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
+    const result = await db.query('SELECT id, name, email, role, experience_level, restaurant_id, subscription_status, trial_ends_at FROM users WHERE id = $1', [req.user.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
     const user = result.rows[0];
     if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.role !== 'admin') {
@@ -359,7 +367,14 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     }
     user.effective_plan = user.role === 'admin' ? 'premium' : highestPlan(user.subscription_status, restaurantPlan);
     if (user.role === 'admin') user.subscription_status = 'premium';
-    res.json({ user });
+    const daysLeft = user.trial_ends_at
+      ? Math.max(0, Math.ceil((new Date(user.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24)))
+      : 0;
+    res.json({
+      user,
+      trialDaysLeft: daysLeft,
+      message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user' });
   }
