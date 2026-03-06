@@ -262,6 +262,7 @@
       signup_terms_p: "By creating an account you agree to our",
       signup_and: "and",
       signup_terms_link: "Terms of Service",
+      home_blog_view_all: "View all articles →",
       blog_sub: 'Practical advice from Kirk Adamson — fine‑dining aficionado &amp; founder of ServeMaster Academy.',
     },
 
@@ -522,6 +523,7 @@
       managers_blog_tray_p: "La méthode exacte utilisée dans les meilleurs restaurants",
       managers_blog_career_h: "De Serveur à Manager : Un cheminement de carrière réel",
       managers_blog_career_p: "Comment les meilleurs serveurs avancent en 12 à 18 mois",
+      home_blog_view_all: "Voir tous les articles →",
       blog_sub: 'Conseils pratiques de Kirk Adamson — passionné de gastronomie et fondateur de ServeMaster Academy.',
     },
 
@@ -893,6 +895,7 @@
       signup_terms_p: "Al crear una cuenta, aceptas nuestros",
       signup_and: "y",
       signup_terms_link: "Términos de servicio",
+      home_blog_view_all: "Ver todos los artículos →",
       blog_sub: 'Consejos prácticos de Kirk Adamson — aficionado a la alta cocina y fundador de ServeMaster Academy.',
     }
   };
