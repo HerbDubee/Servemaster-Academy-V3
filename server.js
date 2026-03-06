@@ -197,6 +197,36 @@ async function adminMiddleware(req, res, next) {
   }
 }
 
+async function checkTrial(req, res, next) {
+  try {
+    const { rows } = await db.query(
+      'SELECT subscription_status, trial_ends_at, is_trial_active FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    if (!rows.length) return res.status(401).json({ error: 'User not found' });
+    const user = rows[0];
+
+    if (user.subscription_status === 'active') return next();
+
+    const now = new Date();
+    const trialEnd = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
+
+    if (trialEnd && now <= trialEnd) return next();
+
+    if (user.is_trial_active) {
+      await db.query('UPDATE users SET is_trial_active = false WHERE id = $1', [req.user.id]);
+    }
+
+    return res.status(402).json({
+      error: 'Trial expired',
+      message: 'Your 14-day trial has ended. Please upgrade to continue.'
+    });
+  } catch (err) {
+    console.error('checkTrial error:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
 function optionalAuth(req, res, next) {
   const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
   if (token) { try { req.user = jwt.verify(token, JWT_SECRET); } catch {} }
@@ -418,7 +448,7 @@ async function updateStreak(userId) {
   } catch (err) { console.error('Streak update error:', err.message); }
 }
 
-app.get('/api/user/progress', authMiddleware, async (req, res) => {
+app.get('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
   try {
     const result = await db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1', [req.user.id]);
     const streakRes = await db.query('SELECT current_streak, longest_streak FROM streaks WHERE user_id = $1', [req.user.id]);
@@ -435,7 +465,7 @@ app.get('/api/user/progress', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch progress' }); }
 });
 
-app.post('/api/user/progress', authMiddleware, async (req, res) => {
+app.post('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
   const { moduleId, progress, quizScore } = req.body;
   if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
   try {
@@ -467,7 +497,7 @@ app.post('/api/user/progress', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to save progress' }); }
 });
 
-app.post('/api/user/scenario', authMiddleware, async (req, res) => {
+app.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res) => {
   const { scenarioId } = req.body;
   if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
   try {
