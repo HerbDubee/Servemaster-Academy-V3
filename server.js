@@ -947,6 +947,149 @@ Respond with valid JSON only, in this exact format:
   }
 });
 
+// ── Manager Dashboard API ─────────────────────────────────────────────────────
+
+async function managerMiddleware(req, res, next) {
+  const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    const { rows } = await db.query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    if (!rows.length || !['manager', 'admin'].includes(rows[0].role)) {
+      return res.status(403).json({ error: 'Manager access only' });
+    }
+    next();
+  } catch (e) {
+    if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Auth error' });
+  }
+}
+
+const MODULE_NAMES = {
+  1: 'Service Foundations', 2: 'Menu Knowledge', 3: 'Wine Essentials',
+  4: 'Beverage Mastery', 5: 'Upselling Techniques', 6: 'Tray & Posture',
+  7: 'Allergy Awareness', 8: 'Guest Psychology', 9: 'Tableside Etiquette',
+  10: 'POS & Billing', 11: 'Wine Service Advanced', 12: 'Floor Leadership'
+};
+
+function calculateStatus(progressValues) {
+  const avg = progressValues.length ? progressValues.reduce((a, b) => a + b, 0) / progressValues.length : 0;
+  if (avg >= 90) return 'completed';
+  if (avg >= 70) return 'on-track';
+  if (avg >= 40) return 'lagging';
+  return 'overdue';
+}
+
+// Get all team members with progress
+app.get('/api/team', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const user = userRes.rows[0];
+
+    const isAdmin = user?.role === 'admin';
+    const whereClause = isAdmin && !user?.restaurant_id
+      ? "WHERE u.role NOT IN ('manager', 'admin')"
+      : "WHERE u.restaurant_id = $1 AND u.role NOT IN ('manager', 'admin')";
+    const params = isAdmin && !user?.restaurant_id ? [] : [user?.restaurant_id];
+
+    const staffRes = await db.query(`
+      SELECT u.id, u.name, u.email,
+        COALESCE(AVG(p.progress), 0) as avg_progress,
+        (SELECT module_id FROM user_progress WHERE user_id = u.id ORDER BY progress DESC LIMIT 1) as strongest_module_id
+      FROM users u
+      LEFT JOIN user_progress p ON p.user_id = u.id
+      ${whereClause}
+      GROUP BY u.id, u.name, u.email
+      ORDER BY avg_progress DESC
+      LIMIT 100
+    `, params);
+
+    const team = staffRes.rows.map(member => ({
+      id: member.id,
+      name: member.name || member.email,
+      progress: Math.round(Number(member.avg_progress)),
+      strongest: MODULE_NAMES[member.strongest_module_id] || 'N/A',
+      status: calculateStatus([Number(member.avg_progress)])
+    }));
+
+    res.json(team);
+  } catch (err) {
+    console.error('Team fetch error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch team' });
+  }
+});
+
+// Issue certificate (marks all 12 modules as complete for a user)
+app.post('/api/certificate', managerMiddleware, async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+  try {
+    const userRes = await db.query('SELECT id, name, email FROM users WHERE id = $1', [userId]);
+    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
+    const user = userRes.rows[0];
+
+    for (let moduleId = 1; moduleId <= 12; moduleId++) {
+      await db.query(`
+        INSERT INTO user_progress (user_id, module_id, progress, quiz_score, completed_at)
+        VALUES ($1, $2, 100, 100, NOW())
+        ON CONFLICT (user_id, module_id)
+        DO UPDATE SET
+          progress = 100,
+          quiz_score = GREATEST(user_progress.quiz_score, 100),
+          completed_at = COALESCE(user_progress.completed_at, NOW())
+      `, [userId, moduleId]);
+    }
+
+    res.json({ success: true, message: `Certificate issued for ${user.name || user.email}` });
+  } catch (err) {
+    console.error('Certificate error:', err.message);
+    res.status(500).json({ error: 'Failed to issue certificate' });
+  }
+});
+
+// Export team report as CSV
+app.get('/api/export-report', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const user = userRes.rows[0];
+
+    const isAdmin = user?.role === 'admin';
+    const whereClause = isAdmin && !user?.restaurant_id
+      ? "WHERE u.role NOT IN ('manager', 'admin')"
+      : "WHERE u.restaurant_id = $1 AND u.role NOT IN ('manager', 'admin')";
+    const params = isAdmin && !user?.restaurant_id ? [] : [user?.restaurant_id];
+
+    const staffRes = await db.query(`
+      SELECT u.name, u.email, u.experience_level, u.last_login,
+        COALESCE(AVG(p.progress), 0) as avg_progress,
+        COUNT(CASE WHEN p.progress >= 100 THEN 1 END) as modules_completed,
+        COALESCE(AVG(p.quiz_score), 0) as avg_quiz_score
+      FROM users u
+      LEFT JOIN user_progress p ON p.user_id = u.id
+      ${whereClause}
+      GROUP BY u.id, u.name, u.email, u.experience_level, u.last_login
+      ORDER BY avg_progress DESC
+    `, params);
+
+    let csv = 'Name,Email,Level,Avg Progress,Modules Completed,Avg Quiz Score,Last Login,Status\n';
+    for (const row of staffRes.rows) {
+      const avg = Math.round(Number(row.avg_progress));
+      const status = calculateStatus([avg]);
+      const lastLogin = row.last_login ? new Date(row.last_login).toLocaleDateString() : 'Never';
+      csv += `"${row.name || ''}","${row.email}","${row.experience_level || ''}",${avg}%,${row.modules_completed},${Math.round(Number(row.avg_quiz_score))}%,"${lastLogin}","${status}"\n`;
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="team-report-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error('Export error:', err.message);
+    res.status(500).json({ error: 'Failed to export report' });
+  }
+});
+
 // ── Catch-all: /app/* ─────────────────────────────────────────────────────────
 app.get('/app/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 
