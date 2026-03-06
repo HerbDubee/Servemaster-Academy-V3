@@ -445,6 +445,33 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
         `
       }).catch(err => console.error('Day 13 email error:', err.message));
     }
+    if (user.trial_ends_at && daysLeft === 0 && !user.trial_expired_email_sent && user.subscription_status !== 'active') {
+      db.query('UPDATE users SET trial_expired_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: user.email,
+        subject: 'Your trial has ended — 20% off for the next 7 days',
+        html: `
+          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day trial has now ended.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for giving ServeMaster Academy a try. I hope you found the training valuable.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you'd like to continue, I've extended a special 20% launch discount for another 7 days. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.</p>
+            <p style="margin-bottom:32px;">
+              <a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue with 20% off</a>
+            </p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Questions? Just reply to this email — I read every one.</p>
+            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
+              <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
+              <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
+            </p>
+            <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+            <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+          </div>
+        `
+      }).catch(err => console.error('Trial expired email error:', err.message));
+    }
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ error: 'Login failed' });
