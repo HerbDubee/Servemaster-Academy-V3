@@ -490,6 +490,9 @@ const STRINGS = {
     stepOf: 'Step {n} of 12', startCta: 'Start →', pctComplete: 'complete',
     allCompleteTitle: 'All modules complete!', allCompleteSub: 'Download your certificate below.',
     proOnly: 'Pro only', upgradeLabel: '9 more modules', earnedLabel: '✓ Earned',
+    navDashboard: 'Dashboard', navLearn: 'Learn', navPractice: 'Practice',
+    navAchievements: 'Achievements', navLeaderboard: 'Leaderboard', navManager: 'Manager',
+    doneLabel: '✓ Done',
   },
   fr: {
     welcome: 'Bienvenue à ServeMaster', welcomeSub: "L'académie de formation professionnelle pour serveurs d'exception.",
@@ -527,6 +530,9 @@ const STRINGS = {
     stepOf: 'Étape {n} sur 12', startCta: 'Commencer →', pctComplete: 'complété',
     allCompleteTitle: 'Tous les modules complétés !', allCompleteSub: 'Téléchargez votre certificat ci-dessous.',
     proOnly: 'Réservé Pro', upgradeLabel: '9 modules supplémentaires', earnedLabel: '✓ Obtenu',
+    navDashboard: 'Tableau de bord', navLearn: 'Apprendre', navPractice: 'Pratiquer',
+    navAchievements: 'Réalisations', navLeaderboard: 'Classement', navManager: 'Gérant',
+    doneLabel: '✓ Terminé',
   },
   es: {
     welcome: 'Bienvenido a ServeMaster', welcomeSub: 'La academia de formación profesional para meseros de excepción.',
@@ -564,6 +570,9 @@ const STRINGS = {
     stepOf: 'Paso {n} de 12', startCta: 'Iniciar →', pctComplete: 'completado',
     allCompleteTitle: '¡Todos los módulos completados!', allCompleteSub: 'Descarga tu certificado a continuación.',
     proOnly: 'Solo Pro', upgradeLabel: '9 módulos más', earnedLabel: '✓ Obtenido',
+    navDashboard: 'Panel', navLearn: 'Aprender', navPractice: 'Practicar',
+    navAchievements: 'Logros', navLeaderboard: 'Tabla de Líderes', navManager: 'Gerente',
+    doneLabel: '✓ Hecho',
   }
 };
 let lang = localStorage.getItem('sma-lang') || 'en';
@@ -578,7 +587,7 @@ function setLang(l) {
 }
 function applyLangStrings() {
   const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','dashContinue','dashBadges','learnTitle','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
-  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn' };
+  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn', navDashboard:'nav-dashboard', navLearn:'nav-learn', navPractice:'nav-practice', navAchievements:'nav-achievements', navLeaderboard:'nav-leaderboard', navManager:'nav-manager' };
   for (const [k, elId] of Object.entries(map)) {
     const text = t(k);
     if (Array.isArray(elId)) { elId.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = text; }); }
@@ -1438,7 +1447,7 @@ const DIFFICULTY_LEVELS = [
 const DIFFICULTY_STYLES = {
   Beginner:     { label:'Beginner',     labelFr:'Débutant',     labelEs:'Principiante', cls:'bg-emerald-900/60 text-emerald-300 border-emerald-700' },
   Intermediate: { label:'Intermediate', labelFr:'Intermédiaire',labelEs:'Intermedio',   cls:'bg-amber-900/60 text-amber-300 border-amber-700'     },
-  Advanced:     { label:'Advanced',     labelFr:'Avancé',       cls:'bg-red-900/60 text-red-300 border-red-700'           },
+  Advanced:     { label:'Advanced',     labelFr:'Avancé',       labelEs:'Avanzado', cls:'bg-red-900/60 text-red-300 border-red-700' },
 };
 const practiceScenarios = [
   { id:1,  emoji:'😤', title:'The Difficult Guest',        titleFr:'Le client difficile',                 titleEs:'El Cliente Difícil',              desc:'De-escalate an angry, impatient guest at the door.',            descFr:'Désamorcez un client en colère et impatient à l\'entrée.',                   descEs:'Desescala a un cliente enojado e impaciente en la puerta.',   difficulty:'Beginner'     },
@@ -1505,7 +1514,7 @@ function renderScenarios() {
         return;
       }
       html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':level.borderCls} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
-        ${done ? '<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">✓ Done</div>' : ''}
+        ${done ? `<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">${t('doneLabel')}</div>` : ''}
         <div class="text-3xl mt-1">${s.emoji}</div>
         <div class="flex-1 min-w-0">
           <div class="font-semibold text-base mb-1 pr-10">${title}</div>
