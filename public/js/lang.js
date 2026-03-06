@@ -1,5 +1,5 @@
 (function () {
-  var LANG_KEY = 'sma_lang';
+  var LANG_KEY = 'sma-lang';
   var LANGS = ['en', 'fr', 'es'];
 
   var T = {
