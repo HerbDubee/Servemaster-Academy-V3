@@ -541,6 +541,36 @@ app.post('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
     await updateStreak(req.user.id);
     await checkAndAwardBadges(req.user.id);
     res.json({ success: true });
+    if (moduleId === 2 && progress >= 100 && !wasAlreadyComplete) {
+      const uRes = await db.query('SELECT name, email FROM users WHERE id = $1', [req.user.id]);
+      const u = uRes.rows[0];
+      if (u) {
+        resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: u.email,
+          subject: 'Have you tried the AI role-play yet?',
+          html: `
+            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+              <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${u.name},</p>
+              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">One of the most powerful features in ServeMaster Academy is the AI role-play.</p>
+              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.</p>
+              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">It feels surprisingly real — and it's the fastest way to build confidence.</p>
+              <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Try one scenario today — it only takes 2 minutes.</p>
+              <p style="margin-bottom:32px;">
+                <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Open AI Role-Play Now</a>
+              </p>
+              <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
+                <strong style="color:#f5f5f5;">Kirk</strong><br>
+                <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
+              </p>
+              <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+              <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+            </div>
+          `
+        }).catch(err => console.error('AI roleplay email error:', err.message));
+      }
+    }
     if (moduleId === 1 && progress >= 100 && !wasAlreadyComplete) {
       const uRes = await db.query('SELECT name, email FROM users WHERE id = $1', [req.user.id]);
       const u = uRes.rows[0];
