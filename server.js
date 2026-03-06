@@ -317,7 +317,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       html: `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
           <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
           <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
           <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
           <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
@@ -367,111 +367,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       trialDaysLeft: daysLeft,
       message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
     });
-    if (user.trial_ends_at && daysLeft <= 7 && daysLeft > 0 && !user.day7_email_sent && user.subscription_status !== 'active') {
-      db.query('UPDATE users SET day7_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-      resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-        to: user.email,
-        subject: 'You\'re halfway through your trial — here\'s what to try next',
-        html: `
-          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You're now halfway through your 14-day trial.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.</p>
-            <p style="margin-bottom:32px;">
-              <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training</a>
-            </p>
-            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
-              <strong style="color:#f5f5f5;">Kirk</strong><br>
-              <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-            </p>
-            <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-            <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-          </div>
-        `
-      }).catch(err => console.error('Day 7 email error:', err.message));
-    }
-    if (user.trial_ends_at && daysLeft <= 4 && daysLeft > 0 && !user.day10_email_sent && user.subscription_status !== 'active') {
-      db.query('UPDATE users SET day10_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-      resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-        to: user.email,
-        subject: 'Your trial ends in 4 days — save 20% today',
-        html: `
-          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 12 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p>
-            <p style="margin-bottom:32px;">
-              <a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a>
-            </p>
-            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
-              <strong style="color:#f5f5f5;">Kirk</strong><br>
-              <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-            </p>
-            <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-            <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-          </div>
-        `
-      }).catch(err => console.error('Day 10 email error:', err.message));
-    }
-    if (user.trial_ends_at && daysLeft === 1 && !user.day13_email_sent && user.subscription_status !== 'active') {
-      db.query('UPDATE users SET day13_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-      resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-        to: user.email,
-        subject: 'Your trial ends tomorrow — keep your access',
-        html: `
-          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free trial ends tomorrow.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you've found value in the training, I'd love for you to continue the journey with a full membership.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.</p>
-            <p style="margin-bottom:32px;">
-              <a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Keep Access →</a>
-            </p>
-            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
-              <strong style="color:#f5f5f5;">Kirk</strong><br>
-              <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-            </p>
-            <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-            <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-          </div>
-        `
-      }).catch(err => console.error('Day 13 email error:', err.message));
-    }
-    if (user.trial_ends_at && daysLeft === 0 && !user.trial_expired_email_sent && user.subscription_status !== 'active') {
-      db.query('UPDATE users SET trial_expired_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-      resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-        to: user.email,
-        subject: 'Your trial has ended — 20% off for the next 7 days',
-        html: `
-          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${user.name},</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day trial has now ended.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for giving ServeMaster Academy a try. I hope you found the training valuable.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you'd like to continue, I've extended a special 20% launch discount for another 7 days. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.</p>
-            <p style="margin-bottom:32px;">
-              <a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue with 20% off</a>
-            </p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Questions? Just reply to this email — I read every one.</p>
-            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
-              <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
-              <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-            </p>
-            <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-            <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-          </div>
-        `
-      }).catch(err => console.error('Trial expired email error:', err.message));
-    }
+    sendTrialDripEmails(user);
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ error: 'Login failed' });
@@ -570,11 +466,72 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     const signupFlag = isNewUser ? '&signup=1' : '';
     res.redirect('/login?token=' + encodeURIComponent(token) + signupFlag);
+    if (isNewUser) {
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: user.email,
+        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Fine-Dining Aficionado &amp; Founder<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+      }).catch(err => console.error('Google welcome email error:', err.message));
+    } else {
+      sendTrialDripEmails(user);
+    }
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.redirect('/login?error=google_auth_failed');
   }
 });
+
+// ── Shared email helpers ──────────────────────────────────────────────────────
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function sendTrialDripEmails(user) {
+  if (!user.trial_ends_at || user.subscription_status === 'active') return;
+  const daysLeft = Math.max(0, Math.ceil((new Date(user.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24)));
+  const safeName = escapeHtml(user.name);
+  if (daysLeft <= 4 && daysLeft > 0 && !user.day10_email_sent) {
+    db.query('UPDATE users SET day7_email_sent = TRUE, day10_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: user.email,
+      subject: 'Your trial ends in 4 days — save 20% today',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 12 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    }).catch(err => console.error('Day 10 email error:', err.message));
+  } else if (daysLeft <= 7 && daysLeft > 0 && !user.day7_email_sent) {
+    db.query('UPDATE users SET day7_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: user.email,
+      subject: 'You\'re halfway through your trial — here\'s what to try next',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You're now halfway through your 14-day trial.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    }).catch(err => console.error('Day 7 email error:', err.message));
+  }
+  if (daysLeft <= 2 && daysLeft > 0 && !user.day13_email_sent) {
+    db.query('UPDATE users SET day13_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: user.email,
+      subject: 'Your trial ends very soon — keep your access',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free trial ends very soon.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you've found value in the training, I'd love for you to continue the journey with a full membership.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Keep Access →</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    }).catch(err => console.error('Day 13 email error:', err.message));
+  }
+  if (daysLeft === 0 && !user.trial_expired_email_sent) {
+    db.query('UPDATE users SET trial_expired_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: user.email,
+      subject: 'Your trial has ended — 20% off for the next 7 days',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial has ended.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I hope you had a chance to experience what ServeMaster Academy is all about — the fine-dining standards, the voice practice, the scenario simulations.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you're ready to continue, use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off. This offer is valid for 7 days.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Rejoin ServeMaster →</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    }).catch(err => console.error('Expired email error:', err.message));
+  }
+}
 
 // ── User progress routes ──────────────────────────────────────────────────────
 async function updateStreak(userId) {
@@ -830,7 +787,7 @@ app.post('/api/enterprise-request', contactLimiter, async (req, res) => {
         to: ADMIN_EMAIL,
         subject: `Enterprise Inquiry from ${company} — ${name}`,
         text: `New enterprise request:\n\nName: ${name}\nEmail: ${email}\nCompany: ${company}\nLocations: ${locations || 'Not specified'}\n\nMessage:\n${message || 'No message provided'}`,
-        html: `<h2>New Enterprise Inquiry</h2><table style="font-family:sans-serif;font-size:14px"><tr><td><b>Name</b></td><td>${name}</td></tr><tr><td><b>Email</b></td><td>${email}</td></tr><tr><td><b>Company</b></td><td>${company}</td></tr><tr><td><b>Locations</b></td><td>${locations || 'Not specified'}</td></tr></table><p><b>Message:</b><br>${(message || 'No message provided').replace(/\n/g, '<br>')}</p>`
+        html: `<h2>New Enterprise Inquiry</h2><table style="font-family:sans-serif;font-size:14px"><tr><td><b>Name</b></td><td>${escapeHtml(name)}</td></tr><tr><td><b>Email</b></td><td>${escapeHtml(email)}</td></tr><tr><td><b>Company</b></td><td>${escapeHtml(company)}</td></tr><tr><td><b>Locations</b></td><td>${escapeHtml(locations || 'Not specified')}</td></tr></table><p><b>Message:</b><br>${escapeHtml(message || 'No message provided').replace(/\n/g, '<br>')}</p>`
       });
     } else {
       console.log(`[Enterprise request — no SMTP] ${name} <${email}> | ${company} | ${locations}`);
@@ -1100,7 +1057,8 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
   try {
     const uRes = await db.query('SELECT name, email FROM users WHERE email = $1', [userEmail.toLowerCase()]);
     if (!uRes.rows.length) return res.status(404).json({ error: 'User not found' });
-    const { name, email } = uRes.rows[0];
+    const { name: rawName, email } = uRes.rows[0];
+    const name = escapeHtml(rawName);
     const emailShell = (body) => `
       <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
         <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
