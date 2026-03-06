@@ -1094,6 +1094,71 @@ app.delete('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) =>
   } catch (err) { res.status(500).json({ error: 'Failed to delete invite code' }); }
 });
 
+app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
+  const { emailType, userEmail } = req.body;
+  if (!emailType || !userEmail) return res.status(400).json({ error: 'emailType and userEmail required' });
+  try {
+    const uRes = await db.query('SELECT name, email FROM users WHERE email = $1', [userEmail.toLowerCase()]);
+    if (!uRes.rows.length) return res.status(404).json({ error: 'User not found' });
+    const { name, email } = uRes.rows[0];
+    const emailShell = (body) => `
+      <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+        <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+        ${body}
+        <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+        <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+      </div>`;
+    const sig = `<p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:24px;">
+      <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
+      Fine-Dining Aficionado &amp; Founder<br>
+      <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>`;
+    const btn = (label, href) => `<p style="margin-bottom:32px;"><a href="${href}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">${label}</a></p>`;
+    const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
+    const emails = {
+      welcome: {
+        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+        html: emailShell(`${p(`Hi ${name},`)}${p("I'm Kirk Adamson, founder of ServeMaster Academy.")}${p("Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.")}${p("Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.")}${btn("Start Module 1 Now", "https://servemasteracademy.ca/app")}${p("I'd love to hear what you think after your first session.")}${sig}`)
+      },
+      module2: {
+        subject: 'Module 1 complete — here\'s what\'s next',
+        html: emailShell(`${p(`Hi ${name},`)}${p("As a lifelong fine-dining aficionado, I've learned that the entire dining experience is often decided in the first 30 seconds.")}${p("The way a server greets the table, handles coats, and makes the guest feel seen — that single moment sets the tone for the whole evening.")}${p("Module 2 teaches exactly how to master that moment. Would you like to try it now?")}${btn("Continue to Module 2 →", "https://servemasteracademy.ca/app")}${p("Looking forward to hearing how it goes,")}${sig}`)
+      },
+      roleplay: {
+        subject: 'Have you tried the AI role-play yet?',
+        html: emailShell(`${p(`Hi ${name},`)}${p("One of the most powerful features in ServeMaster Academy is the AI role-play.")}${p("You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.")}${p("It feels surprisingly real — and it's the fastest way to build confidence.")}${p("Try one scenario today — it only takes 2 minutes.")}${btn("Open AI Role-Play Now", "https://servemasteracademy.ca/app")}${sig}`)
+      },
+      day7: {
+        subject: 'You\'re halfway through your trial — here\'s what to try next',
+        html: emailShell(`${p(`Hi ${name},`)}${p("You're now halfway through your 14-day trial.")}${p("Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.")}${p("If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.")}${btn("Continue Training", "https://servemasteracademy.ca/app")}${sig}`)
+      },
+      day10: {
+        subject: 'Your trial ends in 4 days — save 20% today',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day free trial ends in just 4 days.")}${p("If you're enjoying the training and want to keep access to all 12 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("Upgrade Now", "https://servemasteracademy.ca/pricing")}${sig}`)
+      },
+      day13: {
+        subject: 'Your trial ends tomorrow — keep your access',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your free trial ends tomorrow.")}${p("If you've found value in the training, I'd love for you to continue the journey with a full membership.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.')}${btn("Keep Access →", "https://servemasteracademy.ca/pricing")}${sig}`)
+      },
+      expired: {
+        subject: 'Your trial has ended — 20% off for the next 7 days',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day trial has now ended.")}${p("Thank you for giving ServeMaster Academy a try. I hope you found the training valuable.")}${p('If you\'d like to continue, I\'ve extended a special 20% launch discount for another 7 days. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.')}${btn("Continue with 20% off", "https://servemasteracademy.ca/pricing")}${p("Questions? Just reply to this email — I read every one.")}${sig}`)
+      }
+    };
+    const chosen = emails[emailType];
+    if (!chosen) return res.status(400).json({ error: `Unknown emailType. Valid: ${Object.keys(emails).join(', ')}` });
+    await resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: email,
+      subject: chosen.subject,
+      html: chosen.html
+    });
+    res.json({ success: true, to: email, emailType });
+  } catch (err) {
+    console.error('Admin send-email error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Invite code redeem (user) ─────────────────────────────────────────────────
 app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
   try {
