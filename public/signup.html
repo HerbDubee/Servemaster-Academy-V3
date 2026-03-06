@@ -36,7 +36,7 @@
 <body class="min-h-screen flex flex-col">
 <nav class="bg-zinc-950 border-b border-zinc-800 px-4 py-4 flex items-center justify-between">
   <a href="/" class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-9 h-9 rounded-xl object-cover"><span class="heading text-xl font-bold text-white">ServeMaster <span class="text-amber-400">ACADEMY</span></span></a>
-  <a id="login-link" href="/login" class="text-zinc-400 hover:text-white text-sm transition-colors">Already have an account? Log in →</a>
+  <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a id="login-link" href="/login" class="text-zinc-400 hover:text-white text-sm transition-colors">Already have an account? Log in →</a>
 </nav>
 
 <main class="flex-1 flex items-center justify-center px-4 py-12">
@@ -155,5 +155,6 @@ async function doSignup(e) {
   }
 }
 </script>
+<script src="/js/lang.js"></script>
 </body>
 </html>

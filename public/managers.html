@@ -44,7 +44,7 @@
       <div class="flex items-center gap-3">
         <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
         <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
-        <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
           <span class="w-6 h-0.5 bg-white block"></span>
           <span class="w-6 h-0.5 bg-white block"></span>
           <span class="w-6 h-0.5 bg-white block"></span>
@@ -70,7 +70,7 @@
   <!-- HERO -->
   <section class="bg-gradient-to-br from-amber-900 via-amber-950 to-zinc-950 py-24">
     <div class="max-w-5xl mx-auto px-6 text-center">
-      <h1 class="heading text-6xl md:text-7xl font-bold leading-none mb-8">
+      <h1 data-i18n="managers_h1" class="heading text-6xl md:text-7xl font-bold leading-none mb-8">
         Train Your Team.<br>Track Results.<br>Raise Standards.
       </h1>
       <p class="text-2xl text-zinc-300 max-w-3xl mx-auto">
@@ -177,9 +177,17 @@
         <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
         <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
         <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+      <div class="border-t border-zinc-800 mt-2 pt-4 pb-3 flex gap-3 justify-center">
+        <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+      </div>
       </div>
     </div>
   </footer>
 
+<script src="/js/lang.js"></script>
 </body>
 </html>

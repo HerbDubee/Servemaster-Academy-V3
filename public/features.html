@@ -49,7 +49,7 @@
     <div class="flex items-center gap-3">
       <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
       <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
-      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
         <span class="w-6 h-0.5 bg-white block"></span>
         <span class="w-6 h-0.5 bg-white block"></span>
         <span class="w-6 h-0.5 bg-white block"></span>
@@ -74,7 +74,7 @@
 
 <main class="max-w-5xl mx-auto px-4 py-20">
   <div class="text-center mb-16">
-    <h1 class="heading text-5xl font-black mb-4">Every feature <span class="text-amber-400">you need</span></h1>
+    <h1 data-i18n="features_h1" class="heading text-5xl font-black mb-4">Every feature <span class="text-amber-400">you need</span></h1>
     <p class="text-zinc-400 text-xl max-w-2xl mx-auto">A complete training platform — from foundational knowledge to live AI practice and a certificate of completion.</p>
   </div>
 
@@ -175,7 +175,7 @@
         <div class="text-4xl">📖</div>
         <div>
           <h2 class="text-xl font-bold mb-2">Hospitality Glossary</h2>
-          <p class="text-zinc-400 leading-relaxed">25 essential industry terms — from mise en place to tronc — with clear, plain-English definitions. Bilingual EN/FR. Built into the Learn section so you always have them at hand.</p>
+          <p class="text-zinc-400 leading-relaxed">25 essential industry terms — from mise en place to tronc — with clear, plain-English definitions. Trilingual EN/FR/ES. Built into the Learn section so you always have them at hand.</p>
         </div>
       </div>
     </div>
@@ -210,8 +210,16 @@
       <a href="/terms" class="hover:text-white transition-colors">Terms</a>
       <a href="mailto:support@servemasteracademy.ca" class="hover:text-white transition-colors">Support</a>
       <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      <div class="border-t border-zinc-800 mt-2 pt-4 pb-3 flex gap-3 justify-center">
+        <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+      </div>
     </div>
   </div>
 </footer>
+<script src="/js/lang.js"></script>
 </body>
 </html>
