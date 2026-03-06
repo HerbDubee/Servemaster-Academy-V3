@@ -48,7 +48,7 @@
       <div class="flex justify-between items-center mb-10">
         <div>
           <h1 class="text-4xl font-semibold">Team Overview</h1>
-          <p class="text-zinc-400">4 servers • 68% average completion</p>
+          <p id="team-summary" class="text-zinc-400">Loading...</p>
         </div>
         <button onclick="exportReport()" class="bg-amber-400 hover:bg-amber-300 text-black px-8 py-4 rounded-3xl font-medium flex items-center gap-3">
           <i class="fa-solid fa-download"></i> Export Report
@@ -86,18 +86,32 @@
   </div>
 
   <script>
-    // Sample team data (in production this comes from /team-progress API)
-    let teamData = [
-      { id: 1, name: "Sarah Chen", progress: 92, strongest: "Wine Service", status: "on-track" },
-      { id: 2, name: "Marcus Rivera", progress: 67, strongest: "Upselling", status: "lagging" },
-      { id: 3, name: "Elena Moreau", progress: 100, strongest: "Special Occasions", status: "completed" },
-      { id: 4, name: "Jamal Wright", progress: 41, strongest: "Etiquette", status: "overdue" }
-    ];
+    function authHeaders() {
+      const token = localStorage.getItem('token');
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
 
-    function renderTeamTable() {
+    async function loadTeam() {
+      const res = await fetch('/api/team', {
+        headers: authHeaders(),
+        credentials: 'include'
+      });
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login';
+        return [];
+      }
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }
+
+    function renderTeamTable(teamData) {
       const tbody = document.getElementById('team-table');
+      if (!teamData.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-zinc-500">No team members found.</td></tr>';
+        return;
+      }
       tbody.innerHTML = teamData.map(member => `
-        <tr class="hover:bg-zinc-800 transition cursor-pointer" onclick="viewServer(${member.id})">
+        <tr class="hover:bg-zinc-800 transition">
           <td class="p-6 font-medium">${member.name}</td>
           <td class="p-6">
             <div class="flex items-center gap-3">
@@ -114,48 +128,91 @@
             </span>
           </td>
           <td class="p-6 text-right">
-            <button onclick="issueCertificate(${member.id}); event.stopImmediatePropagation()" class="text-amber-400 hover:text-amber-300">Issue Certificate</button>
+            <button onclick="issueCertificate(${member.id})" class="text-amber-400 hover:text-amber-300 text-sm">Issue Certificate</button>
           </td>
         </tr>
       `).join('');
     }
 
-    function viewServer(id) {
-      const server = teamData.find(s => s.id === id);
-      alert(`Viewing detailed progress for ${server.name}\n\nProgress: ${server.progress}%\nStrongest: ${server.strongest}`);
-      // In production: open modal or new view
+    async function issueCertificate(userId) {
+      if (!confirm('Issue completion certificate for this server? This marks all 12 modules as complete.')) return;
+      try {
+        const res = await fetch('/api/certificate', {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          init();
+        } else {
+          alert('Error: ' + (data.error || 'Unknown error'));
+        }
+      } catch {
+        alert('Failed to issue certificate.');
+      }
     }
 
-    function issueCertificate(id) {
-      const server = teamData.find(s => s.id === id);
-      alert(`✅ Certificate issued for ${server.name}!\n\n(A PDF would download here in production)`);
+    async function exportReport() {
+      try {
+        const res = await fetch('/api/export-report', {
+          headers: authHeaders(),
+          credentials: 'include'
+        });
+        if (!res.ok) { alert('Export failed.'); return; }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'team-report.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        alert('Export failed.');
+      }
     }
 
-    function exportReport() {
-      alert("📊 Report exported as CSV (in production this would download a real file)");
-    }
+    async function init() {
+      const teamData = await loadTeam();
 
-    // Charts
-    window.onload = () => {
-      renderTeamTable();
+      const avg = teamData.length
+        ? Math.round(teamData.reduce((s, m) => s + m.progress, 0) / teamData.length)
+        : 0;
+      document.getElementById('team-summary').textContent =
+        `${teamData.length} server${teamData.length !== 1 ? 's' : ''} · ${avg}% average completion`;
+
+      renderTeamTable(teamData);
+
+      const moduleCounts = {};
+      teamData.forEach(m => {
+        if (m.strongest && m.strongest !== 'N/A')
+          moduleCounts[m.strongest] = (moduleCounts[m.strongest] || 0) + 1;
+      });
+      const moduleLabels = Object.keys(moduleCounts).slice(0, 6);
+      const moduleValues = moduleLabels.map(l => moduleCounts[l]);
 
       new Chart(document.getElementById('completionChart'), {
         type: 'line',
         data: {
           labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-          datasets: [{ label: 'Team Average %', data: [42, 61, 78, 92], borderColor: '#d4af37', tension: 0.4 }]
+          datasets: [{ label: 'Team Average %', data: [42, 61, 78, avg], borderColor: '#d4af37', tension: 0.4 }]
         },
-        options: { plugins: { legend: { display: false } }, scales: { y: { max: 100 } }}
+        options: { plugins: { legend: { display: false } }, scales: { y: { max: 100 } } }
       });
 
       new Chart(document.getElementById('moduleChart'), {
         type: 'bar',
         data: {
-          labels: ['Wine', 'Etiquette', 'Upselling', 'Cocktails'],
-          datasets: [{ data: [92, 85, 78, 65], backgroundColor: '#d4af37' }]
-        }
+          labels: moduleLabels.length ? moduleLabels : ['Wine', 'Etiquette', 'Upselling', 'Cocktails'],
+          datasets: [{ data: moduleValues.length ? moduleValues : [4, 3, 3, 2], backgroundColor: '#d4af37' }]
+        },
+        options: { plugins: { legend: { display: false } } }
       });
-    };
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
