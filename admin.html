@@ -43,6 +43,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div id="denied-email" class="text-amber-400 font-mono text-sm font-semibold"></div>
       <div class="text-xs text-zinc-500 mt-1">Role: <span id="denied-role" class="text-zinc-300"></span></div>
     </div>
+    <input id="bootstrap-key" type="password" placeholder="Enter bootstrap key" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm mb-3" />
     <button id="grant-btn" onclick="grantSelfAdmin()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">
       Grant Admin Access to This Account
     </button>
@@ -303,8 +304,20 @@ async function grantSelfAdmin() {
   btn.textContent = 'Granting access...';
   msg.classList.add('hidden');
   try {
-    const res = await fetch('/api/admin/grant-self?key=sma-admin-2026', {
-      headers: { Authorization: 'Bearer ' + token }
+    const bootstrapKey = document.getElementById('bootstrap-key').value.trim();
+    if (!bootstrapKey) {
+      msg.textContent = 'Please enter the bootstrap key.';
+      msg.className = 'text-red-400 text-sm mb-3';
+      msg.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Grant Admin Access to This Account';
+      return;
+    }
+    const res = await fetch('/api/admin/grant-self', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      credentials: 'include',
+      body: JSON.stringify({ key: bootstrapKey })
     });
     const data = await res.json();
     if (!res.ok) {

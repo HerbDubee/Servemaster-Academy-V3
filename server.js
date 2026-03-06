@@ -233,10 +233,10 @@ app.get('/api/admin/bootstrap', (req, res) => {
   res.status(410).json({ error: 'This endpoint has been disabled. Use /admin to grant access.' });
 });
 
-app.get('/api/admin/grant-self', authMiddleware, async (req, res) => {
+app.post('/api/admin/grant-self', authMiddleware, async (req, res) => {
   const BOOTSTRAP_KEY = process.env.BOOTSTRAP_KEY;
   if (!BOOTSTRAP_KEY) return res.status(503).json({ error: 'Bootstrap not configured on this server.' });
-  const { key } = req.query;
+  const { key } = req.body;
   if (!key || key !== BOOTSTRAP_KEY) return res.status(403).json({ error: 'Invalid key' });
   try {
     await db.query("UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE id = $1", [req.user.id]);
@@ -354,7 +354,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
       })
     });
     const tokens = await tokenRes.json();
-    const profileRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokens.access_token}`);
+    const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
     const profile = await profileRes.json();
     let userResult = await db.query('SELECT * FROM users WHERE google_id = $1', [profile.sub]);
     let user; let isNewUser = false;
@@ -617,13 +617,6 @@ app.get('/api/manager/staff/:id', authMiddleware, async (req, res) => {
 });
 
 // ── Stripe payment routes ─────────────────────────────────────────────────────
-app.get('/api/payments/publishable-key', async (req, res) => {
-  try {
-    const key = await getStripePublishableKey();
-    res.json({ key });
-  } catch (err) { res.status(500).json({ error: 'Could not retrieve Stripe key' }); }
-});
-
 app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
   const { plan } = req.body;
   const priceMap = {
@@ -664,38 +657,6 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Checkout error:', err.message);
     res.status(500).json({ error: 'Failed to create checkout session' });
-  }
-});
-
-app.get('/api/payments/success', async (req, res) => {
-  const { session_id } = req.query;
-  try {
-    const stripe = await getUncachableStripeClient();
-    const session = await stripe.checkout.sessions.retrieve(session_id, { expand: ['metadata'] });
-    if (session.payment_status === 'paid' || session.status === 'complete') {
-      const customerId = session.customer;
-      const plan = session.metadata?.plan || 'premium';
-      const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
-      if (isTeamPlan && session.metadata?.restaurantId) {
-        await db.query(
-          'UPDATE restaurants SET plan = $1 WHERE id = $2',
-          [plan, parseInt(session.metadata.restaurantId)]
-        );
-        await db.query(
-          'UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2',
-          [session.subscription, customerId]
-        );
-      } else {
-        await db.query(
-          'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
-          [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
-        );
-      }
-    }
-    res.redirect('/app?upgraded=1');
-  } catch (err) {
-    console.error('Payment success error:', err.message);
-    res.redirect('/app');
   }
 });
 
