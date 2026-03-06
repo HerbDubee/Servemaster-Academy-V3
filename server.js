@@ -209,6 +209,7 @@ app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'abo
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
+app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/blog/wine-service-tips', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'wine-service-tips.html')));
 app.get('/blog/special-occasions', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'special-occasions.html')));
