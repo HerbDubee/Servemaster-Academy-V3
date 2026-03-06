@@ -1042,6 +1042,29 @@ app.get('/api/admin/users', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch users' }); }
 });
 
+app.patch('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { plan, role } = req.body;
+    const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+    const validRoles = ['user', 'manager', 'admin'];
+    if (!plan && !role) return res.status(400).json({ error: 'Provide plan and/or role' });
+    if (plan && !validPlans.includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
+    if (role && !validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
+    const fields = [];
+    const vals = [];
+    if (plan) { fields.push(`subscription_status = $${vals.length + 1}`); vals.push(plan); }
+    if (role) { fields.push(`role = $${vals.length + 1}`); vals.push(role); }
+    vals.push(id);
+    const result = await db.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = $${vals.length} RETURNING id, subscription_status, role`,
+      vals
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
+    res.json({ success: true, user: result.rows[0] });
+  } catch (err) { res.status(500).json({ error: 'Failed to update user' }); }
+});
+
 app.get('/api/admin/modules', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`

@@ -126,10 +126,11 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                   <th class="px-4 py-3 text-left">Modules</th>
                   <th class="px-4 py-3 text-left">Joined</th>
                   <th class="px-4 py-3 text-left">Last Login</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody id="users-tbody" class="divide-y divide-zinc-800">
-                <tr><td colspan="7" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+                <tr><td colspan="8" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -383,20 +384,32 @@ async function loadUsers() {
   } catch (e) { console.error(e); }
 }
 
+const PAID_PLANS = ['premium', 'starter_team', 'pro_team', 'enterprise'];
+const PLAN_LABELS = { free: 'Free', premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+const PLAN_COLORS = { premium: 'bg-amber-400/20 text-amber-300', starter_team: 'bg-blue-400/20 text-blue-300', pro_team: 'bg-purple-400/20 text-purple-300', enterprise: 'bg-emerald-400/20 text-emerald-300', free: 'bg-zinc-700 text-zinc-300' };
+
 function renderUsers(users) {
   const tbody = document.getElementById('users-tbody');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-zinc-500">No users found.</td></tr>'; return; }
-  tbody.innerHTML = users.map(u => `
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-zinc-500">No users found.</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => {
+    const plan = u.subscription_status || 'free';
+    const isPaid = PAID_PLANS.includes(plan);
+    const planColor = PLAN_COLORS[plan] || PLAN_COLORS.free;
+    const actionBtn = isPaid
+      ? `<button onclick="openViewUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-zinc-700 hover:bg-zinc-600 text-zinc-300 transition-colors">View</button>`
+      : `<button onclick="openEditUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Edit</button>`;
+    return `
     <tr class="hover:bg-zinc-800/50 transition-colors">
       <td class="px-4 py-3 font-medium">${esc(u.name || '—')}</td>
       <td class="px-4 py-3 text-zinc-400">${esc(u.email)}</td>
-      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.subscription_status === 'pro' ? 'bg-amber-400/20 text-amber-300' : 'bg-zinc-700 text-zinc-300'}">${u.subscription_status || 'free'}</span></td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${planColor}">${PLAN_LABELS[plan] || plan}</span></td>
       <td class="px-4 py-3 text-zinc-400 text-xs">${u.role}</td>
       <td class="px-4 py-3">${u.modules_completed || 0} / 12</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.last_login)}</td>
-    </tr>
-  `).join('');
+      <td class="px-4 py-3">${actionBtn}</td>
+    </tr>`;
+  }).join('');
 }
 
 function filterUsers() {
@@ -583,7 +596,135 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
 }
 
+let editingUserId = null;
+
+function openEditUser(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  editingUserId = id;
+  const plan = u.subscription_status || 'free';
+  document.getElementById('um-edit').classList.remove('hidden');
+  document.getElementById('um-view').classList.add('hidden');
+  document.getElementById('um-title').textContent = esc(u.name || u.email);
+  document.getElementById('um-subtitle').textContent = esc(u.email);
+  document.getElementById('um-plan-select').value = plan;
+  document.getElementById('um-role-select').value = u.role || 'user';
+  document.getElementById('um-error').classList.add('hidden');
+  document.getElementById('user-modal').classList.remove('hidden');
+}
+
+function openViewUser(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  const plan = u.subscription_status || 'free';
+  document.getElementById('um-edit').classList.add('hidden');
+  document.getElementById('um-view').classList.remove('hidden');
+  document.getElementById('um-title').textContent = esc(u.name || u.email);
+  document.getElementById('um-subtitle').textContent = esc(u.email);
+  document.getElementById('um-view-plan').textContent = PLAN_LABELS[plan] || plan;
+  document.getElementById('um-view-role').textContent = u.role || 'user';
+  document.getElementById('um-view-joined').textContent = fmtDate(u.created_at);
+  document.getElementById('um-view-last').textContent = fmtDate(u.last_login);
+  document.getElementById('um-view-modules').textContent = (u.modules_completed || 0) + ' / 12';
+  document.getElementById('user-modal').classList.remove('hidden');
+}
+
+function closeUserModal() {
+  document.getElementById('user-modal').classList.add('hidden');
+  editingUserId = null;
+}
+
+async function saveUserEdit() {
+  if (!editingUserId) return;
+  const plan = document.getElementById('um-plan-select').value;
+  const role = document.getElementById('um-role-select').value;
+  const errEl = document.getElementById('um-error');
+  const saveBtn = document.getElementById('um-save-btn');
+  errEl.classList.add('hidden');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  try {
+    const res = await fetch(`/api/admin/users/${editingUserId}`, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, role })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Save failed'; errEl.classList.remove('hidden'); return; }
+    const idx = allUsers.findIndex(x => x.id === editingUserId);
+    if (idx !== -1) { allUsers[idx].subscription_status = data.user.subscription_status; allUsers[idx].role = data.user.role; }
+    renderUsers(allUsers);
+    closeUserModal();
+  } catch (e) {
+    errEl.textContent = 'Network error — please try again.';
+    errEl.classList.remove('hidden');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+  }
+}
+
 init();
 </script>
+
+<!-- User Modal -->
+<div id="user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closeUserModal()">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-md p-7">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <h3 id="um-title" class="heading text-xl font-bold text-white"></h3>
+        <p id="um-subtitle" class="text-zinc-400 text-sm mt-0.5"></p>
+      </div>
+      <button onclick="closeUserModal()" class="text-zinc-500 hover:text-white text-xl leading-none ml-4">&times;</button>
+    </div>
+
+    <!-- Edit mode (unpaid users) -->
+    <div id="um-edit">
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1.5 font-medium">Plan</label>
+          <select id="um-plan-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+            <option value="starter_team">Starter Team</option>
+            <option value="pro_team">Pro Team</option>
+            <option value="enterprise">Enterprise</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1.5 font-medium">Role</label>
+          <select id="um-role-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+            <option value="user">User</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <p id="um-error" class="hidden text-red-400 text-xs mb-4"></p>
+      <div class="flex gap-3">
+        <button id="um-save-btn" onclick="saveUserEdit()" class="flex-1 bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">Save Changes</button>
+        <button onclick="closeUserModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-2.5 rounded-xl text-sm transition-colors">Cancel</button>
+      </div>
+    </div>
+
+    <!-- View mode (paid subscribers) -->
+    <div id="um-view" class="hidden">
+      <div class="inline-flex items-center gap-1.5 bg-amber-400/10 border border-amber-400/30 rounded-full px-3 py-1 mb-5">
+        <span class="text-amber-400 text-xs">★</span>
+        <span class="text-amber-300 text-xs font-semibold">Paid Subscriber — Read Only</span>
+      </div>
+      <dl class="space-y-3 mb-6">
+        <div class="flex justify-between text-sm"><dt class="text-zinc-500">Plan</dt><dd id="um-view-plan" class="text-white font-medium"></dd></div>
+        <div class="flex justify-between text-sm"><dt class="text-zinc-500">Role</dt><dd id="um-view-role" class="text-white font-medium"></dd></div>
+        <div class="flex justify-between text-sm"><dt class="text-zinc-500">Modules</dt><dd id="um-view-modules" class="text-white font-medium"></dd></div>
+        <div class="flex justify-between text-sm"><dt class="text-zinc-500">Joined</dt><dd id="um-view-joined" class="text-zinc-300"></dd></div>
+        <div class="flex justify-between text-sm"><dt class="text-zinc-500">Last Login</dt><dd id="um-view-last" class="text-zinc-300"></dd></div>
+      </dl>
+      <p class="text-zinc-500 text-xs mb-5">Plan and role changes for paid subscribers must be managed through Stripe or the invite code system.</p>
+      <button onclick="closeUserModal()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-2.5 rounded-xl text-sm transition-colors">Close</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
