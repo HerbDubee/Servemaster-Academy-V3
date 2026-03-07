@@ -2447,7 +2447,7 @@ function renderAll() {
 // =========================================================
 window.onload = async function() {
   const token = localStorage.getItem('sma-token');
-  if (!token) { window.location.href = '/login?next=/app'; return; }
+  if (!token) { window.location.replace('/login?next=/app'); return; }
 
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('upgraded') === '1') {
@@ -2481,7 +2481,7 @@ window.onload = async function() {
   await fetchCurrentUser();
 
   if (!authToken && !currentUser) {
-    window.location.href = '/login?next=/app';
+    window.location.replace('/login?next=/app');
     return;
   }
 

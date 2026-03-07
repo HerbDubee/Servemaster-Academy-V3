@@ -106,7 +106,7 @@ if (!googleToken && !hasError && !hasReset) {
     fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + existingToken } })
       .then(r => {
         if (r.ok) {
-          window.location.href = urlParams.get('next') || '/app';
+          window.location.replace(urlParams.get('next') || '/app');
         } else {
           localStorage.removeItem('sma-token');
         }
@@ -164,10 +164,10 @@ if (googleToken) {
       body: JSON.stringify({ inviteCode: pendingJoin })
     }).finally(() => {
       localStorage.removeItem('sma-pending-join');
-      window.location.href = redirectTo;
+      window.location.replace(redirectTo);
     });
   } else {
-    window.location.href = redirectTo;
+    window.location.replace(redirectTo);
   }
 } else if (urlParams.get('error')) {
   const el = document.getElementById('error-msg');
@@ -207,7 +207,7 @@ async function doLogin(e) {
       } catch {}
     }
 
-    window.location.href = nextUrl;
+    window.location.replace(nextUrl);
   } catch {
     errEl.textContent = 'Connection error. Please try again.';
     errEl.classList.remove('hidden');
