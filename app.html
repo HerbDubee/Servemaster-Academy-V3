@@ -1925,9 +1925,10 @@ async function redeemInviteCode() {
     const stored = JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
     stored.subscription_status = data.plan; stored.effective_plan = data.effective_plan;
     localStorage.setItem('serveMasterUser', JSON.stringify(stored));
-    updateUserUI(currentUser || stored);
+    applyUser(currentUser || stored);
     setTimeout(closeInviteModal, 2500);
   } catch (e) {
+    okEl.classList.add('hidden');
     errEl.textContent = 'Something went wrong. Please try again.';
     errEl.classList.remove('hidden');
     btn.disabled = false;
