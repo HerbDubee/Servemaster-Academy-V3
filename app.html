@@ -1741,7 +1741,7 @@ function completeLesson(id) {
       localStorage.setItem('sma-quiz-scores', JSON.stringify(savedQuizScores));
     }
   }
-  updateProgress(id, 10, pct);
+  updateProgress(id, 100, pct);
   closeModal();
   checkCertificate();
   if (!firstModuleCompleted && userProgress.filter(p => p.progress > 0).length === 1) {
