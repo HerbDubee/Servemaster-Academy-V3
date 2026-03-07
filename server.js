@@ -976,6 +976,23 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
 
 app.get('/api/payments/cancel', (req, res) => res.redirect('/pricing'));
 
+app.post('/api/payments/billing-portal', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
+    const customerId = result.rows[0]?.stripe_customer_id;
+    if (!customerId) return res.status(400).json({ error: 'No billing account found. You may be on a free plan.' });
+    const stripe = await getUncachableStripeClient();
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: 'https://servemasteracademy.ca/app',
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Billing portal error:', err.message);
+    res.status(500).json({ error: 'Failed to open billing portal' });
+  }
+});
+
 app.get('/api/payments/status', authMiddleware, async (req, res) => {
   try {
     const result = await db.query('SELECT subscription_status, restaurant_id FROM users WHERE id = $1', [req.user.id]);

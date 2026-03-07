@@ -256,6 +256,7 @@
           <div class="text-emerald-400 text-xs mt-1">☁ Synced</div>
         </div>
         <a id="dd-upgrade-link" href="/pricing" onclick="closeUserMenu()" class="block w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-zinc-800 transition-colors">⭐ Upgrade to Pro</a>
+        <button onclick="openBillingPortal();closeUserMenu()" id="dd-billing-btn" class="hidden w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">💳 Manage Billing</button>
         <button onclick="openInviteModal();closeUserMenu()" id="dd-invite-btn" class="w-full text-left px-4 py-3 text-sm text-emerald-400 hover:bg-zinc-800 transition-colors">🎟 Redeem Invite Code</button>
         <button onclick="navigate('manager');closeUserMenu()" id="dd-manager-btn" class="hidden w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">🏢 Manager Dashboard</button>
         <button onclick="showNewsletter();closeUserMenu()" class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 transition-colors">📬 Newsletter</button>
@@ -683,6 +684,8 @@ function applyUserToNav(user) {
   }
   const upgradeLink = document.getElementById('dd-upgrade-link');
   if (upgradeLink) upgradeLink.classList.toggle('hidden', hasPaidPlan());
+  const billingBtn = document.getElementById('dd-billing-btn');
+  if (billingBtn) billingBtn.classList.toggle('hidden', !hasPaidPlan());
   if (user.role === 'manager' || user.role === 'admin') {
     document.getElementById('nav-manager').classList.remove('hidden');
     document.getElementById('dd-manager-btn').classList.remove('hidden');
@@ -1878,6 +1881,21 @@ function downloadCertificate() {
 // =========================================================
 // INVITE CODE
 // =========================================================
+async function openBillingPortal() {
+  const token = localStorage.getItem('sma-token') || '';
+  try {
+    const res = await fetch('/api/payments/billing-portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Unable to open billing portal. Please try again.'); return; }
+    window.location.href = data.url;
+  } catch (e) {
+    alert('Unable to open billing portal. Please try again.');
+  }
+}
+
 function openInviteModal(prefill) {
   const modal = document.getElementById('invite-modal');
   modal.classList.remove('hidden');
