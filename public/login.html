@@ -94,12 +94,40 @@
 
 <script>
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('reset') === '1') {
+const googleToken = urlParams.get('token');
+const hasError = urlParams.get('error');
+const hasReset = urlParams.get('reset') === '1';
+
+// T001: If already logged in and this is not a Google OAuth callback or error page,
+// verify the token and bounce straight to /app
+if (!googleToken && !hasError && !hasReset) {
+  const existingToken = localStorage.getItem('sma-token');
+  if (existingToken) {
+    fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + existingToken } })
+      .then(r => {
+        if (r.ok) {
+          window.location.href = urlParams.get('next') || '/app';
+        } else {
+          localStorage.removeItem('sma-token');
+        }
+      })
+      .catch(() => {}); // network error — just show the form
+  }
+}
+
+if (hasReset) {
   document.getElementById('reset-success').classList.remove('hidden');
 }
 const joinCode = urlParams.get('join');
-const googleToken = urlParams.get('token');
 const nextUrl = urlParams.get('next') || '/app';
+
+// T002: Clear stale sma-auth-next if it points to login/signup
+(function() {
+  const stale = localStorage.getItem('sma-auth-next');
+  if (stale && (stale.includes('/login') || stale.includes('/signup'))) {
+    localStorage.removeItem('sma-auth-next');
+  }
+})();
 
 if (joinCode) {
   localStorage.setItem('sma-pending-join', joinCode);
@@ -121,7 +149,9 @@ document.getElementById('google-link').addEventListener('click', () => {
 
 if (googleToken) {
   localStorage.setItem('sma-token', googleToken);
-  const storedNext = localStorage.getItem('sma-auth-next');
+  let storedNext = localStorage.getItem('sma-auth-next');
+  // T002: Guard against stale sma-auth-next pointing back at login/signup (would cause a loop)
+  if (storedNext && (storedNext.includes('/login') || storedNext.includes('/signup'))) storedNext = null;
   const isNewSignup = urlParams.get('signup') === '1';
   let redirectTo = storedNext || nextUrl;
   if (isNewSignup && !redirectTo.includes('signup=1')) redirectTo += (redirectTo.includes('?') ? '&' : '?') + 'signup=1';
