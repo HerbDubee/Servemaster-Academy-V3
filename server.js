@@ -654,6 +654,7 @@ app.post('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
         console.warn('Stripe subscription check failed:', stripeErr.message);
       }
     }
+    if (quizScore > 0) progress = 100;
     const completed = progress >= 100 ? new Date() : null;
     const prevRes = await db.query(
       'SELECT completed_at FROM user_progress WHERE user_id = $1 AND module_id = $2',

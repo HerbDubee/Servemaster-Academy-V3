@@ -701,7 +701,10 @@ async function syncProgressFromServer() {
     if (data.progress && data.progress.length) {
       data.progress.forEach(p => {
         const mod = userProgress.find(u => u.id === p.module_id);
-        if (mod) mod.progress = Math.max(mod.progress, p.progress);
+        if (mod) {
+          const serverProgress = p.quiz_score > 0 ? 100 : p.progress;
+          mod.progress = Math.max(mod.progress, serverProgress);
+        }
       });
       saveProgress();
     }
@@ -2304,6 +2307,7 @@ function openModule(id) {
   const mod = modules.find(m => m.id === id);
   document.getElementById('modal-title').innerHTML = mod.emoji + ' ' + getModuleTitle(mod);
   document.getElementById('modal-content').innerHTML = getModuleContent(id);
+  document.getElementById('modal-content').scrollTop = 0;
   document.getElementById('module-modal').classList.remove('hidden');
 }
 function closeModal() { document.getElementById('module-modal').classList.add('hidden'); }
