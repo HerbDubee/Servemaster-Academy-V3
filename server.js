@@ -1154,6 +1154,17 @@ app.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
 });
 
+app.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
+  const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+  const { plan } = req.body;
+  if (!plan || !validPlans.includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
+  try {
+    const r = await db.query('UPDATE invite_codes SET plan = $1 WHERE code = $2 RETURNING code', [plan, req.params.code]);
+    if (!r.rows.length) return res.status(404).json({ error: 'Code not found' });
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to update invite code' }); }
+});
+
 app.delete('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
   try {
     await db.query('DELETE FROM invite_codes WHERE code = $1', [req.params.code]);
@@ -1241,7 +1252,10 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
     if (already.rows.length) return res.status(400).json({ error: 'You have already redeemed this code' });
     await db.query('INSERT INTO invite_code_redemptions (code, user_id) VALUES ($1, $2)', [ic.code, req.user.id]);
     await db.query('UPDATE invite_codes SET uses_count = uses_count + 1 WHERE code = $1', [ic.code]);
-    await db.query('UPDATE users SET subscription_status = $1 WHERE id = $2', [ic.plan, req.user.id]);
+    await db.query(
+      'UPDATE users SET subscription_status = $1, is_trial_active = false, trial_ends_at = NULL WHERE id = $2',
+      [ic.plan, req.user.id]
+    );
     const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
     const restaurant = user.restaurant_id ? (await db.query('SELECT * FROM restaurants WHERE id = $1', [user.restaurant_id])).rows[0] : null;
