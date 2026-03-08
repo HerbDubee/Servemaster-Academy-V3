@@ -444,9 +444,26 @@
   <div class="bg-zinc-900 w-full max-w-4xl rounded-3xl overflow-hidden max-h-[92vh]">
     <div class="px-6 lg:px-8 py-5 border-b border-amber-900 flex justify-between items-center">
       <div id="modal-title" class="heading text-2xl lg:text-3xl"></div>
-      <button onclick="closeModal()" class="text-4xl leading-none hover:text-amber-400 ml-4">×</button>
+      <div class="flex items-center gap-3">
+        <button onclick="openGlossaryPanel()" class="text-xs font-semibold bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-xl transition-colors">📖 Glossary</button>
+        <button onclick="closeModal()" class="text-4xl leading-none hover:text-amber-400">×</button>
+      </div>
     </div>
     <div id="modal-content" class="p-6 lg:p-8 overflow-auto" style="max-height: calc(92vh - 80px);"></div>
+  </div>
+</div>
+
+<div id="glossary-panel" class="hidden fixed inset-0 bg-black/95 z-[110] flex flex-col p-4 lg:p-8">
+  <div class="w-full max-w-4xl mx-auto flex flex-col h-full">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="heading text-2xl lg:text-3xl" id="gp-title">📖 Hospitality Glossary</h2>
+        <p class="text-zinc-400 text-sm mt-1" id="gp-sub">Essential terms every server should know</p>
+      </div>
+      <button onclick="closeGlossaryPanel()" class="text-4xl leading-none hover:text-amber-400">×</button>
+    </div>
+    <input id="glossary-search" type="text" placeholder="Search terms…" oninput="renderGlossaryPanel()" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 rounded-2xl px-5 py-3 text-sm text-white outline-none mb-6 transition-colors">
+    <div id="gp-terms" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto flex-1 pb-4"></div>
   </div>
 </div>
 
@@ -1757,36 +1774,174 @@ function completeLesson(id) {
 // GLOSSARY
 // =========================================================
 const glossaryTerms = [
-  { term:'Mise en place',    termFr:'Mise en place',      def:'Everything in its place. The preparation and organisation of all equipment and ingredients before service begins.',                                               defFr:'Tout à sa place. La préparation et l\'organisation de tout le matériel et des ingrédients avant le début du service.' },
-  { term:"86'd",             termFr:'86 / Épuisé',        def:'When an item is sold out or unavailable. "We\'re 86\'d on the halibut" means it\'s off the menu for the night.',                                               defFr:'Quand un article est épuisé ou indisponible. "On est 86 sur la sole" signifie qu\'il n\'est plus disponible ce soir.' },
-  { term:'Covers',           termFr:'Couverts',           def:'The exact number of guests at a table who need meals prepared. Used when communicating orders to the kitchen — e.g. "Ordering 4 covers on table 12" or "Fire 3 covers, table 7 — two salmon, one steak." This tells the kitchen how many plates to fire so they can time the food correctly.',  defFr:'Le nombre exact de clients à une table nécessitant des repas préparés. Utilisé pour communiquer avec la cuisine — ex. « Je commande 4 couverts à la table 12 » ou « Envoyez 3 couverts, table 7 — deux saumons, un steak. » Cela indique à la cuisine combien d\'assiettes préparer.' },
-  { term:'Degustation',      termFr:'Dégustation',        def:'A tasting menu — a series of small, curated dishes that showcase the chef\'s style, typically 5–12 courses.',                                                    defFr:'Un menu dégustation — une série de petits plats soigneusement sélectionnés présentant le style du chef, généralement 5 à 12 services.' },
-  { term:'Sommelier',        termFr:'Sommelier',          def:'A trained wine professional responsible for curating wine lists, advising guests on pairings, and managing the cellar.',                                          defFr:'Un professionnel formé aux vins, responsable de la carte des vins, des conseils aux clients sur les accords et de la gestion de la cave.' },
-  { term:"Maître d'",        termFr:"Maître d'hôtel",     def:'The head of the front-of-house team. Responsible for seating, reservations, and ensuring the overall guest experience meets the restaurant\'s standards.',       defFr:'Le responsable de l\'équipe de salle. Responsable du placement, des réservations et de la qualité de l\'expérience client.' },
-  { term:'Amuse-bouche',     termFr:'Amuse-bouche',       def:'A small, complimentary bite-sized appetiser sent from the kitchen before the meal begins — intended to "amuse the mouth".',                                      defFr:'Une petite bouchée offerte par la cuisine avant le début du repas — destinée à "amuser la bouche".' },
-  { term:'Entrée',           termFr:'Entrée',             def:'In North America, the main course. In Europe, the starter or first course. Always confirm regional usage with your management team.',                             defFr:'En Amérique du Nord, le plat principal. En Europe, le plat d\'entrée ou premier service. Confirmez toujours l\'usage régional avec votre équipe.' },
-  { term:'Intermezzo',       termFr:'Intermezzo',         def:'A small palate cleanser — often a sorbet — served between courses to reset the guest\'s palate before the next dish.',                                           defFr:'Un petit nettoyeur de palais — souvent un sorbet — servi entre deux plats pour rafraîchir le palais avant le plat suivant.' },
-  { term:'Tronc',            termFr:'Tronc',              def:'A shared tipping pool where all gratuities are collected centrally and distributed among staff according to a set formula.',                                      defFr:'Un système de partage des pourboires où toutes les gratifications sont collectées et distribuées selon une formule définie.' },
-  { term:'Upselling',        termFr:'Vente additionnelle',def:'Encouraging guests to choose higher-value items — a premium wine, a supplement, or a dessert — in a natural, guest-focused way.',                               defFr:'Encourager les clients à choisir des articles de plus grande valeur — un vin premium, un supplément ou un dessert — de manière naturelle et centrée sur le client.' },
-  { term:'Cross-selling',    termFr:'Vente croisée',      def:'Suggesting complementary items to accompany a guest\'s order, such as recommending a wine pairing with a main course.',                                          defFr:'Suggérer des articles complémentaires pour accompagner la commande d\'un client, comme recommander un accord vin avec un plat.' },
-  { term:'Turn time',        termFr:'Temps de rotation',  def:'The time it takes to seat, serve, and clear a table for the next party. High-volume restaurants carefully manage turn times to maximise covers.',                defFr:'Le temps nécessaire pour asseoir, servir et débarrasser une table pour le prochain groupe. Les restaurants à fort volume gèrent soigneusement les rotations.' },
-  { term:'Side work',        termFr:'Travail annexe',     def:'Tasks performed outside of direct table service — restocking, polishing cutlery, folding napkins, rolling silverware. Usually done at opening or closing.',      defFr:'Tâches effectuées en dehors du service direct — réapprovisionnement, polissage des couverts, pliage des serviettes. Effectuées généralement à l\'ouverture ou la fermeture.' },
-  { term:'POS',              termFr:'Caisse / POS',       def:'Point of Sale — the computer system used to enter orders, split bills, and process payments. Examples include Toast, Square, and Lightspeed.',                   defFr:'Point de vente — le système informatique utilisé pour saisir les commandes, partager les notes et traiter les paiements.' },
-  { term:'Chit',             termFr:'Bon de commande',    def:'A printed or handwritten order ticket passed from the server to the kitchen. "Put in a chit for table 5" means send the order.',                                 defFr:'Un ticket de commande imprimé ou manuscrit transmis du serveur à la cuisine. "Mets un bon pour la table 5" signifie envoie la commande.' },
-  { term:'Family meal',      termFr:'Repas du personnel', def:'A meal prepared and eaten by the restaurant\'s staff before service begins. A tradition in most restaurants to fuel the team.',                                   defFr:'Un repas préparé et consommé par le personnel du restaurant avant le début du service. Une tradition dans la plupart des restaurants.' },
-  { term:'Palate',           termFr:'Palais',             def:'A person\'s ability to taste and identify flavours. Developing your palate means learning to recognise tasting notes in food and wine.',                         defFr:'La capacité d\'une personne à goûter et identifier les saveurs. Développer son palais signifie apprendre à reconnaître les notes de dégustation.' },
-  { term:'Tannins',          termFr:'Tanins',             def:'Natural compounds found in grape skins, seeds, and oak. They create a drying, grippy sensation in red wines and act as a preservative.',                         defFr:'Composés naturels présents dans les peaux, graines de raisin et chêne. Ils créent une sensation de sécheresse dans les vins rouges et agissent comme conservateur.' },
-  { term:'Corked',           termFr:'Bouchonné',          def:'A wine fault caused by TCA contamination from a flawed cork. The wine smells musty, like wet cardboard or damp basement. The bottle should be replaced.',       defFr:'Un défaut du vin causé par une contamination TCA d\'un bouchon défectueux. Le vin sent le moisi, comme du carton mouillé. La bouteille doit être remplacée.' },
-  { term:'Decanting',        termFr:'Décantation',        def:'Pouring wine slowly from its bottle into a decanter to separate sediment and allow the wine to breathe and open up its aromas.',                                 defFr:'Verser le vin lentement de sa bouteille dans une carafe pour séparer le dépôt et permettre au vin de s\'oxygéner et développer ses arômes.' },
-  { term:'Toast point',      termFr:'Canapé / Toast',     def:'A small, crisp piece of bread served as a base for canapés or appetisers. Getting the timing right means they arrive warm and crisp, not soggy.',              defFr:'Un petit morceau de pain croustillant servant de base pour les canapés ou amuse-bouches. Le bon timing garantit qu\'ils arrivent chauds et croustillants.' },
-  { term:'Blind tasting',    termFr:'Dégustation à l\'aveugle', def:'Tasting a wine without knowing its identity — grape variety, region, or producer — to develop an unbiased palate and improve deduction skills.',       defFr:'Déguster un vin sans connaître son identité — cépage, région ou producteur — pour développer un palais impartial.' },
-  { term:'Service charge',   termFr:'Frais de service',   def:'A mandatory or discretionary percentage added to the bill, typically 10–20%, intended to compensate front-of-house staff for their service.',                    defFr:'Un pourcentage obligatoire ou discrétionnaire ajouté à la note, généralement 10 à 20%, destiné à rémunérer le personnel de salle.' },
-  { term:'Gratuity',         termFr:'Pourboire',          def:'A voluntary tip left by a guest in appreciation of service. Distinct from a mandatory service charge, a gratuity is given at the guest\'s discretion.',         defFr:'Un pourboire volontaire laissé par un client en remerciement du service. Distinct des frais de service obligatoires, le pourboire est laissé à la discrétion du client.' },
-  { term:'Orange wines',     termFr:'Vins orange',        def:'White wines made with extended skin contact during fermentation — a technique more commonly associated with red winemaking. This gives them their distinctive amber colour, tannic structure, and complex savoury, oxidative flavours. Also described as amber wines.',  defFr:'Vins blancs élaborés avec un contact prolongé des peaux lors de la fermentation — une technique habituellement associée à la vinification rouge. Cela leur confère leur couleur ambrée distinctive, une structure tannique et des saveurs savoureuses et oxydatives complexes. Aussi appelés vins ambrés.' },
-  { term:'Register',         termFr:'Registre',           def:'In linguistics, register describes how language use adapts based on social context and audience — formal with guests, casual with colleagues. Skilled servers switch registers naturally throughout a shift.',  defFr:'En linguistique, le registre décrit comment l\'utilisation du langage s\'adapte selon le contexte social et l\'interlocuteur — formel avec les clients, informel avec les collègues. Les serveurs habiles changent de registre naturellement tout au long d\'un service.' },
+  { term:'Mise en place',    termFr:'Mise en place',             termEs:'Mise en place',
+    def:'Everything in its place. The preparation and organisation of all equipment and ingredients before service begins.',
+    defFr:'Tout à sa place. La préparation et l\'organisation de tout le matériel et des ingrédients avant le début du service.',
+    defEs:'Todo en su lugar. La preparación y organización de todos los utensilios e ingredientes antes de que comience el servicio.' },
+
+  { term:"86'd",             termFr:'86 / Épuisé',               termEs:'86 / Agotado',
+    def:'When an item is sold out or unavailable. "We\'re 86\'d on the halibut" means it\'s off the menu for the night.',
+    defFr:'Quand un article est épuisé ou indisponible. "On est 86 sur la sole" signifie qu\'il n\'est plus disponible ce soir.',
+    defEs:'Cuando un artículo está agotado o no disponible. "Estamos 86 en el halibut" significa que ya no está en el menú esta noche.' },
+
+  { term:'Covers',           termFr:'Couverts',                  termEs:'Cubiertos',
+    def:'The exact number of guests at a table who need meals prepared. Used when communicating orders to the kitchen — e.g. "Ordering 4 covers on table 12" or "Fire 3 covers, table 7 — two salmon, one steak." This tells the kitchen how many plates to fire so they can time the food correctly.',
+    defFr:'Le nombre exact de clients à une table nécessitant des repas préparés. Utilisé pour communiquer avec la cuisine — ex. « Je commande 4 couverts à la table 12 » ou « Envoyez 3 couverts, table 7 — deux saumons, un steak. » Cela indique à la cuisine combien d\'assiettes préparer.',
+    defEs:'El número exacto de comensales en una mesa que necesitan platos preparados. Se usa al comunicar pedidos a la cocina — ej. "Pidiendo 4 cubiertos en mesa 12" o "Envía 3 cubiertos, mesa 7 — dos salmons, un filete." Indica a la cocina cuántos platos preparar.' },
+
+  { term:'Degustation',      termFr:'Dégustation',               termEs:'Degustación',
+    def:'A tasting menu — a series of small, curated dishes that showcase the chef\'s style, typically 5–12 courses.',
+    defFr:'Un menu dégustation — une série de petits plats soigneusement sélectionnés présentant le style du chef, généralement 5 à 12 services.',
+    defEs:'Un menú de degustación — una serie de pequeños platos cuidadosamente seleccionados que muestran el estilo del chef, normalmente de 5 a 12 tiempos.' },
+
+  { term:'Sommelier',        termFr:'Sommelier',                 termEs:'Sommelier',
+    def:'A trained wine professional responsible for curating wine lists, advising guests on pairings, and managing the cellar.',
+    defFr:'Un professionnel formé aux vins, responsable de la carte des vins, des conseils aux clients sur les accords et de la gestion de la cave.',
+    defEs:'Un profesional del vino capacitado, responsable de crear cartas de vinos, asesorar a los clientes sobre maridajes y gestionar la bodega.' },
+
+  { term:"Maître d'",        termFr:"Maître d'hôtel",            termEs:"Maître d'",
+    def:'The head of the front-of-house team. Responsible for seating, reservations, and ensuring the overall guest experience meets the restaurant\'s standards.',
+    defFr:'Le responsable de l\'équipe de salle. Responsable du placement, des réservations et de la qualité de l\'expérience client.',
+    defEs:'El jefe del equipo de sala. Responsable de la distribución de mesas, las reservas y garantizar que la experiencia del comensal cumpla los estándares del restaurante.' },
+
+  { term:'Amuse-bouche',     termFr:'Amuse-bouche',              termEs:'Amuse-bouche',
+    def:'A small, complimentary bite-sized appetiser sent from the kitchen before the meal begins — intended to "amuse the mouth".',
+    defFr:'Une petite bouchée offerte par la cuisine avant le début du repas — destinée à "amuser la bouche".',
+    defEs:'Un pequeño bocado de cortesía enviado desde la cocina antes de que comience la comida — destinado a "divertir la boca".' },
+
+  { term:'Entrée',           termFr:'Entrée',                    termEs:'Entrada / Plato Principal',
+    def:'In North America, the main course. In Europe, the starter or first course. Always confirm regional usage with your management team.',
+    defFr:'En Amérique du Nord, le plat principal. En Europe, le plat d\'entrée ou premier service. Confirmez toujours l\'usage régional avec votre équipe.',
+    defEs:'En América del Norte, el plato principal. En Europa, el entrante o primer plato. Confirma siempre el uso regional con tu equipo de dirección.' },
+
+  { term:'Intermezzo',       termFr:'Intermezzo',                termEs:'Intermezzo',
+    def:'A small palate cleanser — often a sorbet — served between courses to reset the guest\'s palate before the next dish.',
+    defFr:'Un petit nettoyeur de palais — souvent un sorbet — servi entre deux plats pour rafraîchir le palais avant le plat suivant.',
+    defEs:'Un pequeño limpiador de paladar — a menudo un sorbete — servido entre platos para resetear el paladar del comensal antes del siguiente plato.' },
+
+  { term:'Tronc',            termFr:'Tronc',                     termEs:'Bolsa de propinas',
+    def:'A shared tipping pool where all gratuities are collected centrally and distributed among staff according to a set formula.',
+    defFr:'Un système de partage des pourboires où toutes les gratifications sont collectées et distribuées selon une formule définie.',
+    defEs:'Una bolsa compartida de propinas donde todas las gratificaciones se recaudan centralmente y se distribuyen entre el personal según una fórmula establecida.' },
+
+  { term:'Upselling',        termFr:'Vente additionnelle',       termEs:'Venta adicional',
+    def:'Encouraging guests to choose higher-value items — a premium wine, a supplement, or a dessert — in a natural, guest-focused way.',
+    defFr:'Encourager les clients à choisir des articles de plus grande valeur — un vin premium, un supplément ou un dessert — de manière naturelle et centrée sur le client.',
+    defEs:'Animar a los clientes a elegir artículos de mayor valor — un vino premium, un suplemento o un postre — de forma natural y centrada en el cliente.' },
+
+  { term:'Cross-selling',    termFr:'Vente croisée',             termEs:'Venta cruzada',
+    def:'Suggesting complementary items to accompany a guest\'s order, such as recommending a wine pairing with a main course.',
+    defFr:'Suggérer des articles complémentaires pour accompagner la commande d\'un client, comme recommander un accord vin avec un plat.',
+    defEs:'Sugerir artículos complementarios para acompañar el pedido de un cliente, como recomendar un maridaje de vino con el plato principal.' },
+
+  { term:'Turn time',        termFr:'Temps de rotation',         termEs:'Tiempo de rotación',
+    def:'The time it takes to seat, serve, and clear a table for the next party. High-volume restaurants carefully manage turn times to maximise covers.',
+    defFr:'Le temps nécessaire pour asseoir, servir et débarrasser une table pour le prochain groupe. Les restaurants à fort volume gèrent soigneusement les rotations.',
+    defEs:'El tiempo que se tarda en sentar, servir y despejar una mesa para el siguiente grupo. Los restaurantes de alto volumen gestionan cuidadosamente los tiempos de rotación.' },
+
+  { term:'Side work',        termFr:'Travail annexe',            termEs:'Trabajo adicional',
+    def:'Tasks performed outside of direct table service — restocking, polishing cutlery, folding napkins, rolling silverware. Usually done at opening or closing.',
+    defFr:'Tâches effectuées en dehors du service direct — réapprovisionnement, polissage des couverts, pliage des serviettes. Effectuées généralement à l\'ouverture ou la fermeture.',
+    defEs:'Tareas realizadas fuera del servicio directo en mesa — reposición, pulido de cubiertos, doblar servilletas. Generalmente se hace al abrir o cerrar.' },
+
+  { term:'POS',              termFr:'Caisse / POS',              termEs:'Punto de Venta / TPV',
+    def:'Point of Sale — the computer system used to enter orders, split bills, and process payments. Examples include Toast, Square, and Lightspeed.',
+    defFr:'Point de vente — le système informatique utilisé pour saisir les commandes, partager les notes et traiter les paiements.',
+    defEs:'Punto de Venta — el sistema informático utilizado para registrar pedidos, dividir cuentas y procesar pagos. Ejemplos incluyen Toast, Square y Lightspeed.' },
+
+  { term:'Chit',             termFr:'Bon de commande',           termEs:'Vale de pedido',
+    def:'A printed or handwritten order ticket passed from the server to the kitchen. "Put in a chit for table 5" means send the order.',
+    defFr:'Un ticket de commande imprimé ou manuscrit transmis du serveur à la cuisine. "Mets un bon pour la table 5" signifie envoie la commande.',
+    defEs:'Un vale de pedido impreso o manuscrito que pasa del mesero a la cocina. "Pon un chit para la mesa 5" significa envía el pedido.' },
+
+  { term:'Family meal',      termFr:'Repas du personnel',        termEs:'Comida del personal',
+    def:'A meal prepared and eaten by the restaurant\'s staff before service begins. A tradition in most restaurants to fuel the team.',
+    defFr:'Un repas préparé et consommé par le personnel du restaurant avant le début du service. Une tradition dans la plupart des restaurants.',
+    defEs:'Una comida preparada y consumida por el personal del restaurante antes de que comience el servicio. Una tradición en la mayoría de los restaurantes para alimentar al equipo.' },
+
+  { term:'Palate',           termFr:'Palais',                    termEs:'Paladar',
+    def:'A person\'s ability to taste and identify flavours. Developing your palate means learning to recognise tasting notes in food and wine.',
+    defFr:'La capacité d\'une personne à goûter et identifier les saveurs. Développer son palais signifie apprendre à reconnaître les notes de dégustation.',
+    defEs:'La capacidad de una persona para degustar e identificar sabores. Desarrollar el paladar significa aprender a reconocer las notas de cata en comida y vino.' },
+
+  { term:'Tannins',          termFr:'Tanins',                    termEs:'Taninos',
+    def:'Natural compounds found in grape skins, seeds, and oak. They create a drying, grippy sensation in red wines and act as a preservative.',
+    defFr:'Composés naturels présents dans les peaux, graines de raisin et chêne. Ils créent une sensation de sécheresse dans les vins rouges et agissent comme conservateur.',
+    defEs:'Compuestos naturales que se encuentran en las pieles de uva, semillas y roble. Crean una sensación de sequedad y aspereza en los vinos tintos y actúan como conservante.' },
+
+  { term:'Corked',           termFr:'Bouchonné',                 termEs:'Avinagrado / Con corcho',
+    def:'A wine fault caused by TCA contamination from a flawed cork. The wine smells musty, like wet cardboard or damp basement. The bottle should be replaced.',
+    defFr:'Un défaut du vin causé par une contamination TCA d\'un bouchon défectueux. Le vin sent le moisi, comme du carton mouillé. La bouteille doit être remplacée.',
+    defEs:'Un defecto del vino causado por contaminación con TCA de un corcho defectuoso. El vino huele a moho, como cartón mojado o sótano húmedo. La botella debe reemplazarse.' },
+
+  { term:'Decanting',        termFr:'Décantation',               termEs:'Decantación',
+    def:'Pouring wine slowly from its bottle into a decanter to separate sediment and allow the wine to breathe and open up its aromas.',
+    defFr:'Verser le vin lentement de sa bouteille dans une carafe pour séparer le dépôt et permettre au vin de s\'oxygéner et développer ses arômes.',
+    defEs:'Verter el vino lentamente de su botella a una jarra decantadora para separar los sedimentos y permitir que el vino respire y abra sus aromas.' },
+
+  { term:'Toast point',      termFr:'Canapé / Toast',            termEs:'Tostada / Canapé',
+    def:'A small, crisp piece of bread served as a base for canapés or appetisers. Getting the timing right means they arrive warm and crisp, not soggy.',
+    defFr:'Un petit morceau de pain croustillant servant de base pour les canapés ou amuse-bouches. Le bon timing garantit qu\'ils arrivent chauds et croustillants.',
+    defEs:'Un pequeño trozo de pan crujiente que sirve de base para canapés o aperitivos. Un buen timing garantiza que lleguen calientes y crujientes, no blandos.' },
+
+  { term:'Blind tasting',    termFr:'Dégustation à l\'aveugle',  termEs:'Cata a ciegas',
+    def:'Tasting a wine without knowing its identity — grape variety, region, or producer — to develop an unbiased palate and improve deduction skills.',
+    defFr:'Déguster un vin sans connaître son identité — cépage, région ou producteur — pour développer un palais impartial.',
+    defEs:'Degustar un vino sin conocer su identidad — variedad de uva, región o productor — para desarrollar un paladar imparcial y mejorar las habilidades de deducción.' },
+
+  { term:'Service charge',   termFr:'Frais de service',          termEs:'Cargo por servicio',
+    def:'A mandatory or discretionary percentage added to the bill, typically 10–20%, intended to compensate front-of-house staff for their service.',
+    defFr:'Un pourcentage obligatoire ou discrétionnaire ajouté à la note, généralement 10 à 20%, destiné à rémunérer le personnel de salle.',
+    defEs:'Un porcentaje obligatorio o discrecional añadido a la cuenta, normalmente del 10 al 20%, destinado a compensar al personal de sala por su servicio.' },
+
+  { term:'Gratuity',         termFr:'Pourboire',                 termEs:'Propina',
+    def:'A voluntary tip left by a guest in appreciation of service. Distinct from a mandatory service charge, a gratuity is given at the guest\'s discretion.',
+    defFr:'Un pourboire volontaire laissé par un client en remerciement du service. Distinct des frais de service obligatoires, le pourboire est laissé à la discrétion du client.',
+    defEs:'Una propina voluntaria dejada por un cliente en agradecimiento al servicio. A diferencia del cargo por servicio obligatorio, la propina se da a discreción del cliente.' },
+
+  { term:'Orange wines',     termFr:'Vins orange',               termEs:'Vinos naranja',
+    def:'White wines made with extended skin contact during fermentation — a technique more commonly associated with red winemaking. This gives them their distinctive amber colour, tannic structure, and complex savoury, oxidative flavours. Also described as amber wines.',
+    defFr:'Vins blancs élaborés avec un contact prolongé des peaux lors de la fermentation — une technique habituellement associée à la vinification rouge. Cela leur confère leur couleur ambrée distinctive, une structure tannique et des saveurs savoureuses et oxydatives complexes. Aussi appelés vins ambrés.',
+    defEs:'Vinos blancos elaborados con contacto prolongado de pieles durante la fermentación — una técnica más comúnmente asociada a la vinificación de vinos tintos. Esto les da su color ámbar distintivo, estructura tánica y sabores sabrosos y oxidativos complejos. También llamados vinos ámbar.' },
+
+  { term:'Register',         termFr:'Registre',                  termEs:'Registro',
+    def:'In linguistics, register describes how language use adapts based on social context and audience — formal with guests, casual with colleagues. Skilled servers switch registers naturally throughout a shift.',
+    defFr:'En linguistique, le registre décrit comment l\'utilisation du langage s\'adapte selon le contexte social et l\'interlocuteur — formel avec les clients, informel avec les collègues. Les serveurs habiles changent de registre naturellement tout au long d\'un service.',
+    defEs:'En lingüística, el registro describe cómo el uso del lenguaje se adapta según el contexto social y la audiencia — formal con los clientes, informal con los compañeros. Los meseros hábiles cambian de registro de forma natural durante un turno.' },
 ];
 
 let glossaryOpen = false;
+
+function openGlossaryPanel() {
+  document.getElementById('glossary-panel').classList.remove('hidden');
+  document.getElementById('glossary-search').value = '';
+  renderGlossaryPanel();
+  setTimeout(() => document.getElementById('glossary-search').focus(), 100);
+}
+
+function closeGlossaryPanel() {
+  document.getElementById('glossary-panel').classList.add('hidden');
+}
+
+function renderGlossaryPanel() {
+  const el = document.getElementById('gp-terms');
+  if (!el) return;
+  const query = (document.getElementById('glossary-search')?.value || '').toLowerCase();
+  const filtered = query
+    ? glossaryTerms.filter(t => {
+        const term = lang === 'es' && t.termEs ? t.termEs : lang === 'fr' ? t.termFr : t.term;
+        const def  = lang === 'es' && t.defEs  ? t.defEs  : lang === 'fr' ? t.defFr  : t.def;
+        return term.toLowerCase().includes(query) || def.toLowerCase().includes(query);
+      })
+    : glossaryTerms;
+  el.innerHTML = filtered.length
+    ? filtered.map(t => {
+        const term = lang === 'es' && t.termEs ? t.termEs : lang === 'fr' ? t.termFr : t.term;
+        const def  = lang === 'es' && t.defEs  ? t.defEs  : lang === 'fr' ? t.defFr  : t.def;
+        return `<div class="bg-zinc-800 rounded-2xl p-4"><div class="font-semibold text-amber-300 mb-1">${term}</div><div class="text-zinc-400 text-sm leading-relaxed">${def}</div></div>`;
+      }).join('')
+    : '<div class="col-span-full text-center text-zinc-500 py-8">No terms found.</div>';
+}
 
 function toggleGlossary() {
   glossaryOpen = !glossaryOpen;
