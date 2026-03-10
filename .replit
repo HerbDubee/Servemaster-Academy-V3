@@ -49,7 +49,6 @@ integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0", "rese
 [userenv]
 
 [userenv.shared]
-ADMIN_EMAIL = "kirk@servemasteracademy.ca"
 SUPPORT_EMAIL = "support@servemasteracademy.ca"
 HELLO_EMAIL = "hello@servemasteracademy.ca"
 INFO_EMAIL = "info@servemasteracademy.ca"
@@ -66,6 +65,7 @@ STRIPE_PREMIUM_MONTHLY_ID = "price_1T69MUEYo1GIbgr0GjmBhQbL"
 STRIPE_PREMIUM_ANNUAL_ID = "price_1T69MUEYo1GIbgr0Vx79VBn2"
 STRIPE_STARTER_TEAM_ID = "price_1T69MVEYo1GIbgr0b3DSeEXF"
 STRIPE_PRO_TEAM_ID = "price_1T69MVEYo1GIbgr0dfPsj7My"
+ADMIN_EMAIL = "kirk_adamson@servemasteracademy.ca"
 
 [userenv.production]
 APP_URL = "https://servemasteracademy.ca"
