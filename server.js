@@ -1564,7 +1564,7 @@ async function initStripe() {
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', async () => {
+const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`ServeMaster Academy running on port ${PORT}`);
   try {
     const updated = await db.query(
@@ -1575,3 +1575,5 @@ app.listen(PORT, '0.0.0.0', async () => {
   } catch (e) {}
   await initStripe();
 });
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
