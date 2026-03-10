@@ -44,7 +44,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div id="denied-email" class="text-amber-400 font-mono text-sm font-semibold"></div>
       <div class="text-xs text-zinc-500 mt-1">Role: <span id="denied-role" class="text-zinc-300"></span></div>
     </div>
-    <button onclick="doLogout()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors">Sign out &amp; try another account</button>
+    <button onclick="doLogout('/login?next=/admin')" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors">Sign out &amp; try another account</button>
   </div>
 </div>
 
@@ -561,11 +561,11 @@ function showSection(name) {
   if (mNavEl) mNavEl.classList.add('active');
 }
 
-async function doLogout() {
+async function doLogout(next = '/login') {
   await fetch('/api/auth/logout', { method: 'POST' });
   localStorage.removeItem('sma-token');
   localStorage.removeItem('serveMasterUser');
-  window.location.href = '/login';
+  window.location.href = next;
 }
 
 function esc(str) {
