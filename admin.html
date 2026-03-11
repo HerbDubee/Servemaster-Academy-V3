@@ -218,7 +218,6 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
             <div>
               <label class="text-xs text-zinc-400 block mb-1">Plan</label>
               <select id="ic-plan" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
-                <option value="free">Free</option>
                 <option value="premium" selected>Premium (Full Access)</option>
                 <option value="starter_team">Starter Team</option>
                 <option value="pro_team">Pro Team</option>
@@ -470,9 +469,9 @@ function copyInviteLink() {
   });
 }
 
-async function changeInviteCodePlan(code, plan, selectEl) {
-  const original = selectEl.dataset.original || selectEl.value;
-  selectEl.dataset.original = original;
+async function changeInviteCodePlan(code, plan, btn) {
+  const row = btn.closest('tr');
+  const allBtns = row.querySelectorAll('[data-plan]');
   try {
     const res = await fetch(`/api/admin/invite-codes/${encodeURIComponent(code)}`, {
       method: 'PATCH',
@@ -482,15 +481,16 @@ async function changeInviteCodePlan(code, plan, selectEl) {
     if (!res.ok) {
       const d = await res.json();
       alert(d.error || 'Failed to update plan');
-      selectEl.value = original;
     } else {
-      selectEl.dataset.original = plan;
-      selectEl.style.borderColor = '#f59e0b';
-      setTimeout(() => selectEl.style.borderColor = '', 1500);
+      const base = 'px-2 py-1 rounded-lg text-xs font-medium transition-colors';
+      allBtns.forEach(b => {
+        b.className = b.dataset.plan === plan
+          ? `${base} bg-amber-400 text-black`
+          : `${base} bg-zinc-700 hover:bg-zinc-600 text-zinc-300`;
+      });
     }
   } catch (e) {
     alert('Error updating plan');
-    selectEl.value = original;
   }
 }
 
@@ -512,8 +512,12 @@ async function loadInvites() {
       tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-zinc-500">No invite codes yet. Generate one above.</td></tr>';
       return;
     }
-    const planLabel = { free: 'Free', premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
-    const planOpts = Object.entries(planLabel).map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+    const PAID_IC_PLANS = [
+      { value: 'premium', label: 'Premium' },
+      { value: 'starter_team', label: 'Starter' },
+      { value: 'pro_team', label: 'Pro' },
+      { value: 'enterprise', label: 'Enterprise' },
+    ];
     tbody.innerHTML = codes.map(c => {
       const redeemers = c.redeemers || [];
       const redeemersHtml = redeemers.length
@@ -522,14 +526,15 @@ async function loadInvites() {
       const maxLabel = c.max_uses >= 999999 ? '∞' : c.max_uses;
       const usedPct = c.max_uses >= 999999 ? 0 : Math.min(100, (c.uses_count / c.max_uses) * 100);
       const expired = c.expires_at && new Date(c.expires_at) < new Date();
-      const selectedOpts = planOpts.replace(`value="${c.plan}"`, `value="${c.plan}" selected`);
+      const planBtns = PAID_IC_PLANS.map(p => {
+        const active = c.plan === p.value;
+        return `<button onclick="changeInviteCodePlan('${esc(c.code)}', '${p.value}', this)" data-plan="${p.value}" data-code="${esc(c.code)}" class="px-2 py-1 rounded-lg text-xs font-medium transition-colors ${active ? 'bg-amber-400 text-black' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}">${p.label}</button>`;
+      }).join('');
       return `
         <tr class="hover:bg-zinc-800/50 transition-colors">
           <td class="px-4 py-3"><code class="font-mono text-amber-400 text-xs">${esc(c.code)}</code></td>
-          <td class="px-4 py-3 text-xs">
-            <div class="flex items-center gap-1.5">
-              <select onchange="changeInviteCodePlan('${esc(c.code)}', this.value, this)" class="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-amber-400">${selectedOpts}</select>
-            </div>
+          <td class="px-4 py-3">
+            <div class="flex gap-1 flex-wrap">${planBtns}</div>
           </td>
           <td class="px-4 py-3 text-xs">
             <div class="flex items-center gap-2">
@@ -541,8 +546,8 @@ async function loadInvites() {
           <td class="px-4 py-3">${redeemersHtml}</td>
           <td class="px-4 py-3">
             <div class="flex gap-2 flex-wrap">
-              <button onclick="navigator.clipboard.writeText('https://servemasteracademy.ca/app?invite=${esc(c.code)}').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Link',1500)})" class="text-xs bg-zinc-700 hover:bg-zinc-600 px-2 py-1 rounded-lg transition-colors">Copy Link</button>
-              <button onclick="deleteInviteCode('${esc(c.code)}')" class="text-xs bg-red-900/50 hover:bg-red-800/70 text-red-300 px-2 py-1 rounded-lg transition-colors">Delete</button>
+              <button onclick="navigator.clipboard.writeText('https://servemasteracademy.ca/app?invite=${esc(c.code)}').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Link',1500)})" class="text-xs bg-zinc-700 hover:bg-zinc-600 text-white px-2 py-1 rounded-lg transition-colors">Copy Link</button>
+              <button onclick="deleteInviteCode('${esc(c.code)}')" class="text-xs bg-red-900/60 hover:bg-red-800 text-red-300 hover:text-white px-2 py-1 rounded-lg transition-colors font-medium">Delete Code</button>
             </div>
           </td>
         </tr>
