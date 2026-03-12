@@ -2629,6 +2629,9 @@ window.onload = async function() {
   const token = localStorage.getItem('sma-token');
   if (!token) { window.location.replace('/login?next=/app'); return; }
 
+  // Token exists — hide onboarding immediately so returning users never see it
+  document.getElementById('onboarding').style.display = 'none';
+
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('upgraded') === '1') {
     setTimeout(() => alert('🎉 You\'re now Pro! All features are unlocked.'), 800);
@@ -2653,7 +2656,6 @@ window.onload = async function() {
   if (savedUser) {
     const user = JSON.parse(savedUser);
     applyUser(user);
-    document.getElementById('onboarding').style.display = 'none';
     renderAll();
     navigate('dashboard');
   }
@@ -2665,8 +2667,13 @@ window.onload = async function() {
     return;
   }
 
-  document.getElementById('onboarding').style.display = 'none';
   updateLocalStreak();
+
+  if (!savedUser && currentUser) {
+    applyUser({ name: currentUser.name, level: currentUser.experience_level || 'ServeMaster' });
+    renderAll();
+    navigate('dashboard');
+  }
 
   const pendingJoin = localStorage.getItem('sma-pending-join');
   if (pendingJoin && authToken) {
