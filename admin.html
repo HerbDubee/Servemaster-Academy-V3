@@ -346,9 +346,7 @@ function renderUsers(users) {
     const plan = u.subscription_status || 'free';
     const isPaid = PAID_PLANS.includes(plan);
     const planColor = PLAN_COLORS[plan] || PLAN_COLORS.free;
-    const actionBtn = isPaid
-      ? `<button onclick="openViewUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-zinc-700 hover:bg-zinc-600 text-zinc-300 transition-colors">View</button>`
-      : `<button onclick="openEditUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Edit</button>`;
+    const actionBtn = `<button onclick="openEditUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Edit</button>`;
     return `
     <tr class="hover:bg-zinc-800/50 transition-colors">
       <td class="px-4 py-3 font-medium">${esc(u.name || '—')}</td>
