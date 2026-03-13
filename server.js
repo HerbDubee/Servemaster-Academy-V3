@@ -27,8 +27,11 @@ const upload = multer({
   }
 });
 
+const compression = require('compression');
+
 const app = express();
 app.set('trust proxy', 1);
+app.use(compression());
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
