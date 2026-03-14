@@ -634,6 +634,12 @@ function applyLangStrings() {
   if (document.getElementById('html-root')) {
     document.getElementById('html-root').lang = lang;
   }
+  const chatInput = document.getElementById('chat-input');
+  if (chatInput) {
+    chatInput.placeholder = lang === 'fr' ? 'Tapez votre réponse en tant que serveur...'
+      : lang === 'es' ? 'Escribe tu respuesta como mesero...'
+      : 'Type your response as the server...';
+  }
   renderAll();
 }
 
@@ -1653,7 +1659,7 @@ async function sendInitialMessage() {
   try {
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
-      body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin now. Skip scene-setting. Open with one short action beat and the guest\'s first line of dialogue only.' }], lang })
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: lang === 'fr' ? "Commencez maintenant. Pas de mise en scène. Ouvrez avec une courte action et la première réplique du client uniquement." : lang === 'es' ? "Comienza ahora. Sin ambientación. Abre con una acción breve y la primera línea de diálogo del cliente únicamente." : 'Begin now. Skip scene-setting. Open with one short action beat and the guest\'s first line of dialogue only.' }], lang })
     });
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });

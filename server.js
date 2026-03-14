@@ -1499,11 +1499,11 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
     ? `ESTILO DE NARRACIÓN — IMPORTANTE: Narra siempre al cliente en tercera persona. Nunca hables como el cliente en primera persona. Describe lo que dice y hace el cliente como narrador: "El cliente frunce el ceño y dice: '...'". Usa "el cliente", "él", "ella" o "ellos" en todo momento.\n\nBREVEDAD — Sé conciso. Cada respuesta: una acción breve + una línea de diálogo. Sin descripciones de ambiente, escenario ni narración atmosférica. Ve directo al comportamiento y las palabras del cliente.\n\n`
     : `NARRATION STYLE — IMPORTANT: Always narrate the customer in third person. Never speak as the customer in first person ("I want...", "I'm angry..."). Instead, describe what the customer says and does as a narrator: "The customer frowns and says: '...'", "He crosses his arms and replies: '...'". Use "the customer", "he", "she", or "they" throughout.\n\nBREVITY — Be concise. Each response: one short action beat + one line of dialogue. No scene-setting, no atmospheric description, no describing the restaurant or surroundings. Go straight to the guest's behaviour and words.\n\n`;
   const langInstruction = lang === 'fr'
-    ? '\n\nIMPORTANT : Cette conversation se déroule en français. Tu DOIS répondre entièrement en français.'
+    ? 'IMPORTANT : Cette conversation se déroule en français. Tu DOIS répondre entièrement en français.\n\n'
     : lang === 'es'
-    ? '\n\nIMPORTANTE: Esta conversación ocurre en español. DEBES responder completamente en español.'
+    ? 'IMPORTANTE: Esta conversación ocurre en español. DEBES responder completamente en español.\n\n'
     : '';
-  const systemContent = thirdPersonWrapper + scenario.systemPrompt + langInstruction;
+  const systemContent = langInstruction + thirdPersonWrapper + scenario.systemPrompt;
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
@@ -1522,11 +1522,11 @@ app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) =>
   const scenario = scenarios[scenarioId];
   if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
   const langInstruction = lang === 'fr'
-    ? '\n\nIMPORTANT : Rédige toute ta réponse en français.'
+    ? 'IMPORTANT : Rédige toute ta réponse en français. Tous les champs JSON doivent être en français.\n\n'
     : lang === 'es'
-    ? '\n\nIMPORTANTE: Escribe toda tu respuesta en español.'
+    ? 'IMPORTANTE: Escribe toda tu respuesta en español. Todos los campos JSON deben estar en español.\n\n'
     : '';
-  const systemPrompt = `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
+  const systemPrompt = langInstruction + `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
 
 Scenario: "${scenario.title}"
 
@@ -1546,7 +1546,7 @@ Respond with valid JSON only, in this exact format:
   "right": ["Specific strength referencing what was said", "Another strength if applicable"],
   "wrong": ["Specific mistake or missed opportunity referencing actual dialogue", "Another gap if applicable"],
   "tip": "One concrete, actionable coaching tip for what to do differently or better next time"
-}` + langInstruction;
+}`;
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
