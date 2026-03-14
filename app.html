@@ -1473,13 +1473,45 @@ function useBrowserSpeechFallback(indicator, listeningText) {
   rec.start();
 }
 
+let _ttsVoiceCache = {};
+function _loadTtsVoices() {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  const voices = synth.getVoices();
+  if (!voices.length) return;
+  const prefs = {
+    'en-US': ['google us english', 'samantha', 'google uk english', 'alex'],
+    'fr-FR': ['google français', 'thomas', 'amelie'],
+    'es-ES': ['google español', 'paulina', 'jorge']
+  };
+  for (const [locale, keywords] of Object.entries(prefs)) {
+    const langCode = locale.split('-')[0];
+    const matching = voices.filter(v => v.lang.startsWith(langCode));
+    let picked = null;
+    for (const kw of keywords) {
+      picked = matching.find(v => v.name.toLowerCase().includes(kw));
+      if (picked) break;
+    }
+    if (!picked) picked = matching.find(v => v.name.toLowerCase().includes('google'));
+    if (!picked) picked = matching[0];
+    if (picked) _ttsVoiceCache[locale] = picked;
+  }
+}
+if (window.speechSynthesis) {
+  _loadTtsVoices();
+  window.speechSynthesis.onvoiceschanged = _loadTtsVoices;
+}
+
 function speakText(text) {
   if (!aiSpeechEnabled) return;
   const synth = window.speechSynthesis;
   if (!synth) return;
   synth.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+  utt.lang = locale;
+  utt.rate = 1.1;
+  if (_ttsVoiceCache[locale]) utt.voice = _ttsVoiceCache[locale];
   synth.speak(utt);
 }
 
