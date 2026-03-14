@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "u8NbRJ2ZJBSbwySzjkR1b"
+uri = "file://public/logo-transparent.png"
+type = "image"
+title = "ServeMaster Logo — Transparent PNG (inner circle only)"
