@@ -1758,7 +1758,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_referred_email ON referrals(referred_email)');
     await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals(status)');
     await db.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_unique_invite ON referrals(referrer_user_id, referred_email)');
-  } catch (e) {}
+  } catch (e) { console.error('Referrals table bootstrap error:', e.message); }
   await initStripe();
 });
 server.keepAliveTimeout = 65000;
