@@ -1367,6 +1367,7 @@ function startVoiceRoleplay() {
 // =========================================================
 let aiSpeechEnabled = true;
 let mediaRecorder = null;
+let activeStream = null;
 let audioChunks = [];
 let isRecording = false;
 
@@ -1392,6 +1393,7 @@ function startVoiceInput() {
   }
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
+      activeStream = stream;
       isRecording = true;
       audioChunks = [];
       const indicator = document.getElementById('voice-recording-indicator');
@@ -1404,8 +1406,8 @@ function startVoiceInput() {
       mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
       mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
         isRecording = false;
+        activeStream = null;
         if (micBtn) { micBtn.classList.add('bg-zinc-700'); micBtn.classList.remove('bg-red-600', 'animate-pulse'); }
         if (listeningText) listeningText.textContent = lang === 'es' ? 'Transcribiendo...' : lang === 'fr' ? 'Transcription en cours...' : 'Transcribing...';
         const audioBlob = new Blob(audioChunks, { type: mimeType });
@@ -1446,6 +1448,7 @@ function startVoiceInput() {
 }
 
 function stopVoiceRecording() {
+  if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); }
   if (mediaRecorder && isRecording) mediaRecorder.stop();
 }
 
