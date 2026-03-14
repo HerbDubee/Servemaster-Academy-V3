@@ -112,7 +112,7 @@ async function processReferralCredit(payingUserEmail, payingUserId) {
         amount: -5000,
         currency: 'cad',
         description: 'Referral credit — thank you for inviting a manager!'
-      });
+      }, { idempotencyKey: `referral-credit-${refId}` });
       await client.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', refId]);
       await client.query("UPDATE referrals SET status = 'closed' WHERE referred_user_id = $1 AND status = 'pending' AND id != $2", [payingUserId, refId]);
       await client.query('COMMIT');
@@ -591,7 +591,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
         trialEndsAt.setDate(trialEndsAt.getDate() + 14);
         const ins = await db.query(
           'INSERT INTO users (email, google_id, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-          [profile.email, profile.sub, profile.name, 'New to serving', trialEndsAt, true]
+          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving', trialEndsAt, true]
         );
         user = ins.rows[0];
         isNewUser = true;
@@ -599,7 +599,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
         try {
           await db.query(
             'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
-            [user.id, user.email, 'pending']
+            [user.id, user.email.toLowerCase(), 'pending']
           );
         } catch (refLinkErr) { console.error('Referral link (Google) error:', refLinkErr.message); }
       }
