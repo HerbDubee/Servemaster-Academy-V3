@@ -87,6 +87,64 @@ function getWhisper() {
   return _whisper;
 }
 
+// ── Referral credit helper ───────────────────────────────────────────────────
+async function processReferralCredit(payingUserEmail) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    const ref = await client.query(
+      `SELECT r.id, r.referrer_user_id, u.stripe_customer_id, u.email AS referrer_email, u.name AS referrer_name
+       FROM referrals r JOIN users u ON u.id = r.referrer_user_id
+       WHERE r.referred_email = $1 AND r.status = 'pending'
+       ORDER BY r.created_at ASC LIMIT 1 FOR UPDATE OF r SKIP LOCKED`,
+      [payingUserEmail.toLowerCase()]
+    );
+    if (ref.rows.length === 0) { await client.query('ROLLBACK'); return; }
+    const { id: refId, stripe_customer_id, referrer_email, referrer_name } = ref.rows[0];
+    if (stripe_customer_id) {
+      const stripe = await getUncachableStripeClient();
+      await stripe.customers.createBalanceTransaction(stripe_customer_id, {
+        amount: -5000,
+        currency: 'cad',
+        description: 'Referral credit — thank you for inviting a manager!'
+      });
+      await client.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', refId]);
+      await client.query('COMMIT');
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: referrer_email,
+        subject: 'Your $50 referral credit has been applied!',
+        html: `
+          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+            <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">Your $50 credit is live!</h2>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(referrer_name)},</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Great news — the manager you referred (<strong>${escapeHtml(payingUserEmail)}</strong>) just subscribed. A <strong style="color:#34d399;">$50 CAD credit</strong> has been applied to your account and will automatically reduce your next bill.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Thank you for spreading the word!</p>
+            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
+            <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
+            Founder, ServeMaster Academy</p>
+          </div>
+        `
+      }).catch(err => console.error('Referral credit email error:', err.message));
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: 'kirk_adamson@servemasteracademy.ca',
+        subject: `Referral credit issued: $50 to ${referrer_name}`,
+        html: `<p>Referral credit of <strong>$50 CAD</strong> applied to <strong>${escapeHtml(referrer_name)}</strong> (${escapeHtml(referrer_email)}) — referred manager ${escapeHtml(payingUserEmail)} subscribed.</p>`
+      }).catch(err => console.error('Admin referral notification error:', err.message));
+    } else {
+      await client.query('UPDATE referrals SET status = $1 WHERE id = $2', ['pending_credit', refId]);
+      await client.query('COMMIT');
+    }
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('Referral credit processing error:', err.message);
+  } finally {
+    client.release();
+  }
+}
+
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const signature = req.headers['stripe-signature'];
@@ -135,6 +193,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
               'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
               [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
             );
+          }
+          const payingUser = await db.query('SELECT email FROM users WHERE stripe_customer_id = $1', [customerId]);
+          if (payingUser.rows.length > 0) {
+            processReferralCredit(payingUser.rows[0].email);
           }
         }
         break;
@@ -294,6 +356,10 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
+    db.query(
+      'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
+      [user.id, user.email, 'pending']
+    ).catch(err => console.error('Referral link error:', err.message));
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
     res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
@@ -509,6 +575,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
         user = ins.rows[0];
         isNewUser = true;
         await db.query('INSERT INTO streaks (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [user.id]);
+        db.query(
+          'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
+          [user.id, user.email, 'pending']
+        ).catch(err => console.error('Referral link (Google) error:', err.message));
       }
     } else { user = userResult.rows[0]; }
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
@@ -860,6 +930,10 @@ app.post('/api/referral/invite-manager', authMiddleware, contactLimiter, async (
   if (!managerEmail) return res.status(400).json({ error: 'Manager email is required' });
   const sender = req.user;
   try {
+    await db.query(
+      'INSERT INTO referrals (referrer_user_id, referred_email) VALUES ($1, $2) ON CONFLICT (referrer_user_id, referred_email) DO NOTHING',
+      [sender.id, managerEmail.toLowerCase()]
+    );
     resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: managerEmail,
@@ -978,6 +1052,35 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       const customer = await stripe.customers.create({ email: user.email, metadata: { userId: String(user.id) } });
       customerId = customer.id;
       await db.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [customerId, user.id]);
+      const pendingCredits = await db.query(
+        "SELECT id FROM referrals WHERE referrer_user_id = $1 AND status = 'pending_credit'",
+        [user.id]
+      );
+      for (const pc of pendingCredits.rows) {
+        try {
+          await stripe.customers.createBalanceTransaction(customerId, {
+            amount: -5000, currency: 'cad',
+            description: 'Referral credit — thank you for inviting a manager!'
+          });
+          await db.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', pc.id]);
+          resend.emails.send({
+            from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+            to: user.email,
+            subject: 'Your $50 referral credit has been applied!',
+            html: `
+              <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+                <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+                <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">Your $50 credit is live!</h2>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">A <strong style="color:#34d399;">$50 CAD credit</strong> from your referral has been applied to your new account. It will automatically reduce your first bill.</p>
+                <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+              </div>
+            `
+          }).catch(err => console.error('Deferred referral email error:', err.message));
+        } catch (creditErr) {
+          console.error('Deferred credit apply error:', creditErr.message);
+        }
+      }
     }
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const metadata = { plan, userId: String(user.id) };
@@ -1607,6 +1710,20 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       [ADMIN_EMAIL]
     );
     if (updated.rows.length) console.log(`Admin role granted to ${ADMIN_EMAIL} on startup`);
+  } catch (e) {}
+  try {
+    await db.query(`CREATE TABLE IF NOT EXISTS referrals (
+      id SERIAL PRIMARY KEY,
+      referrer_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      referred_email VARCHAR(255) NOT NULL,
+      referred_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      credited_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_referred_email ON referrals(referred_email)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals(status)');
+    await db.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_unique_invite ON referrals(referrer_user_id, referred_email)');
   } catch (e) {}
   await initStripe();
 });

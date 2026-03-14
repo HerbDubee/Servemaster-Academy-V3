@@ -78,6 +78,7 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 | `invite_code_redemptions` | Code redemption log |
 | `email_subscribers` | Newsletter signups |
 | `contact_messages` | Contact + enterprise inquiry submissions |
+| `referrals` | Manager referral tracking — status: pending → pending_credit → credited |
 | `sessions` | (legacy, unused) |
 
 ## Security
@@ -105,6 +106,7 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 - Admin invite code generator
 - Newsletter capture + enterprise inquiry modal (nodemailer)
 - Stripe subscription + trial expiry enforcement
+- Referral system: servers invite managers → $50 CAD Stripe credit auto-applied on subscription
 
 ## Deployment
 
