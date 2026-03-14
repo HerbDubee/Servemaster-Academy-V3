@@ -89,7 +89,7 @@ function getWhisper() {
 
 // ── Referral credit helper ───────────────────────────────────────────────────
 async function processReferralCredit(payingUserEmail) {
-  const client = await db.connect();
+  const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
     const ref = await client.query(
