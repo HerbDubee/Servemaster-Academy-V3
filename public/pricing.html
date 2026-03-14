@@ -136,26 +136,29 @@ details[open] summary::after { content: '−'; }
     </div>
 
     <!-- Starter Team -->
-    <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
+    <div class="bg-zinc-900 border-2 border-emerald-600 rounded-3xl p-8 text-center flex flex-col relative">
       <h3 class="text-2xl font-semibold" data-i18n="pricing_starter_h">Starter Team</h3>
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_starter_sub">Small–medium restaurants</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_starter_desc">Up to 10 staff • Per location • 14-day free trial</p>
+      <p class="text-sm text-emerald-400 font-semibold mt-2" data-i18n="pricing_starter_promo">First 30 days only $49</p>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_starter_desc">Up to 10 staff • Per location • 14-day free trial</p>
       <button onclick="checkout('price_1T69MVEYo1GIbgr0b3DSeEXF')"
-              class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
+              class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-6 rounded-3xl transition-colors">
+        <span data-i18n="pricing_team_trial_btn">Start 14-Day Team Trial</span>
       </button>
     </div>
 
     <!-- Pro Team -->
-    <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
+    <div class="bg-zinc-900 border-2 border-blue-600 rounded-3xl p-8 text-center flex flex-col relative">
+      <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</div>
       <h3 class="text-2xl font-semibold" data-i18n="pricing_pro_h">Pro Team</h3>
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_pro_sub">Mid-size chains</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_pro_desc">Unlimited staff • Custom scenarios • 14-day free trial</p>
+      <p class="text-sm text-blue-400 font-semibold mt-2" data-i18n="pricing_pro_promo">First 30 days only $49</p>
+      <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_pro_desc">Unlimited staff • Custom scenarios • 14-day free trial</p>
       <button onclick="checkout('price_1T69MVEYo1GIbgr0dfPsj7My')"
-              class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
-        <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
+              class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-6 rounded-3xl transition-colors">
+        <span data-i18n="pricing_team_trial_btn">Start 14-Day Team Trial</span>
       </button>
     </div>
 
