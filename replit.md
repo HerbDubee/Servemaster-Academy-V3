@@ -78,7 +78,14 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 | `invite_code_redemptions` | Code redemption log |
 | `email_subscribers` | Newsletter signups |
 | `contact_messages` | Contact + enterprise inquiry submissions |
-| `referrals` | Manager referral tracking — status: pending → pending_credit → credited |
+| `referrals` | Manager referral tracking (see status machine below) |
+
+### Referral Status State Machine
+- **pending**: invite sent, awaiting referred manager signup + checkout
+- **credited**: $50 CAD balance credit applied to referrer's Stripe account
+- **pending_credit**: referred manager paid but referrer has no Stripe customer yet; credit applied when referrer first checks out
+- **closed**: duplicate referral for same referee; another referrer already credited for this user
+
 | `sessions` | (legacy, unused) |
 
 ## Security

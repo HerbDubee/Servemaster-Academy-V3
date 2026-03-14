@@ -375,10 +375,12 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
-    db.query(
-      'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
-      [user.id, user.email, 'pending']
-    ).catch(err => console.error('Referral link error:', err.message));
+    try {
+      await db.query(
+        'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
+        [user.id, user.email, 'pending']
+      );
+    } catch (refLinkErr) { console.error('Referral link error:', refLinkErr.message); }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
     res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
@@ -594,10 +596,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
         user = ins.rows[0];
         isNewUser = true;
         await db.query('INSERT INTO streaks (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [user.id]);
-        db.query(
-          'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
-          [user.id, user.email, 'pending']
-        ).catch(err => console.error('Referral link (Google) error:', err.message));
+        try {
+          await db.query(
+            'UPDATE referrals SET referred_user_id = $1 WHERE referred_email = $2 AND status = $3 AND referred_user_id IS NULL',
+            [user.id, user.email, 'pending']
+          );
+        } catch (refLinkErr) { console.error('Referral link (Google) error:', refLinkErr.message); }
       }
     } else { user = userResult.rows[0]; }
     await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
