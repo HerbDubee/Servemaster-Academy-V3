@@ -117,7 +117,7 @@ details[open] summary::after { content: '−'; }
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_prem_mo_sub">Career servers</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
       <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_prem_mo_desc">Full access, voice, certificates • 14-day free trial</p>
-      <button onclick="checkout('price_1T69MUEYo1GIbgr0GjmBhQbL')"
+      <button onclick="checkout('premium_monthly')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
         <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
@@ -129,7 +129,7 @@ details[open] summary::after { content: '−'; }
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_prem_yr_sub">Long-term users</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
       <p class="text-sm text-amber-400 mt-2" data-i18n="pricing_prem_yr_desc">~$12.42/mo • Save ~35% • 14-day free trial</p>
-      <button onclick="checkout('price_1T69MUEYo1GIbgr0Vx79VBn2')"
+      <button onclick="checkout('premium_annual')"
               class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl transition-colors">
         <span data-i18n="pricing_trial_btn">Start 14-Day Free Trial</span>
       </button>
@@ -142,7 +142,7 @@ details[open] summary::after { content: '−'; }
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
       <p class="text-sm text-emerald-400 font-semibold mt-2" data-i18n="pricing_starter_promo">First 30 days only $49</p>
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_starter_desc">Up to 10 staff • Per location • 14-day free trial</p>
-      <button onclick="checkout('price_1T69MVEYo1GIbgr0b3DSeEXF')"
+      <button onclick="checkout('starter_team')"
               class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-6 rounded-3xl transition-colors">
         <span data-i18n="pricing_team_trial_btn">Start 14-Day Team Trial</span>
       </button>
@@ -156,7 +156,7 @@ details[open] summary::after { content: '−'; }
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
       <p class="text-sm text-blue-400 font-semibold mt-2" data-i18n="pricing_pro_promo">First 30 days only $49</p>
       <p class="text-sm text-zinc-400 mt-1" data-i18n="pricing_pro_desc">Unlimited staff • Custom scenarios • 14-day free trial</p>
-      <button onclick="checkout('price_1T69MVEYo1GIbgr0dfPsj7My')"
+      <button onclick="checkout('pro_team')"
               class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-6 rounded-3xl transition-colors">
         <span data-i18n="pricing_team_trial_btn">Start 14-Day Team Trial</span>
       </button>
@@ -309,20 +309,13 @@ async function submitEnterprise(e) {
   btn.disabled = false; btn.textContent = 'Send Inquiry →';
 }
 
-// ── Price ID → Plan mapping ──────────────────────────────────────────────
-const PRICE_PLAN_MAP = {
-  'price_1T69MUEYo1GIbgr0GjmBhQbL': 'premium_monthly',
-  'price_1T69MUEYo1GIbgr0Vx79VBn2': 'premium_annual',
-  'price_1T69MVEYo1GIbgr0b3DSeEXF': 'starter_team',
-  'price_1T69MVEYo1GIbgr0dfPsj7My': 'pro_team'
-};
-
 // ── Checkout ────────────────────────────────────────────────────────────
-async function checkout(priceId) {
+const VALID_PLANS = ['premium_monthly', 'premium_annual', 'starter_team', 'pro_team'];
+
+async function checkout(plan) {
   const token = localStorage.getItem('sma-token');
   if (!token) { window.location.href = '/signup?redirect=pricing'; return; }
-  const plan = PRICE_PLAN_MAP[priceId];
-  if (!plan) { alert('Invalid plan selected.'); return; }
+  if (!VALID_PLANS.includes(plan)) { alert('Invalid plan selected.'); return; }
   const btn = event?.target;
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
   try {

@@ -34,9 +34,9 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 | Tier | Price | Stripe Price ID |
 |------|-------|----------------|
 | Free | $0 | — |
-| Individual Monthly | $19/mo | `price_1T6zoHExNgORioBpkHFfppKN` |
+| Individual Monthly | $19/mo | `price_1T6zlYExNgORioBp06MwjAnO` |
 | Individual Yearly | $149/yr | `price_1T6zmiExNgORioBp78rqoHQF` |
-| Team | $99/mo | `price_1T6zlYExNgORioBp06MwjAnO` |
+| Team | $99/mo | `price_1T6zoHExNgORioBpkHFfppKN` |
 | Pro Team | $199/mo | `price_1T700zExNgORioBp0eD0BZo1` |
 | Enterprise | Custom | Contact sales form (modal on pricing page) |
 
