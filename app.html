@@ -1376,6 +1376,8 @@ let mediaRecorder = null;
 let activeStream = null;
 let audioChunks = [];
 let isRecording = false;
+let _silenceDetector = null;
+let _audioCtx = null;
 
 function toggleAISpeech() {
   aiSpeechEnabled = !aiSpeechEnabled;
@@ -1406,12 +1408,47 @@ function startVoiceInput() {
       const listeningText = document.getElementById('voice-listening-text');
       const micBtn = document.getElementById('mic-btn');
       if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
-      if (listeningText) listeningText.textContent = lang === 'es' ? 'Grabando... (haz clic en 🎤 para parar)' : lang === 'fr' ? 'Enregistrement... (cliquez 🎤 pour arrêter)' : 'Recording... (click 🎤 to stop)';
+      if (listeningText) listeningText.textContent = lang === 'es' ? 'Escuchando...' : lang === 'fr' ? 'Écoute...' : 'Listening...';
       if (micBtn) { micBtn.classList.remove('bg-zinc-700'); micBtn.classList.add('bg-red-600', 'animate-pulse'); }
       const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
       mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+
+      // Silence detection — auto-stop after 1.5 s of silence once speaking is detected
+      try {
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = _audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        _audioCtx.createMediaStreamSource(stream).connect(analyser);
+        const freqData = new Uint8Array(analyser.frequencyBinCount);
+        const SILENCE_THRESHOLD = 8;
+        const SILENCE_MS = 1500;
+        const MIN_SPOKEN_MS = 400;
+        const recordStart = Date.now();
+        let silenceFrom = null;
+        let hasSpoken = false;
+        _silenceDetector = setInterval(() => {
+          if (!isRecording) { clearInterval(_silenceDetector); _silenceDetector = null; return; }
+          analyser.getByteFrequencyData(freqData);
+          const vol = freqData.reduce((a, b) => a + b, 0) / freqData.length;
+          const elapsed = Date.now() - recordStart;
+          if (vol > SILENCE_THRESHOLD) {
+            hasSpoken = true;
+            silenceFrom = null;
+            if (listeningText) listeningText.textContent = lang === 'es' ? 'Grabando...' : lang === 'fr' ? 'Enregistrement...' : 'Recording...';
+          } else if (hasSpoken && elapsed > MIN_SPOKEN_MS) {
+            if (!silenceFrom) silenceFrom = Date.now();
+            if (Date.now() - silenceFrom >= SILENCE_MS) {
+              clearInterval(_silenceDetector); _silenceDetector = null;
+              stopVoiceRecording();
+            }
+          }
+        }, 80);
+      } catch (_) { /* AudioContext not available — manual stop only */ }
+
       mediaRecorder.onstop = async () => {
+        if (_silenceDetector) { clearInterval(_silenceDetector); _silenceDetector = null; }
+        if (_audioCtx) { _audioCtx.close().catch(() => {}); _audioCtx = null; }
         if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
         isRecording = false;
         if (micBtn) { micBtn.classList.add('bg-zinc-700'); micBtn.classList.remove('bg-red-600', 'animate-pulse'); }
