@@ -104,18 +104,38 @@
 <!-- INVITE CODE MODAL -->
 <div id="invite-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[260] flex items-center justify-center p-4">
   <div class="bg-zinc-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-amber-900/40">
-    <div class="text-center mb-6">
-      <div class="text-5xl mb-3">🎟</div>
-      <h2 class="heading text-2xl mb-1">Redeem Invite Code</h2>
-      <p class="text-zinc-400 text-sm">Enter your invite code to unlock full access.</p>
+
+    <!-- Step 1: Enter invite code -->
+    <div id="invite-step-1">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-3">🎟</div>
+        <h2 class="heading text-2xl mb-1">Redeem Invite Code</h2>
+        <p class="text-zinc-400 text-sm">Enter your invite code to unlock full access.</p>
+      </div>
+      <input id="invite-code-input" type="text" placeholder="SMA-XXXX-XXXX" maxlength="20"
+        class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-center font-mono text-lg text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 uppercase mb-3"
+        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')redeemInviteCode()">
+      <div id="invite-error" class="hidden text-red-400 text-sm text-center mb-3"></div>
+      <div id="invite-success" class="hidden text-emerald-400 text-sm text-center mb-3 font-semibold"></div>
+      <button onclick="redeemInviteCode()" id="invite-redeem-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">Redeem Code</button>
+      <button onclick="closeInviteModal()" class="w-full text-zinc-400 hover:text-white text-sm py-2 transition-colors">Cancel</button>
     </div>
-    <input id="invite-code-input" type="text" placeholder="SMA-XXXX-XXXX" maxlength="20"
-      class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-center font-mono text-lg text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 uppercase mb-3"
-      oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')redeemInviteCode()">
-    <div id="invite-error" class="hidden text-red-400 text-sm text-center mb-3"></div>
-    <div id="invite-success" class="hidden text-emerald-400 text-sm text-center mb-3 font-semibold"></div>
-    <button onclick="redeemInviteCode()" id="invite-redeem-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">Redeem Code</button>
-    <button onclick="closeInviteModal()" class="w-full text-zinc-400 hover:text-white text-sm py-2 transition-colors">Cancel</button>
+
+    <!-- Step 2: Restaurant setup (team plans only) -->
+    <div id="invite-step-2" class="hidden">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-3">🏢</div>
+        <h2 class="heading text-2xl mb-1">Set Up Your Restaurant</h2>
+        <p class="text-zinc-400 text-sm">Your team plan is active. Create your restaurant profile to invite and track your staff's training.</p>
+      </div>
+      <input id="invite-restaurant-name" type="text" placeholder="Restaurant name"
+        class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 mb-3"
+        onkeydown="if(event.key==='Enter')setupRestaurantFromInvite()">
+      <div id="invite-restaurant-error" class="hidden text-red-400 text-sm text-center mb-3"></div>
+      <button onclick="setupRestaurantFromInvite()" id="invite-restaurant-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-3 rounded-2xl transition-colors mb-3">Create Restaurant</button>
+      <button onclick="closeInviteModal()" class="w-full text-zinc-400 hover:text-white text-sm py-2 transition-colors">Skip for now</button>
+    </div>
+
   </div>
 </div>
 
@@ -2059,6 +2079,8 @@ async function openBillingPortal() {
 function openInviteModal(prefill) {
   const modal = document.getElementById('invite-modal');
   modal.classList.remove('hidden');
+  document.getElementById('invite-step-1').classList.remove('hidden');
+  document.getElementById('invite-step-2').classList.add('hidden');
   document.getElementById('invite-error').classList.add('hidden');
   document.getElementById('invite-success').classList.add('hidden');
   document.getElementById('invite-redeem-btn').disabled = false;
@@ -2068,7 +2090,14 @@ function openInviteModal(prefill) {
 
 function closeInviteModal() {
   document.getElementById('invite-modal').classList.add('hidden');
+  document.getElementById('invite-step-1').classList.remove('hidden');
+  document.getElementById('invite-step-2').classList.add('hidden');
+  document.getElementById('invite-code-input').value = '';
+  document.getElementById('invite-restaurant-name').value = '';
+  document.getElementById('invite-restaurant-error').classList.add('hidden');
 }
+
+const TEAM_PLANS = ['starter_team', 'pro_team', 'enterprise'];
 
 async function redeemInviteCode() {
   const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
@@ -2095,22 +2124,60 @@ async function redeemInviteCode() {
       btn.textContent = 'Redeem Code';
       return;
     }
-    const planNames = { premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
-    okEl.textContent = `Success! Your account has been upgraded to ${planNames[data.plan] || data.plan}. Enjoy full access!`;
-    okEl.classList.remove('hidden');
-    btn.textContent = 'Done!';
     if (currentUser) { currentUser.subscription_status = data.plan; currentUser.effective_plan = data.effective_plan; }
     const stored = JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
     stored.subscription_status = data.plan; stored.effective_plan = data.effective_plan;
     localStorage.setItem('serveMasterUser', JSON.stringify(stored));
     applyUser(currentUser || stored);
-    setTimeout(closeInviteModal, 2500);
+    const isTeam = TEAM_PLANS.includes(data.plan);
+    const hasRestaurant = currentUser?.restaurant_id || currentUser?.role === 'manager';
+    if (isTeam && !hasRestaurant) {
+      document.getElementById('invite-step-1').classList.add('hidden');
+      document.getElementById('invite-step-2').classList.remove('hidden');
+      setTimeout(() => document.getElementById('invite-restaurant-name').focus(), 100);
+    } else {
+      const planNames = { premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+      okEl.textContent = `Success! Your account has been upgraded to ${planNames[data.plan] || data.plan}. Enjoy full access!`;
+      okEl.classList.remove('hidden');
+      btn.textContent = 'Done!';
+      setTimeout(closeInviteModal, 2500);
+    }
   } catch (e) {
     okEl.classList.add('hidden');
     errEl.textContent = 'Something went wrong. Please try again.';
     errEl.classList.remove('hidden');
     btn.disabled = false;
     btn.textContent = 'Redeem Code';
+  }
+}
+
+async function setupRestaurantFromInvite() {
+  const name = document.getElementById('invite-restaurant-name').value.trim();
+  const errEl = document.getElementById('invite-restaurant-error');
+  const btn = document.getElementById('invite-restaurant-btn');
+  errEl.classList.add('hidden');
+  if (!name) { errEl.textContent = 'Please enter your restaurant name.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  try {
+    const res = await fetch('/api/manager/create-restaurant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ restaurantName: name })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Could not create restaurant.'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Create Restaurant'; return; }
+    if (currentUser) { currentUser.role = 'manager'; currentUser.restaurant_id = data.restaurant?.id; }
+    document.getElementById('nav-manager').classList.remove('hidden');
+    document.getElementById('dd-manager-btn').classList.remove('hidden');
+    closeInviteModal();
+    await loadManagerDashboard();
+    navigate('manager');
+  } catch (e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Create Restaurant';
   }
 }
 
