@@ -9,8 +9,7 @@ async function getCredentials() {
     : null;
 
   if (hostname && xReplitToken) {
-    const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
-    const environments = isProduction ? ['production', 'development'] : ['development', 'production'];
+    const environments = ['development', 'production'];
 
     for (const env of environments) {
       try {
