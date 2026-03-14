@@ -88,16 +88,16 @@ function getWhisper() {
 }
 
 // ── Referral credit helper ───────────────────────────────────────────────────
-async function processReferralCredit(payingUserEmail) {
+async function processReferralCredit(payingUserEmail, payingUserId) {
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
     const ref = await client.query(
       `SELECT r.id, r.referrer_user_id, u.stripe_customer_id, u.email AS referrer_email, u.name AS referrer_name
        FROM referrals r JOIN users u ON u.id = r.referrer_user_id
-       WHERE r.referred_email = $1 AND r.status = 'pending'
+       WHERE r.referred_email = $1 AND r.referred_user_id = $2 AND r.status = 'pending'
        ORDER BY r.created_at ASC LIMIT 1 FOR UPDATE OF r SKIP LOCKED`,
-      [payingUserEmail.toLowerCase()]
+      [payingUserEmail.toLowerCase(), payingUserId]
     );
     if (ref.rows.length === 0) { await client.query('ROLLBACK'); return; }
     const { id: refId, stripe_customer_id, referrer_email, referrer_name } = ref.rows[0];
@@ -160,8 +160,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         if (rawEvent.type === 'checkout.session.completed') {
           const session = rawEvent.data?.object;
           if (session && (session.payment_status === 'paid' || session.status === 'complete') && session.customer) {
-            const payingUser = await db.query('SELECT email FROM users WHERE stripe_customer_id = $1', [session.customer]);
-            if (payingUser.rows.length > 0) processReferralCredit(payingUser.rows[0].email);
+            const payingUser = await db.query('SELECT id, email FROM users WHERE stripe_customer_id = $1', [session.customer]);
+            if (payingUser.rows.length > 0) await processReferralCredit(payingUser.rows[0].email, payingUser.rows[0].id);
           }
         }
       } catch (refErr) {
@@ -206,9 +206,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
               [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
             );
           }
-          const payingUser = await db.query('SELECT email FROM users WHERE stripe_customer_id = $1', [customerId]);
+          const payingUser = await db.query('SELECT id, email FROM users WHERE stripe_customer_id = $1', [customerId]);
           if (payingUser.rows.length > 0) {
-            processReferralCredit(payingUser.rows[0].email);
+            await processReferralCredit(payingUser.rows[0].email, payingUser.rows[0].id);
           }
         }
         break;
