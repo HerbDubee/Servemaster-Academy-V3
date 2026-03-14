@@ -178,6 +178,51 @@
     </div>
   </section>
 
+  <!-- ROI CALCULATOR -->
+  <section class="py-20 bg-zinc-950">
+    <div class="max-w-2xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <h2 class="heading text-4xl font-bold mb-3">ROI Calculator</h2>
+        <p class="text-zinc-400 text-lg">See how much ServeMaster saves you in Year 1.</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-10 shadow-2xl">
+        <div class="space-y-6 mb-8">
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Number of servers on your team</label>
+            <input id="roi-servers" type="number" value="10" min="1"
+              class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-xl text-white placeholder-zinc-500 transition-colors">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Average replacement cost per server (CAD $)</label>
+            <input id="roi-cost" type="number" value="3000" min="0"
+              class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-xl text-white placeholder-zinc-500 transition-colors">
+          </div>
+        </div>
+        <button onclick="calculateROI()"
+          class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-2xl text-lg transition-colors">
+          Calculate My Savings →
+        </button>
+        <div id="roi-result" class="hidden mt-8 text-center">
+          <div class="text-zinc-400 text-sm mb-2">Estimated Year 1 savings with ServeMaster</div>
+          <div id="roi-amount" class="text-5xl font-bold text-amber-400 mb-3"></div>
+          <div class="text-zinc-500 text-sm">Based on 75% faster onboarding reducing turnover costs.</div>
+          <a href="/pricing" class="inline-block mt-6 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold px-8 py-3 rounded-2xl text-sm transition-colors">
+            See Team Plans →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    function calculateROI() {
+      const servers = parseFloat(document.getElementById('roi-servers').value) || 0;
+      const cost = parseFloat(document.getElementById('roi-cost').value) || 0;
+      const savings = Math.round(servers * cost * 0.75);
+      document.getElementById('roi-amount').textContent = '$' + savings.toLocaleString();
+      document.getElementById('roi-result').classList.remove('hidden');
+    }
+  </script>
+
   <!-- TESTIMONIALS -->
   <section class="py-20 bg-zinc-900">
     <div class="max-w-4xl mx-auto px-6">
