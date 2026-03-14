@@ -1619,7 +1619,7 @@ async function sendInitialMessage() {
   try {
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
-      body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin the scenario. Set the scene and start as the guest.' }], lang })
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: 'Begin now. Skip scene-setting. Open with one short action beat and the guest\'s first line of dialogue only.' }], lang })
     });
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });
