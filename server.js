@@ -1079,13 +1079,16 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
         "SELECT id FROM referrals WHERE referrer_user_id = $1 AND status = 'pending_credit'",
         [user.id]
       );
+      const deferredClient = await db.pool.connect();
       for (const pc of pendingCredits.rows) {
         try {
+          await deferredClient.query('BEGIN');
           await stripe.customers.createBalanceTransaction(customerId, {
             amount: -5000, currency: 'cad',
             description: 'Referral credit — thank you for inviting a manager!'
-          });
-          await db.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', pc.id]);
+          }, { idempotencyKey: `referral-credit-${pc.id}` });
+          await deferredClient.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', pc.id]);
+          await deferredClient.query('COMMIT');
           resend.emails.send({
             from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
             to: user.email,
@@ -1107,9 +1110,11 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
             html: `<p>Deferred referral credit of <strong>$50 CAD</strong> applied to <strong>${escapeHtml(user.name)}</strong> (${escapeHtml(user.email)}) at checkout time.</p>`
           }).catch(err => console.error('Admin deferred referral notification error:', err.message));
         } catch (creditErr) {
+          await deferredClient.query('ROLLBACK').catch(() => {});
           console.error('Deferred credit apply error:', creditErr.message);
         }
       }
+      deferredClient.release();
     }
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const metadata = { plan, userId: String(user.id) };
