@@ -155,6 +155,18 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     try {
       const sync = await getStripeSync();
       await sync.processWebhook(req.body, sig);
+      try {
+        const rawEvent = JSON.parse(req.body.toString());
+        if (rawEvent.type === 'checkout.session.completed') {
+          const session = rawEvent.data?.object;
+          if (session && (session.payment_status === 'paid' || session.status === 'complete') && session.customer) {
+            const payingUser = await db.query('SELECT email FROM users WHERE stripe_customer_id = $1', [session.customer]);
+            if (payingUser.rows.length > 0) processReferralCredit(payingUser.rows[0].email);
+          }
+        }
+      } catch (refErr) {
+        console.error('Replit webhook referral check error:', refErr.message);
+      }
       return res.status(200).json({ received: true });
     } catch (err) {
       console.error('Webhook error (Replit):', err.message);
@@ -1077,6 +1089,12 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
               </div>
             `
           }).catch(err => console.error('Deferred referral email error:', err.message));
+          resend.emails.send({
+            from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+            to: 'kirk_adamson@servemasteracademy.ca',
+            subject: `Deferred referral credit issued: $50 to ${user.name}`,
+            html: `<p>Deferred referral credit of <strong>$50 CAD</strong> applied to <strong>${escapeHtml(user.name)}</strong> (${escapeHtml(user.email)}) at checkout time.</p>`
+          }).catch(err => console.error('Admin deferred referral notification error:', err.message));
         } catch (creditErr) {
           console.error('Deferred credit apply error:', creditErr.message);
         }
