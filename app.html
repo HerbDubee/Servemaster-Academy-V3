@@ -727,6 +727,7 @@ function applyUserToNav(user) {
     document.getElementById('nav-manager').classList.remove('hidden');
     document.getElementById('dd-manager-btn').classList.remove('hidden');
   }
+  if (typeof maybeShowReferralBtn === 'function') maybeShowReferralBtn(user.role);
 }
 
 async function syncProgressFromServer() {
@@ -2749,6 +2750,91 @@ window.onload = async function() {
     navigate('manager');
   }
 };
+</script>
+
+<!-- ── Referral: Invite Your Manager ──────────────────────────────────── -->
+<button id="referral-fab" onclick="openReferralModal()"
+  class="hidden fixed bottom-6 right-6 z-[150] bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-2.5 text-sm font-semibold transition-all">
+  <span>📨</span>
+  <span>Invite Your Manager – Get $50 Credit</span>
+</button>
+
+<div id="referral-modal" class="hidden fixed inset-0 bg-black/80 modal-bg z-[260] flex items-center justify-center p-4">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md relative shadow-2xl">
+    <button onclick="closeReferralModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">×</button>
+    <div class="text-3xl mb-3">📨</div>
+    <h3 class="text-xl font-bold mb-1">Invite Your Manager</h3>
+    <p class="text-zinc-400 text-sm mb-6">Share ServeMaster with your manager. When they subscribe, you'll receive a <strong class="text-amber-400">$50 account credit</strong>.</p>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Manager's email</label>
+        <input id="referral-email" type="email" placeholder="manager@restaurant.com"
+          class="w-full bg-zinc-800 border border-zinc-700 focus:border-emerald-500 outline-none rounded-2xl px-4 py-3 text-white placeholder-zinc-500 text-sm transition-colors">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Personal note <span class="text-zinc-600">(optional)</span></label>
+        <textarea id="referral-note" rows="3" placeholder="Hey, I've been using this for my training and it's been great..."
+          class="w-full bg-zinc-800 border border-zinc-700 focus:border-emerald-500 outline-none rounded-2xl px-4 py-3 text-white placeholder-zinc-500 text-sm resize-none transition-colors"></textarea>
+      </div>
+      <button id="referral-send-btn" onclick="sendManagerInvite()"
+        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 rounded-2xl text-sm transition-colors">
+        Send Invite &amp; Claim $50 Credit →
+      </button>
+      <p id="referral-success" class="hidden text-center text-emerald-400 text-sm font-medium">Invite sent! Your $50 credit will appear when they subscribe.</p>
+      <p id="referral-error" class="hidden text-center text-red-400 text-sm"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+function openReferralModal() {
+  document.getElementById('referral-modal').classList.remove('hidden');
+  document.getElementById('referral-email').focus();
+}
+function closeReferralModal() {
+  document.getElementById('referral-modal').classList.add('hidden');
+  document.getElementById('referral-success').classList.add('hidden');
+  document.getElementById('referral-error').classList.add('hidden');
+  document.getElementById('referral-email').value = '';
+  document.getElementById('referral-note').value = '';
+  document.getElementById('referral-send-btn').disabled = false;
+  document.getElementById('referral-send-btn').textContent = 'Send Invite & Claim $50 Credit →';
+}
+function maybeShowReferralBtn(role) {
+  if (role === 'user') document.getElementById('referral-fab').classList.remove('hidden');
+}
+async function sendManagerInvite() {
+  const email = document.getElementById('referral-email').value.trim();
+  const note = document.getElementById('referral-note').value.trim();
+  const btn = document.getElementById('referral-send-btn');
+  const errEl = document.getElementById('referral-error');
+  const okEl = document.getElementById('referral-success');
+  errEl.classList.add('hidden');
+  okEl.classList.add('hidden');
+  if (!email) { errEl.textContent = 'Please enter your manager\'s email.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/referral/invite-manager', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ managerEmail: email, note })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      okEl.classList.remove('hidden');
+      btn.classList.add('hidden');
+    } else {
+      errEl.textContent = data.error || 'Something went wrong. Please try again.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Send Invite & Claim $50 Credit →';
+    }
+  } catch {
+    errEl.textContent = 'Connection error. Please try again.';
+    errEl.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Send Invite & Claim $50 Credit →';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReferralModal(); });
 </script>
 </body>
 </html>

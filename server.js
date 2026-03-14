@@ -854,6 +854,44 @@ app.post('/api/enterprise-request', contactLimiter, async (req, res) => {
   }
 });
 
+// ── Referral – invite a manager ───────────────────────────────────────────────
+app.post('/api/referral/invite-manager', authMiddleware, contactLimiter, async (req, res) => {
+  const { managerEmail, note } = req.body;
+  if (!managerEmail) return res.status(400).json({ error: 'Manager email is required' });
+  const sender = req.user;
+  try {
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: managerEmail,
+      subject: `${escapeHtml(sender.name)} thinks ServeMaster Academy could help your team`,
+      html: `
+        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">Your server ${escapeHtml(sender.name)} recommended us</h2>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi,</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">
+            <strong>${escapeHtml(sender.name)}</strong> is using ServeMaster Academy to sharpen their fine-dining skills and thought you'd benefit from it for your whole team.
+          </p>
+          ${note ? `<p style="font-size:15px;line-height:1.7;background:#1c1c1c;padding:16px;border-left:3px solid #fbbf24;border-radius:6px;margin-bottom:20px;">"${escapeHtml(note)}"<br><em>— ${escapeHtml(sender.name)}</em></p>` : ''}
+          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">ServeMaster Academy gives your servers AI role-play, voice practice, and gamified modules that reduce onboarding time and raise tip averages — all trackable from a manager dashboard.</p>
+          <a href="https://servemasteracademy.ca/managers" style="display:inline-block;background:#fbbf24;color:#000;font-weight:bold;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;">See How It Works →</a>
+          <p style="font-size:13px;color:#71717a;margin-top:32px;">Team plans start at $49 for your first 30 days. Questions? Reply to this email.</p>
+        </div>
+      `
+    });
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: 'kirk_adamson@servemasteracademy.ca',
+      subject: `Referral: ${sender.name} invited ${managerEmail}`,
+      html: `<p>User <strong>${escapeHtml(sender.name)}</strong> (${escapeHtml(sender.email)}) referred manager email <strong>${escapeHtml(managerEmail)}</strong>.</p>${note ? `<p>Note: "${escapeHtml(note)}"</p>` : ''}`
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Referral invite error:', err.message);
+    res.status(500).json({ error: 'Failed to send invite' });
+  }
+});
+
 // ── Manager routes ────────────────────────────────────────────────────────────
 app.post('/api/manager/create-restaurant', authMiddleware, async (req, res) => {
   const { restaurantName } = req.body;
