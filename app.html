@@ -1410,15 +1410,20 @@ function startVoiceInput() {
       if (micBtn) { micBtn.classList.remove('bg-zinc-700'); micBtn.classList.add('bg-red-600', 'animate-pulse'); }
       const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
       mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
       mediaRecorder.onstop = async () => {
         if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
         isRecording = false;
         if (micBtn) { micBtn.classList.add('bg-zinc-700'); micBtn.classList.remove('bg-red-600', 'animate-pulse'); }
+        if (audioChunks.length === 0) {
+          if (indicator) indicator.classList.add('hidden');
+          return;
+        }
         if (listeningText) listeningText.textContent = lang === 'es' ? 'Transcribiendo...' : lang === 'fr' ? 'Transcription en cours...' : 'Transcribing...';
         const audioBlob = new Blob(audioChunks, { type: mimeType });
+        const filename = mimeType === 'audio/webm' ? 'audio.webm' : 'audio.mp4';
         const formData = new FormData();
-        formData.append('audio', audioBlob, mimeType === 'audio/webm' ? 'audio.webm' : 'audio.mp4');
+        formData.append('audio', audioBlob, filename);
         formData.append('lang', lang);
         try {
           const res = await fetch('/api/transcribe', { method: 'POST', headers: { Authorization: 'Bearer ' + authToken }, body: formData });
@@ -1446,7 +1451,7 @@ function startVoiceInput() {
           if (indicator) indicator.classList.add('hidden');
         }
       };
-      mediaRecorder.start();
+      mediaRecorder.start(250);
     })
     .catch(() => {
       alert(lang === 'es' ? 'Acceso al micrófono denegado. Comprueba los permisos.' : lang === 'fr' ? 'Accès au microphone refusé. Vérifiez les permissions.' : 'Microphone access denied. Please check your browser permissions.');
@@ -1461,9 +1466,9 @@ function useBrowserSpeechFallback(indicator, listeningText) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) return;
   if (indicator) { indicator.classList.remove('hidden'); indicator.classList.add('flex'); }
-  if (listeningText) listeningText.textContent = lang === 'fr' ? 'Écoute...' : 'Listening...';
+  if (listeningText) listeningText.textContent = lang === 'es' ? 'Habla ahora...' : lang === 'fr' ? 'Écoute...' : 'Listening...';
   const rec = new SpeechRecognition();
-  rec.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
+  rec.lang = lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-US';
   rec.continuous = false;
   rec.onresult = (e) => {
     const text = e.results[0][0].transcript;

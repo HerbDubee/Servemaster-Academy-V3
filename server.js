@@ -1444,7 +1444,13 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 app.post('/api/transcribe', authMiddleware, aiLimiter, upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
   try {
-    const audioFile = await toFile(req.file.buffer, 'audio.webm', { type: req.file.mimetype || 'audio/webm' });
+    const mimetype = req.file.mimetype || 'audio/webm';
+    const ext = mimetype.includes('mp4') || mimetype.includes('m4a') ? 'audio.mp4'
+      : mimetype.includes('ogg') ? 'audio.ogg'
+      : mimetype.includes('wav') ? 'audio.wav'
+      : 'audio.webm';
+    const filename = req.file.originalname || ext;
+    const audioFile = await toFile(req.file.buffer, filename, { type: mimetype });
     const transcription = await getWhisper().audio.transcriptions.create({
       file: audioFile, model: 'whisper-1',
       language: req.body.lang === 'es' ? 'es' : req.body.lang === 'fr' ? 'fr' : 'en',
