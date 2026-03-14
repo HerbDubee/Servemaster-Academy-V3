@@ -92,6 +92,11 @@ async function processReferralCredit(payingUserEmail, payingUserId) {
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
+    const alreadyCredited = await client.query(
+      `SELECT 1 FROM referrals WHERE referred_user_id = $1 AND status = 'credited' LIMIT 1`,
+      [payingUserId]
+    );
+    if (alreadyCredited.rows.length > 0) { await client.query('ROLLBACK'); return; }
     const ref = await client.query(
       `SELECT r.id, r.referrer_user_id, u.stripe_customer_id, u.email AS referrer_email, u.name AS referrer_name
        FROM referrals r JOIN users u ON u.id = r.referrer_user_id
@@ -109,6 +114,7 @@ async function processReferralCredit(payingUserEmail, payingUserId) {
         description: 'Referral credit — thank you for inviting a manager!'
       });
       await client.query('UPDATE referrals SET status = $1, credited_at = NOW() WHERE id = $2', ['credited', refId]);
+      await client.query("UPDATE referrals SET status = 'closed' WHERE referred_user_id = $1 AND status = 'pending' AND id != $2", [payingUserId, refId]);
       await client.query('COMMIT');
       resend.emails.send({
         from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
@@ -135,6 +141,7 @@ async function processReferralCredit(payingUserEmail, payingUserId) {
       }).catch(err => console.error('Admin referral notification error:', err.message));
     } else {
       await client.query('UPDATE referrals SET status = $1 WHERE id = $2', ['pending_credit', refId]);
+      await client.query("UPDATE referrals SET status = 'closed' WHERE referred_user_id = $1 AND status = 'pending' AND id != $2", [payingUserId, refId]);
       await client.query('COMMIT');
     }
   } catch (err) {
