@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const nodemailer = require('nodemailer');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const OpenAI = require('openai').default;
 const { toFile } = require('openai');
@@ -14,9 +14,10 @@ const db = require('./db');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const authLimiter    = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Please try again in 15 minutes.' } });
-const aiLimiter      = rateLimit({ windowMs: 15 * 60 * 1000, max: 30,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many AI requests. Please slow down.' } });
-const contactLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5,   standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
+const authLimiter     = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Please try again in 15 minutes.' } });
+const aiLimiter       = rateLimit({ windowMs: 15 * 60 * 1000, max: 30,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many AI requests. Please slow down.' } });
+const contactLimiter  = rateLimit({ windowMs: 60 * 60 * 1000, max: 5,   standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
+const progressLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many progress updates. Please slow down.' } });
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -31,6 +32,7 @@ const compression = require('compression');
 
 const app = express();
 app.set('trust proxy', 1);
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(compression());
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -50,19 +52,11 @@ const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || '';
 
-const mailer = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    })
-  : null;
-
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
 
-const PLAN_TIER_ORDER = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+const PLAN_TIER_ORDER = ['free', 'premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise', 'active']);
 function highestPlan(a, b) {
   const ai = PLAN_TIER_ORDER.indexOf(a || 'free');
   const bi = PLAN_TIER_ORDER.indexOf(b || 'free');
@@ -210,7 +204,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           } else {
             await db.query(
               'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
-              [plan === 'premium_annual' ? 'premium' : plan, session.subscription, customerId]
+              [(plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan, session.subscription, customerId]
             );
           }
           const payingUser = await db.query('SELECT id, email FROM users WHERE stripe_customer_id = $1', [customerId]);
@@ -239,6 +233,18 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         console.warn('Payment failed for customer:', invoice.customer);
+        try {
+          const failedUser = await db.query('SELECT email, name FROM users WHERE stripe_customer_id = $1', [invoice.customer]);
+          if (failedUser.rows.length > 0) {
+            const u = failedUser.rows[0];
+            resend.emails.send({
+              from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+              to: u.email,
+              subject: 'Action required — payment issue with your ServeMaster Academy subscription',
+              html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><p style="font-size:16px;line-height:1.7;">Hi ${u.name},</p><p style="font-size:16px;line-height:1.7;">We were unable to process your most recent payment for ServeMaster Academy. Please update your payment method to keep your account active.</p><p style="margin:32px 0;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Update Payment Method →</a></p><p style="font-size:15px;color:#a3a3a3;">If you need help, reply to this email.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p></div>`
+            }).catch(e => console.error('Payment failed email error:', e.message));
+          }
+        } catch (e) { console.error('Payment failed handler error:', e.message); }
         break;
       }
     }
@@ -293,7 +299,7 @@ async function checkTrial(req, res, next) {
     if (!rows.length) return res.status(401).json({ error: 'User not found' });
     const user = rows[0];
 
-    if (user.subscription_status === 'active') return next();
+    if (PAID_PLAN_STATUSES.has(user.subscription_status)) return next();
 
     const now = new Date();
     const trialEnd = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
@@ -717,8 +723,8 @@ app.get('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch progress' }); }
 });
 
-app.post('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
-  const { moduleId, progress, quizScore } = req.body;
+app.post('/api/user/progress', authMiddleware, progressLimiter, checkTrial, async (req, res) => {
+  let { moduleId, progress, quizScore } = req.body;
   if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
   try {
     const userRes = await db.query('SELECT stripe_subscription_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
@@ -887,7 +893,7 @@ async function checkAndAwardBadges(userId) {
   } catch (err) { console.error('Badge check error:', err.message); }
 }
 
-app.get('/api/leaderboard', async (req, res) => {
+app.get('/api/leaderboard', authMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT u.name,
@@ -930,16 +936,13 @@ app.post('/api/enterprise-request', contactLimiter, async (req, res) => {
   try {
     const fullMessage = `Company: ${company}\nLocations: ${locations || 'Not specified'}\n\n${message || ''}`.trim();
     await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[ENTERPRISE] ${fullMessage}`]);
-    if (mailer) {
-      await mailer.sendMail({
-        from: `"ServeMaster Academy" <${HELLO_EMAIL}>`,
+    if (ADMIN_EMAIL) {
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
         to: ADMIN_EMAIL,
         subject: `Enterprise Inquiry from ${company} — ${name}`,
-        text: `New enterprise request:\n\nName: ${name}\nEmail: ${email}\nCompany: ${company}\nLocations: ${locations || 'Not specified'}\n\nMessage:\n${message || 'No message provided'}`,
         html: `<h2>New Enterprise Inquiry</h2><table style="font-family:sans-serif;font-size:14px"><tr><td><b>Name</b></td><td>${escapeHtml(name)}</td></tr><tr><td><b>Email</b></td><td>${escapeHtml(email)}</td></tr><tr><td><b>Company</b></td><td>${escapeHtml(company)}</td></tr><tr><td><b>Locations</b></td><td>${escapeHtml(locations || 'Not specified')}</td></tr></table><p><b>Message:</b><br>${escapeHtml(message || 'No message provided').replace(/\n/g, '<br>')}</p>`
-      });
-    } else {
-      console.log(`[Enterprise request — no SMTP] ${name} <${email}> | ${company} | ${locations}`);
+      }).catch(e => console.error('Enterprise inquiry email error:', e.message));
     }
     res.json({ success: true });
   } catch (err) {

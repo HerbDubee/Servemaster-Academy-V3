@@ -4,7 +4,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 
 ## Architecture
 
-- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe, admin APIs, webhooks, nodemailer
+- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe, admin APIs, webhooks; email via Resend
 - `app.html` — Training SPA (auth-gated at `/app`)
 - `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
 - `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
@@ -41,6 +41,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 | Enterprise | Custom | Contact sales form (modal on pricing page) |
 
 Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`
+Both `premium_monthly` and `premium_annual` normalize to `'premium'` in DB. `PLAN_TIER_ORDER` and `PAID_PLAN_STATUSES` in server.js govern access gating.
 
 ## Admin Access
 
@@ -62,7 +63,7 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 | `STRIPE_STARTER_TEAM_ID` | Stripe price ID |
 | `STRIPE_PRO_TEAM_ID` | Stripe price ID |
 | `ADMIN_EMAIL` | Auto-granted admin on startup |
-| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_PORT` | Nodemailer (enterprise inquiry emails) |
+| `RESEND_API_KEY` | Resend transactional email (Replit integration, auto-injected) |
 | `APP_URL` | `https://servemasteracademy.ca` (production) |
 
 ## Database Tables
@@ -93,7 +94,7 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 
 - JWT_SECRET: set as shared env var (48-byte hex)
 - adminMiddleware: DB role lookup on every admin request
-- Security headers: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy
+- Security headers: helmet middleware (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Strict-Transport-Security, etc.)
 - Bootstrap endpoint disabled (returns 410)
 - Trial expiry check: validates `trial_end` is non-null before comparison
 
@@ -112,7 +113,7 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 - Completion certificate
 - Restaurant Manager dashboard + staff invite system
 - Admin invite code generator
-- Newsletter capture + enterprise inquiry modal (nodemailer)
+- Newsletter capture + enterprise inquiry modal
 - Stripe subscription + trial expiry enforcement
 - Referral system: servers invite managers → $50 CAD Stripe credit auto-applied on subscription
 

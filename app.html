@@ -2353,7 +2353,8 @@ async function loadLeaderboard() {
     return;
   }
   try {
-    const res = await fetch('/api/leaderboard');
+    const res = await fetch('/api/leaderboard', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) { el.innerHTML = `<p class="text-zinc-400">${lang==='fr'?'Aucun classement disponible pour l\'instant.':'No leaderboard entries yet.'}</p>`; return; }
     const data = await res.json();
     if (!data.leaderboard || !data.leaderboard.length) {
       el.innerHTML = `<p class="text-zinc-400">${lang==='fr'?'Aucun classement disponible pour l\'instant.':'No leaderboard entries yet.'}</p>`;
