@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pairing Cocktails with Food (And Why It Matters for Your Average Check) – ServeMaster Academy</title>
+    <meta name="description" content="Learn to pair cocktails with dishes to increase your average check. Practical pairing principles and scripts that work in any restaurant.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_cocktail_food_pairing_cat">Beverage Service</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">Pairing Cocktails with Food (And Why It Matters for Your Average Check)</h1>
+      <p class="text-zinc-400 text-lg">Learn to pair cocktails with dishes to increase your average check. Practical pairing principles and scripts that work in any restaurant.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>7 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>Wine pairing gets all the attention, but cocktail pairing is where smart servers are finding serious cheque growth. A well-matched cocktail suggestion can add $16–$22 to a table and positions you as someone who genuinely understands the menu — not just someone who carries plates.</p>
+
+      <h2>Why cocktail pairing is an untapped opportunity</h2>
+
+      <p>Most restaurants train servers on wine pairings but completely ignore cocktails. Yet cocktails are often the highest-margin items on any drinks menu, and they're what a growing number of guests actively prefer. The server who can recommend a cocktail that complements a dish has an advantage that almost nobody else on the floor is offering.</p>
+
+      <p>The principles are simpler than wine pairing, which makes them easier to learn and apply consistently.</p>
+
+      <h2>The four principles of cocktail-food pairing</h2>
+
+      <p><strong>1. Match weight to weight.</strong> A light, citrus-forward cocktail with a delicate fish course. A bold, spirit-forward old-fashioned with a rich steak. The cocktail should feel like it belongs next to the food — not overpower it or disappear behind it.</p>
+
+      <p><strong>2. Use contrast deliberately.</strong> A slightly sweet cocktail cuts through spicy food. A bitter Negroni lifts a rich, fatty dish. Contrast creates interest — but only when it's intentional. Random mismatches just feel wrong.</p>
+
+      <p><strong>3. Bridge with shared ingredients.</strong> If the dish has citrus, a cocktail with citrus will feel harmonious. If the dish has herbs like basil or thyme, a gin-based cocktail often bridges beautifully. These aren't rules — they're starting points for your own exploration.</p>
+
+      <p><strong>4. Consider the moment in the meal.</strong> Aperitif-style cocktails (lighter, drier, more refreshing) work best before food arrives. Richer cocktails pair well mid-meal. Dessert cocktails — espresso martinis, amaretto sours — close the evening elegantly.</p>
+
+      <h2>Scripts that work on the floor</h2>
+
+      <p>Knowing the theory is one thing. Saying it naturally to a guest is another. Here are scripts built for real service:</p>
+
+      <blockquote>"You've ordered the salmon — our bartender makes a gin and elderflower that pairs incredibly well with fish. It's light, slightly floral, and doesn't compete with the dish at all. Would you like to try one?"</blockquote>
+
+      <blockquote>"For the burger, honestly, the best pairing isn't a beer — it's our smoked old-fashioned. The smokiness mirrors the char on the patty. It's a bit unexpected, but people love it."</blockquote>
+
+      <blockquote>"If you're thinking about dessert, the espresso martini is basically dessert and a drink in one. Our chocolate torte with an espresso martini is easily the most popular finish at this restaurant."</blockquote>
+
+      <h2>Building your knowledge without a degree</h2>
+
+      <p>You don't need to be a mixologist to pair cocktails well. You need three things:</p>
+
+      <ul>
+        <li><strong>Taste the cocktails.</strong> Ask your bartender to walk you through each one. Know the base spirit, the dominant flavour, and the weight (light vs heavy). Ten minutes behind the bar teaches more than any textbook.</li>
+        <li><strong>Know five pairings cold.</strong> Pick the five most popular dishes on your menu and learn one cocktail that goes well with each. That covers 80% of your tables. You don't need to pair every dish — just the popular ones.</li>
+        <li><strong>Talk to your bartender.</strong> The best pairing ideas come from collaboration. Ask them: "If someone orders the lamb, what would you put next to it?" Bartenders love this question and they usually have great answers.</li>
+      </ul>
+
+      <h2>The impact on your section</h2>
+
+      <p>A cocktail typically costs $14–$18 in a mid-range restaurant. A beer costs $8–$10. That's $6–$8 more per drink — and many tables order a second round. On a 20% tip, every cocktail upsell adds $3–$4 to your gratuity. Across a shift, it adds up fast.</p>
+
+      <p>But the real benefit is how guests perceive you. When you recommend a cocktail that genuinely enhances their meal, you become the server they remember. That leads to requests, higher tips, and exactly the kind of reputation that accelerates a career.</p>
+
+      <p><a href="/pricing" class="text-amber-400 hover:underline">Train beverage pairing with AI scenarios — 14 days free</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_cocktail_food_pairing_cta_h">Train beverage pairing with AI roleplay</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_cocktail_food_pairing_cta_p">ServeMaster Academy covers wine, cocktails, and beverage service with realistic AI scenarios. Free to start.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/wine-service-tips" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Wine Service</p>
+          <p class="font-semibold text-white">How to Sell Wine Confidently Without Being Pushy</p>
+        </a>
+      <a href="/blog/upsell-appetisers" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+          <p class="font-semibold text-white">How to Upsell Appetisers Without Feeling Salesy</p>
+        </a>
+      <a href="/blog/twenty-dollar-rule" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+          <p class="font-semibold text-white">The $20 Rule: How One Extra Suggestion Transforms Your Tips</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

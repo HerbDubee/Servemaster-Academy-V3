@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Serve & ProServe: What You Actually Need to Know – ServeMaster Academy</title>
+    <meta name="description" content="Everything you need to know about Smart Serve, ProServe, and provincial alcohol service certification in Canada. Requirements, tips, and what the course covers.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_smart_serve_proserve_cat">Canadian Compliance</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">Smart Serve & ProServe: What You Actually Need to Know</h1>
+      <p class="text-zinc-400 text-lg">Everything you need to know about Smart Serve, ProServe, and provincial alcohol service certification in Canada. Requirements, tips, and what the course covers.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>7 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>If you want to serve alcohol in a Canadian restaurant, bar, or hospitality venue, you need a provincial certification. In Ontario it's Smart Serve. In Alberta it's ProServe. Every province has its own version, and understanding what's required — and what the certification actually teaches — is step one for any serious hospitality career in Canada.</p>
+
+      <h2>The provincial breakdown</h2>
+
+      <p>Responsible alcohol service certification is mandatory across Canada, but each province runs its own programme:</p>
+
+      <ul>
+        <li><strong>Ontario:</strong> Smart Serve — the most widely recognised. Online course, roughly 4–6 hours, followed by a multiple-choice exam. Valid for five years.</li>
+        <li><strong>Alberta:</strong> ProServe — similar format. Online self-paced course followed by an exam. Must be renewed every five years.</li>
+        <li><strong>British Columbia:</strong> Serving It Right — covers BC's specific liquor laws. Available online.</li>
+        <li><strong>Quebec:</strong> Responsible service training is integrated into provincial requirements and is typically completed through approved trainers.</li>
+        <li><strong>Other provinces:</strong> Saskatchewan (Safe Server), Manitoba (RCAT), Atlantic provinces each have their own equivalent programmes.</li>
+      </ul>
+
+      <p>If you're moving between provinces, your certification typically doesn't transfer. You'll need to complete the programme for your new province. This is frustrating but non-negotiable — each province has different liquor laws.</p>
+
+      <h2>What the courses actually cover</h2>
+
+      <p>Despite different names, the core content is remarkably consistent across provinces:</p>
+
+      <ul>
+        <li><strong>Provincial liquor laws:</strong> Legal drinking age, hours of service, licensed vs unlicensed areas, what constitutes a violation</li>
+        <li><strong>Signs of intoxication:</strong> Physical and behavioural indicators at different stages</li>
+        <li><strong>Intervention techniques:</strong> How to slow service, how to cut someone off, how to handle confrontation</li>
+        <li><strong>Liability:</strong> Personal and business liability for overservice, damage to property, impaired driving</li>
+        <li><strong>ID verification:</strong> Acceptable forms of identification, how to check for fakes, when to refuse service</li>
+        <li><strong>Special situations:</strong> Minors in licensed areas, private events, takeaway sales</li>
+      </ul>
+
+      <h2>Tips for passing</h2>
+
+      <p>The exams are straightforward — they test practical knowledge, not trick questions. But people do fail, usually because they rushed through the material. Here's what works:</p>
+
+      <ul>
+        <li>Take the course seriously. Four to six hours of focused study is enough. Don't try to click through in 90 minutes.</li>
+        <li>Focus on the scenarios. The exam loves situational questions: "A guest shows signs of intoxication. What do you do first?" Know the order of operations.</li>
+        <li>Understand liability specifics. Know who is liable in different situations — the server personally, the establishment, or both.</li>
+        <li>Review your province's specific laws. Hours of service, legal blood alcohol limits, and acceptable ID differ by province.</li>
+      </ul>
+
+      <h2>What certification doesn't teach you</h2>
+
+      <p>Here's the gap: Smart Serve and ProServe teach you the law and the minimum standard. They don't teach you how to be an excellent server. They don't cover wine knowledge, upselling, guest reading, service flow, table management, or any of the skills that actually determine your income and career trajectory.</p>
+
+      <p>Certification is the floor, not the ceiling. It gets you legally permitted to work. What you build on top of that — through structured training, practice, and skill development — is what determines whether serving is a temporary job or a rewarding career.</p>
+
+      <p>That's exactly the gap ServeMaster Academy was built to fill. Certification keeps you compliant. Structured training makes you exceptional.</p>
+
+      <p><a href="/pricing" class="text-amber-400 hover:underline">Go beyond certification — start training free for 14 days</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_smart_serve_proserve_cta_h">Go beyond certification with structured training</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_smart_serve_proserve_cta_p">Smart Serve teaches compliance. ServeMaster Academy teaches excellence. Free to start.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/overserved-guests" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Responsible Service</p>
+          <p class="font-semibold text-white">What to Do When a Guest Has Had Too Much to Drink</p>
+        </a>
+      <a href="/blog/canadian-tipping-culture" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Canadian Industry</p>
+          <p class="font-semibold text-white">Tipping Culture in Canada: What Guests Expect and What Servers Should Know</p>
+        </a>
+      <a href="/blog/server-career" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Career Development</p>
+          <p class="font-semibold text-white">From Server to Manager: Real Career Path</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

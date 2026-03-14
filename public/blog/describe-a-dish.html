@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Describe a Dish When You've Never Tasted It – ServeMaster Academy</title>
+    <meta name="description" content="How to describe menu items confidently even when you haven't tasted them. Techniques for building credible product knowledge.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_describe_a_dish_cat">Menu Knowledge</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">How to Describe a Dish When You've Never Tasted It</h1>
+      <p class="text-zinc-400 text-lg">How to describe menu items confidently even when you haven't tasted them. Techniques for building credible product knowledge.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>6 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>A guest points at the menu and asks: "What's the duck confit like?" You've never tasted it. Maybe you don't eat duck. Maybe the kitchen changed the recipe last week. The guest is looking at you expectantly. What you say in the next ten seconds determines whether they trust your recommendations for the rest of the evening.</p>
+
+      <h2>Why this matters more than you think</h2>
+
+      <p>Product knowledge is the single biggest driver of server credibility. A server who can describe a dish with confidence and accuracy earns the right to recommend wine, suggest appetisers, and guide the meal. A server who says "I haven't tried it" or "it's good" earns nothing. The guest goes back to the menu and makes their own decision — and your influence over the cheque (and the experience) drops to zero.</p>
+
+      <h2>The prep that makes it possible</h2>
+
+      <p>You don't need to eat every dish on the menu. You need to know enough about every dish to describe it credibly. Here's how to build that knowledge:</p>
+
+      <ul>
+        <li><strong>Read the menu description carefully.</strong> Most menus list the key components. "Pan-seared salmon, dill beurre blanc, roasted fingerling potatoes, wilted greens." That's your foundation.</li>
+        <li><strong>Ask the kitchen.</strong> Before service, ask the chef one question: "How would you describe the duck confit to someone who's never had it?" Chefs love this question. Their answer will give you the texture, the flavour profile, and usually a personal detail you can use.</li>
+        <li><strong>Watch the plates.</strong> Every time a dish crosses the pass, look at it. How is it plated? How large is the portion? What colour is it? What's the garnish? Visual knowledge lets you say "it's a generous portion" or "it comes beautifully plated" — details that help the guest picture the dish.</li>
+        <li><strong>Ask colleagues who've tasted it.</strong> "What's the risotto like?" takes five seconds to ask a fellow server. Most will give you a one-sentence answer that's more useful than any menu description.</li>
+      </ul>
+
+      <h2>The description framework</h2>
+
+      <p>When describing a dish, cover three dimensions: <strong>method</strong>, <strong>flavour</strong>, and <strong>comparison</strong>.</p>
+
+      <p><strong>Method:</strong> How is it cooked? "The salmon is pan-seared, so you get a crispy skin on top with tender, flaky fish underneath." Cooking methods create expectations about texture.</p>
+
+      <p><strong>Flavour:</strong> What are the dominant flavours? "The beurre blanc is buttery with a hint of dill — it's rich but not heavy." Use accessible flavour words: rich, light, tangy, smoky, herbaceous, zesty.</p>
+
+      <p><strong>Comparison:</strong> How does it relate to something the guest already knows? "If you've had confit before, this one is more rustic — the skin is incredibly crispy and it falls off the bone." Comparisons anchor the description in the guest's experience.</p>
+
+      <blockquote>"The short rib is braised for about eight hours — it's incredibly tender, almost falling apart. The sauce is a red wine reduction, so it's rich and slightly sweet. If you like hearty, slow-cooked dishes, it's the best thing on the menu."</blockquote>
+
+      <h2>What to say when you genuinely don't know</h2>
+
+      <p>Sometimes a guest asks a question you can't answer. Maybe it's a new dish. Maybe they're asking about a specific ingredient you're not sure about. The honest approach always wins:</p>
+
+      <blockquote>"That's a great question — let me confirm with the kitchen so I give you the right answer."</blockquote>
+
+      <p>This is always better than guessing. A wrong guess about ingredients can be an inconvenience. A wrong guess about allergens can be dangerous. When in doubt, check. It takes 30 seconds and it shows the guest you take their question seriously.</p>
+
+      <p>Building menu confidence is a skill that improves fast. Most servers who commit to learning their menu properly — asking questions, watching plates, practising descriptions — get comfortable within a week or two. The payoff lasts your entire career.</p>
+
+      <p><a href="/pricing" class="text-amber-400 hover:underline">Build menu confidence with AI practice — 14 days free</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_describe_a_dish_cta_h">Build menu confidence with AI practice</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_describe_a_dish_cta_p">ServeMaster Academy covers menu knowledge and guest communication in every module. Free to start.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/wine-service-tips" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Wine Service</p>
+          <p class="font-semibold text-white">How to Sell Wine Confidently Without Being Pushy</p>
+        </a>
+      <a href="/blog/upsell-appetisers" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+          <p class="font-semibold text-white">How to Upsell Appetisers Without Feeling Salesy</p>
+        </a>
+      <a href="/blog/silent-service" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Fine Dining</p>
+          <p class="font-semibold text-white">The Art of Silent Service: Reading Tables Without Interrupting</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

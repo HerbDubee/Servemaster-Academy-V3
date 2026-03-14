@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What to Do When a Guest Has Had Too Much to Drink – ServeMaster Academy</title>
+    <meta name="description" content="How to handle a guest who has had too much to drink. Responsible service techniques that protect you, your restaurant, and the guest.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_overserved_guests_cat">Responsible Service</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">What to Do When a Guest Has Had Too Much to Drink</h1>
+      <p class="text-zinc-400 text-lg">How to handle a guest who has had too much to drink. Responsible service techniques that protect you, your restaurant, and the guest.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>7 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>Recognising and managing an intoxicated guest is one of the most important — and most uncomfortable — responsibilities a server carries. It's a situation where your legal obligation, your guest's safety, and the restaurant's reputation all depend on how you handle the next few minutes. Getting it wrong can mean liability for you personally. Getting it right is a skill most servers are never properly taught.</p>
+
+      <h2>Know your legal responsibility</h2>
+
+      <p>In every Canadian province and territory, servers have a legal duty to stop serving alcohol to a guest who is or appears to be intoxicated. This isn't optional. Under Smart Serve (Ontario), ProServe (Alberta), and equivalent programmes across the country, you can be held personally liable for harm caused by a guest you continued to serve.</p>
+
+      <p>This means fines, potential criminal charges, and the end of your ability to work in licensed establishments. The restaurant also faces penalties, up to and including licence revocation. Understanding this isn't meant to frighten you — it's meant to make clear why the techniques below matter.</p>
+
+      <h2>Recognising the signs early</h2>
+
+      <p>The best intervention is the one that happens before a guest is visibly intoxicated. Watch for the progression:</p>
+
+      <ul>
+        <li><strong>Early signs:</strong> Louder than they were at the start of the evening, more animated gestures, ordering drinks faster, slightly slurred speech</li>
+        <li><strong>Clear signs:</strong> Difficulty focusing, swaying, aggressive or overly emotional behaviour, spilling drinks, trouble with coordination</li>
+        <li><strong>Late signs:</strong> Incoherent speech, inability to stand steadily, aggressive confrontation, falling asleep</li>
+      </ul>
+
+      <p>Your intervention should happen at the early-to-clear stage. By the time you reach late signs, you're managing a crisis rather than preventing one.</p>
+
+      <h2>The conversation: how to say it</h2>
+
+      <p>Cutting someone off is uncomfortable. It doesn't have to be confrontational. The key is being firm without being aggressive, and respectful without being apologetic about your decision.</p>
+
+      <blockquote>"I've really enjoyed serving you tonight. I'm going to switch you over to water for now — I want to make sure you have a great rest of the evening."</blockquote>
+
+      <p>This script works because it's warm, doesn't use the word "drunk" or "cut off," and frames the decision as caring about their experience. Most guests, even intoxicated ones, respond well to genuine warmth.</p>
+
+      <p>If the guest pushes back:</p>
+
+      <blockquote>"I understand — and I'm not trying to ruin your evening. It's my responsibility to make sure everyone here has a safe night, and right now the best thing I can do for you is bring some water and maybe something to eat."</blockquote>
+
+      <p>If they continue to push, involve your manager. You've done your part. The decision to stop serving is non-negotiable — it's the law, and it's the right thing to do.</p>
+
+      <h2>Practical steps after cutting off</h2>
+
+      <ul>
+        <li><strong>Offer food.</strong> Food slows alcohol absorption. Suggest something substantial — not just bread. "Can I bring you a plate of our nachos? They're perfect for sharing."</li>
+        <li><strong>Keep water flowing.</strong> Refill water glasses proactively. Don't wait to be asked.</li>
+        <li><strong>Watch the table.</strong> An intoxicated guest can escalate quickly or attempt to order from another server. Alert your colleagues.</li>
+        <li><strong>Arrange safe transport.</strong> Before the guest leaves, ask: "Do you have a ride home? I'm happy to call a taxi." This isn't overstepping — it's protecting them and the restaurant.</li>
+        <li><strong>Document it.</strong> Note the time, the guest's condition, and the steps you took. If there's ever a legal question, this record protects everyone.</li>
+      </ul>
+
+      <h2>The team approach</h2>
+
+      <p>Responsible service isn't a solo act. Brief your manager before approaching an intoxicated guest. Alert the bar to stop serving their table. If you're concerned about a confrontation, have a colleague nearby. The best restaurants treat overservice situations as a team responsibility — not a problem for one server to figure out alone.</p>
+
+      <p>Handling this well is a mark of a true professional. It's never comfortable, but it gets easier with practice and a clear framework. The guest might not thank you tonight — but you'll know you did the right thing.</p>
+
+      <p><a href="/pricing" class="text-amber-400 hover:underline">Practise responsible service scenarios — 14 days free</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_overserved_guests_cta_h">Train responsible service with AI scenarios</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_overserved_guests_cta_p">ServeMaster Academy covers responsible alcohol service with realistic practice scenarios. Free to start.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/handle-complaints" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Guest Experience</p>
+          <p class="font-semibold text-white">How to Handle a Complaint Without Losing the Table</p>
+        </a>
+      <a href="/blog/smart-serve-proserve" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Canadian Compliance</p>
+          <p class="font-semibold text-white">Smart Serve & ProServe: What You Actually Need to Know</p>
+        </a>
+      <a href="/blog/split-bills-allergies" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Skills & Technique</p>
+          <p class="font-semibold text-white">Splitting Bills, Allergies & Last-Minute Changes: Staying Calm Under Pressure</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

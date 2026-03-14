@@ -328,10 +328,11 @@ app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'p
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
-app.get('/blog/wine-service-tips', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'wine-service-tips.html')));
-app.get('/blog/special-occasions', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'special-occasions.html')));
-app.get('/blog/tray-technique', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'tray-technique.html')));
-app.get('/blog/server-career', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'server-career.html')));
+app.get('/blog/:slug', (req, res, next) => {
+  const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
+  const filePath = path.join(__dirname, 'public', 'blog', slug + '.html');
+  res.sendFile(filePath, (err) => { if (err) next(); });
+});
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'signup.html')));

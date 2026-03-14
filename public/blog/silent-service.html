@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Art of Silent Service: Reading Tables Without Interrupting – ServeMaster Academy</title>
+    <meta name="description" content="Learn the art of silent service — reading tables, anticipating needs, and serving without interrupting. The fine dining skill that separates professionals.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_silent_service_cat">Fine Dining</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">The Art of Silent Service: Reading Tables Without Interrupting</h1>
+      <p class="text-zinc-400 text-lg">Learn the art of silent service — reading tables, anticipating needs, and serving without interrupting. The fine dining skill that separates professionals.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>7 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>The best service is the service guests barely notice. Not because it's absent — because it's so smooth, so well-timed, so perfectly anticipated that it feels like the restaurant is reading their minds. This is silent service, and it's the highest form of the craft.</p>
+
+      <h2>What silent service actually means</h2>
+
+      <p>Silent service isn't about being quiet. It's about being invisible at the right moments and present at the right ones. It's the water glass that's refilled without being asked. The cleared plate that disappeared without interruption. The check that arrives precisely when the guest starts looking for it — not before, not after.</p>
+
+      <p>In fine dining, the standard is that a guest should never have to ask for anything. Every need should be anticipated and met before it becomes a request. That's the goal. It's not achievable 100% of the time, but striving for it transforms how you serve.</p>
+
+      <h2>Reading the table</h2>
+
+      <p>Silent service begins with observation. Before you approach a table, you should already know:</p>
+
+      <ul>
+        <li><strong>Are they ready to order?</strong> Menus down, closed, or pushed to the side. Eye contact scanning the room. These are your signals. Menus still open, heads still down — they're not ready.</li>
+        <li><strong>Do they want attention or privacy?</strong> A couple leaning across the table in quiet conversation doesn't want you interrupting to ask how everything is. A group laughing loudly and looking around the room is open to engagement.</li>
+        <li><strong>What's the pace?</strong> Some tables want a quick, efficient meal. Others want the evening to last. Read the cues: how fast they're eating, whether they're lingering over drinks, whether they've asked about dessert or the time.</li>
+        <li><strong>Who is the host?</strong> In business dinners, celebrations, or formal gatherings, one person is usually running the evening. Identify them. They're your primary communication point for timing, the bill, and any special requests.</li>
+      </ul>
+
+      <h2>The approach and retreat</h2>
+
+      <p>Timing your approach is the most important physical skill in service. The wrong moment — interrupting a toast, a deep conversation, or an emotional exchange — damages the experience more than any cold plate could.</p>
+
+      <p>The approach rules:</p>
+
+      <ul>
+        <li>Wait for a natural pause in conversation. There's always one — a laugh, a sip of water, a glance at the room. That's your window.</li>
+        <li>Approach from the side, not head-on. Coming straight at a table feels confrontational. Coming from the side feels like a natural entry.</li>
+        <li>Speak only when you have something useful to say. "How's everything?" is filler. "Your main course should be about five minutes — can I top up your wine in the meantime?" is useful.</li>
+      </ul>
+
+      <p>The retreat is equally important. Once you've delivered, served, or communicated — step back. Don't hover. Don't linger hoping for a compliment. Let the table return to their evening.</p>
+
+      <h2>Anticipation over reaction</h2>
+
+      <p>Reactive service: the guest asks for more water. You bring it. That's adequate. Anticipatory service: you notice the glass is half-empty and refill it before they notice. That's professional.</p>
+
+      <p>Every common need can be anticipated:</p>
+
+      <ul>
+        <li>Steak ordered? Have steak knives at the table before the plate arrives.</li>
+        <li>Guest eating with their fingers? Bring a warm towel or extra napkins without being asked.</li>
+        <li>Wine bottle nearly empty? "Shall I bring another, or would you like to look at the list?" — asked at the right moment, not when the bottle's been empty for ten minutes.</li>
+        <li>Coffee ordered after dessert? Have cream and sugar ready before the cup arrives.</li>
+      </ul>
+
+      <h2>The invisible professional</h2>
+
+      <p>Silent service is the reason some restaurants feel magical. It's not the decor, the music, or even the food alone. It's the feeling of being taken care of without having to manage the process yourself. When a server achieves this consistently, guests don't say "the service was great." They say "the evening was perfect." The server's contribution is felt but not analysed — and that's the highest compliment.</p>
+
+      <p><a href="/pricing" class="text-amber-400 hover:underline">Develop fine dining instincts — start training free</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_silent_service_cta_h">Develop fine dining instincts with AI practice</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_silent_service_cta_p">ServeMaster Academy trains you to read tables and anticipate needs. Free to start.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/crumbing-the-table" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Fine Dining</p>
+          <p class="font-semibold text-white">Crumbing the Table and Other Touches That Earn 20% Tips</p>
+        </a>
+      <a href="/blog/describe-a-dish" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Menu Knowledge</p>
+          <p class="font-semibold text-white">How to Describe a Dish When You've Never Tasted It</p>
+        </a>
+      <a href="/blog/special-occasions" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Guest Experience</p>
+          <p class="font-semibold text-white">Mastering Anniversary & Birthday Tables</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

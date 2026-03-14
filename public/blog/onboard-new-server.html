@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Onboard a New Server in Their First Week – ServeMaster Academy</title>
+    <meta name="description" content="A manager's guide to onboarding new servers in their first week. Structured training that reduces turnover and accelerates performance.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_onboard_new_server_cat">Team Management</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">How to Onboard a New Server in Their First Week</h1>
+      <p class="text-zinc-400 text-lg">A manager's guide to onboarding new servers in their first week. Structured training that reduces turnover and accelerates performance.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>8 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>The first week determines everything. A new server who feels supported, clear on expectations, and progressively challenged will stay. One who feels thrown in, under-informed, and overwhelmed will leave — usually within the first month. And replacing them costs you far more than training them properly in the first place.</p>
+
+      <h2>Day one: orientation, not service</h2>
+
+      <p>Day one should not involve serving guests. A new hire who's put on the floor before understanding the restaurant's standards, menu, and culture is being set up to fail. Use the first day for orientation:</p>
+
+      <ul>
+        <li><strong>Tour the restaurant:</strong> Front of house, back of house, storage, bathrooms, fire exits, staff areas. They need to know the physical space before navigating it under pressure.</li>
+        <li><strong>Meet the team:</strong> Introduce them to every person they'll work with — kitchen, bar, hosts, bussers, managers. A name and a face make the first real shift dramatically less intimidating.</li>
+        <li><strong>Review standards:</strong> Uniform expectations, arrival time, phone policy, how breaks work, how tip-out works. Be explicit about everything. What seems obvious to you is not obvious to someone who's never worked in your restaurant.</li>
+        <li><strong>Menu overview:</strong> Walk through the menu section by section. They don't need to memorise it on day one — they need to understand its structure, the most popular items, and the allergen-heavy dishes.</li>
+      </ul>
+
+      <h2>Days two and three: shadow shifts</h2>
+
+      <p>The new server shadows an experienced team member. Not your busiest server — your best trainer. These are different people. Your best trainer is patient, explains their decisions, and doesn't mind answering the same question twice.</p>
+
+      <p>During shadow shifts, the new server should:</p>
+
+      <ul>
+        <li>Watch how the experienced server greets tables, takes orders, and manages their section</li>
+        <li>Practice using the POS system during quiet moments</li>
+        <li>Run food and drinks to get comfortable with plate carrying and tray technique</li>
+        <li>Ask questions — create an environment where questions are encouraged, not tolerated</li>
+      </ul>
+
+      <h2>Days four and five: supervised service</h2>
+
+      <p>The new server takes a small section — two to three tables — with an experienced server nearby as backup. The trainer watches but doesn't intervene unless necessary. This is where real learning happens: the new server makes decisions, handles real guests, and starts building their own rhythm.</p>
+
+      <p>Debrief after each shift. What went well? What felt difficult? What do they need more practice on? These five-minute conversations are the most valuable part of the onboarding process — they show the new hire that you're invested in their development, not just their output.</p>
+
+      <h2>The first full week: setting the standard</h2>
+
+      <p>By the end of week one, the new server should be able to:</p>
+
+      <ul>
+        <li>Greet and seat guests at their assigned tables</li>
+        <li>Take drink and food orders accurately using the POS system</li>
+        <li>Describe the five most popular menu items</li>
+        <li>Handle a basic guest question or redirect to a manager</li>
+        <li>Follow the restaurant's clearing and resetting protocol</li>
+      </ul>
+
+      <p>They won't be fast. They won't be polished. But they should be competent and confident enough to handle a small section without constant supervision. If they're not there yet, extend the supervised period — don't push them into full service prematurely.</p>
+
+      <h2>The structured training advantage</h2>
+
+      <p>Most restaurants onboard through informal "follow someone around" methods. It's inconsistent — every trainer teaches differently, skips different things, and has different standards. The result: new hires learn whatever their trainer happened to cover, and gaps persist indefinitely.</p>
+
+      <p>Structured onboarding — whether through a platform like ServeMaster Academy, a written manual, or a documented checklist — ensures every new server gets the same foundation. It's faster, more consistent, and dramatically reduces early turnover.</p>
+
+      <p>The restaurants with the lowest turnover are the ones that invest the most in the first week. That investment pays for itself many times over.</p>
+
+      <p><a href="/managers" class="text-amber-400 hover:underline">See how ServeMaster Academy streamlines onboarding for your team</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_onboard_new_server_cta_h">Structured training for your whole team</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_onboard_new_server_cta_p">ServeMaster Academy gives managers a complete onboarding system with progress tracking. Start your team trial.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/pre-shift-meeting" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">Running a Pre-Shift Meeting That Actually Sticks</p>
+        </a>
+      <a href="/blog/server-turnover-cost" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">The Real Cost of High Server Turnover (and How Training Fixes It)</p>
+        </a>
+      <a href="/blog/gamification-upsell" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">How Gamification Helps Your Team Hit Upsell Targets</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>

@@ -8,6 +8,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `app.html` — Training SPA (auth-gated at `/app`)
 - `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
 - `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
+- `public/blog/` — 25 blog posts (HTML) + index; served via dynamic `/blog/:slug` route
 - `stripeClient.js` — Replit Stripe connector helpers
 - `db.js` — PostgreSQL connection pool (Replit built-in)
 

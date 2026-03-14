@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How Gamification Helps Your Team Hit Upsell Targets – ServeMaster Academy</title>
+    <meta name="description" content="How gamification drives upselling behaviour in restaurant teams. Badges, leaderboards, and streak mechanics that increase average check.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+        <a href="/" class="hover:text-white transition-colors">Home</a>
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Features</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+        <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <a href="/blog" class="text-amber-400 text-sm hover:underline" data-i18n="blog_back">← Back to Blog</a>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_gamification_upsell_cat">Team Management</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">How Gamification Helps Your Team Hit Upsell Targets</h1>
+      <p class="text-zinc-400 text-lg">How gamification drives upselling behaviour in restaurant teams. Badges, leaderboards, and streak mechanics that increase average check.</p>
+      <div class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>7 <span data-i18n="blog_min_read">min read</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>Every restaurant manager has the same challenge: how do you get a team of servers to consistently upsell when you can't stand behind them at every table? The answer isn't more pressure. It's better motivation. And the most effective motivation system we've found is gamification.</p>
+
+      <h2>Why traditional incentives fall short</h2>
+
+      <p>"Whoever sells the most wine this week gets a gift card." Sound familiar? These promotions work for about three days. The competitive servers engage. Everyone else ignores it. By mid-week, the winner is already decided and the rest of the team has mentally checked out.</p>
+
+      <p>The problem with one-off incentives is that they reward outcomes, not behaviours. The server who happens to get the table of wine enthusiasts wins — not necessarily the server who made the best effort. When incentives feel arbitrary, they stop motivating.</p>
+
+      <h2>What gamification does differently</h2>
+
+      <p>Gamification rewards consistent behaviour over time. Instead of one big prize for one big result, it provides small, frequent dopamine hits for incremental progress. It's the same psychology that makes fitness apps, language-learning platforms, and video games addictive — applied to professional development.</p>
+
+      <p>The core mechanics:</p>
+
+      <ul>
+        <li><strong>Streaks:</strong> Complete a training module every day and your streak grows. Miss a day and it resets. Streaks create daily habits. Once a server is on a 15-day streak, they don't want to break it — and that daily engagement compounds into real skill growth.</li>
+        <li><strong>Badges:</strong> Earn visual achievements for milestones — completing your first module, acing a quiz, finishing a difficult AI scenario. Badges are collectible, visible, and satisfying in a way that a verbal "good job" isn't.</li>
+        <li><strong>Leaderboards:</strong> See how you rank against your peers. Not in a punitive way — in a motivating way. The same competitive instinct that makes servers race to turn tables can be channelled into training completion and skill development.</li>
+        <li><strong>Progress bars:</strong> Visual indicators showing how close you are to the next badge or level. "You're 80% through the Wine Mastery module" is more motivating than "you have some modules left."</li>
+      </ul>
+
+      <h2>The connection to upselling</h2>
+
+      <p>Gamification doesn't directly make servers upsell. It makes them train. And training — specifically, product knowledge and confidence-building — is what makes servers upsell naturally.</p>
+
+      <p>A server who has completed a Wine Mastery module, practised pairing conversations with an AI guest, and earned a badge for it doesn't need to be told to recommend wine. They do it because they're confident. They know the menu. They have the language. The upsell isn't a task — it's a natural extension of their knowledge.</p>
+
+      <p>That's the difference between "push the Malbec tonight" (external pressure) and a server who genuinely recommends the Malbec because they know it pairs well with the guest's steak (internal confidence). Guests feel this difference. It shows in the cheque average and the tips.</p>
+
+      <h2>What managers see</h2>
+
+      <p>On ServeMaster Academy's Manager Dashboard, restaurant managers can track:</p>
+
+      <ul>
+        <li>Which team members are training daily (and which aren't)</li>
+        <li>Module completion rates and quiz scores</li>
+        <li>Streak lengths and badge counts</li>
+        <li>How their team compares to industry benchmarks</li>
+      </ul>
+
+      <p>This data tells a manager exactly where their team's knowledge gaps are — before those gaps show up as lost sales on the floor. A manager who sees that only two of ten servers have completed the Wine module knows exactly where to focus their next pre-shift meeting.</p>
+
+      <h2>The ROI of engaged training</h2>
+
+      <p>Restaurants using structured, gamified training consistently report 20–30% increases in average cheque within the first quarter. Not because servers are pushing harder — because they know more. Knowledge creates confidence. Confidence creates conversations. Conversations create sales.</p>
+
+      <p>The most effective upselling programme isn't a sales incentive. It's a training programme that makes your team genuinely knowledgeable about what they're serving. Gamification is how you get them to actually complete it.</p>
+
+      <p><a href="/managers" class="text-amber-400 hover:underline">See the Manager Dashboard and gamification features</a>.</p>
+    </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_gamification_upsell_cta_h">Motivate your team with built-in gamification</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_gamification_upsell_cta_p">ServeMaster Academy includes badges, streaks, and leaderboards that drive real training completion. Start your team trial.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">More from the blog</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/server-turnover-cost" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">The Real Cost of High Server Turnover (and How Training Fixes It)</p>
+        </a>
+      <a href="/blog/onboard-new-server" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">How to Onboard a New Server in Their First Week</p>
+        </a>
+      <a href="/blog/twenty-dollar-rule" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+          <p class="font-semibold text-white">The $20 Rule: How One Extra Suggestion Transforms Your Tips</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Blog</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/lang.js"></script>
+  </body>
+  </html>
