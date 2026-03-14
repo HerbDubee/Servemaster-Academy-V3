@@ -909,7 +909,7 @@ app.get('/api/leaderboard', authMiddleware, async (req, res) => {
       LEFT JOIN streaks s ON s.user_id = u.id
       GROUP BY u.id, u.name, s.current_streak
       ORDER BY total_progress DESC, modules_completed DESC
-      LIMIT 20
+      LIMIT 50
     `);
     res.json({ leaderboard: result.rows });
   } catch (err) { res.status(500).json({ error: 'Failed to fetch leaderboard' }); }
