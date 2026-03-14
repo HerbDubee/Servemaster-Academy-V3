@@ -75,9 +75,9 @@ function getOpenAI() {
 let _whisper = null;
 function getWhisper() {
   if (_whisper) return _whisper;
-  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
-  _whisper = new OpenAI({ apiKey });
+  _whisper = new OpenAI({ apiKey, baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined });
   return _whisper;
 }
 
