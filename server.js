@@ -1540,7 +1540,7 @@ RULES:
 - If the server did something wrong, say so clearly.
 - Keep each bullet point to one concrete observation.
 
-Respond with valid JSON only, in this exact format:
+Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field values MUST be written in French)' : lang === 'es' ? ' (all field values MUST be written in Spanish)' : ''}:
 {
   "verdict": "One direct sentence summarising overall performance — honest, not flattering",
   "right": ["Specific strength referencing what was said", "Another strength if applicable"],
