@@ -75,9 +75,12 @@ function getOpenAI() {
 let _whisper = null;
 function getWhisper() {
   if (_whisper) return _whisper;
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+  // Whisper must use standard OpenAI API — Azure integration does not have Whisper deployed.
+  // Prefer OPENAI_API_KEY (direct) over the Azure-routed AI_INTEGRATIONS key, and never
+  // pass AI_INTEGRATIONS_OPENAI_BASE_URL so requests go to api.openai.com, not Azure.
+  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
   if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
-  _whisper = new OpenAI({ apiKey, baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined });
+  _whisper = new OpenAI({ apiKey });
   return _whisper;
 }
 
