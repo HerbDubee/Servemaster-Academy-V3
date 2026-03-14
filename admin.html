@@ -617,6 +617,10 @@ function openViewUser(id) {
 function closeUserModal() {
   document.getElementById('user-modal').classList.add('hidden');
   editingUserId = null;
+  const saveBtn = document.getElementById('um-save-btn');
+  saveBtn.textContent = 'Save Changes';
+  saveBtn.classList.replace('bg-emerald-500', 'bg-amber-400');
+  saveBtn.disabled = false;
 }
 
 async function saveUserEdit() {
@@ -639,14 +643,32 @@ async function saveUserEdit() {
     const idx = allUsers.findIndex(x => x.id === editingUserId);
     if (idx !== -1) { allUsers[idx].subscription_status = data.user.subscription_status; allUsers[idx].role = data.user.role; }
     renderUsers(allUsers);
-    closeUserModal();
+    saveBtn.textContent = '✓ Saved!';
+    saveBtn.classList.replace('bg-amber-400', 'bg-emerald-500');
+    setTimeout(() => closeUserModal(), 900);
   } catch (e) {
     errEl.textContent = 'Network error — please try again.';
     errEl.classList.remove('hidden');
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Changes';
   }
+}
+
+async function deleteUser() {
+  if (!editingUserId) return;
+  const u = allUsers.find(x => x.id === editingUserId);
+  if (!confirm(`Permanently delete ${u ? (u.name || u.email) : 'this user'}? This cannot be undone.`)) return;
+  try {
+    const res = await fetch(`/api/admin/users/${editingUserId}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Delete failed'); return; }
+    allUsers = allUsers.filter(x => x.id !== editingUserId);
+    renderUsers(allUsers);
+    closeUserModal();
+  } catch (e) { alert('Network error — please try again.'); }
 }
 
 init();
@@ -686,10 +708,11 @@ init();
         </div>
       </div>
       <p id="um-error" class="hidden text-red-400 text-xs mb-4"></p>
-      <div class="flex gap-3">
+      <div class="flex gap-3 mb-3">
         <button id="um-save-btn" onclick="saveUserEdit()" class="flex-1 bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">Save Changes</button>
         <button onclick="closeUserModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-2.5 rounded-xl text-sm transition-colors">Cancel</button>
       </div>
+      <button onclick="deleteUser()" class="w-full bg-red-900/40 hover:bg-red-900/70 text-red-400 hover:text-red-300 font-semibold py-2.5 rounded-xl text-sm border border-red-800/50 transition-colors">Delete User Account</button>
     </div>
 
     <!-- View mode (paid subscribers) -->

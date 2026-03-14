@@ -1069,6 +1069,18 @@ app.patch('/api/admin/users/:id', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to update user' }); }
 });
 
+app.delete('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const check = await db.query('SELECT email, role FROM users WHERE id = $1', [id]);
+    if (!check.rows.length) return res.status(404).json({ error: 'User not found' });
+    if (check.rows[0].role === 'admin') return res.status(403).json({ error: 'Cannot delete an admin account' });
+    await db.query('DELETE FROM user_progress WHERE user_id = $1', [id]);
+    await db.query('DELETE FROM users WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to delete user' }); }
+});
+
 app.get('/api/admin/modules', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
