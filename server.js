@@ -1369,6 +1369,93 @@ app.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
 });
 
+app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
+  const fakeUsers = [
+    { name: 'Sophie Tremblay', email: 'sophie.tremblay.sma@example.com', modules: 24 },
+    { name: 'Liam Chen', email: 'liam.chen.sma@example.com', modules: 24 },
+    { name: 'Émilie Gagnon', email: 'emilie.gagnon.sma@example.com', modules: 24 },
+    { name: 'Marcus Williams', email: 'marcus.williams.sma@example.com', modules: 24 },
+    { name: 'Chloé Bouchard', email: 'chloe.bouchard.sma@example.com', modules: 24 },
+    { name: 'Noah Patel', email: 'noah.patel.sma@example.com', modules: 24 },
+    { name: 'Camille Roy', email: 'camille.roy.sma@example.com', modules: 24 },
+    { name: 'Ethan MacLeod', email: 'ethan.macleod.sma@example.com', modules: 22 },
+    { name: 'Amélie Côté', email: 'amelie.cote.sma@example.com', modules: 21 },
+    { name: 'Jasmine Singh', email: 'jasmine.singh.sma@example.com', modules: 20 },
+    { name: 'Gabriel Fortin', email: 'gabriel.fortin.sma@example.com', modules: 19 },
+    { name: 'Olivia Thompson', email: 'olivia.thompson.sma@example.com', modules: 18 },
+    { name: 'Félix Lavoie', email: 'felix.lavoie.sma@example.com', modules: 17 },
+    { name: 'Ava Morrison', email: 'ava.morrison.sma@example.com', modules: 16 },
+    { name: 'Raphaël Bergeron', email: 'raphael.bergeron.sma@example.com', modules: 15 },
+    { name: 'Maya Okafor', email: 'maya.okafor.sma@example.com', modules: 14 },
+    { name: 'Lucas Pelletier', email: 'lucas.pelletier.sma@example.com', modules: 13 },
+    { name: 'Isabella Nguyen', email: 'isabella.nguyen.sma@example.com', modules: 12 },
+    { name: 'Antoine Gauthier', email: 'antoine.gauthier.sma@example.com', modules: 11 },
+    { name: 'Zara Ahmed', email: 'zara.ahmed.sma@example.com', modules: 10 },
+    { name: 'Samuel Morin', email: 'samuel.morin.sma@example.com', modules: 9 },
+    { name: 'Emma Dubois', email: 'emma.dubois.sma@example.com', modules: 8 },
+    { name: 'Nathan Lefebvre', email: 'nathan.lefebvre.sma@example.com', modules: 7 },
+    { name: 'Mia Campbell', email: 'mia.campbell.sma@example.com', modules: 6 },
+    { name: 'Julien Bélanger', email: 'julien.belanger.sma@example.com', modules: 5 },
+  ];
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    let inserted = 0, skipped = 0;
+    for (const u of fakeUsers) {
+      const existing = await client.query('SELECT id FROM users WHERE email = $1', [u.email]);
+      let userId;
+      if (existing.rows.length > 0) {
+        userId = existing.rows[0].id;
+        skipped++;
+      } else {
+        const r = await client.query(
+          `INSERT INTO users (name, email, password_hash, role, is_verified) VALUES ($1, $2, $3, 'student', true) RETURNING id`,
+          [u.name, u.email, '$2b$10$fakehashplaceholder' + Math.random().toString(36).slice(2)]
+        );
+        userId = r.rows[0].id;
+        inserted++;
+      }
+      for (let m = 1; m <= u.modules; m++) {
+        await client.query(
+          `INSERT INTO user_progress (user_id, module_id, progress) VALUES ($1, $2, 100)
+           ON CONFLICT (user_id, module_id) DO UPDATE SET progress = 100`,
+          [userId, m]
+        );
+      }
+      const scenarios = Math.floor(u.modules / 2);
+      for (let sc = 0; sc < scenarios; sc++) {
+        const existing = await client.query(
+          'SELECT id FROM scenario_scores WHERE user_id = $1 AND scenario_id = $2',
+          [userId, sc + 1]
+        );
+        if (existing.rows.length === 0) {
+          await client.query(
+            `INSERT INTO scenario_scores (user_id, scenario_id, score, feedback) VALUES ($1, $2, $3, 'Great session')`,
+            [userId, sc + 1, Math.floor(70 + Math.random() * 30)]
+          );
+        }
+      }
+      const streak = Math.floor(u.modules / 3);
+      if (streak > 0) {
+        await client.query(
+          `INSERT INTO streaks (user_id, current_streak, longest_streak, last_activity_date)
+           VALUES ($1, $2, $2, CURRENT_DATE)
+           ON CONFLICT (user_id) DO UPDATE SET current_streak = $2, longest_streak = GREATEST(streaks.longest_streak, $2)`,
+          [userId, streak]
+        );
+      }
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true, inserted, skipped });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Seed error:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 app.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
   const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
   const { plan } = req.body;

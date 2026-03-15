@@ -101,6 +101,12 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
         </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-4">
+          <h2 class="font-semibold text-lg mb-1">Demo Leaderboard Users</h2>
+          <p class="text-zinc-400 text-sm mb-4">Seed 25 realistic demo accounts (Sophie Tremblay, Liam Chen, etc.) with varied progress to populate the leaderboard. Safe to run multiple times — skips existing accounts.</p>
+          <button onclick="seedFakeUsers()" id="seed-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2 rounded-xl text-sm transition-colors">Seed Demo Users</button>
+          <span id="seed-result" class="text-sm text-zinc-400 ml-4"></span>
+        </div>
       </div>
 
       <!-- USERS -->
@@ -552,6 +558,26 @@ async function loadInvites() {
       `;
     }).join('');
   } catch (e) { console.error(e); }
+}
+
+async function seedFakeUsers() {
+  const btn = document.getElementById('seed-btn');
+  const result = document.getElementById('seed-result');
+  btn.disabled = true;
+  btn.textContent = 'Seeding…';
+  result.textContent = '';
+  try {
+    const raw = await fetch('/api/admin/seed-fake-users', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const res = await raw.json();
+    result.textContent = `Done — ${res.inserted} new accounts created, ${res.skipped} already existed.`;
+    result.style.color = '#4ade80';
+  } catch (err) {
+    result.textContent = 'Error: ' + err.message;
+    result.style.color = '#f87171';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Seed Demo Users';
+  }
 }
 
 function showSection(name) {
