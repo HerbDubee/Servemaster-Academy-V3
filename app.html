@@ -2046,11 +2046,7 @@ function startChat(scenarioId) {
   const s = practiceScenarios.find(s => s.id === scenarioId);
   const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
   document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
-  const scene = lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene;
-  const sceneLabel = lang === 'fr' ? 'Scène' : lang === 'es' ? 'Escena' : 'Scene';
-  document.getElementById('chat-messages').innerHTML = scene
-    ? `<div class="bg-zinc-800/60 border border-zinc-700 rounded-2xl px-4 py-3 text-sm text-zinc-300 italic leading-relaxed"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${scene}</div>`
-    : '';
+  document.getElementById('chat-messages').innerHTML = '';
   document.getElementById('chat-input').disabled = false;
   document.getElementById('chat-send-btn').disabled = false;
   const summaryEl = document.getElementById('scenario-summary');
@@ -2079,7 +2075,16 @@ function stripMarkdown(text) {
 }
 
 async function sendInitialMessage() {
-  appendChatMessage('assistant', '...');
+  const s = practiceScenarios.find(sc => sc.id === chatScenarioId);
+  const scene = s ? (lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene) : '';
+  const sceneLabel = lang === 'fr' ? 'Scène' : lang === 'es' ? 'Escena' : 'Scene';
+  // Show combined placeholder while loading
+  const box = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'flex justify-start';
+  div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words bg-zinc-800 text-zinc-100">${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-zinc-500">...</p></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
   try {
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
@@ -2088,10 +2093,14 @@ async function sendInitialMessage() {
     const data = await res.json();
     chatHistory.push({ role: 'assistant', content: data.reply });
     const guestText = stripMarkdown(data.reply).trim();
-    replaceLast(guestText);
+    const innerDiv = div.querySelector('div');
+    innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p>${escHtml(guestText)}</p>`;
+    box.scrollTop = box.scrollHeight;
     speakText(guestText);
   } catch {
-    replaceLast(lang==='es' ? 'No se pudo conectar al servidor.' : lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.');
+    const innerDiv = div.querySelector('div');
+    innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-red-400">${lang==='es' ? 'No se pudo conectar al servidor.' : lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.'}</p>`;
+    box.scrollTop = box.scrollHeight;
   }
 }
 
