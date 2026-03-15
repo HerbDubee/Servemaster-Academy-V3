@@ -1369,36 +1369,37 @@ app.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
 });
 
-app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
-  const fakeUsers = [
-    { name: 'Sophie Tremblay', email: 'sophie.tremblay.sma@example.com', modules: 24 },
-    { name: 'Liam Chen', email: 'liam.chen.sma@example.com', modules: 24 },
-    { name: 'Émilie Gagnon', email: 'emilie.gagnon.sma@example.com', modules: 24 },
-    { name: 'Marcus Williams', email: 'marcus.williams.sma@example.com', modules: 24 },
-    { name: 'Chloé Bouchard', email: 'chloe.bouchard.sma@example.com', modules: 24 },
-    { name: 'Noah Patel', email: 'noah.patel.sma@example.com', modules: 24 },
-    { name: 'Camille Roy', email: 'camille.roy.sma@example.com', modules: 24 },
-    { name: 'Ethan MacLeod', email: 'ethan.macleod.sma@example.com', modules: 22 },
-    { name: 'Amélie Côté', email: 'amelie.cote.sma@example.com', modules: 21 },
-    { name: 'Jasmine Singh', email: 'jasmine.singh.sma@example.com', modules: 20 },
-    { name: 'Gabriel Fortin', email: 'gabriel.fortin.sma@example.com', modules: 19 },
-    { name: 'Olivia Thompson', email: 'olivia.thompson.sma@example.com', modules: 18 },
-    { name: 'Félix Lavoie', email: 'felix.lavoie.sma@example.com', modules: 17 },
-    { name: 'Ava Morrison', email: 'ava.morrison.sma@example.com', modules: 16 },
-    { name: 'Raphaël Bergeron', email: 'raphael.bergeron.sma@example.com', modules: 15 },
-    { name: 'Maya Okafor', email: 'maya.okafor.sma@example.com', modules: 14 },
-    { name: 'Lucas Pelletier', email: 'lucas.pelletier.sma@example.com', modules: 13 },
-    { name: 'Isabella Nguyen', email: 'isabella.nguyen.sma@example.com', modules: 12 },
-    { name: 'Antoine Gauthier', email: 'antoine.gauthier.sma@example.com', modules: 11 },
-    { name: 'Zara Ahmed', email: 'zara.ahmed.sma@example.com', modules: 10 },
-    { name: 'Samuel Morin', email: 'samuel.morin.sma@example.com', modules: 9 },
-    { name: 'Emma Dubois', email: 'emma.dubois.sma@example.com', modules: 8 },
-    { name: 'Nathan Lefebvre', email: 'nathan.lefebvre.sma@example.com', modules: 7 },
-    { name: 'Mia Campbell', email: 'mia.campbell.sma@example.com', modules: 6 },
-    { name: 'Julien Bélanger', email: 'julien.belanger.sma@example.com', modules: 5 },
-  ];
+const DEMO_USERS = [
+  { name: 'Sophie Tremblay',   email: 'sophie.tremblay.sma@example.com',   modules: 24 },
+  { name: 'Liam Chen',         email: 'liam.chen.sma@example.com',          modules: 24 },
+  { name: 'Émilie Gagnon',     email: 'emilie.gagnon.sma@example.com',      modules: 24 },
+  { name: 'Marcus Williams',   email: 'marcus.williams.sma@example.com',    modules: 24 },
+  { name: 'Chloé Bouchard',    email: 'chloe.bouchard.sma@example.com',     modules: 24 },
+  { name: 'Noah Patel',        email: 'noah.patel.sma@example.com',         modules: 24 },
+  { name: 'Camille Roy',       email: 'camille.roy.sma@example.com',        modules: 24 },
+  { name: 'Ethan MacLeod',     email: 'ethan.macleod.sma@example.com',      modules: 22 },
+  { name: 'Amélie Côté',       email: 'amelie.cote.sma@example.com',        modules: 21 },
+  { name: 'Jasmine Singh',     email: 'jasmine.singh.sma@example.com',      modules: 20 },
+  { name: 'Gabriel Fortin',    email: 'gabriel.fortin.sma@example.com',     modules: 19 },
+  { name: 'Olivia Thompson',   email: 'olivia.thompson.sma@example.com',    modules: 18 },
+  { name: 'Félix Lavoie',      email: 'felix.lavoie.sma@example.com',       modules: 17 },
+  { name: 'Ava Morrison',      email: 'ava.morrison.sma@example.com',       modules: 16 },
+  { name: 'Raphaël Bergeron',  email: 'raphael.bergeron.sma@example.com',   modules: 15 },
+  { name: 'Maya Okafor',       email: 'maya.okafor.sma@example.com',        modules: 14 },
+  { name: 'Lucas Pelletier',   email: 'lucas.pelletier.sma@example.com',    modules: 13 },
+  { name: 'Isabella Nguyen',   email: 'isabella.nguyen.sma@example.com',    modules: 12 },
+  { name: 'Antoine Gauthier',  email: 'antoine.gauthier.sma@example.com',   modules: 11 },
+  { name: 'Zara Ahmed',        email: 'zara.ahmed.sma@example.com',         modules: 10 },
+  { name: 'Samuel Morin',      email: 'samuel.morin.sma@example.com',       modules: 9  },
+  { name: 'Emma Dubois',       email: 'emma.dubois.sma@example.com',        modules: 8  },
+  { name: 'Nathan Lefebvre',   email: 'nathan.lefebvre.sma@example.com',    modules: 7  },
+  { name: 'Mia Campbell',      email: 'mia.campbell.sma@example.com',       modules: 6  },
+  { name: 'Julien Bélanger',   email: 'julien.belanger.sma@example.com',    modules: 5  },
+];
+
+async function seedDemoUsers() {
   let inserted = 0, skipped = 0, errors = [];
-  for (const u of fakeUsers) {
+  for (const u of DEMO_USERS) {
     try {
       const existing = await db.query('SELECT id FROM users WHERE email = $1', [u.email]);
       let userId;
@@ -1423,7 +1424,6 @@ app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
           [userId, m]
         );
       }
-      // Upsert streak
       const streak = Math.floor(u.modules / 3);
       if (streak > 0) {
         await db.query(
@@ -1433,7 +1433,6 @@ app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
           [userId, streak]
         );
       }
-      // Insert scenario completions (delete first to avoid dupes since no unique constraint)
       await db.query('DELETE FROM scenario_scores WHERE user_id = $1', [userId]);
       const scenarios = Math.min(Math.floor(u.modules / 2), 18);
       for (let sc = 1; sc <= scenarios; sc++) {
@@ -1443,11 +1442,21 @@ app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
         );
       }
     } catch (err) {
-      console.error('Seed error for', u.email, ':', err.message);
+      console.error('Demo seed error for', u.email, ':', err.message);
       errors.push(u.email + ': ' + err.message);
     }
   }
-  res.json({ ok: true, inserted, skipped, errors });
+  console.log(`Demo users seeded: ${inserted} new, ${skipped} updated${errors.length ? ', ' + errors.length + ' errors' : ''}`);
+  return { inserted, skipped, errors };
+}
+
+app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
+  try {
+    const result = await seedDemoUsers();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
@@ -1894,6 +1903,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_unique_invite ON referrals(referrer_user_id, referred_email)');
   } catch (e) { console.error('Referrals table bootstrap error:', e.message); }
   await initStripe();
+  // Auto-seed demo leaderboard users on every startup
+  try { await seedDemoUsers(); } catch (e) { console.error('Demo seed error:', e.message); }
 });
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
