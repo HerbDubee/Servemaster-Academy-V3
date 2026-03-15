@@ -659,7 +659,7 @@ async function sendTrialDripEmails(user) {
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: user.email,
       subject: 'Your trial ends in 4 days — save 20% today',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 12 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 24 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
     }).catch(err => console.error('Day 10 email error:', err.message));
   } else if (daysLeft <= 7 && daysLeft > 0 && !user.day7_email_sent) {
     db.query('UPDATE users SET day7_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
@@ -837,7 +837,19 @@ app.get('/api/modules', authMiddleware, checkTrial, async (req, res) => {
     { id:9,  title:'Special Occasions Mastery',                  titleFr:'Maîtrise des occasions spéciales',               titleEs:'Dominio de Ocasiones Especiales',            emoji:'🎂', mins:10 },
     { id:10, title:'Closing the Experience',                     titleFr:"Clore l'expérience",                             titleEs:'Cerrar la Experiencia',                      emoji:'👋', mins:8  },
     { id:11, title:'Advanced Wine Regions',                      titleFr:'Régions viticoles avancées',                     titleEs:'Regiones Vitivinícolas Avanzadas',           emoji:'🌎', mins:12 },
-    { id:12, title:'Server Leadership & Career',                 titleFr:'Leadership & carrière en service',               titleEs:'Liderazgo del Mesero y Carrera Profesional', emoji:'⭐', mins:10 }
+    { id:12, title:'Server Leadership & Career',                 titleFr:'Leadership & carrière en service',               titleEs:'Liderazgo del Mesero y Carrera Profesional', emoji:'⭐', mins:10 },
+    { id:13, title:'Spirits, Cocktails & Bar Knowledge',          titleFr:'Spiritueux, cocktails & savoir du bar',          titleEs:'Licores, Cócteles y Conocimiento del Bar',   emoji:'🥃', mins:12 },
+    { id:14, title:'Coffee & Non-Alcoholic Beverage Service',     titleFr:'Café & service des boissons non alcoolisées',    titleEs:'Café y Servicio de Bebidas No Alcohólicas',  emoji:'☕', mins:10 },
+    { id:15, title:'Allergens, Dietary Needs & Safe Service',     titleFr:'Allergènes, besoins alimentaires & service sûr', titleEs:'Alérgenos, Necesidades Dietéticas y Servicio Seguro', emoji:'⚠️', mins:12 },
+    { id:16, title:'Reading Guests & Emotional Intelligence',     titleFr:'Lire les clients & intelligence émotionnelle',   titleEs:'Lectura de Clientes e Inteligencia Emocional', emoji:'🧠', mins:10 },
+    { id:17, title:'Menu Knowledge & Ingredient Confidence',      titleFr:'Connaissance du menu & confiance en ingrédients',titleEs:'Conocimiento del Menú y Confianza en Ingredientes', emoji:'🌿', mins:10 },
+    { id:18, title:'Managing the Rush',                           titleFr:'Gérer le coup de feu',                           titleEs:'Gestionar la Hora Punta',                    emoji:'⚡', mins:10 },
+    { id:19, title:'Host Skills: Reservations, Phone & Greeting', titleFr:'Compétences d\'hôte : réservations, téléphone & accueil', titleEs:'Habilidades de Anfitrión: Reservas, Teléfono y Bienvenida', emoji:'📞', mins:10 },
+    { id:20, title:'Cheese, Charcuterie & Tableside Specialities',titleFr:'Fromage, charcuterie & spécialités en salle',    titleEs:'Quesos, Charcutería y Especialidades en Mesa', emoji:'🧀', mins:10 },
+    { id:21, title:'Sustainability & Responsible Hospitality',    titleFr:'Durabilité & hospitalité responsable',           titleEs:'Sostenibilidad y Hospitalidad Responsable',  emoji:'🌱', mins:10 },
+    { id:22, title:'Digital Tools & Modern Restaurant Tech',      titleFr:'Outils numériques & technologie moderne',        titleEs:'Herramientas Digitales y Tecnología Moderna', emoji:'💻', mins:8  },
+    { id:23, title:'Team Culture & Kitchen Communication',        titleFr:'Culture d\'équipe & communication en cuisine',   titleEs:'Cultura de Equipo y Comunicación con Cocina', emoji:'🤝', mins:10 },
+    { id:24, title:'Wellness, Resilience & Long-Term Career',     titleFr:'Bien-être, résilience & carrière à long terme',  titleEs:'Bienestar, Resiliencia y Carrera a Largo Plazo', emoji:'🌟', mins:10 }
   ];
   try {
     const { rows } = await db.query(
@@ -1391,7 +1403,7 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
       },
       day10: {
         subject: 'Your trial ends in 4 days — save 20% today',
-        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day free trial ends in just 4 days.")}${p("If you're enjoying the training and want to keep access to all 12 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("Upgrade Now", "https://servemasteracademy.ca/pricing")}${sig}`)
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day free trial ends in just 4 days.")}${p("If you're enjoying the training and want to keep access to all 24 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("Upgrade Now", "https://servemasteracademy.ca/pricing")}${sig}`)
       },
       day13: {
         subject: 'Your trial ends tomorrow — keep your access',
@@ -1648,7 +1660,7 @@ app.get('/api/team', managerMiddleware, async (req, res) => {
   }
 });
 
-// Issue certificate (marks all 12 modules as complete for a user)
+// Issue certificate (marks all 24 modules as complete for a user)
 app.post('/api/certificate', managerMiddleware, async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId required' });
@@ -1657,7 +1669,7 @@ app.post('/api/certificate', managerMiddleware, async (req, res) => {
     if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
     const user = userRes.rows[0];
 
-    for (let moduleId = 1; moduleId <= 12; moduleId++) {
+    for (let moduleId = 1; moduleId <= 24; moduleId++) {
       await db.query(`
         INSERT INTO user_progress (user_id, module_id, progress, quiz_score, completed_at)
         VALUES ($1, $2, 100, 100, NOW())

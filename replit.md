@@ -100,15 +100,15 @@ Both `premium_monthly` and `premium_annual` normalize to `'premium'` in DB. `PLA
 
 ## Analytics & Tracking
 
-- Google Analytics: `G-1BPWXRYVXS` on all 12 pages
-- ContentSquare: `2e14c5cc7ec76` on all 12 pages
+- Google Analytics: `G-1BPWXRYVXS` on all pages
+- ContentSquare: `2e14c5cc7ec76` on all pages
 - `trial_start` GA event fires on email signup and Google OAuth new user
 
 ## Features
 
-- 12 training modules, 30 AI roleplay scenarios (3 difficulty levels)
+- 24 training modules (12 original + 12 new: Spirits/Cocktails, Coffee/Non-Alc, Allergens, EQ/Reading Guests, Menu Knowledge Advanced, Managing Rush, Host Skills, Cheese/Charcuterie, Sustainability, Digital Tools, Team Culture, Wellness/Career), 30 AI roleplay scenarios (3 difficulty levels)
 - Whisper voice transcription for voice roleplay
-- EN/FR bilingual toggle
+- EN/FR/ES trilingual toggle
 - Gamification: streaks, 12 badges, leaderboard
 - Completion certificate
 - Restaurant Manager dashboard + staff invite system

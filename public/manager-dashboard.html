@@ -135,7 +135,7 @@
     }
 
     async function issueCertificate(userId) {
-      if (!confirm('Issue completion certificate for this server? This marks all 12 modules as complete.')) return;
+      if (!confirm('Issue completion certificate for this server? This marks all 24 modules as complete.')) return;
       try {
         const res = await fetch('/api/certificate', {
           method: 'POST',
