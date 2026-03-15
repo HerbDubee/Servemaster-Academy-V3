@@ -70,3 +70,7 @@ ADMIN_EMAIL = "kirk_adamson@servemasteracademy.ca"
 APP_URL = "https://servemasteracademy.ca"
 
 [userenv.development]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 60000
