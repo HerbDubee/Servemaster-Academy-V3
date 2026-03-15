@@ -1037,7 +1037,7 @@ app.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
   try {
     const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
-    if (!user || user.role !== 'manager') return res.status(403).json({ error: 'Manager access only' });
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return res.status(403).json({ error: 'Manager access only' });
     const restaurantRes = await db.query('SELECT * FROM restaurants WHERE id = $1', [user.restaurant_id]);
     const staffRes = await db.query(`
       SELECT u.id, u.name, u.email, u.experience_level, u.last_login,
@@ -1060,7 +1060,7 @@ app.get('/api/manager/staff/:id', authMiddleware, async (req, res) => {
   try {
     const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
-    if (!user || user.role !== 'manager') return res.status(403).json({ error: 'Manager access only' });
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return res.status(403).json({ error: 'Manager access only' });
     const staffRes = await db.query('SELECT id, name, email, experience_level, last_login FROM users WHERE id = $1 AND restaurant_id = $2', [req.params.id, user.restaurant_id]);
     if (!staffRes.rows.length) return res.status(404).json({ error: 'Staff member not found' });
     const progressRes = await db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1', [req.params.id]);

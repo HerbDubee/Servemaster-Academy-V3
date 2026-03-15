@@ -2841,6 +2841,11 @@ async function loadManagerDashboard() {
     const res = await fetch('/api/manager/dashboard', { headers:{ Authorization:'Bearer '+authToken } });
     if (res.status === 403) {
       document.getElementById('manager-setup').classList.remove('hidden');
+      if (currentUser?.restaurant_id) {
+        ['restaurant-name-input','mgr-create-btn','mgr-or','mgr-setup-title','mgr-setup-sub'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.add('hidden'); });
+        document.getElementById('mgr-join-sub').textContent = lang==='fr' ? 'Vous faites déjà partie d\'un restaurant. Contactez votre responsable.' : lang==='es' ? 'Ya perteneces a un restaurante. Contacta a tu responsable.' : 'You already belong to a restaurant. Contact your manager for access.';
+        document.getElementById('join-code-input').closest('.flex').classList.add('hidden');
+      }
       return;
     }
     const data = await res.json();
