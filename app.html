@@ -2810,11 +2810,7 @@ async function joinRestaurant() {
     });
     const data = await res.json();
     if (data.success) {
-      if (currentUser) currentUser.role = 'manager';
-      document.getElementById('nav-manager').classList.remove('hidden');
-      document.getElementById('dd-manager-btn').classList.remove('hidden');
       alert(`${lang==='fr'?'Vous avez rejoint':'Joined'}: ${data.restaurantName}`);
-      await loadManagerDashboard();
     }
   } catch {}
 }
