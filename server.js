@@ -1408,7 +1408,7 @@ async function seedDemoUsers() {
         skipped++;
       } else {
         const r = await db.query(
-          `INSERT INTO users (name, email, password_hash, role, is_verified) VALUES ($1, $2, $3, 'student', true) RETURNING id`,
+          `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, 'student') RETURNING id`,
           [u.name, u.email, '$2b$10$demoplaceholder' + Math.random().toString(36).slice(2)]
         );
         userId = r.rows[0].id;
