@@ -1138,7 +1138,7 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const metadata = { plan, userId: String(user.id) };
     if (isTeamPlan && user.restaurant_id) metadata.restaurantId = String(user.restaurant_id);
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
@@ -1146,7 +1146,20 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       metadata,
       success_url: 'https://servemasteracademy.ca/success.html',
       cancel_url: 'https://servemasteracademy.ca',
-    });
+    };
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams);
+    } catch (sessionErr) {
+      if (sessionErr.code === 'resource_missing' && sessionErr.param === 'customer') {
+        const freshCustomer = await stripe.customers.create({ email: user.email, metadata: { userId: String(user.id) } });
+        await db.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [freshCustomer.id, user.id]);
+        sessionParams.customer = freshCustomer.id;
+        session = await stripe.checkout.sessions.create(sessionParams);
+      } else {
+        throw sessionErr;
+      }
+    }
     res.json({ url: session.url });
   } catch (err) {
     console.error('Checkout error:', err.message);
@@ -1159,9 +1172,20 @@ app.get('/api/payments/cancel', (req, res) => res.redirect('/pricing'));
 app.post('/api/payments/billing-portal', authMiddleware, async (req, res) => {
   try {
     const result = await db.query('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
-    const customerId = result.rows[0]?.stripe_customer_id;
+    let customerId = result.rows[0]?.stripe_customer_id;
     if (!customerId) return res.status(400).json({ error: 'No billing account found. You may be on a free plan.' });
     const stripe = await getUncachableStripeClient();
+    try {
+      await stripe.customers.retrieve(customerId);
+    } catch (custErr) {
+      if (custErr.code === 'resource_missing') {
+        const freshCustomer = await stripe.customers.create({ email: req.user.email, metadata: { userId: String(req.user.id) } });
+        await db.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [freshCustomer.id, req.user.id]);
+        customerId = freshCustomer.id;
+      } else {
+        throw custErr;
+      }
+    }
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: 'https://servemasteracademy.ca/app',
