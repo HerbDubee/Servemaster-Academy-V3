@@ -1610,7 +1610,11 @@ const MODULE_NAMES = {
   1: 'Service Foundations', 2: 'Menu Knowledge', 3: 'Wine Essentials',
   4: 'Beverage Mastery', 5: 'Upselling Techniques', 6: 'Tray & Posture',
   7: 'Allergy Awareness', 8: 'Guest Psychology', 9: 'Tableside Etiquette',
-  10: 'POS & Billing', 11: 'Wine Service Advanced', 12: 'Floor Leadership'
+  10: 'POS & Billing', 11: 'Wine Service Advanced', 12: 'Floor Leadership',
+  13: 'Spirits & Cocktails', 14: 'Coffee & Non-Alcoholic', 15: 'Allergen Mastery',
+  16: 'EQ & Reading Guests', 17: 'Menu Knowledge Advanced', 18: 'Managing the Rush',
+  19: 'Host & Reception Skills', 20: 'Cheese & Charcuterie', 21: 'Sustainability',
+  22: 'Digital Tools & POS', 23: 'Team Culture', 24: 'Wellness & Career Growth'
 };
 
 function calculateStatus(progressValues) {
