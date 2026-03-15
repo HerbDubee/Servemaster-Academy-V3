@@ -892,7 +892,7 @@ async function checkAndAwardBadges(userId) {
     const completedModules = progress.filter(p => p.progress >= 100).length;
     const potentialBadges = [];
     if (completedModules >= 1) potentialBadges.push('first_module');
-    if (completedModules >= 12) potentialBadges.push('module_master');
+    if (completedModules >= 24) potentialBadges.push('module_master');
     if (scenarioCount >= 1) potentialBadges.push('first_scenario');
     if (scenarioCount >= 10) potentialBadges.push('scenario_ace');
     if (scenarioCount >= 20) potentialBadges.push('scenario_legend');
@@ -1228,7 +1228,7 @@ app.get('/api/admin/users', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT u.id, u.name, u.email, u.role, u.subscription_status, u.created_at, u.last_login,
-        COALESCE(SUM(p.progress)/12, 0) as avg_progress,
+        COALESCE(SUM(p.progress)/24, 0) as avg_progress,
         COUNT(CASE WHEN p.progress >= 100 THEN 1 END) as modules_completed
       FROM users u
       LEFT JOIN user_progress p ON p.user_id = u.id
