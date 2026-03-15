@@ -821,7 +821,8 @@ const modules = [
   { id:24, title:'Wellness, Resilience & Long-Term Career',    titleFr:'Bien-être, résilience & carrière à long terme',   titleEs:'Bienestar, Resiliencia y Carrera a Largo Plazo', emoji:'🌟', mins:10 }
 ];
 
-let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || modules.map(m => ({id: m.id, progress: 0}));
+let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || [];
+modules.forEach(m => { if (!userProgress.find(u => u.id === m.id)) userProgress.push({ id: m.id, progress: 0 }); });
 let earnedBadges = JSON.parse(localStorage.getItem('sma-badges')) || [];
 let completedScenarios = JSON.parse(localStorage.getItem('sma-scenarios')) || [];
 let savedQuizScores = JSON.parse(localStorage.getItem('sma-quiz-scores')) || {};
@@ -2929,7 +2930,7 @@ function renderAll() {
     const freeModuleLimit = 3;
     const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
     allEl.innerHTML = modules.map((m, idx) => {
-      const p = userProgress.find(u => u.id === m.id);
+      const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
       const orderNum = idx + 1;
