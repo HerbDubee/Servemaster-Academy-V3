@@ -1397,63 +1397,57 @@ app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
     { name: 'Mia Campbell', email: 'mia.campbell.sma@example.com', modules: 6 },
     { name: 'Julien Bélanger', email: 'julien.belanger.sma@example.com', modules: 5 },
   ];
-  const client = await db.pool.connect();
-  try {
-    await client.query('BEGIN');
-    let inserted = 0, skipped = 0;
-    for (const u of fakeUsers) {
-      const existing = await client.query('SELECT id FROM users WHERE email = $1', [u.email]);
+  let inserted = 0, skipped = 0, errors = [];
+  for (const u of fakeUsers) {
+    try {
+      const existing = await db.query('SELECT id FROM users WHERE email = $1', [u.email]);
       let userId;
       if (existing.rows.length > 0) {
         userId = existing.rows[0].id;
         skipped++;
       } else {
-        const r = await client.query(
+        const r = await db.query(
           `INSERT INTO users (name, email, password_hash, role, is_verified) VALUES ($1, $2, $3, 'student', true) RETURNING id`,
-          [u.name, u.email, '$2b$10$fakehashplaceholder' + Math.random().toString(36).slice(2)]
+          [u.name, u.email, '$2b$10$demoplaceholder' + Math.random().toString(36).slice(2)]
         );
         userId = r.rows[0].id;
         inserted++;
       }
+      // Always delete & re-insert progress for a clean, reliable state
+      await db.query('DELETE FROM user_progress WHERE user_id = $1', [userId]);
       for (let m = 1; m <= u.modules; m++) {
-        await client.query(
-          `INSERT INTO user_progress (user_id, module_id, progress) VALUES ($1, $2, 100)
-           ON CONFLICT (user_id, module_id) DO UPDATE SET progress = 100`,
+        await db.query(
+          `INSERT INTO user_progress (user_id, module_id, progress, completed_at)
+           VALUES ($1, $2, 100, NOW())
+           ON CONFLICT (user_id, module_id) DO UPDATE SET progress = 100, completed_at = NOW()`,
           [userId, m]
         );
       }
-      const scenarios = Math.floor(u.modules / 2);
-      for (let sc = 0; sc < scenarios; sc++) {
-        const existing = await client.query(
-          'SELECT id FROM scenario_scores WHERE user_id = $1 AND scenario_id = $2',
-          [userId, sc + 1]
-        );
-        if (existing.rows.length === 0) {
-          await client.query(
-            `INSERT INTO scenario_scores (user_id, scenario_id, score, feedback) VALUES ($1, $2, $3, 'Great session')`,
-            [userId, sc + 1, Math.floor(70 + Math.random() * 30)]
-          );
-        }
-      }
+      // Upsert streak
       const streak = Math.floor(u.modules / 3);
       if (streak > 0) {
-        await client.query(
+        await db.query(
           `INSERT INTO streaks (user_id, current_streak, longest_streak, last_activity_date)
            VALUES ($1, $2, $2, CURRENT_DATE)
-           ON CONFLICT (user_id) DO UPDATE SET current_streak = $2, longest_streak = GREATEST(streaks.longest_streak, $2)`,
+           ON CONFLICT (user_id) DO UPDATE SET current_streak = $2, longest_streak = GREATEST(streaks.longest_streak, $2), last_activity_date = CURRENT_DATE`,
           [userId, streak]
         );
       }
+      // Insert scenario completions (delete first to avoid dupes since no unique constraint)
+      await db.query('DELETE FROM scenario_scores WHERE user_id = $1', [userId]);
+      const scenarios = Math.min(Math.floor(u.modules / 2), 18);
+      for (let sc = 1; sc <= scenarios; sc++) {
+        await db.query(
+          `INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)`,
+          [userId, sc]
+        );
+      }
+    } catch (err) {
+      console.error('Seed error for', u.email, ':', err.message);
+      errors.push(u.email + ': ' + err.message);
     }
-    await client.query('COMMIT');
-    res.json({ ok: true, inserted, skipped });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Seed error:', err);
-    res.status(500).json({ error: err.message });
-  } finally {
-    client.release();
   }
+  res.json({ ok: true, inserted, skipped, errors });
 });
 
 app.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
