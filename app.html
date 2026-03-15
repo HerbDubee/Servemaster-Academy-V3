@@ -2085,6 +2085,16 @@ async function sendInitialMessage() {
   div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words bg-zinc-800 text-zinc-100">${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-zinc-500">...</p></div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
+  // Speak scene immediately (narration before dialogue loads)
+  const locale = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+  if (scene && aiSpeechEnabled && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    const sceneUtt = new SpeechSynthesisUtterance(scene);
+    sceneUtt.lang = locale;
+    sceneUtt.rate = 1.0;
+    if (_ttsVoiceCache[locale]) sceneUtt.voice = _ttsVoiceCache[locale];
+    window.speechSynthesis.speak(sceneUtt);
+  }
   try {
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
@@ -2096,7 +2106,14 @@ async function sendInitialMessage() {
     const innerDiv = div.querySelector('div');
     innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p>${escHtml(guestText)}</p>`;
     box.scrollTop = box.scrollHeight;
-    speakText(guestText);
+    // Queue dialogue after scene — use speak() directly so it chains without cancelling
+    if (aiSpeechEnabled && window.speechSynthesis) {
+      const dialogueUtt = new SpeechSynthesisUtterance(guestText);
+      dialogueUtt.lang = locale;
+      dialogueUtt.rate = 1.1;
+      if (_ttsVoiceCache[locale]) dialogueUtt.voice = _ttsVoiceCache[locale];
+      window.speechSynthesis.speak(dialogueUtt);
+    }
   } catch {
     const innerDiv = div.querySelector('div');
     innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-red-400">${lang==='es' ? 'No se pudo conectar al servidor.' : lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.'}</p>`;
