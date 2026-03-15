@@ -1028,7 +1028,7 @@ app.post('/api/manager/join', authMiddleware, async (req, res) => {
     const result = await db.query('SELECT * FROM restaurants WHERE invite_code = $1', [inviteCode.toUpperCase()]);
     if (!result.rows.length) return res.status(404).json({ error: 'Invalid invite code' });
     const restaurant = result.rows[0];
-    await db.query('UPDATE users SET restaurant_id = $1 WHERE id = $2', [restaurant.id, req.user.id]);
+    await db.query("UPDATE users SET role = 'manager', restaurant_id = $1 WHERE id = $2", [restaurant.id, req.user.id]);
     res.json({ success: true, restaurantName: restaurant.name });
   } catch (err) { res.status(500).json({ error: 'Failed to join restaurant' }); }
 });
