@@ -1,6 +1,11 @@
 const Stripe = require('stripe');
 
 async function getCredentials() {
+  const explicitKey = process.env.STRIPE_SECRET_KEY;
+  if (explicitKey) {
+    return { secretKey: explicitKey, publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' };
+  }
+
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -30,8 +35,6 @@ async function getCredentials() {
     }
   }
 
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (key) return { secretKey: key, publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' };
   throw new Error('Stripe credentials not available');
 }
 
