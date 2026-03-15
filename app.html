@@ -2809,7 +2809,10 @@ async function joinRestaurant() {
       body: JSON.stringify({ inviteCode: code })
     });
     const data = await res.json();
-    if (data.success) alert(`${lang==='fr'?'Vous avez rejoint':'Joined'}: ${data.restaurantName}`);
+    if (data.success) {
+      alert(`${lang==='fr'?'Vous avez rejoint':'Joined'}: ${data.restaurantName}`);
+      await loadManagerDashboard();
+    }
   } catch {}
 }
 
