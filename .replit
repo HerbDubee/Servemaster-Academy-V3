@@ -3,6 +3,7 @@ modules = ["web", "nodejs-20", "python-3.11", "postgresql-16"]
 
 [nix]
 channel = "stable-24_11"
+packages = ["tambura", "vimPlugins.LanguageClient-neovim"]
 
 [deployment]
 publicDir = "/"
