@@ -1,0 +1,59 @@
+// ====================== MANAGER DASHBOARD API ======================
+
+// Get all team members with progress
+app.get('/api/team', authenticateManager, async (req, res) => {
+  const users = await db.list('user:');
+  const team = [];
+  
+  for (const key of users) {
+    const user = await db.get(key);
+    if (user.role === 'user') {
+      team.push({
+        id: key.replace('user:', ''),
+        name: user.name || key.replace('user:', ''),
+        progress: Object.values(user.progress || {}).reduce((a, b) => a + b, 0) / Object.keys(user.progress || {}).length || 0,
+        strongest: Object.keys(user.progress || {}).sort((a, b) => (user.progress[b] || 0) - (user.progress[a] || 0))[0] || 'N/A',
+        status: calculateStatus(Object.values(user.progress || {}))
+      });
+    }
+  }
+  res.json(team);
+});
+
+// Helper to calculate status
+function calculateStatus(progressArray) {
+  const avg = progressArray.reduce((a, b) => a + b, 0) / progressArray.length || 0;
+  if (avg >= 90) return 'completed';
+  if (avg >= 70) return 'on-track';
+  if (avg >= 40) return 'lagging';
+  return 'overdue';
+}
+
+// Issue certificate (marks as complete + returns PDF-ready data)
+app.post('/api/certificate', authenticateManager, async (req, res) => {
+  const { serverEmail } = req.body;
+  const user = await db.get(`user:${serverEmail}`);
+  if (!user) return res.status(404).json({ error: "Server not found" });
+
+  user.progress = user.progress || {};
+  Object.keys(user.progress).forEach(key => user.progress[key] = 100);
+
+  await db.set(`user:${serverEmail}`, user);
+  res.json({ success: true, message: `Certificate issued for ${serverEmail}` });
+});
+
+// Export team report (CSV simulation)
+app.get('/api/export-report', authenticateManager, async (req, res) => {
+  const users = await db.list('user:');
+  let csv = "Server,Progress,Strongest Module,Status\n";
+  
+  for (const key of users) {
+    const user = await db.get(key);
+    if (user.role === 'user') {
+      const avg = Object.values(user.progress || {}).reduce((a, b) => a + b, 0) / Object.keys(user.progress || {}).length || 0;
+      csv += `${user.name || key},${avg.toFixed(0)}%,N/A,on-track\n`;
+    }
+  }
+  res.setHeader('Content-Type', 'text/csv');
+  res.send(csv);
+});

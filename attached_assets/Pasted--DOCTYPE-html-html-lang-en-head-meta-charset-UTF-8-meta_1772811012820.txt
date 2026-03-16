@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ServeMaster Academy – Elevate Restaurant Service</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body class="bg-zinc-950 text-white">
+
+  <!-- TRIAL DAYS LEFT BANNER -->
+  <div id="trial-banner" class="bg-amber-900 py-3 text-center text-sm font-medium hidden">
+    You have <span id="days-left" class="font-bold"></span> days left in your free trial • 
+    <a href="/pricing.html" class="underline">Upgrade now to keep access</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="bg-gradient-to-br from-amber-900 via-amber-950 to-zinc-950 py-24">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h1 class="heading text-6xl md:text-7xl font-bold leading-tight mb-8">
+        Great service shouldn't be rare.
+      </h1>
+      <p class="text-2xl text-zinc-300 max-w-2xl mx-auto">
+        I'm Kirk Adamson, a lifelong fine-dining aficionado. I built ServeMaster Academy because I kept seeing the same problem: servers who wanted to excel, but simply weren’t taught how.
+      </p>
+      <div class="mt-12">
+        <a href="/pricing.html" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xl py-6 px-16 rounded-3xl">
+          Start 14-Day Free Trial
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREE TIER CALLOUT -->
+  <div class="bg-zinc-900 py-8 text-center">
+    <p class="text-xl font-medium">Start completely free — no credit card required.</p>
+    <p class="text-sm text-zinc-400 mt-2">Access 3 full modules + 5 AI role-play scenarios forever.</p>
+  </div>
+
+  <!-- HOW IT WORKS + FOUNDER STORY + SOCIAL PROOF + BLOG TEASER -->
+  <!-- (Full sections from previous messages are already integrated in your site – this is the missing trial banner only) -->
+
+  <script>
+    // Show trial days left if logged in
+    async function showTrialBanner() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const res = await fetch('/login', { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      const data = await res.json();
+      
+      if (data.trialDaysLeft > 0) {
+        document.getElementById('trial-banner').classList.remove('hidden');
+        document.getElementById('days-left').textContent = data.trialDaysLeft;
+      }
+    }
+    showTrialBanner();
+  </script>
+</body>
+</html>

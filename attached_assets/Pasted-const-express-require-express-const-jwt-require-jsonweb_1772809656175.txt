@@ -1,0 +1,170 @@
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+const ReplDB = require('@replit/database');
+const db = new ReplDB();
+
+const app = express();
+app.use(express.json());
+app.use(express.static('public'));
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+// ====================== MIDDLEWARE ======================
+
+// Basic authentication
+function authenticate(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+// Manager-only access
+function authenticateManager(req, res, next) {
+  authenticate(req, res, () => {
+    if (req.user.role === 'manager') next();
+    else res.status(403).json({ error: "Manager access only" });
+  });
+}
+
+// 14-day trial check
+async function checkTrial(req, res, next) {
+  const user = await db.get(`user:${req.user.email}`);
+  if (!user) return res.status(401).json({ error: "User not found" });
+
+  const now = new Date();
+  const trialEnd = new Date(user.trialEndsAt);
+
+  if (now > trialEnd && !user.isPaid) {
+    user.isTrialActive = false;
+    await db.set(`user:${req.user.email}`, user);
+    return res.status(402).json({ 
+      error: "Trial expired", 
+      message: "Your 14-day free trial has ended. Please upgrade to continue." 
+    });
+  }
+  next();
+}
+
+// ====================== ROUTES ======================
+
+// SIGNUP - Creates account with 14-day trial
+app.post('/signup', async (req, res) => {
+  const { email, password, name, role = 'user' } = req.body;
+  
+  if (!email || !password) return res.status(400).json({ error: "Email and password required" });
+
+  const existing = await db.get(`user:${email}`);
+  if (existing) return res.status(409).json({ error: "Account already exists" });
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+  await db.set(`user:${email}`, {
+    password: hashed,
+    name: name || email.split('@')[0],
+    role,
+    progress: {},
+    trialEndsAt: trialEndsAt.toISOString(),
+    isTrialActive: true,
+    isPaid: false
+  });
+
+  res.json({ success: true, message: "Account created – 14-day free trial started!" });
+});
+
+// LOGIN
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await db.get(`user:${email}`);
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  const token = jwt.sign({ email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+  const daysLeft = Math.ceil((new Date(user.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24));
+
+  res.json({
+    token,
+    trialDaysLeft: daysLeft > 0 ? daysLeft : 0,
+    isPaid: user.isPaid || false
+  });
+});
+
+// PROGRESS SYNC (protected + trial check)
+app.post('/progress', authenticate, checkTrial, async (req, res) => {
+  const { moduleId, progress } = req.body;
+  const user = await db.get(`user:${req.user.email}`);
+  
+  user.progress[moduleId] = progress;
+  await db.set(`user:${req.user.email}`, user);
+  
+  res.json({ success: true });
+});
+
+// TEAM OVERVIEW (Manager only)
+app.get('/api/team', authenticateManager, async (req, res) => {
+  const users = await db.list('user:');
+  const team = [];
+
+  for (const key of users) {
+    const u = await db.get(key);
+    if (u.role === 'user') {
+      const avg = Object.values(u.progress || {}).reduce((a, b) => a + b, 0) / 
+                  Object.keys(u.progress || {}).length || 0;
+      
+      team.push({
+        email: key.replace('user:', ''),
+        name: u.name || "Unnamed Server",
+        progress: Math.round(avg),
+        strongest: Object.keys(u.progress || {}).sort((a,b) => (u.progress[b]||0) - (u.progress[a]||0))[0] || 'None'
+      });
+    }
+  }
+  res.json(team);
+});
+
+// CERTIFICATE ISSUE
+app.post('/api/certificate', authenticateManager, async (req, res) => {
+  const { email } = req.body;
+  const user = await db.get(`user:${email}`);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  user.progress = user.progress || {};
+  Object.keys(user.progress).forEach(k => user.progress[k] = 100);
+  await db.set(`user:${email}`, user);
+
+  res.json({ success: true, message: `Certificate issued for ${email}` });
+});
+
+// STRIPE CHECKOUT (for paid upgrades after trial)
+app.post('/create-checkout-session', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{ price: req.body.priceId, quantity: 1 }],
+      mode: 'subscription',
+      success_url: 'https://servemasteracademy.ca/success.html',
+      cancel_url: 'https://servemasteracademy.ca/pricing.html',
+    });
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== START SERVER ======================
+app.listen(3000, () => {
+  console.log('✅ ServeMaster Academy server running on port 3000');
+});

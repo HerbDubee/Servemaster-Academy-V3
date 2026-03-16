@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Restaurant Owners & Managers – ServeMaster Academy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-zinc-950 text-white">
+
+  <section class="py-20 bg-gradient-to-br from-amber-950 to-zinc-950">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h1 class="text-5xl font-semibold mb-6">Train Your Whole Team.<br>Track Real Results.</h1>
+      <p class="text-2xl text-zinc-300 max-w-2xl mx-auto">
+        Give your servers the professional training they actually need — without spending weeks doing it yourself.
+      </p>
+      <a href="/pricing.html" class="mt-10 inline-block bg-amber-400 text-black font-semibold text-xl py-6 px-16 rounded-3xl">
+        Start Team Trial – $69/mo
+      </a>
+    </div>
+  </section>
+
+  <section class="py-20">
+    <div class="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-16">
+      <div>
+        <h2 class="text-3xl font-semibold mb-8">What You Get as a Manager</h2>
+        <ul class="space-y-8">
+          <li class="flex gap-6">
+            <span class="text-4xl">📊</span>
+            <div>
+              <h3 class="font-semibold">Real-Time Team Dashboard</h3>
+              <p class="text-zinc-400">See every server’s progress, completion rates, and strengths at a glance.</p>
+            </div>
+          </li>
+          <li class="flex gap-6">
+            <span class="text-4xl">📄</span>
+            <div>
+              <h3 class="font-semibold">Instant Certificates</h3>
+              <p class="text-zinc-400">Automatically generated, professional certificates your team can share.</p>
+            </div>
+          </li>
+          <li class="flex gap-6">
+            <span class="text-4xl">📈</span>
+            <div>
+              <h3 class="font-semibold">Exportable Reports</h3>
+              <p class="text-zinc-400">CSV reports for performance reviews and owner meetings.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900 p-10 rounded-3xl">
+        <h3 class="text-2xl font-semibold mb-6">Real Results from Real Teams</h3>
+        <div class="space-y-8">
+          <div>
+            <p class="italic">"Onboarding time dropped from 6 weeks to 12 days. Wine sales are up 31%."</p>
+            <p class="text-sm text-amber-400 mt-4">— David L., General Manager, Toronto (3 locations)</p>
+          </div>
+          <div>
+            <p class="italic">"The manager dashboard finally lets me see who actually knows their stuff."</p>
+            <p class="text-sm text-amber-400 mt-4">— Sarah K., Owner, Vancouver Fine Dining</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="text-center py-16">
+    <a href="/pricing.html" class="text-xl underline">See Team Pricing →</a>
+  </div>
+</body>
+</html>

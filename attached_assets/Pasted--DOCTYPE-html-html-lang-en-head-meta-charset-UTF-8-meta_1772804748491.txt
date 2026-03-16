@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Dashboard – ServeMaster Academy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <div class="w-72 bg-zinc-900 h-screen p-6 border-r border-amber-900">
+      <div class="flex items-center gap-3 mb-12">
+        <div class="text-3xl">🍷</div>
+        <div>
+          <span class="heading text-2xl">ServeMaster</span>
+          <span class="block text-amber-400 text-xs tracking-widest">MANAGER DASHBOARD</span>
+        </div>
+      </div>
+      <nav class="space-y-2">
+        <a href="#" class="block py-4 px-6 bg-amber-900 rounded-2xl font-medium">Team Overview</a>
+        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Reports</a>
+        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Certificates</a>
+        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Settings</a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-10">
+      <div class="flex justify-between items-center mb-10">
+        <div>
+          <h1 class="text-4xl font-semibold">Team Overview</h1>
+          <p class="text-zinc-400">4 servers • 68% average completion</p>
+        </div>
+        <button onclick="exportReport()" class="bg-amber-400 hover:bg-amber-300 text-black px-8 py-4 rounded-3xl font-medium flex items-center gap-3">
+          <i class="fa-solid fa-download"></i> Export Report
+        </button>
+      </div>
+
+      <!-- Team Table -->
+      <div class="bg-zinc-900 rounded-3xl overflow-hidden">
+        <table class="w-full">
+          <thead class="border-b border-zinc-800">
+            <tr>
+              <th class="text-left p-6">Server</th>
+              <th class="text-left p-6">Progress</th>
+              <th class="text-left p-6">Strongest Module</th>
+              <th class="text-left p-6">Status</th>
+              <th class="p-6"></th>
+            </tr>
+          </thead>
+          <tbody id="team-table" class="divide-y divide-zinc-800"></tbody>
+        </table>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
+        <div class="bg-zinc-900 rounded-3xl p-8">
+          <h3 class="font-semibold mb-6">Team Completion Trend</h3>
+          <canvas id="completionChart"></canvas>
+        </div>
+        <div class="bg-zinc-900 rounded-3xl p-8">
+          <h3 class="font-semibold mb-6">Top Modules</h3>
+          <canvas id="moduleChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample team data (in production this comes from /team-progress API)
+    let teamData = [
+      { id: 1, name: "Sarah Chen", progress: 92, strongest: "Wine Service", status: "on-track" },
+      { id: 2, name: "Marcus Rivera", progress: 67, strongest: "Upselling", status: "lagging" },
+      { id: 3, name: "Elena Moreau", progress: 100, strongest: "Special Occasions", status: "completed" },
+      { id: 4, name: "Jamal Wright", progress: 41, strongest: "Etiquette", status: "overdue" }
+    ];
+
+    function renderTeamTable() {
+      const tbody = document.getElementById('team-table');
+      tbody.innerHTML = teamData.map(member => `
+        <tr class="hover:bg-zinc-800 transition cursor-pointer" onclick="viewServer(${member.id})">
+          <td class="p-6 font-medium">${member.name}</td>
+          <td class="p-6">
+            <div class="flex items-center gap-3">
+              <div class="flex-1 bg-zinc-800 h-2 rounded-full">
+                <div class="h-2 bg-amber-400 rounded-full" style="width: ${member.progress}%"></div>
+              </div>
+              <span class="font-mono text-sm w-10">${member.progress}%</span>
+            </div>
+          </td>
+          <td class="p-6 text-zinc-400">${member.strongest}</td>
+          <td class="p-6">
+            <span class="px-4 py-1 text-xs rounded-full ${member.status === 'completed' ? 'bg-emerald-900 text-emerald-400' : member.status === 'on-track' ? 'bg-amber-900 text-amber-400' : 'bg-red-900 text-red-400'}">
+              ${member.status.toUpperCase()}
+            </span>
+          </td>
+          <td class="p-6 text-right">
+            <button onclick="issueCertificate(${member.id}); event.stopImmediatePropagation()" class="text-amber-400 hover:text-amber-300">Issue Certificate</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function viewServer(id) {
+      const server = teamData.find(s => s.id === id);
+      alert(`Viewing detailed progress for ${server.name}\n\nProgress: ${server.progress}%\nStrongest: ${server.strongest}`);
+      // In production: open modal or new view
+    }
+
+    function issueCertificate(id) {
+      const server = teamData.find(s => s.id === id);
+      alert(`✅ Certificate issued for ${server.name}!\n\n(A PDF would download here in production)`);
+    }
+
+    function exportReport() {
+      alert("📊 Report exported as CSV (in production this would download a real file)");
+    }
+
+    // Charts
+    window.onload = () => {
+      renderTeamTable();
+
+      new Chart(document.getElementById('completionChart'), {
+        type: 'line',
+        data: {
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+          datasets: [{ label: 'Team Average %', data: [42, 61, 78, 92], borderColor: '#d4af37', tension: 0.4 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { max: 100 } }}
+      });
+
+      new Chart(document.getElementById('moduleChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Wine', 'Etiquette', 'Upselling', 'Cocktails'],
+          datasets: [{ data: [92, 85, 78, 65], backgroundColor: '#d4af37' }]
+        }
+      });
+    };
+  </script>
+</body>
+</html>

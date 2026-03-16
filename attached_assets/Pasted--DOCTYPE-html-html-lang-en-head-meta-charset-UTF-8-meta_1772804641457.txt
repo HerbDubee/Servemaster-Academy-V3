@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Restaurant Owners & Managers – ServeMaster Academy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+</head>
+<body class="bg-zinc-950 text-white">
+
+  <!-- HERO -->
+  <section class="bg-gradient-to-br from-amber-950 to-zinc-950 py-24">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h1 class="heading text-6xl md:text-7xl font-bold leading-none mb-8">
+        Train Your Team.<br>Track Results.<br>Raise Standards.
+      </h1>
+      <p class="text-2xl text-zinc-300 max-w-3xl mx-auto">
+        Give your servers the professional training they deserve — without spending weeks doing it yourself.
+      </p>
+      <div class="mt-12">
+        <a href="/pricing.html" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xl py-6 px-16 rounded-3xl">
+          Start Team Free Trial – Only $69/month
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFITS GRID -->
+  <section class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-zinc-900 p-10 rounded-3xl">
+          <div class="text-5xl mb-6">📊</div>
+          <h3 class="text-2xl font-semibold mb-3">Real-Time Dashboard</h3>
+          <p class="text-zinc-400">See every server’s progress, completion rates, and strengths instantly.</p>
+        </div>
+        <div class="bg-zinc-900 p-10 rounded-3xl">
+          <div class="text-5xl mb-6">📄</div>
+          <h3 class="text-2xl font-semibold mb-3">Instant Certificates</h3>
+          <p class="text-zinc-400">Automatically generated, professional certificates your team can share with pride.</p>
+        </div>
+        <div class="bg-zinc-900 p-10 rounded-3xl">
+          <div class="text-5xl mb-6">📈</div>
+          <h3 class="text-2xl font-semibold mb-3">Exportable Reports</h3>
+          <p class="text-zinc-400">CSV and PDF reports for performance reviews and owner meetings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD PREVIEW -->
+  <section class="py-20 bg-black">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h2 class="text-4xl font-semibold mb-8">See the Manager Dashboard in Action</h2>
+      <div class="bg-zinc-900 border border-amber-900 rounded-3xl overflow-hidden shadow-2xl">
+        <!-- Placeholder for screenshot – replace with real dashboard image later -->
+        <div class="h-96 bg-zinc-800 flex items-center justify-center text-zinc-500 text-xl">
+          [Manager Dashboard Screenshot – Team Progress + Analytics]
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="py-20 bg-zinc-900">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-black p-10 rounded-3xl">
+          <p class="italic text-lg">"Onboarding time dropped from 6 weeks to 12 days. Wine sales are up 31%. The dashboard is a game-changer."</p>
+          <p class="mt-8 font-semibold">— David L., General Manager, Toronto (3 locations)</p>
+        </div>
+        <div class="bg-black p-10 rounded-3xl">
+          <p class="italic text-lg">"Finally, real training that my team actually enjoys. The ROI is clear in the first month."</p>
+          <p class="mt-8 font-semibold">— Sarah K., Owner, Vancouver Fine Dining</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <div class="py-20 text-center bg-gradient-to-br from-amber-950 to-black">
+    <h2 class="text-4xl font-semibold mb-6">Ready to raise your team’s standards?</h2>
+    <a href="/pricing.html" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xl py-6 px-16 rounded-3xl">
+      Start Your Team Free Trial Today
+    </a>
+  </div>
+
+</body>
+</html>

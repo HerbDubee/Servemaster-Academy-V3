@@ -1,0 +1,93 @@
+<!-- === SIMPLE CAD PRICING WITH DYNAMIC CURRENCY SELECTOR === -->
+<div class="mt-12">
+  <label class="text-sm text-zinc-400 block text-center mb-4">Select Currency:</label>
+  <div id="currency-selector" class="inline-block mx-auto"></div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+  
+  <!-- Individual Monthly -->
+  <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center">
+    <h3 class="text-2xl font-semibold">Individual Monthly</h3>
+    <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
+    <p class="text-sm text-amber-400 mt-2">14-day free trial • No credit card required</p>
+    <button onclick="checkout('price_1T6zlYExNgORioBp06MwjAnO')" 
+            class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl">
+      Start 14-Day Free Trial
+    </button>
+  </div>
+
+  <!-- Individual Yearly -->
+  <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center">
+    <h3 class="text-2xl font-semibold">Individual Yearly</h3>
+    <p class="text-5xl font-bold mt-6 price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
+    <p class="text-sm text-amber-400 mt-2">Save ~37% • 14-day free trial</p>
+    <button onclick="checkout('price_1T6zmiExNgORioBp78rqoHQF')" 
+            class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl">
+      Start 14-Day Free Trial
+    </button>
+  </div>
+
+  <!-- Team Monthly -->
+  <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center">
+    <h3 class="text-2xl font-semibold">Team Monthly</h3>
+    <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
+    <p class="text-sm text-amber-400 mt-2">Up to 10 staff • 14-day free trial</p>
+    <button onclick="checkout('price_1T6zoHExNgORioBpkHFfppKN')" 
+            class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl">
+      Start 14-Day Free Trial
+    </button>
+  </div>
+
+  <!-- Pro-Team Monthly -->
+  <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center">
+    <h3 class="text-2xl font-semibold">Pro-Team Monthly</h3>
+    <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
+    <p class="text-sm text-amber-400 mt-2">Unlimited staff • 14-day free trial</p>
+    <button onclick="checkout('price_1T700zExNgORioBp0eD0BZo1')" 
+            class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-6 rounded-3xl">
+      Start 14-Day Free Trial
+    </button>
+  </div>
+</div>
+
+<!-- Stripe + Dynamic Currency Logic -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe('pk_live_XXXXXXXXXXXXXXXXXXXXXXXX'); // ← PASTE YOUR LIVE PUBLISHABLE KEY HERE
+
+  const elements = stripe.elements({
+    mode: 'subscription',
+    amount: 1900,
+    currency: 'cad',
+    appearance: { theme: 'stripe' }
+  });
+
+  const currencySelector = elements.create('currencySelector', {
+    defaultCurrency: 'cad',
+    supportedCurrencies: ['cad', 'usd']
+  });
+  currencySelector.mount('#currency-selector');
+
+  // Dynamic price update
+  currencySelector.on('change', (event) => {
+    const newCurrency = event.currency.toUpperCase();
+    const rate = event.exchangeRate || 1;
+
+    document.querySelectorAll('.price-display').forEach(el => {
+      const base = parseFloat(el.dataset.baseAmount);
+      const converted = (base * rate).toFixed(2);
+      el.innerHTML = `${converted} <span class="text-xl text-zinc-400">${newCurrency} / ${el.closest('div').querySelector('h3').textContent.includes('Monthly') ? 'mo' : 'yr'}</span>`;
+    });
+  });
+
+  async function checkout(priceId) {
+    const res = await fetch('/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId })
+    });
+    const { sessionId } = await res.json();
+    stripe.redirectToCheckout({ sessionId });
+  }
+</script>

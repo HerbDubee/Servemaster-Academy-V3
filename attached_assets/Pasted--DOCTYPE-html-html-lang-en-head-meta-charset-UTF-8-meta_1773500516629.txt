@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For Restaurants & Managers | ServeMaster Academy</title>
+  <!-- Add the Tailwind script from Step 1 -->
+</head>
+<body class="font-sans">
+  <!-- Header/Nav – copy from index.html -->
+  
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6">
+      <h1 class="text-5xl font-bold text-center mb-6">Managers & Owners: Cut Turnover, Boost Tips</h1>
+      <p class="text-2xl text-center text-gray-600 mb-12">The only AI platform with real voice role-play for servers</p>
+      
+      <!-- ROI CALCULATOR (simple JS) -->
+      <div class="bg-white rounded-3xl shadow-xl p-10 max-w-2xl mx-auto mb-16">
+        <h3 class="text-2xl font-semibold mb-6 text-center">ROI Calculator – See Your Savings</h3>
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium mb-2">Number of servers</label>
+            <input id="servers" type="number" value="10" class="w-full border rounded-xl p-4 text-xl">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Avg replacement cost per server</label>
+            <input id="cost" type="number" value="3000" class="w-full border rounded-xl p-4 text-xl">
+          </div>
+          <button onclick="calculateROI()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl text-xl font-semibold">Calculate Savings</button>
+          <div id="result" class="text-center text-3xl font-bold text-green-600 mt-6"></div>
+        </div>
+      </div>
+
+      <script>
+        function calculateROI() {
+          const servers = parseFloat(document.getElementById('servers').value) || 0;
+          const cost = parseFloat(document.getElementById('cost').value) || 0;
+          const savings = Math.round(servers * cost * 0.75); // 75% faster onboarding assumption
+          document.getElementById('result').innerHTML = `You could save <span class="text-green-600">$${savings.toLocaleString()}</span> in Year 1`;
+        }
+      </script>
+      
+      <!-- Manager testimonials + pricing table (copy the table below) -->
+    </div>
+  </section>
+</body>
+</html>
