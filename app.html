@@ -3043,6 +3043,7 @@ function navigate(screen) {
     const n = document.getElementById('nav-'+s);
     if (n) n.classList.toggle('active', s === screen);
   });
+  if (screen === 'practice') exitChat();
   if (screen === 'leaderboard') loadLeaderboard();
   if (screen === 'achievements') renderAchievements();
   if (screen === 'manager') loadManagerDashboard();
