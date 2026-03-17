@@ -1570,6 +1570,28 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 });
 
 // ── AI routes ─────────────────────────────────────────────────────────────────
+app.post('/api/tts', authMiddleware, aiLimiter, async (req, res) => {
+  const { text } = req.body;
+  if (!text || typeof text !== 'string') return res.status(400).json({ error: 'Missing text' });
+  const trimmed = text.trim().slice(0, 500);
+  if (!trimmed) return res.status(400).json({ error: 'Empty text' });
+  try {
+    const response = await getWhisper().audio.speech.create({
+      model: 'tts-1',
+      voice: 'nova',
+      input: trimmed,
+      response_format: 'mp3'
+    });
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(buffer);
+  } catch (err) {
+    console.error('TTS error:', err.message);
+    res.status(500).json({ error: 'TTS failed' });
+  }
+});
+
 app.post('/api/transcribe', authMiddleware, aiLimiter, upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
   try {
