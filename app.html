@@ -1812,17 +1812,13 @@ function useBrowserSpeechFallback(indicator, listeningText) {
 }
 
 let _ttsVoiceCache = {};
-let _paulinaVoice = null;
-const _MALE_ES_NAMES = ['jorge', 'juan', 'diego', 'miguel', 'carlos', 'rodrigo'];
 function _loadTtsVoices() {
   const synth = window.speechSynthesis;
   if (!synth) return;
   const voices = synth.getVoices();
   if (!voices.length) return;
-  // Find Paulina anywhere across all voices
-  _paulinaVoice = voices.find(v => v.name.toLowerCase().includes('paulina')) || null;
-  // Build cache for FR and ES (used for those language scenarios)
   const prefs = {
+    'en-US': ['google uk english female', 'samantha', 'karen', 'moira', 'tessa', 'zira', 'hazel', 'google us english'],
     'fr-FR': ['google français', 'amelie', 'thomas'],
     'es-ES': ['google español', 'paulina', 'monica', 'soledad']
   };
@@ -1835,28 +1831,13 @@ function _loadTtsVoices() {
       if (picked) break;
     }
     if (!picked) picked = matching.find(v => v.name.toLowerCase().includes('google'));
-    // For Spanish, avoid known male voices when picking fallback
-    if (!picked && locale === 'es-ES') {
-      picked = matching.find(v => !_MALE_ES_NAMES.some(m => v.name.toLowerCase().includes(m)));
-    }
     if (!picked) picked = matching[0];
     if (picked) _ttsVoiceCache[locale] = picked;
   }
-  console.log('[SMA TTS] Paulina:', _paulinaVoice ? _paulinaVoice.name : 'not found');
-  console.log('[SMA TTS] ES voice:', _ttsVoiceCache['es-ES'] ? _ttsVoiceCache['es-ES'].name : 'none');
-  console.log('[SMA TTS] All voices:', voices.map(v => v.name + ' (' + v.lang + ')').join(', '));
 }
 if (window.speechSynthesis) {
   _loadTtsVoices();
   window.speechSynthesis.onvoiceschanged = _loadTtsVoices;
-}
-
-function _getEnglishVoice() {
-  // Paulina first, then any non-male Spanish voice, then null (browser default)
-  if (_paulinaVoice) return _paulinaVoice;
-  const esVoice = _ttsVoiceCache['es-ES'];
-  if (esVoice && !_MALE_ES_NAMES.some(m => esVoice.name.toLowerCase().includes(m))) return esVoice;
-  return null;
 }
 
 function speakText(text) {
@@ -1865,17 +1846,9 @@ function speakText(text) {
   if (!synth) return;
   synth.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  if (lang === 'fr') {
-    utt.lang = 'fr-FR';
-    if (_ttsVoiceCache['fr-FR']) utt.voice = _ttsVoiceCache['fr-FR'];
-  } else if (lang === 'es') {
-    utt.lang = 'es-ES';
-    if (_ttsVoiceCache['es-ES']) utt.voice = _ttsVoiceCache['es-ES'];
-  } else {
-    const v = _getEnglishVoice();
-    utt.lang = v ? v.lang : 'es-ES';
-    if (v) utt.voice = v;
-  }
+  const locale = lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-US';
+  utt.lang = locale;
+  if (_ttsVoiceCache[locale]) utt.voice = _ttsVoiceCache[locale];
   utt.rate = 1.1;
   synth.speak(utt);
 }
@@ -2114,17 +2087,9 @@ async function sendInitialMessage() {
   box.scrollTop = box.scrollHeight;
   // Speak scene immediately (narration before dialogue loads)
   function _applyVoice(utt) {
-    if (lang === 'fr') {
-      utt.lang = 'fr-FR';
-      if (_ttsVoiceCache['fr-FR']) utt.voice = _ttsVoiceCache['fr-FR'];
-    } else if (lang === 'es') {
-      utt.lang = 'es-ES';
-      if (_ttsVoiceCache['es-ES']) utt.voice = _ttsVoiceCache['es-ES'];
-    } else {
-      const v = _getEnglishVoice();
-      utt.lang = v ? v.lang : 'es-ES';
-      if (v) utt.voice = v;
-    }
+    const locale = lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-US';
+    utt.lang = locale;
+    if (_ttsVoiceCache[locale]) utt.voice = _ttsVoiceCache[locale];
   }
   if (scene && aiSpeechEnabled && window.speechSynthesis) {
     window.speechSynthesis.cancel();
