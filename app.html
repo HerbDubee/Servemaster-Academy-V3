@@ -1669,6 +1669,7 @@ let _audioCtx = null;
 
 function toggleAISpeech() {
   aiSpeechEnabled = !aiSpeechEnabled;
+  if (!aiSpeechEnabled) _stopTtsAudio();
   const btn = document.getElementById('ai-speech-btn');
   if (btn) btn.textContent = aiSpeechEnabled ? '🔇' : '🔊';
 }
@@ -1882,7 +1883,7 @@ async function speakOpenAI(text) {
     return new Promise(resolve => {
       audio.addEventListener('ended', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
       audio.addEventListener('error', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
-      audio.play().catch(() => { speakText(text); resolve(); });
+      audio.play().catch(() => { URL.revokeObjectURL(url); _ttsAudio = null; speakText(text); resolve(); });
     });
   } catch {
     speakText(text);
