@@ -1813,15 +1813,18 @@ function useBrowserSpeechFallback(indicator, listeningText) {
 
 let _ttsVoiceCache = {};
 let _paulinaVoice = null;
+const _MALE_ES_NAMES = ['jorge', 'juan', 'diego', 'miguel', 'carlos', 'rodrigo'];
 function _loadTtsVoices() {
   const synth = window.speechSynthesis;
   if (!synth) return;
   const voices = synth.getVoices();
   if (!voices.length) return;
+  // Find Paulina anywhere across all voices
   _paulinaVoice = voices.find(v => v.name.toLowerCase().includes('paulina')) || null;
+  // Build cache for FR and ES (used for those language scenarios)
   const prefs = {
-    'fr-FR': ['google français', 'thomas', 'amelie'],
-    'es-ES': ['google español', 'paulina', 'jorge']
+    'fr-FR': ['google français', 'amelie', 'thomas'],
+    'es-ES': ['google español', 'paulina', 'monica', 'soledad']
   };
   for (const [locale, keywords] of Object.entries(prefs)) {
     const langCode = locale.split('-')[0];
@@ -1832,9 +1835,16 @@ function _loadTtsVoices() {
       if (picked) break;
     }
     if (!picked) picked = matching.find(v => v.name.toLowerCase().includes('google'));
+    // For Spanish, avoid known male voices when picking fallback
+    if (!picked && locale === 'es-ES') {
+      picked = matching.find(v => !_MALE_ES_NAMES.some(m => v.name.toLowerCase().includes(m)));
+    }
     if (!picked) picked = matching[0];
     if (picked) _ttsVoiceCache[locale] = picked;
   }
+  console.log('[SMA TTS] Paulina:', _paulinaVoice ? _paulinaVoice.name : 'not found');
+  console.log('[SMA TTS] ES voice:', _ttsVoiceCache['es-ES'] ? _ttsVoiceCache['es-ES'].name : 'none');
+  console.log('[SMA TTS] All voices:', voices.map(v => v.name + ' (' + v.lang + ')').join(', '));
 }
 if (window.speechSynthesis) {
   _loadTtsVoices();
@@ -1842,7 +1852,11 @@ if (window.speechSynthesis) {
 }
 
 function _getEnglishVoice() {
-  return _paulinaVoice || _ttsVoiceCache['es-ES'] || null;
+  // Paulina first, then any non-male Spanish voice, then null (browser default)
+  if (_paulinaVoice) return _paulinaVoice;
+  const esVoice = _ttsVoiceCache['es-ES'];
+  if (esVoice && !_MALE_ES_NAMES.some(m => esVoice.name.toLowerCase().includes(m))) return esVoice;
+  return null;
 }
 
 function speakText(text) {
