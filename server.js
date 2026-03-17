@@ -1587,7 +1587,7 @@ app.post('/api/tts', authMiddleware, aiLimiter, async (req, res) => {
   if (lang && lang !== 'en') return res.status(400).json({ error: 'TTS only supports English; use browser TTS for other languages.' });
   const trimmed = text.trim();
   if (!trimmed) return res.status(400).json({ error: 'Empty text' });
-  if (trimmed.length > 500) return res.status(400).json({ error: 'Text exceeds 500 character limit' });
+  if (trimmed.length > 4000) return res.status(400).json({ error: 'Text exceeds 4000 character limit' });
   try {
     const response = await getTTS().audio.speech.create({
       model: 'tts-1',

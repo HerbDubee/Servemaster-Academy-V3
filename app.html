@@ -1865,10 +1865,26 @@ function speakText(text) {
   synth.speak(utt);
 }
 
+function speakTextAsync(text) {
+  return new Promise(resolve => {
+    const synth = window.speechSynthesis;
+    if (!synth) { resolve(); return; }
+    synth.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    const locale = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+    utt.lang = locale;
+    utt.rate = 1.1;
+    if (_ttsVoiceCache[locale]) utt.voice = _ttsVoiceCache[locale];
+    utt.onend = resolve;
+    utt.onerror = resolve;
+    synth.speak(utt);
+  });
+}
+
 async function speakOpenAI(text) {
   if (!aiSpeechEnabled) return Promise.resolve();
   _stopTtsAudio();
-  if (lang !== 'en') { speakText(text); return Promise.resolve(); }
+  if (lang !== 'en') return speakTextAsync(text);
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
@@ -1883,11 +1899,10 @@ async function speakOpenAI(text) {
     return new Promise(resolve => {
       audio.addEventListener('ended', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
       audio.addEventListener('error', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
-      audio.play().catch(() => { URL.revokeObjectURL(url); _ttsAudio = null; speakText(text); resolve(); });
+      audio.play().catch(() => { URL.revokeObjectURL(url); _ttsAudio = null; speakTextAsync(text).then(resolve); });
     });
   } catch {
-    speakText(text);
-    return Promise.resolve();
+    return speakTextAsync(text);
   }
 }
 
