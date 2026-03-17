@@ -84,6 +84,17 @@ function getWhisper() {
   return _whisper;
 }
 
+let _tts = null;
+function getTTS() {
+  if (_tts) return _tts;
+  // OpenAI TTS must use the standard OpenAI API — Azure does not expose the TTS endpoint.
+  // Prefer OPENAI_API_KEY (direct) and never pass the Azure base URL.
+  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
+  _tts = new OpenAI({ apiKey });
+  return _tts;
+}
+
 // ── Referral credit helper ───────────────────────────────────────────────────
 async function processReferralCredit(payingUserEmail, payingUserId) {
   const client = await db.pool.connect();
@@ -1571,12 +1582,14 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 
 // ── AI routes ─────────────────────────────────────────────────────────────────
 app.post('/api/tts', authMiddleware, aiLimiter, async (req, res) => {
-  const { text } = req.body;
+  const { text, lang } = req.body;
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'Missing text' });
-  const trimmed = text.trim().slice(0, 500);
+  if (lang && lang !== 'en') return res.status(400).json({ error: 'TTS only supports English; use browser TTS for other languages.' });
+  const trimmed = text.trim();
   if (!trimmed) return res.status(400).json({ error: 'Empty text' });
+  if (trimmed.length > 500) return res.status(400).json({ error: 'Text exceeds 500 character limit' });
   try {
-    const response = await getWhisper().audio.speech.create({
+    const response = await getTTS().audio.speech.create({
       model: 'tts-1',
       voice: 'nova',
       input: trimmed,

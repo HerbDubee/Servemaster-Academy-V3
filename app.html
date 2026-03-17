@@ -1872,7 +1872,7 @@ async function speakOpenAI(text) {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ text: text.slice(0, 500) })
+      body: JSON.stringify({ text, lang })
     });
     if (!res.ok) throw new Error('TTS request failed');
     const blob = await res.blob();
