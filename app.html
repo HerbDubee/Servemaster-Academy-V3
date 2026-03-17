@@ -654,18 +654,9 @@ let authToken = localStorage.getItem('sma-token') || null;
 
 (function _unlockAudioOnGesture() {
   function unlock() {
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        const ctx = new Ctx();
-        const buf = ctx.createBuffer(1, 1, 22050);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start(0);
-        ctx.close();
-      }
-    } catch {}
+    const sil = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+    sil.volume = 0;
+    sil.play().catch(() => {});
   }
   document.addEventListener('click', unlock, { once: true, capture: true });
   document.addEventListener('touchstart', unlock, { once: true, capture: true });
@@ -2050,6 +2041,7 @@ const practiceScenarios = [
 
 let chatScenarioId = null;
 let chatHistory = [];
+let chatSessionToken = 0;
 let firstModuleCompleted = false;
 let scenarioCoachingNotes = [];
 
@@ -2114,6 +2106,7 @@ function renderScenarios() {
 function startChat(scenarioId) {
   chatScenarioId = scenarioId;
   chatHistory = [];
+  chatSessionToken++;
   const s = practiceScenarios.find(s => s.id === scenarioId);
   const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
   document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
@@ -2156,6 +2149,8 @@ async function sendInitialMessage() {
   div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words bg-zinc-800 text-zinc-100">${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-zinc-500">...</p></div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
+  // Capture session token so late-resolving promises don't speak after exit
+  const sessionAtStart = chatSessionToken;
   // Start scene TTS in background (runs in parallel with roleplay API call)
   const sceneEndPromise = (scene && aiSpeechEnabled) ? speakOpenAI(scene) : Promise.resolve();
   try {
@@ -2169,8 +2164,8 @@ async function sendInitialMessage() {
     const innerDiv = div.querySelector('div');
     innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p>${escHtml(guestText)}</p>`;
     box.scrollTop = box.scrollHeight;
-    // Play dialogue after scene finishes
-    if (aiSpeechEnabled) sceneEndPromise.then(() => speakOpenAI(guestText));
+    // Play dialogue after scene finishes — only if still in the same session
+    if (aiSpeechEnabled) sceneEndPromise.then(() => { if (chatSessionToken === sessionAtStart) speakOpenAI(guestText); });
   } catch {
     const innerDiv = div.querySelector('div');
     innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-red-400">${lang==='es' ? 'No se pudo conectar al servidor.' : lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.'}</p>`;
