@@ -428,6 +428,15 @@
         </div>
       </div>
 
+      <!-- Quiz Retake Improvement -->
+      <div id="quiz-retake-panel">
+        <h2 class="text-lg font-semibold mb-2">📈 Quiz Improvement</h2>
+        <p class="text-zinc-400 text-sm mb-5">First attempt vs. your best score — see how much you've grown.</p>
+        <div id="quiz-retake-list" class="space-y-3">
+          <div id="quiz-retake-none" class="hidden text-zinc-500 text-sm py-4">Retake any quiz to see your improvement here.</div>
+        </div>
+      </div>
+
       <!-- Bookmarked Modules -->
       <div id="bookmarked-modules-panel">
         <h2 class="text-lg font-semibold mb-2">★ Bookmarked Modules</h2>
@@ -2423,6 +2432,7 @@ function renderAchievements() {
   document.getElementById('scenarios-done').textContent = completedScenarios.length;
 
   renderQuizChart();
+  renderQuizImprovement();
   renderBookmarkedModules();
   loadScenarioHistory();
 }
@@ -2457,6 +2467,46 @@ function renderQuizChart() {
 }
 
 const MODULE_NAMES_SHORT = {1:'Foundations',2:'Menu Know.',3:'Wine Ess.',4:'Beverages',5:'Upselling',6:'Tray & Posture',7:'Allergies',8:'Guest Psych.',9:'Tableside',10:'POS',11:'Wine Adv.',12:'Floor Lead.',13:'Spirits',14:'Coffee',15:'Allergen+',16:'Emotional IQ',17:'Menu Adv.',18:'Rush Mgmt',19:'Host Skills',20:'Charcuterie',21:'Sustainability',22:'Digital Tools',23:'Team Culture',24:'Wellness',25:'Bar Setup',26:'Bar Tech.',27:'Cocktails',28:'Bar Upsell',29:'Responsible',30:'Bar Career'};
+
+function renderQuizImprovement() {
+  const listEl = document.getElementById('quiz-retake-list');
+  const noneEl = document.getElementById('quiz-retake-none');
+  if (!listEl) return;
+  const improved = modules.filter(m => savedQuizFirstAttempts[m.id] != null && savedQuizScores[m.id] != null && savedQuizScores[m.id] !== savedQuizFirstAttempts[m.id]);
+  const same = modules.filter(m => savedQuizFirstAttempts[m.id] != null && savedQuizScores[m.id] != null && savedQuizScores[m.id] === savedQuizFirstAttempts[m.id]);
+  const retaken = [...improved, ...same];
+  if (!retaken.length) {
+    if (noneEl) noneEl.classList.remove('hidden');
+    listEl.innerHTML = '';
+    return;
+  }
+  if (noneEl) noneEl.classList.add('hidden');
+  listEl.innerHTML = retaken.map(m => {
+    const first = savedQuizFirstAttempts[m.id];
+    const best = savedQuizScores[m.id];
+    const diff = best - first;
+    const diffColor = diff > 0 ? 'text-emerald-400' : diff < 0 ? 'text-red-400' : 'text-zinc-400';
+    const diffLabel = diff > 0 ? `+${diff}%` : diff < 0 ? `${diff}%` : '—';
+    const barColor = best >= 80 ? 'bg-emerald-500' : best >= 60 ? 'bg-amber-400' : 'bg-red-500';
+    const name = MODULE_NAMES_SHORT[m.id] || `Module ${m.id}`;
+    return `<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4">
+      <div class="text-2xl shrink-0">${m.emoji}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">${name}</div>
+        <div class="flex items-center gap-3 mt-1 text-xs text-zinc-400">
+          <span>First: <span class="text-zinc-200 font-semibold">${first}%</span></span>
+          <span class="text-zinc-600">→</span>
+          <span>Best: <span class="text-zinc-200 font-semibold">${best}%</span></span>
+          <span class="${diffColor} font-bold">${diffLabel}</span>
+        </div>
+        <div class="mt-2 w-full bg-zinc-700 rounded-full h-1.5 relative">
+          <div class="bg-zinc-600 h-1.5 rounded-full absolute" style="width:${first}%"></div>
+          <div class="${barColor} h-1.5 rounded-full" style="width:${best}%"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 function renderBookmarkedModules() {
   const listEl = document.getElementById('bookmarked-list');
