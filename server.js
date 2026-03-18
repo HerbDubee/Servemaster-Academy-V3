@@ -353,7 +353,12 @@ app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog
 app.get('/blog/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', slug + '.html');
-  res.sendFile(filePath, (err) => { if (err) next(); });
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      const templatePath = path.join(__dirname, 'public', 'blog', 'article.html');
+      res.sendFile(templatePath, (err2) => { if (err2) next(); });
+    }
+  });
 });
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
