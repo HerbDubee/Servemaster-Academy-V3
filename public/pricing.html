@@ -89,25 +89,25 @@ details[open] summary::after { content: '−'; }
     <div class="flex items-center gap-2 text-sm text-zinc-300">
       <span class="text-amber-400 text-base">★★★★★</span>
       <span class="font-semibold">4.9</span>
-      <span class="text-zinc-500">avg rating</span>
+      <span data-i18n="pricing_social_rating" class="text-zinc-500">avg rating</span>
     </div>
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
-    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">3,200+</span> <span class="text-zinc-500">servers trained</span></div>
+    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">3,200+</span> <span data-i18n="pricing_social_servers" class="text-zinc-500">servers trained</span></div>
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
-    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">48</span> <span class="text-zinc-500">restaurants active</span></div>
+    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">48</span> <span data-i18n="pricing_social_restaurants" class="text-zinc-500">restaurants active</span></div>
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
-    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">92%</span> <span class="text-zinc-500">trial-to-paid rate</span></div>
+    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">92%</span> <span data-i18n="pricing_social_trial" class="text-zinc-500">trial-to-paid rate</span></div>
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
-    <div class="text-sm text-zinc-300"><span class="text-zinc-500">🇨🇦 Made in Canada · CASL compliant</span></div>
+    <div class="text-sm text-zinc-300"><span data-i18n="pricing_social_made" class="text-zinc-500">🇨🇦 Made in Canada · CASL compliant</span></div>
   </div>
 
   <!-- Billing toggle -->
   <div class="flex items-center justify-center gap-4 mb-10">
-    <span id="lbl-monthly" class="text-sm font-semibold text-white">Monthly</span>
+    <span id="lbl-monthly" data-i18n="pricing_toggle_monthly" class="text-sm font-semibold text-white">Monthly</span>
     <button onclick="toggleBilling()" id="billing-toggle" aria-label="Toggle annual billing" class="relative w-14 h-7 bg-emerald-600 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500">
       <span id="toggle-pill" class="toggle-pill absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow"></span>
     </button>
-    <span id="lbl-annual" class="text-sm font-medium text-zinc-400">Annual <span class="annual-badge text-white text-xs font-bold px-2 py-0.5 rounded-full ml-1">Save up to 35%</span></span>
+    <span id="lbl-annual" class="text-sm font-medium text-zinc-400"><span data-i18n="pricing_toggle_annual">Annual</span> <span data-i18n="pricing_toggle_save" class="annual-badge text-white text-xs font-bold px-2 py-0.5 rounded-full ml-1">Save up to 35%</span></span>
   </div>
 
   <!-- Currency selector -->
@@ -125,56 +125,56 @@ details[open] summary::after { content: '−'; }
 
     <!-- Free -->
     <div class="plan-card bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Free</h3>
-      <p class="text-sm text-zinc-400 mt-1">Individual servers</p>
+      <h3 data-i18n="pricing_free_h" class="text-2xl font-semibold">Free</h3>
+      <p data-i18n="pricing_free_sub" class="text-sm text-zinc-400 mt-1">Individual servers</p>
       <p class="text-5xl font-bold mt-6">$0</p>
-      <p class="text-sm text-zinc-400 mt-2">3 modules + 5 role-plays · Forever free</p>
+      <p data-i18n="pricing_free_desc" class="text-sm text-zinc-400 mt-2">3 modules + 5 role-plays · Forever free</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> 3 training modules</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> 5 AI roleplay scenarios</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> Leaderboard access</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> Progress tracking</li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> <span data-i18n="pricing_free_feat1">3 training modules</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> <span data-i18n="pricing_free_feat2">5 AI roleplay scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> <span data-i18n="pricing_free_feat3">Leaderboard access</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-600">✓</span> <span data-i18n="pricing_free_feat4">Progress tracking</span></li>
       </ul>
-      <a href="/signup" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors block text-center text-sm">
+      <a href="/signup" data-i18n="pricing_free_btn" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors block text-center text-sm">
         Get Started Free
       </a>
     </div>
 
     <!-- Premium Monthly -->
     <div id="card-premium-monthly" class="plan-card bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col relative">
-      <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</div>
-      <h3 class="text-2xl font-semibold">Premium</h3>
-      <p class="text-sm text-zinc-400 mt-1">Individual servers</p>
+      <div data-i18n="pricing_badge_popular" class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</div>
+      <h3 data-i18n="pricing_prem_mo_h" class="text-2xl font-semibold">Premium</h3>
+      <p data-i18n="pricing_prem_mo_sub" class="text-sm text-zinc-400 mt-1">Individual servers</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-amber-400 mt-2">14-day free trial · Cancel anytime</p>
+      <p data-i18n="pricing_prem_mo_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Cancel anytime</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 30 training modules</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> All 36 AI scenarios</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Voice roleplay (Whisper AI)</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Completion certificate</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Streak &amp; gamification</li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> EN / FR / ES</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat1">All 30 training modules</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat2">All 36 AI scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat3">Voice roleplay (Whisper AI)</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat4">Completion certificate</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat5">Streak &amp; gamification</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat6">EN / FR / ES</span></li>
       </ul>
-      <button onclick="checkout('premium_monthly')" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('premium_monthly')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
         Start 14-Day Free Trial
       </button>
     </div>
 
     <!-- Premium Annual -->
     <div id="card-premium-annual" class="plan-card bg-zinc-900 border border-amber-900 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Premium Annual</h3>
-      <p class="text-sm text-zinc-400 mt-1">Best value for individuals</p>
+      <h3 data-i18n="pricing_prem_yr_h" class="text-2xl font-semibold">Premium Annual</h3>
+      <p data-i18n="pricing_prem_yr_sub2" class="text-sm text-zinc-400 mt-1">Best value for individuals</p>
       <div class="mt-6">
         <p class="text-5xl font-bold price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
-        <p class="text-sm text-emerald-400 font-semibold mt-1">~$12.42/mo · Save 35%</p>
+        <p data-i18n="pricing_prem_yr_save_note" class="text-sm text-emerald-400 font-semibold mt-1">~$12.42/mo · Save 35%</p>
       </div>
-      <p class="text-sm text-amber-400 mt-2">14-day free trial · Billed annually</p>
+      <p data-i18n="pricing_prem_yr_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> Everything in Premium</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> 2 months free vs monthly</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Priority feature access</li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_yr_feat1">Everything in Premium</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat2">2 months free vs monthly</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat3">Priority feature access</span></li>
       </ul>
-      <button onclick="checkout('premium_annual')" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('premium_annual')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
         Start 14-Day Free Trial
       </button>
     </div>
@@ -183,24 +183,24 @@ details[open] summary::after { content: '−'; }
 
   <!-- Team CTA banner -->
   <div id="team-cta-section" class="mt-14 mb-6 bg-gradient-to-r from-zinc-900 via-zinc-800/60 to-zinc-900 border border-zinc-700 rounded-3xl px-8 py-8 text-center">
-    <div class="inline-flex items-center gap-2 bg-emerald-900/40 border border-emerald-700 rounded-full px-4 py-1 text-emerald-300 text-xs font-bold tracking-widest uppercase mb-4">For Restaurants &amp; Managers</div>
-    <h2 class="heading text-3xl font-bold mb-3">Train your whole team for one flat rate</h2>
-    <p class="text-zinc-400 max-w-2xl mx-auto mb-6">No per-seat fees. One subscription covers everyone in your location — kitchen confidence, floor service, wine knowledge, and compliance — all tracked in your Manager Dashboard.</p>
+    <div data-i18n="pricing_team_cta_badge" class="inline-flex items-center gap-2 bg-emerald-900/40 border border-emerald-700 rounded-full px-4 py-1 text-emerald-300 text-xs font-bold tracking-widest uppercase mb-4">For Restaurants &amp; Managers</div>
+    <h2 data-i18n="pricing_team_cta_h" class="heading text-3xl font-bold mb-3">Train your whole team for one flat rate</h2>
+    <p data-i18n="pricing_team_cta_p" class="text-zinc-400 max-w-2xl mx-auto mb-6">No per-seat fees. One subscription covers everyone in your location — kitchen confidence, floor service, wine knowledge, and compliance — all tracked in your Manager Dashboard.</p>
     <div class="flex flex-wrap justify-center gap-6 text-sm text-zinc-300 mb-6">
-      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Manager dashboard with team progress</span>
-      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Assign required modules to staff</span>
-      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Weekly email digest</span>
-      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Custom certificate logo</span>
-      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Staff nudge system</span>
+      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_team_cta_feat1">Manager dashboard with team progress</span></span>
+      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_team_cta_feat2">Assign required modules to staff</span></span>
+      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_team_cta_feat3">Weekly email digest</span></span>
+      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_team_cta_feat4">Custom certificate logo</span></span>
+      <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_team_cta_feat5">Staff nudge system</span></span>
     </div>
-    <a href="/managers" class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-2xl text-sm transition-colors">Learn More About Team Plans →</a>
+    <a href="/managers" data-i18n="pricing_team_cta_btn" class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-2xl text-sm transition-colors">Learn More About Team Plans →</a>
   </div>
 
   <!-- Team billing sub-toggle -->
   <div class="flex items-center justify-center gap-3 mb-8">
-    <span class="text-sm text-zinc-400">Team billing:</span>
-    <button onclick="setTeamBilling('monthly')" id="team-monthly-btn" class="text-sm font-semibold px-4 py-1.5 rounded-full bg-zinc-700 text-white transition-colors">Monthly</button>
-    <button onclick="setTeamBilling('annual')" id="team-annual-btn" class="text-sm font-medium px-4 py-1.5 rounded-full bg-zinc-800 text-zinc-400 transition-colors">Annual <span class="text-emerald-400 text-xs ml-1">Save ~17%</span></button>
+    <span data-i18n="pricing_team_billing" class="text-sm text-zinc-400">Team billing:</span>
+    <button onclick="setTeamBilling('monthly')" id="team-monthly-btn" data-i18n="pricing_team_monthly_btn" class="text-sm font-semibold px-4 py-1.5 rounded-full bg-zinc-700 text-white transition-colors">Monthly</button>
+    <button onclick="setTeamBilling('annual')" id="team-annual-btn" class="text-sm font-medium px-4 py-1.5 rounded-full bg-zinc-800 text-zinc-400 transition-colors"><span data-i18n="pricing_team_annual_btn">Annual</span> <span data-i18n="pricing_team_annual_save" class="text-emerald-400 text-xs ml-1">Save ~17%</span></button>
   </div>
 
   <!-- Team Plans (monthly) -->
@@ -208,57 +208,57 @@ details[open] summary::after { content: '−'; }
 
     <!-- Starter Team Monthly -->
     <div class="plan-card bg-zinc-900 border-2 border-emerald-600 rounded-3xl p-8 text-center flex flex-col relative">
-      <h3 class="text-2xl font-semibold">Starter Team</h3>
-      <p class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
+      <h3 data-i18n="pricing_starter_h" class="text-2xl font-semibold">Starter Team</h3>
+      <p data-i18n="pricing_starter_sub" class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-emerald-400 font-semibold mt-1">First 30 days only $49</p>
-      <p class="text-sm text-zinc-400 mt-1">Up to 10 staff · Per location · 14-day trial</p>
+      <p data-i18n="pricing_starter_promo" class="text-sm text-emerald-400 font-semibold mt-1">First 30 days only $49</p>
+      <p data-i18n="pricing_starter_promo_trial" class="text-sm text-zinc-400 mt-1">Up to 10 staff · Per location · 14-day trial</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Up to 10 staff accounts</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Full module &amp; scenario access</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Manager dashboard</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Assign required modules</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Weekly team digest</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat1">Up to 10 staff accounts</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat2">Full module &amp; scenario access</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat3">Manager dashboard</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat4">Assign required modules</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat5">Weekly team digest</span></li>
       </ul>
-      <button onclick="checkout('starter_team')" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('starter_team')" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Start 14-Day Team Trial
       </button>
     </div>
 
     <!-- Pro Team Monthly -->
     <div class="plan-card bg-zinc-900 border-2 border-blue-600 rounded-3xl p-8 text-center flex flex-col relative">
-      <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Best Team Value</div>
-      <h3 class="text-2xl font-semibold">Pro Team</h3>
-      <p class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
+      <div data-i18n="pricing_badge_best_team" class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Best Team Value</div>
+      <h3 data-i18n="pricing_pro_h" class="text-2xl font-semibold">Pro Team</h3>
+      <p data-i18n="pricing_pro_sub" class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p class="text-sm text-blue-400 font-semibold mt-1">First 30 days only $49</p>
-      <p class="text-sm text-zinc-400 mt-1">Unlimited staff · Custom scenarios · 14-day trial</p>
+      <p data-i18n="pricing_pro_promo" class="text-sm text-blue-400 font-semibold mt-1">First 30 days only $49</p>
+      <p data-i18n="pricing_pro_trial" class="text-sm text-zinc-400 mt-1">Unlimited staff · Custom scenarios · 14-day trial</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Unlimited staff accounts</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Everything in Starter</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Custom AI scenarios</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Advanced analytics</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Priority support</li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat1">Unlimited staff accounts</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat2">Everything in Starter</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat3">Custom AI scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat4">Advanced analytics</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat5">Priority support</span></li>
       </ul>
-      <button onclick="checkout('pro_team')" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('pro_team')" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Start 14-Day Team Trial
       </button>
     </div>
 
     <!-- Enterprise -->
     <div class="plan-card bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Enterprise</h3>
-      <p class="text-sm text-zinc-400 mt-1">Large chains &amp; groups</p>
-      <p class="text-5xl font-bold mt-6">Custom</p>
-      <p class="text-sm text-zinc-400 mt-2">Multi-location · White-label · SSO</p>
+      <h3 data-i18n="pricing_ent_h" class="text-2xl font-semibold">Enterprise</h3>
+      <p data-i18n="pricing_ent_sub" class="text-sm text-zinc-400 mt-1">Large chains &amp; groups</p>
+      <p data-i18n="pricing_ent_price" class="text-5xl font-bold mt-6">Custom</p>
+      <p data-i18n="pricing_ent_desc" class="text-sm text-zinc-400 mt-2">Multi-location · White-label · SSO</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> Multi-location management</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> White-label branding</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> SSO &amp; API access</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> Dedicated account manager</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> SLA guarantee</li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat1">Multi-location management</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat2">White-label branding</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat3">SSO &amp; API access</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat4">Dedicated account manager</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat5">SLA guarantee</span></li>
       </ul>
-      <button onclick="openEnterpriseModal()" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="openEnterpriseModal()" data-i18n="pricing_ent_btn" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Contact Us
       </button>
     </div>
@@ -270,58 +270,58 @@ details[open] summary::after { content: '−'; }
 
     <!-- Starter Team Annual -->
     <div class="plan-card bg-zinc-900 border-2 border-emerald-600 rounded-3xl p-8 text-center flex flex-col relative">
-      <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 annual-badge text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Save $198/yr</div>
-      <h3 class="text-2xl font-semibold">Starter Team Annual</h3>
-      <p class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
+      <div data-i18n="pricing_starter_ann_save_badge" class="absolute -top-3.5 left-1/2 -translate-x-1/2 annual-badge text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Save $198/yr</div>
+      <h3 data-i18n="pricing_starter_h" class="text-2xl font-semibold">Starter Team Annual</h3>
+      <p data-i18n="pricing_starter_ann_sub" class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
       <div class="mt-6">
         <p class="text-5xl font-bold price-display" data-base-amount="990">$990 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
-        <p class="text-sm text-emerald-400 font-semibold mt-1">~$82.50/mo · Save ~17%</p>
+        <p data-i18n="pricing_starter_ann_save_note" class="text-sm text-emerald-400 font-semibold mt-1">~$82.50/mo · Save ~17%</p>
       </div>
-      <p class="text-sm text-zinc-400 mt-2">Up to 10 staff · Per location · Billed annually</p>
+      <p data-i18n="pricing_starter_ann_trial" class="text-sm text-zinc-400 mt-2">Up to 10 staff · Per location · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> Everything in Starter Team</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> $198 saved annually</li>
-        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> One invoice per year</li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_ann_feat1">Everything in Starter Team</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_ann_feat2">$198 saved annually</span></li>
+        <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_ann_feat3">One invoice per year</span></li>
       </ul>
-      <button onclick="checkout('starter_team_annual')" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('starter_team_annual')" data-i18n="pricing_starter_ann_btn" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Get Starter Annual
       </button>
     </div>
 
     <!-- Pro Team Annual -->
     <div class="plan-card bg-zinc-900 border-2 border-blue-600 rounded-3xl p-8 text-center flex flex-col relative">
-      <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Best Annual Value</div>
-      <h3 class="text-2xl font-semibold">Pro Team Annual</h3>
-      <p class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
+      <div data-i18n="pricing_pro_ann_badge" class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Best Annual Value</div>
+      <h3 data-i18n="pricing_pro_h" class="text-2xl font-semibold">Pro Team Annual</h3>
+      <p data-i18n="pricing_pro_ann_sub" class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
       <div class="mt-6">
         <p class="text-5xl font-bold price-display" data-base-amount="1990">$1,990 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
-        <p class="text-sm text-blue-400 font-semibold mt-1">~$165.83/mo · Save ~17%</p>
+        <p data-i18n="pricing_pro_ann_save_note" class="text-sm text-blue-400 font-semibold mt-1">~$165.83/mo · Save ~17%</p>
       </div>
-      <p class="text-sm text-zinc-400 mt-2">Unlimited staff · Per location · Billed annually</p>
+      <p data-i18n="pricing_pro_ann_trial" class="text-sm text-zinc-400 mt-2">Unlimited staff · Per location · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> Everything in Pro Team</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> $398 saved annually</li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> One invoice per year</li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_ann_feat1">Everything in Pro Team</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_ann_feat2">$398 saved annually</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_ann_feat3">One invoice per year</span></li>
       </ul>
-      <button onclick="checkout('pro_team_annual')" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="checkout('pro_team_annual')" data-i18n="pricing_pro_ann_btn" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Get Pro Annual
       </button>
     </div>
 
     <!-- Enterprise (repeated) -->
     <div class="plan-card bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center flex flex-col">
-      <h3 class="text-2xl font-semibold">Enterprise</h3>
-      <p class="text-sm text-zinc-400 mt-1">Large chains &amp; groups</p>
-      <p class="text-5xl font-bold mt-6">Custom</p>
-      <p class="text-sm text-zinc-400 mt-2">Multi-location · White-label · SSO</p>
+      <h3 data-i18n="pricing_ent_h" class="text-2xl font-semibold">Enterprise</h3>
+      <p data-i18n="pricing_ent_sub" class="text-sm text-zinc-400 mt-1">Large chains &amp; groups</p>
+      <p data-i18n="pricing_ent_price" class="text-5xl font-bold mt-6">Custom</p>
+      <p data-i18n="pricing_ent_desc" class="text-sm text-zinc-400 mt-2">Multi-location · White-label · SSO</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> Multi-location management</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> White-label branding</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> SSO &amp; API access</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> Dedicated account manager</li>
-        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> SLA guarantee</li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat1">Multi-location management</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat2">White-label branding</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat3">SSO &amp; API access</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat4">Dedicated account manager</span></li>
+        <li class="flex items-center gap-2"><span class="text-zinc-400">✓</span> <span data-i18n="pricing_ent_feat5">SLA guarantee</span></li>
       </ul>
-      <button onclick="openEnterpriseModal()" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+      <button onclick="openEnterpriseModal()" data-i18n="pricing_ent_btn" class="mt-8 w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
         Contact Us
       </button>
     </div>
@@ -330,47 +330,47 @@ details[open] summary::after { content: '−'; }
 
   <!-- Plan comparison note -->
   <div class="mt-8 text-center">
-    <p class="text-zinc-500 text-sm">Team plans billed per location. <a href="/contact" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
+    <p class="text-zinc-500 text-sm"><span data-i18n="pricing_comparison_note">Team plans billed per location.</span> <a href="/contact" data-i18n="pricing_team_link" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
   </div>
 
   <!-- Testimonials -->
   <div class="mt-20">
-    <h2 class="heading text-3xl font-bold text-center mb-3">What managers &amp; servers say</h2>
-    <p class="text-zinc-400 text-center mb-10 text-sm">From our early restaurant partners</p>
+    <h2 data-i18n="pricing_testimonials_h" class="heading text-3xl font-bold text-center mb-3">What managers &amp; servers say</h2>
+    <p data-i18n="pricing_testimonials_sub" class="text-zinc-400 text-center mb-10 text-sm">From our early restaurant partners</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-7">
         <div class="flex items-center gap-1 text-amber-400 mb-4 text-sm">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-5">"We onboarded six new servers in January. Every one of them knew wine pairing and upsell language before their first shift. I used to spend two full days on orientation. Now I don't."</p>
+        <p data-i18n="pricing_t1_quote" class="text-zinc-300 text-sm leading-relaxed mb-5">"We onboarded six new servers in January. Every one of them knew wine pairing and upsell language before their first shift. I used to spend two full days on orientation. Now I don't."</p>
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center font-bold text-emerald-300 text-sm">MR</div>
           <div>
-            <div class="text-sm font-semibold">Marcus R.</div>
-            <div class="text-xs text-zinc-500">General Manager, Halifax restaurant group</div>
+            <div data-i18n="pricing_t1_name" class="text-sm font-semibold">Marcus R.</div>
+            <div data-i18n="pricing_t1_role" class="text-xs text-zinc-500">General Manager, Halifax restaurant group</div>
           </div>
         </div>
       </div>
 
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-7">
         <div class="flex items-center gap-1 text-amber-400 mb-4 text-sm">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-5">"The AI roleplay is the part I didn't know I needed. The difficult guest scenarios — complaining about wait times, asking for comps — that's where real training happens. I've done 40 scenarios this month."</p>
+        <p data-i18n="pricing_t2_quote" class="text-zinc-300 text-sm leading-relaxed mb-5">"The AI roleplay is the part I didn't know I needed. The difficult guest scenarios — complaining about wait times, asking for comps — that's where real training happens. I've done 40 scenarios this month."</p>
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-amber-900 flex items-center justify-center font-bold text-amber-300 text-sm">SL</div>
           <div>
-            <div class="text-sm font-semibold">Sophie L.</div>
-            <div class="text-xs text-zinc-500">Senior Server, Vancouver</div>
+            <div data-i18n="pricing_t2_name" class="text-sm font-semibold">Sophie L.</div>
+            <div data-i18n="pricing_t2_role" class="text-xs text-zinc-500">Senior Server, Vancouver</div>
           </div>
         </div>
       </div>
 
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-7">
         <div class="flex items-center gap-1 text-amber-400 mb-4 text-sm">★★★★★</div>
-        <p class="text-zinc-300 text-sm leading-relaxed mb-5">"At $99 a month for my whole team, it cost less than one bad tip night. My average bill sizes are up and I have real data showing who's trained and who isn't. Worth every cent."</p>
+        <p data-i18n="pricing_t3_quote" class="text-zinc-300 text-sm leading-relaxed mb-5">"At $99 a month for my whole team, it cost less than one bad tip night. My average bill sizes are up and I have real data showing who's trained and who isn't. Worth every cent."</p>
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center font-bold text-blue-300 text-sm">TC</div>
           <div>
-            <div class="text-sm font-semibold">Theo C.</div>
-            <div class="text-xs text-zinc-500">Owner, Toronto bistro</div>
+            <div data-i18n="pricing_t3_name" class="text-sm font-semibold">Theo C.</div>
+            <div data-i18n="pricing_t3_role" class="text-xs text-zinc-500">Owner, Toronto bistro</div>
           </div>
         </div>
       </div>
@@ -380,46 +380,46 @@ details[open] summary::after { content: '−'; }
 
   <!-- FAQ -->
   <div class="max-w-2xl mx-auto mt-20 space-y-3">
-    <h2 class="heading text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
+    <h2 data-i18n="pricing_faq_h" class="heading text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What's included in the Free tier?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 training modules and 5 AI roleplay scenarios — no time limit, no credit card. It's a genuine free tier, not a trial. Upgrade when you're ready for everything.</p>
+      <summary data-i18n="pricing_faq1_q" class="font-semibold text-sm py-1">What's included in the Free tier?</summary>
+      <p data-i18n="pricing_faq1_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">The Free tier gives you permanent access to 3 training modules and 5 AI roleplay scenarios — no time limit, no credit card. It's a genuine free tier, not a trial. Upgrade when you're ready for everything.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">How does annual billing work for Premium Individual?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $149/year — equivalent to $12.42/month — saving you 35% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
+      <summary data-i18n="pricing_faq2_q" class="font-semibold text-sm py-1">How does annual billing work for Premium Individual?</summary>
+      <p data-i18n="pricing_faq2_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Annual billing for Premium Individual costs $149/year — equivalent to $12.42/month — saving you 35% vs monthly. You're billed once per year and can cancel before renewal. Features are identical either way.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">How do team plans work?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Team plans are for restaurant managers. You create a Manager account, set up your restaurant, then subscribe to a Starter or Pro Team plan. You get an invite link to share with your staff — when they join, they automatically get full access through your location's plan. Each location is billed separately.</p>
+      <summary data-i18n="pricing_faq3_q" class="font-semibold text-sm py-1">How do team plans work?</summary>
+      <p data-i18n="pricing_faq3_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Team plans are for restaurant managers. You create a Manager account, set up your restaurant, then subscribe to a Starter or Pro Team plan. You get an invite link to share with your staff — when they join, they automatically get full access through your location's plan. Each location is billed separately.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What's the difference between Starter and Pro Team?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Starter Team supports up to 10 staff at a location. Pro Team is unlimited staff, adds custom AI scenarios tailored to your menu and service style, advanced analytics, and priority support. Both include the full Manager Dashboard.</p>
+      <summary data-i18n="pricing_faq4_q" class="font-semibold text-sm py-1">What's the difference between Starter and Pro Team?</summary>
+      <p data-i18n="pricing_faq4_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Starter Team supports up to 10 staff at a location. Pro Team is unlimited staff, adds custom AI scenarios tailored to your menu and service style, advanced analytics, and priority support. Both include the full Manager Dashboard.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">Can staff on a team plan use the app independently?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each staff member has their own account with their own progress, badges, streak, and certificate. The team plan simply unlocks full access for everyone connected to that location.</p>
+      <summary data-i18n="pricing_faq5_q" class="font-semibold text-sm py-1">Can staff on a team plan use the app independently?</summary>
+      <p data-i18n="pricing_faq5_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes — each staff member has their own account with their own progress, badges, streak, and certificate. The team plan simply unlocks full access for everyone connected to that location.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">Can I cancel anytime?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes. You can cancel any subscription at any time. You'll keep access until the end of your current billing period. Team plan cancellations affect all staff in that location at the end of the period.</p>
+      <summary data-i18n="pricing_faq6_q" class="font-semibold text-sm py-1">Can I cancel anytime?</summary>
+      <p data-i18n="pricing_faq6_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Yes. You can cancel any subscription at any time. You'll keep access until the end of your current billing period. Team plan cancellations affect all staff in that location at the end of the period.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What payment methods are accepted?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">All major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay where supported. Payments are processed securely by Stripe. Enterprise customers can arrange invoice-based billing.</p>
+      <summary data-i18n="pricing_faq7_q" class="font-semibold text-sm py-1">What payment methods are accepted?</summary>
+      <p data-i18n="pricing_faq7_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">All major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay where supported. Payments are processed securely by Stripe. Enterprise customers can arrange invoice-based billing.</p>
     </details>
 
     <details class="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 cursor-pointer">
-      <summary class="font-semibold text-sm py-1">What is Enterprise pricing?</summary>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed">Enterprise is custom-quoted based on number of locations, staff count, and features required (white labeling, SSO, SLA, etc.). <a href="/contact" class="text-amber-400 hover:underline">Contact us</a> and we'll put together a proposal within one business day.</p>
+      <summary data-i18n="pricing_faq8_q" class="font-semibold text-sm py-1">What is Enterprise pricing?</summary>
+      <p data-i18n-html="pricing_faq8_a" class="text-zinc-400 text-sm mt-3 leading-relaxed">Enterprise is custom-quoted based on number of locations, staff count, and features required (white labeling, SSO, SLA, etc.). <a href="/contact" class="text-amber-400 hover:underline">Contact us</a> and we'll put together a proposal within one business day.</p>
     </details>
   </div>
 
@@ -453,17 +453,17 @@ details[open] summary::after { content: '−'; }
 <div id="enterprise-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
   <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md relative">
     <button onclick="closeEnterpriseModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">×</button>
-    <h2 class="text-xl font-bold mb-1">Enterprise Inquiry</h2>
-    <p class="text-zinc-400 text-sm mb-6">Tell us about your organization and we'll get back to you within one business day.</p>
+    <h2 data-i18n="pricing_ent_modal_h" class="text-xl font-bold mb-1">Enterprise Inquiry</h2>
+    <p data-i18n="pricing_ent_modal_sub" class="text-zinc-400 text-sm mb-6">Tell us about your organization and we'll get back to you within one business day.</p>
     <form id="ent-form" onsubmit="submitEnterprise(event)" class="space-y-4">
-      <input id="ent-name" type="text" required placeholder="Your name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-email" type="email" required placeholder="Work email" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-company" type="text" required placeholder="Company / restaurant group name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <input id="ent-locations" type="text" placeholder="Number of locations" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
-      <textarea id="ent-message" rows="3" placeholder="Anything else you'd like us to know? (optional)" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm resize-none"></textarea>
-      <button type="submit" id="ent-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Send Inquiry →</button>
-      <p id="ent-success" class="text-emerald-400 text-sm text-center hidden">Sent! We'll be in touch within one business day.</p>
-      <p id="ent-error" class="text-red-400 text-sm text-center hidden">Something went wrong. Please try again.</p>
+      <input id="ent-name" type="text" required data-i18n-placeholder="pricing_ent_name_ph" placeholder="Your name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-email" type="email" required data-i18n-placeholder="pricing_ent_email_ph" placeholder="Work email" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-company" type="text" required data-i18n-placeholder="pricing_ent_company_ph" placeholder="Company / restaurant group name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <input id="ent-locations" type="text" data-i18n-placeholder="pricing_ent_loc_ph" placeholder="Number of locations" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm">
+      <textarea id="ent-message" rows="3" data-i18n-placeholder="pricing_ent_msg_ph" placeholder="Anything else you'd like us to know? (optional)" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-sm resize-none"></textarea>
+      <button type="submit" id="ent-btn" data-i18n="pricing_ent_send_btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-3 rounded-2xl transition-colors text-sm">Send Inquiry →</button>
+      <p id="ent-success" data-i18n="pricing_ent_ok" class="text-emerald-400 text-sm text-center hidden">Sent! We'll be in touch within one business day.</p>
+      <p id="ent-error" data-i18n="pricing_ent_err" class="text-red-400 text-sm text-center hidden">Something went wrong. Please try again.</p>
     </form>
   </div>
 </div>
