@@ -2472,7 +2472,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       value TEXT NOT NULL,
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
-    await db.query(`INSERT INTO site_settings (key, value) VALUES ('crisp_enabled','false'),('crisp_website_id',''),('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
+    await db.query(`INSERT INTO site_settings (key, value) VALUES ('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
@@ -2542,13 +2542,6 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.get('/api/crisp-config', async (req, res) => {
-  try {
-    const r = await db.query(`SELECT key, value FROM site_settings WHERE key IN ('crisp_enabled','crisp_website_id')`);
-    const map = Object.fromEntries(r.rows.map(row => [row.key, row.value]));
-    res.json({ enabled: map.crisp_enabled === 'true', websiteId: map.crisp_website_id || '' });
-  } catch (e) { res.json({ enabled: false, websiteId: '' }); }
-});
 
 app.get('/api/admin/site-settings', adminMiddleware, async (req, res) => {
   try {
