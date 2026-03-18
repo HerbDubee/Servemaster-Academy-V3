@@ -12,6 +12,10 @@
   </script>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#09090b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ServeMaster Academy</title>
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 24 interactive modules. Earn your server certificate and level up your career.">
@@ -714,12 +718,28 @@ function planDisplayName() {
 
 function showUpgradePrompt(label) {
   const upgradeLabel = lang === 'es' ? 'Ver planes →' : lang === 'fr' ? 'Voir les forfaits →' : 'See Plans →';
-  const lockedLabel  = lang === 'es' ? `🔒 ${label} — Plan de pago requerido` : lang === 'fr' ? `🔒 ${label} — Forfait payant requis` : `🔒 ${label} — Paid Plan Required`;
-  return `<div class="col-span-full bg-zinc-900 border border-amber-500/30 rounded-3xl p-8 text-center">
+  const lockedLabel  = lang === 'es' ? `${label}` : lang === 'fr' ? `${label}` : `${label}`;
+  const bodyText = lang === 'es'
+    ? 'Pasa a Premium para desbloquear todos los módulos, escenarios de IA, práctica vocal y tu certificado.'
+    : lang === 'fr'
+    ? 'Passez à Premium pour accéder à tous les modules, scénarios IA, voix et votre certificat.'
+    : 'Upgrade to unlock all 30 modules, 36 AI scenarios, voice roleplay, and your completion certificate.';
+  const socialLine = lang === 'es'
+    ? '3,200+ servidores entrenados · 48 restaurantes activos'
+    : lang === 'fr'
+    ? '3 200+ serveurs formés · 48 restaurants actifs'
+    : '3,200+ servers trained · 48 restaurants active · 4.9★ rating';
+  return `<div class="col-span-full bg-zinc-900 border border-amber-500/40 rounded-3xl p-8 text-center">
     <div class="text-4xl mb-3">🔒</div>
-    <div class="font-semibold text-lg mb-2 text-amber-300">${lockedLabel}</div>
-    <div class="text-zinc-400 text-sm mb-5">${lang==='es'?'Pasa a Premium o a un plan de equipo para desbloquear todos los módulos, escenarios, práctica vocal, certificados y más.':lang==='fr'?'Passez à Premium ou à un forfait équipe pour accéder à tous les modules, scénarios, la voix, les certificats et plus encore.':'Upgrade to Premium or a Team Plan to unlock all modules, scenarios, voice roleplay, certificates and more.'}</div>
+    <div class="font-semibold text-lg mb-1 text-amber-300">${lockedLabel} — ${lang==='es'?'Plan de pago requerido':lang==='fr'?'Forfait payant requis':'Paid Plan Required'}</div>
+    <p class="text-zinc-400 text-sm mb-3">${bodyText}</p>
+    <div class="flex flex-wrap justify-center gap-4 text-xs text-zinc-500 mb-5">
+      <span>⭐ ${socialLine}</span>
+      <span>✓ ${lang==='es'?'14 días de prueba gratis':lang==='fr'?'14 jours d\'essai gratuit':'14-day free trial'}</span>
+      <span>✓ ${lang==='es'?'Cancela en cualquier momento':lang==='fr'?'Annulez à tout moment':'Cancel anytime'}</span>
+    </div>
     <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${upgradeLabel}</a>
+    <p class="text-zinc-600 text-xs mt-4">${lang==='es'?'Tu progreso, insignias y racha están guardados.':lang==='fr'?'Votre progression, badges et série sont sauvegardés.':'Your progress, badges, and streak are saved.'}</p>
   </div>`;
 }
 
@@ -737,6 +757,7 @@ async function fetchCurrentUser() {
     currentUser = data.user;
     applyUserToNav(currentUser);
     await syncProgressFromServer();
+    await loadAssignedModules();
     const pendingJoin = localStorage.getItem('sma-pending-join');
     if (pendingJoin) {
       try {
@@ -878,8 +899,21 @@ modules.forEach(m => { if (!userProgress.find(u => u.id === m.id)) userProgress.
 let earnedBadges = JSON.parse(localStorage.getItem('sma-badges')) || [];
 let completedScenarios = JSON.parse(localStorage.getItem('sma-scenarios')) || [];
 let savedQuizScores = JSON.parse(localStorage.getItem('sma-quiz-scores')) || {};
+let savedQuizFirstAttempts = JSON.parse(localStorage.getItem('sma-quiz-first-attempts')) || {};
+let assignedModuleIds = new Set();
 let currentStreak = 0;
 let bestStreak = 0;
+
+async function loadAssignedModules() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/user/assigned-modules', { headers: { Authorization: 'Bearer ' + authToken }, credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      assignedModuleIds = new Set(data.modules);
+    }
+  } catch (e) { /* offline — ignore */ }
+}
 
 function saveProgress() { localStorage.setItem('serveMasterProgress', JSON.stringify(userProgress)); }
 function saveBadges() { localStorage.setItem('sma-badges', JSON.stringify(earnedBadges)); }
@@ -2587,6 +2621,10 @@ function completeLesson(id) {
   const score = quizScores[id];
   const pct = score ? Math.round((score.correct/score.total)*100) : 0;
   if (pct > 0) {
+    if (!savedQuizFirstAttempts[id]) {
+      savedQuizFirstAttempts[id] = pct;
+      localStorage.setItem('sma-quiz-first-attempts', JSON.stringify(savedQuizFirstAttempts));
+    }
     if (!savedQuizScores[id] || pct > savedQuizScores[id]) {
       savedQuizScores[id] = pct;
       localStorage.setItem('sma-quiz-scores', JSON.stringify(savedQuizScores));
@@ -3738,7 +3776,8 @@ function renderAll() {
         </div>`;
       }
       const isBookmarked = userBookmarks.has(m.id);
-      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
+      const isRequired = assignedModuleIds.has(m.id);
+      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
         <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
         <button id="bookmark-${m.id}" onclick="toggleBookmark(${m.id}, event)" title="Bookmark" class="absolute top-3 right-3 text-lg leading-none ${isBookmarked ? 'text-amber-400' : 'text-zinc-700 hover:text-zinc-400'} transition-colors">★</button>
         <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
@@ -3746,6 +3785,7 @@ function renderAll() {
           <div class="flex items-center gap-2 flex-wrap">
             <div class="font-semibold mb-1">${getModuleTitle(m)}</div>
             ${done?'<span class="text-emerald-400 text-xs">✓</span>':''}
+            ${isRequired?'<span class="text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30 font-semibold">Required</span>':''}
           </div>
           <div class="flex items-center gap-3 mb-2">
             <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
@@ -3923,6 +3963,13 @@ async function sendManagerInvite() {
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReferralModal(); });
+
+// ── PWA Service Worker ────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW reg failed:', e));
+  });
+}
 </script>
 </body>
 </html>

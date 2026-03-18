@@ -48,6 +48,8 @@ const STRIPE_PREMIUM_MONTHLY_ID = process.env.STRIPE_PREMIUM_MONTHLY_ID || '';
 const STRIPE_PREMIUM_ANNUAL_ID = process.env.STRIPE_PREMIUM_ANNUAL_ID || '';
 const STRIPE_STARTER_TEAM_ID = process.env.STRIPE_STARTER_TEAM_ID || '';
 const STRIPE_PRO_TEAM_ID = process.env.STRIPE_PRO_TEAM_ID || '';
+const STRIPE_STARTER_TEAM_ANNUAL_ID = process.env.STRIPE_STARTER_TEAM_ANNUAL_ID || '';
+const STRIPE_PRO_TEAM_ANNUAL_ID = process.env.STRIPE_PRO_TEAM_ANNUAL_ID || '';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || '';
@@ -463,6 +465,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
     });
     sendTrialDripEmails(user);
+    sendDripEmailIfDue(user.id, user.email, user.name).catch(() => {});
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ error: 'Login failed' });
@@ -662,46 +665,108 @@ function escapeHtml(str) {
 
 async function sendTrialDripEmails(user) {
   if (!user.trial_ends_at || user.subscription_status === 'active') return;
+  const isUnsub = await db.query('SELECT is_unsubscribed FROM users WHERE id = $1', [user.id]).then(r => r.rows[0]?.is_unsubscribed).catch(() => false);
+  if (isUnsub) return;
   const daysLeft = Math.max(0, Math.ceil((new Date(user.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24)));
   const safeName = escapeHtml(user.name);
+  const unsubToken = await getOrCreateUnsubToken(user.id).catch(() => '');
+  const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+  const foot = emailFooter(unsubUrl);
+  const sig = `<p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>`;
+  const wrap = body => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">${body}${sig}${foot}</div>`;
   if (daysLeft <= 4 && daysLeft > 0 && !user.day10_email_sent) {
     db.query('UPDATE users SET day7_email_sent = TRUE, day10_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: user.email,
-      subject: 'Your trial ends in 4 days — save 20% today',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 30 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    resend.emails.send({ from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>', to: user.email, subject: 'Your trial ends in 4 days — save 20% today',
+      html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial ends in just 4 days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you're enjoying the training and want to keep access to all 30 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Upgrade Now</a></p>`)
     }).catch(err => console.error('Day 10 email error:', err.message));
   } else if (daysLeft <= 7 && daysLeft > 0 && !user.day7_email_sent) {
     db.query('UPDATE users SET day7_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: user.email,
-      subject: 'You\'re halfway through your trial — here\'s what to try next',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You're now halfway through your 14-day trial.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    resend.emails.send({ from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>', to: user.email, subject: "You're halfway through your trial — here's what to try next",
+      html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You're now halfway through your 14-day trial.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training</a></p>`)
     }).catch(err => console.error('Day 7 email error:', err.message));
   }
   if (daysLeft <= 2 && daysLeft > 0 && !user.day13_email_sent) {
     db.query('UPDATE users SET day13_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: user.email,
-      subject: 'Your trial ends very soon — keep your access',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free trial ends very soon.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you've found value in the training, I'd love for you to continue the journey with a full membership.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Keep Access →</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    resend.emails.send({ from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>', to: user.email, subject: 'Your trial ends very soon — keep your access',
+      html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free trial ends very soon.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If you've found value in the training, I'd love for you to continue the journey with a full membership.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Keep Access →</a></p>`)
     }).catch(err => console.error('Day 13 email error:', err.message));
   }
   if (daysLeft === 0 && !user.trial_expired_email_sent) {
     db.query('UPDATE users SET trial_expired_email_sent = TRUE WHERE id = $1', [user.id]).catch(() => {});
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: user.email,
-      subject: 'Your trial has ended — 20% off for the next 7 days',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial has ended.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I hope you had a chance to experience what ServeMaster Academy is all about — the fine-dining standards, the voice practice, the scenario simulations.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you're ready to continue, use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off. This offer is valid for 7 days.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Rejoin ServeMaster →</a></p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
+    resend.emails.send({ from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>', to: user.email, subject: 'Your trial has ended — 20% off for the next 7 days',
+      html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day free trial has ended.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I hope you had a chance to experience what ServeMaster Academy is all about — the fine-dining standards, the voice practice, the scenario simulations.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">If you're ready to continue, use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off. This offer is valid for 7 days.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Rejoin ServeMaster →</a></p>`)
     }).catch(err => console.error('Expired email error:', err.message));
   }
 }
 
-// ── User progress routes ──────────────────────────────────────────────────────
+// ── Unsubscribe helpers ──────────────────────────────────────────────────────
+const crypto = require('crypto');
+function generateUnsubToken() { return crypto.randomBytes(32).toString('hex'); }
+async function getOrCreateUnsubToken(userId) {
+  const r = await db.query('SELECT token FROM unsubscribe_tokens WHERE user_id = $1', [userId]);
+  if (r.rows.length) return r.rows[0].token;
+  const token = generateUnsubToken();
+  await db.query('INSERT INTO unsubscribe_tokens (user_id, token) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET token = EXCLUDED.token', [userId, token]);
+  return token;
+}
+function emailFooter(unsubUrl) {
+  return `<hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;line-height:1.6;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a> · <a href="${unsubUrl}" style="color:#555;">Unsubscribe</a></p>`;
+}
+
+// ── Email drip sequence ──────────────────────────────────────────────────────
+async function sendDripEmailIfDue(userId, userEmail, userName) {
+  try {
+    const drip = await db.query('SELECT day_sent FROM email_drip_log WHERE user_id = $1', [userId]);
+    const sentDays = new Set(drip.rows.map(r => r.day_sent));
+    const userRes = await db.query('SELECT created_at, is_unsubscribed FROM users WHERE id = $1', [userId]);
+    if (!userRes.rows.length || userRes.rows[0].is_unsubscribed) return;
+    const signupDate = new Date(userRes.rows[0].created_at);
+    const daysSinceSignup = Math.floor((Date.now() - signupDate) / 86400000);
+    const unsubToken = await getOrCreateUnsubToken(userId);
+    const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+    const footer = emailFooter(unsubUrl);
+    const wrap = (body) => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">${body}${footer}</div>`;
+    const cta = (label, href) => `<p style="margin-bottom:32px;"><a href="${href}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">${label}</a></p>`;
+    const sig = `<p style="font-size:14px;color:#a3a3a3;">— Kirk Adamson, Founder</p>`;
+    const drips = [
+      { day: 1, subject: 'Module 1 is waiting for you', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;"><strong>Module 1 — Service Foundations</strong> takes about 12 minutes and covers the mindset that separates good servers from great ones. It's the most-completed module on the platform for a reason.</p>${cta('Start Module 1 →', 'https://servemasteracademy.ca/app')}${sig}`) },
+      { day: 3, subject: 'Have you tried the AI voice roleplay?', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">The <strong>AI Practice Scenarios</strong> let you talk with a realistic AI guest — a difficult customer, a wine question, a complaint mid-service — and get instant feedback on your handling. It's the closest thing to real floor experience without being on the floor.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Try the Practice tab. First scenario takes under 3 minutes.</p>${cta('Try a Scenario →', 'https://servemasteracademy.ca/app')}${sig}`) },
+      { day: 7, subject: 'One week in — 7 days left on your trial', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Servers who complete at least 5 modules in their first two weeks are <strong>3× more likely</strong> to earn their certificate.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">You have 7 days left in your free trial. Your free access stays forever (3 modules, 5 scenarios), but the remaining 27 modules, all 36 scenarios, voice practice, and your certificate unlock with Premium.</p>${cta('Continue Training →', 'https://servemasteracademy.ca/app')}<p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="color:#d4af37;font-size:14px;">See Premium pricing →</a></p>${sig}`) },
+      { day: 14, subject: 'Your trial ends today', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day trial ends today. Your progress, badges, and streak are saved — you keep free access to your first 3 modules permanently.</p><div style="background:#1a1a1a;border:1px solid #d4af37;border-radius:12px;padding:20px;margin-bottom:24px;"><p style="font-size:18px;font-weight:600;color:#d4af37;margin:0 0 4px;">Premium — $19/mo</p><p style="font-size:14px;color:#a3a3a3;margin:0;">Or save 35% with annual billing — $149/yr</p></div>${cta('Upgrade Now →', 'https://servemasteracademy.ca/pricing')}${sig}`) }
+    ];
+    for (const d of drips) {
+      if (daysSinceSignup >= d.day && !sentDays.has(d.day)) {
+        resend.emails.send({ from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>', to: userEmail, subject: d.subject, html: d.html }).catch(e => console.error(`Drip day ${d.day} error:`, e.message));
+        await db.query('INSERT INTO email_drip_log (user_id, day_sent) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, d.day]);
+        break;
+      }
+    }
+  } catch (e) { console.error('Drip email error:', e.message); }
+}
+
+// ── Weekly manager digest ────────────────────────────────────────────────────
+async function sendWeeklyManagerDigests() {
+  try {
+    const managers = await db.query(`SELECT u.id, u.name, u.email, r.id as restaurant_id, r.name as restaurant_name FROM users u JOIN restaurants r ON r.manager_id = u.id WHERE u.is_unsubscribed IS NOT TRUE AND u.subscription_status NOT IN ('free') ORDER BY u.id`);
+    let sent = 0;
+    for (const mgr of managers.rows) {
+      const team = await db.query(`SELECT u.name, COALESCE(up_agg.modules_done,0) as modules, COALESCE(up_agg.avg_score,0) as avg_score FROM restaurant_members rm JOIN users u ON u.id = rm.user_id LEFT JOIN (SELECT user_id, COUNT(*) FILTER (WHERE progress>=100) as modules_done, AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL) as avg_score FROM user_progress GROUP BY user_id) up_agg ON up_agg.user_id = rm.user_id WHERE rm.restaurant_id = $1 ORDER BY modules DESC LIMIT 10`, [mgr.restaurant_id]);
+      if (!team.rows.length) continue;
+      const unsubToken = await getOrCreateUnsubToken(mgr.id);
+      const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+      const rows = team.rows.map(s => `<tr><td style="padding:8px 12px;border-bottom:1px solid #222;">${escapeHtml(s.name)}</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.modules}/30</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.avg_score ? Math.round(s.avg_score)+'%' : '—'}</td></tr>`).join('');
+      resend.emails.send({
+        from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
+        to: mgr.email,
+        subject: `Weekly Training Digest — ${mgr.restaurant_name}`,
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><h2 style="font-size:20px;color:#d4af37;margin-bottom:4px;">Weekly Team Digest</h2><p style="font-size:14px;color:#a3a3a3;margin-bottom:24px;">${escapeHtml(mgr.restaurant_name)} · Week of ${new Date().toLocaleDateString('en-CA',{month:'long',day:'numeric',year:'numeric'})}</p><table style="width:100%;border-collapse:collapse;font-size:14px;"><thead><tr style="background:#1a1a1a;"><th style="padding:8px 12px;text-align:left;color:#a3a3a3;">Staff Member</th><th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Modules</th><th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Avg Quiz</th></tr></thead><tbody>${rows}</tbody></table><p style="margin-top:24px;"><a href="https://servemasteracademy.ca/manager-dashboard" style="background:#d4af37;color:#000;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard →</a></p>${emailFooter(unsubUrl)}</div>`
+      }).catch(e => console.error('Weekly digest error:', e.message));
+      sent++;
+    }
+    return sent;
+  } catch (e) { console.error('Weekly digest error:', e.message); return 0; }
+}
+
 async function updateStreak(userId) {
   try {
     const streakRes = await db.query('SELECT * FROM streaks WHERE user_id = $1', [userId]);
@@ -714,9 +779,24 @@ async function updateStreak(userId) {
     const last = s.last_activity_date ? new Date(s.last_activity_date).toISOString().split('T')[0] : null;
     if (last === today) return;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const prevStreak = s.current_streak;
     const newStreak = last === yesterday ? s.current_streak + 1 : 1;
     const longest = Math.max(newStreak, s.longest_streak);
     await db.query('UPDATE streaks SET current_streak = $1, longest_streak = $2, last_activity_date = $3 WHERE user_id = $4', [newStreak, longest, today, userId]);
+    if (newStreak === 1 && prevStreak >= 3) {
+      const userRes = await db.query('SELECT email, name, is_unsubscribed FROM users WHERE id = $1', [userId]);
+      if (userRes.rows.length && !userRes.rows[0].is_unsubscribed) {
+        const { email, name } = userRes.rows[0];
+        const unsubToken = await getOrCreateUnsubToken(userId);
+        const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+        resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: email,
+          subject: `Don't lose your ${prevStreak}-day streak 🔥`,
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><h2 style="font-size:22px;color:#fb923c;margin-bottom:12px;">Your ${prevStreak}-day streak broke 🔥</h2><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">You missed a day and your streak reset. But here's the thing — the servers who build lasting careers aren't the ones who never miss a day. They're the ones who come back after they do.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start a New Streak Today →</a></p><p style="font-size:14px;color:#a3a3a3;">— Kirk Adamson, Founder</p>${emailFooter(unsubUrl)}</div>`
+        }).catch(e => console.error('Streak recovery email error:', e.message));
+      }
+    }
   } catch (err) { console.error('Streak update error:', err.message); }
 }
 
@@ -1078,14 +1158,16 @@ app.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
 app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
   const { plan } = req.body;
   const priceMap = {
-    premium_monthly: STRIPE_PREMIUM_MONTHLY_ID,
-    premium_annual:  STRIPE_PREMIUM_ANNUAL_ID,
-    starter_team:    STRIPE_STARTER_TEAM_ID,
-    pro_team:        STRIPE_PRO_TEAM_ID,
+    premium_monthly:       STRIPE_PREMIUM_MONTHLY_ID,
+    premium_annual:        STRIPE_PREMIUM_ANNUAL_ID,
+    starter_team:          STRIPE_STARTER_TEAM_ID,
+    pro_team:              STRIPE_PRO_TEAM_ID,
+    starter_team_annual:   STRIPE_STARTER_TEAM_ANNUAL_ID,
+    pro_team_annual:       STRIPE_PRO_TEAM_ANNUAL_ID,
   };
   const priceId = priceMap[plan];
   if (!priceId) return res.status(400).json({ error: 'Invalid plan' });
-  const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
+  const isTeamPlan = ['starter_team','pro_team','starter_team_annual','pro_team_annual'].includes(plan);
   try {
     const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
@@ -2351,8 +2433,123 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (user_id, module_id)
     )`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_unsubscribed BOOLEAN DEFAULT FALSE`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS cert_logo_url TEXT`);
+    await db.query(`CREATE TABLE IF NOT EXISTS unsubscribe_tokens (
+      user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS email_drip_log (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      day_sent INT NOT NULL,
+      sent_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, day_sent)
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS assigned_modules (
+      restaurant_id INT REFERENCES restaurants(id) ON DELETE CASCADE,
+      module_id INT NOT NULL,
+      assigned_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (restaurant_id, module_id)
+    )`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
+// ── Unsubscribe routes ─────────────────────────────────────────────────────────
+app.get('/unsubscribe', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect('/');
+  try {
+    const r = await db.query('SELECT user_id FROM unsubscribe_tokens WHERE token = $1', [token]);
+    if (!r.rows.length) return res.sendFile(path.join(__dirname, 'public', 'unsubscribe.html'));
+    await db.query('UPDATE users SET is_unsubscribed = TRUE WHERE id = $1', [r.rows[0].user_id]);
+    res.sendFile(path.join(__dirname, 'public', 'unsubscribe.html'));
+  } catch (e) { console.error('Unsubscribe GET error:', e.message); res.redirect('/'); }
+});
+
+app.post('/api/unsubscribe', async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ error: 'Missing token' });
+  try {
+    const r = await db.query('SELECT user_id FROM unsubscribe_tokens WHERE token = $1', [token]);
+    if (!r.rows.length) return res.status(404).json({ error: 'Invalid token' });
+    await db.query('UPDATE users SET is_unsubscribed = TRUE WHERE id = $1', [r.rows[0].user_id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/resubscribe', authMiddleware, async (req, res) => {
+  try {
+    await db.query('UPDATE users SET is_unsubscribed = FALSE WHERE id = $1', [req.user.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Assigned modules routes ─────────────────────────────────────────────────────
+app.get('/api/manager/assigned-modules', authMiddleware, async (req, res) => {
+  try {
+    const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
+    if (!rr.rows.length) return res.json({ modules: [] });
+    const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [rr.rows[0].id]);
+    res.json({ modules: r.rows.map(x => x.module_id) });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/manager/assign', authMiddleware, async (req, res) => {
+  const { moduleId } = req.body;
+  if (!moduleId) return res.status(400).json({ error: 'Missing moduleId' });
+  try {
+    const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
+    if (!rr.rows.length) return res.status(404).json({ error: 'No restaurant found' });
+    await db.query('INSERT INTO assigned_modules (restaurant_id, module_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [rr.rows[0].id, moduleId]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.delete('/api/manager/assign/:moduleId', authMiddleware, async (req, res) => {
+  try {
+    const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
+    if (!rr.rows.length) return res.status(404).json({ error: 'No restaurant found' });
+    await db.query('DELETE FROM assigned_modules WHERE restaurant_id = $1 AND module_id = $2', [rr.rows[0].id, req.params.moduleId]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET assigned modules for a member (used in app.html)
+app.get('/api/user/assigned-modules', authMiddleware, async (req, res) => {
+  try {
+    const memRes = await db.query('SELECT restaurant_id FROM restaurant_members WHERE user_id = $1', [req.user.id]);
+    if (!memRes.rows.length) return res.json({ modules: [] });
+    const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [memRes.rows[0].restaurant_id]);
+    res.json({ modules: r.rows.map(x => x.module_id) });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Certificate logo routes ─────────────────────────────────────────────────────
+app.get('/api/manager/cert-logo', authMiddleware, async (req, res) => {
+  try {
+    const rr = await db.query('SELECT cert_logo_url FROM restaurants WHERE manager_id = $1', [req.user.id]);
+    res.json({ certLogoUrl: rr.rows[0]?.cert_logo_url || '' });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/manager/cert-logo', authMiddleware, async (req, res) => {
+  const { certLogoUrl } = req.body;
+  try {
+    await db.query('UPDATE restaurants SET cert_logo_url = $1 WHERE manager_id = $2', [certLogoUrl || null, req.user.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Admin weekly digest trigger ─────────────────────────────────────────────────
+app.post('/api/admin/trigger-weekly-digest', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    const sent = await sendWeeklyManagerDigests();
+    res.json({ success: true, sent });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;

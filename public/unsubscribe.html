@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsubscribe — ServeMaster Academy</title>
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4">
+
+  <div class="max-w-md w-full text-center">
+    <a href="/" class="inline-block mb-10">
+      <img src="/logo.svg" alt="ServeMaster Academy" class="h-10 mx-auto">
+    </a>
+
+    <!-- Unsubscribed state (shown after successful unsub) -->
+    <div id="unsub-done" class="hidden">
+      <div class="text-5xl mb-4">✓</div>
+      <h1 class="text-2xl font-bold mb-3">You've been unsubscribed</h1>
+      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">You won't receive any more marketing emails from ServeMaster Academy. Transactional emails (receipts, password resets) will still be sent.</p>
+      <p class="text-zinc-500 text-sm mb-8">Changed your mind? You can re-enable emails from your account settings.</p>
+      <a href="/app" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">Back to Training →</a>
+    </div>
+
+    <!-- Already processed (page loaded after token used) -->
+    <div id="unsub-confirm">
+      <div class="w-16 h-16 mx-auto bg-zinc-900 border border-zinc-700 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <h1 class="text-2xl font-bold mb-3">Unsubscribe from emails</h1>
+      <p class="text-zinc-400 text-sm mb-8 leading-relaxed">You've been successfully removed from our mailing list. You won't receive any more marketing or training reminder emails.</p>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-8 text-left">
+        <p class="text-sm text-zinc-400 leading-relaxed">Your account and all training progress remain completely intact. You can still log in and continue training at any time.</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/app" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl text-sm transition-colors">Back to Training</a>
+        <button onclick="resubscribe()" id="resub-btn" class="bg-zinc-800 hover:bg-zinc-700 text-white font-semibold px-6 py-3 rounded-2xl text-sm transition-colors">Re-enable Emails</button>
+      </div>
+      <p id="resub-msg" class="text-emerald-400 text-sm mt-4 hidden">Done — you've been re-subscribed to training emails.</p>
+    </div>
+
+  </div>
+
+  <div class="mt-16 text-center">
+    <p class="text-zinc-600 text-xs">ServeMaster Academy · <a href="https://servemasteracademy.ca" class="hover:text-zinc-400">servemasteracademy.ca</a> · <a href="mailto:support@servemasteracademy.ca" class="hover:text-zinc-400">support@servemasteracademy.ca</a></p>
+    <p class="text-zinc-700 text-xs mt-1">CASL compliant · Unsubscribe processed immediately</p>
+  </div>
+
+  <script>
+    // The unsubscribe was already processed server-side when loading this page
+    // with a valid token. Show success state.
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      // Token present = processed server-side, show done state
+      document.getElementById('unsub-confirm').classList.add('hidden');
+      document.getElementById('unsub-done').classList.remove('hidden');
+    }
+
+    async function resubscribe() {
+      const smaToken = localStorage.getItem('sma-token');
+      if (!smaToken) { alert('Please log in to re-enable emails.'); return; }
+      const btn = document.getElementById('resub-btn');
+      btn.disabled = true; btn.textContent = 'Working…';
+      try {
+        const res = await fetch('/api/resubscribe', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Authorization': 'Bearer ' + smaToken }
+        });
+        if (res.ok) {
+          document.getElementById('resub-msg').classList.remove('hidden');
+          btn.classList.add('hidden');
+        } else {
+          btn.disabled = false; btn.textContent = 'Re-enable Emails';
+          alert('Could not re-subscribe. Please contact support.');
+        }
+      } catch {
+        btn.disabled = false; btn.textContent = 'Re-enable Emails';
+      }
+    }
+  </script>
+
+</body>
+</html>

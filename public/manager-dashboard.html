@@ -173,6 +173,35 @@
             </div>
             <p id="deadline-msg" class="text-sm mt-3 hidden"></p>
           </div>
+
+          <!-- Assigned Required Modules -->
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <h2 class="font-semibold text-lg mb-1">Required Modules</h2>
+            <p class="text-zinc-400 text-sm mb-4">Mark modules as required for your team. Staff will see a "Required" badge on those modules in their training app.</p>
+            <div id="assign-module-list" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-3">
+              <p class="text-zinc-500 text-sm">Loading modules…</p>
+            </div>
+            <p id="assign-msg" class="text-sm hidden"></p>
+          </div>
+
+          <!-- Certificate Logo -->
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <h2 class="font-semibold text-lg mb-1">Certificate Logo URL</h2>
+            <p class="text-zinc-400 text-sm mb-4">Add your restaurant's logo URL to have it appear on staff completion certificates.</p>
+            <div class="space-y-3">
+              <input id="cert-logo-input" type="url" placeholder="https://yourrestaurant.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+              <div id="cert-logo-preview-wrap" class="hidden">
+                <p class="text-xs text-zinc-400 mb-1">Preview:</p>
+                <img id="cert-logo-preview" src="" alt="Logo preview" class="h-12 rounded-lg border border-zinc-700 object-contain bg-zinc-800 p-1">
+              </div>
+              <div class="flex gap-2">
+                <button onclick="saveCertLogo()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save Logo</button>
+                <button onclick="clearCertLogo()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors">Clear</button>
+              </div>
+              <p id="cert-logo-msg" class="text-sm hidden"></p>
+            </div>
+          </div>
+
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <h2 class="font-semibold text-lg mb-1">Invite Link</h2>
             <p class="text-zinc-400 text-sm mb-4">Share this link with your staff to join your team on ServeMaster Academy.</p>
@@ -238,7 +267,7 @@
       document.getElementById('tab-title').textContent = titles[name] || name;
       if (name === 'reports') renderCharts();
       if (name === 'certs') loadCertHistory();
-      if (name === 'settings') loadSettings();
+      if (name === 'settings') { loadSettings(); setTimeout(() => { loadAssignedModules(); loadCertLogo(); }, 50); }
     }
 
     function fmtDate(d) {
@@ -524,6 +553,112 @@
     }
 
     window.onload = loadTeam;
+
+    // ── Assigned modules ────────────────────────────────────────────────────
+    const MODULE_LIST = [
+      { id:1, title:'Service Foundations' }, { id:2, title:'Table Setup & Mise en Place' },
+      { id:3, title:'Welcoming Guests & First Impressions' }, { id:4, title:'Taking Orders' },
+      { id:5, title:'Serving Food & Timing' }, { id:6, title:'Wine Fundamentals' },
+      { id:7, title:'Wine Service Etiquette' }, { id:8, title:'Champagne & Sparkling' },
+      { id:9, title:'Beer & Non-Alcoholic Beverages' }, { id:10, title:'Cocktails & Spirits' },
+      { id:11, title:'Upselling Without Pressure' }, { id:12, title:'Handling Complaints & Recovery' },
+      { id:13, title:'Special Dietary Needs' }, { id:14, title:'Table Management & Pacing' },
+      { id:15, title:'Payment & Closing' }, { id:16, title:'VIP Service' },
+      { id:17, title:'Event & Banquet Service' }, { id:18, title:'Managing Side Duties' },
+      { id:19, title:'Working as a Team' }, { id:20, title:'Digital Menus & Tech at the Table' },
+      { id:21, title:'Culture, Diversity & Inclusivity' }, { id:22, title:'Food Safety & Hygiene' },
+      { id:23, title:'Leadership & Mentorship' }, { id:24, title:'Wellness & Long-Term Career' },
+      { id:25, title:'Bar Setup & Mise en Place' }, { id:26, title:'Essential Bartending Techniques' },
+      { id:27, title:'Classic Cocktails & Drink Building' }, { id:28, title:'Bar Upselling & Guest Engagement' },
+      { id:29, title:'Responsible Service & Difficult Situations' }, { id:30, title:'Bar Career & Culture' }
+    ];
+    let assignedModuleIds = new Set();
+
+    async function loadAssignedModules() {
+      try {
+        const res = await fetch('/api/manager/assigned-modules', { headers: authHeaders(), credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          assignedModuleIds = new Set(data.modules);
+          renderAssignedModules();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderAssignedModules() {
+      const el = document.getElementById('assign-module-list');
+      if (!el) return;
+      el.innerHTML = MODULE_LIST.map(m => {
+        const checked = assignedModuleIds.has(m.id);
+        return `<label class="flex items-center gap-3 py-2 px-3 rounded-xl hover:bg-zinc-800 cursor-pointer transition-colors">
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleAssign(${m.id}, this.checked)"
+            class="w-4 h-4 rounded text-amber-400 accent-amber-400">
+          <span class="text-sm text-zinc-300">${m.id}. ${esc(m.title)}</span>
+          ${checked ? '<span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30">Required</span>' : ''}
+        </label>`;
+      }).join('');
+    }
+
+    async function toggleAssign(moduleId, isChecked) {
+      const msgEl = document.getElementById('assign-msg');
+      try {
+        const res = isChecked
+          ? await fetch('/api/manager/assign', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ moduleId }) })
+          : await fetch(`/api/manager/assign/${moduleId}`, { method: 'DELETE', headers: authHeaders(), credentials: 'include' });
+        if (res.ok) {
+          if (isChecked) assignedModuleIds.add(moduleId); else assignedModuleIds.delete(moduleId);
+          renderAssignedModules();
+          if (msgEl) { msgEl.textContent = isChecked ? 'Module marked as required.' : 'Module removed from required.'; msgEl.className = 'text-sm text-emerald-400'; msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 2000); }
+        }
+      } catch (e) { if (msgEl) { msgEl.textContent = 'Error saving. Please try again.'; msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); } }
+    }
+
+    // ── Certificate logo ────────────────────────────────────────────────────
+    async function loadCertLogo() {
+      try {
+        const res = await fetch('/api/manager/cert-logo', { headers: authHeaders(), credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.certLogoUrl) {
+            document.getElementById('cert-logo-input').value = data.certLogoUrl;
+            const preview = document.getElementById('cert-logo-preview');
+            preview.src = data.certLogoUrl;
+            document.getElementById('cert-logo-preview-wrap').classList.remove('hidden');
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    document.getElementById('cert-logo-input').addEventListener('input', function() {
+      const url = this.value.trim();
+      const preview = document.getElementById('cert-logo-preview');
+      const wrap = document.getElementById('cert-logo-preview-wrap');
+      if (url) { preview.src = url; wrap.classList.remove('hidden'); }
+      else { wrap.classList.add('hidden'); }
+    });
+
+    async function saveCertLogo() {
+      const url = document.getElementById('cert-logo-input').value.trim();
+      const msgEl = document.getElementById('cert-logo-msg');
+      try {
+        const res = await fetch('/api/manager/cert-logo', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ certLogoUrl: url }) });
+        if (res.ok) { msgEl.textContent = 'Logo saved successfully.'; msgEl.className = 'text-sm text-emerald-400'; }
+        else { msgEl.textContent = 'Failed to save logo.'; msgEl.className = 'text-sm text-red-400'; }
+        msgEl.classList.remove('hidden');
+        setTimeout(() => msgEl.classList.add('hidden'), 3000);
+      } catch { msgEl.textContent = 'Error saving.'; msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); }
+    }
+
+    async function clearCertLogo() {
+      document.getElementById('cert-logo-input').value = '';
+      document.getElementById('cert-logo-preview-wrap').classList.add('hidden');
+      await fetch('/api/manager/cert-logo', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ certLogoUrl: '' }) });
+    }
+
+    // Load assigned modules + cert logo on page load (preload data for settings tab)
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { loadAssignedModules(); loadCertLogo(); }, 800);
+    });
   </script>
 </body>
 </html>

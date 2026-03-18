@@ -1,0 +1,29 @@
+{
+  "name": "ServeMaster Academy",
+  "short_name": "ServeMaster",
+  "description": "Professional hospitality training with AI roleplay and voice practice",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
