@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pre-Bussing & Silent Service: Invisible Tricks That Speed Everything Up – ServeMaster Academy</title>
+  <meta name="description" content="Pre-bussing is one of the simplest efficiency gains in restaurant service — and one of the most overlooked. How to keep your section clean, your flow fast, and your guest experience seamless.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) {
+      nav { flex-direction: column; padding: 1rem; }
+      .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Efficiency & Earnings</span>
+      <span class="text-zinc-500 text-sm">5 min read</span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">Pre-Bussing & Silent Service: Invisible Tricks That Speed Everything Up</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">Pre-bussing is one of the easiest efficiency improvements in restaurant service — and most servers do it wrong. Here's the correct technique and the mindset that makes it a natural part of every service flow.</p>
+  </div>
+
+  <div class="prose">
+
+    <p>Pre-bussing is the practice of removing finished dishes, glasses, and clutter from the table before a formal course change — clearing a used bread plate while the guest is still on starters, removing a finished appetiser plate a moment before asking if they're ready for their mains. Done correctly, it keeps the table visually clean, accelerates the meal flow, and reduces the weight of the full clear at each course transition. Done incorrectly, it's intrusive and disruptive.</p>
+
+    <h2>The rule of finished</h2>
+
+    <p>A pre-bussing opportunity exists when an item is genuinely finished — the guest has clearly stopped using it and is engaged in conversation or focused elsewhere. The markers:</p>
+
+    <ul>
+      <li>The plate is pushed toward the centre or edge of the table</li>
+      <li>The cutlery is placed across the plate (the universal "I'm done" signal)</li>
+      <li>The glass is empty or nearly empty and the guest isn't holding it</li>
+      <li>The bread basket is empty and the guest isn't looking toward it</li>
+    </ul>
+
+    <p>The rule: if in doubt, don't. A premature clear — removing a plate a guest was still using — is one of the most irritating things that can happen at a table. The embarrassment of being wrong outweighs the efficiency of being proactive.</p>
+
+    <h2>The silent clear technique</h2>
+
+    <p>Pre-bussing should be as close to invisible as possible. The silent clear:</p>
+
+    <ul>
+      <li>Approach from the guest's peripheral vision, not head-on</li>
+      <li>At casual venues — make brief eye contact with the finished item, then the guest; the guest's slight nod or non-response is permission enough</li>
+      <li>At formal venues — a quiet "May I?" with a gesture toward the item is the minimum courtesy</li>
+      <li>Remove cleanly, in one smooth motion. Don't hover, shift things around, or make the clear an event</li>
+      <li>Do not ask "are you still working on that?" — the phrase implies the guest is failing at eating, not finishing at their own pace</li>
+    </ul>
+
+    <blockquote>"The table that never has to be fully cleared in one big sweep is the table that was pre-bussed intelligently throughout. The guest never notices the effort — they just notice the table is always clean."</blockquote>
+
+    <h2>Glasses as an opportunity</h2>
+
+    <p>Empty or near-empty glasses are the most frequent and most visible pre-bussing opportunity — and they double as a natural check-in moment:</p>
+
+    <ul>
+      <li>A nearing-empty water glass: refill without interrupting. This is the classic silent service move — a water refill that happens without a word exchanged.</li>
+      <li>A finished wine glass: "Would you like me to refill, or would you prefer something different for your mains?" — removes the finished glass and opens an upsell in one motion.</li>
+      <li>An empty cocktail glass: "Another, or shall I get you some water while you decide on mains?" — same principle. Every remove is a potential add.</li>
+    </ul>
+
+    <h2>The between-course reset</h2>
+
+    <p>Pre-bussing throughout a course means the course transition is faster — because less is left to clear when the formal reset happens. A table that arrives at the starter-to-main transition with bread plates, used cutlery, and finished glasses already cleared only needs thirty seconds to reset, not ninety. Over a three-course meal, this efficiency compounds significantly and allows you to turn the table faster without the guest feeling any rush.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Build efficient service habits with structured training — start free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Speed and grace are not opposites</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy covers every efficiency skill in professional service — from pre-bussing to section management. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/table-maintenance" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Daily Service</p>
+        <p class="font-semibold text-white">The Art of Table Maintenance: 2-Minute Checks That Guests Notice</p>
+      </a>
+      <a href="/blog/silent-service" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Fine Dining</p>
+        <p class="font-semibold text-white">The Art of Silent Service: Reading Tables Without Interrupting</p>
+      </a>
+      <a href="/blog/multi-tabling-systems" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Efficiency</p>
+        <p class="font-semibold text-white">Multi-Tabling Without Chaos: Systems to Track 6+ Tables</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Knowledge Centre</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js"></script>
+</body>
+</html>
