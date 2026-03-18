@@ -2458,9 +2458,44 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       assigned_at TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (restaurant_id, module_id)
     )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`INSERT INTO site_settings (key, value) VALUES ('crisp_enabled','false'),('crisp_website_id','') ON CONFLICT (key) DO NOTHING`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
+// ── Site settings routes ────────────────────────────────────────────────────────
+app.get('/api/crisp-config', async (req, res) => {
+  try {
+    const r = await db.query(`SELECT key, value FROM site_settings WHERE key IN ('crisp_enabled','crisp_website_id')`);
+    const map = Object.fromEntries(r.rows.map(row => [row.key, row.value]));
+    res.json({ enabled: map.crisp_enabled === 'true', websiteId: map.crisp_website_id || '' });
+  } catch (e) { res.json({ enabled: false, websiteId: '' }); }
+});
+
+app.get('/api/admin/site-settings', adminMiddleware, async (req, res) => {
+  try {
+    const r = await db.query(`SELECT key, value FROM site_settings`);
+    const map = Object.fromEntries(r.rows.map(row => [row.key, row.value]));
+    res.json(map);
+  } catch (e) { res.status(500).json({ error: 'Failed to load settings' }); }
+});
+
+app.post('/api/admin/site-settings', adminMiddleware, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ error: 'key required' });
+    await db.query(
+      `INSERT INTO site_settings (key, value, updated_at) VALUES ($1,$2,NOW()) ON CONFLICT (key) DO UPDATE SET value=$2, updated_at=NOW()`,
+      [key, String(value)]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Failed to save setting' }); }
+});
+
 // ── Unsubscribe routes ─────────────────────────────────────────────────────────
 app.get('/unsubscribe', async (req, res) => {
   const { token } = req.query;

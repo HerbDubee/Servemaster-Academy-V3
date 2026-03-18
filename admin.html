@@ -77,6 +77,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
       <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
       <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
+      <div class="nav-item" onclick="showSection('siteconfig')" id="nav-siteconfig">⚙️ Site Config</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -91,6 +92,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
       <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
       <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
+      <button onclick="showSection('siteconfig')" class="nav-item whitespace-nowrap" id="mnav-siteconfig">⚙️</button>
     </div>
 
     <!-- Main content -->
@@ -373,6 +375,37 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- SITE CONFIG -->
+      <div id="section-siteconfig" class="section">
+        <h1 class="heading text-3xl font-bold mb-8">⚙️ Site Configuration</h1>
+
+        <!-- Crisp Chat -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6 max-w-xl">
+          <h2 class="text-lg font-semibold text-white mb-1">Crisp Live Chat</h2>
+          <p class="text-zinc-500 text-sm mb-5">Enable the Crisp widget on all public pages. You must enter your Crisp Website ID first.</p>
+
+          <label class="text-xs text-zinc-400 block mb-1.5 font-medium">Crisp Website ID</label>
+          <input id="crisp-website-id" type="text" placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-amber-400 mb-4">
+
+          <div class="flex items-center gap-3 mb-5">
+            <button id="crisp-toggle-btn" onclick="toggleCrisp()"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none bg-zinc-700"
+              aria-pressed="false">
+              <span id="crisp-toggle-knob" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+            </button>
+            <span id="crisp-toggle-label" class="text-sm text-zinc-400">Disabled</span>
+          </div>
+
+          <button onclick="saveCrispSettings()"
+            class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">
+            Save Crisp Settings
+          </button>
+          <p id="crisp-save-msg" class="hidden text-green-400 text-xs mt-3 text-center">Settings saved successfully.</p>
+          <p id="crisp-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
         </div>
       </div>
 
@@ -851,6 +884,7 @@ function showSection(name) {
   const mNavEl = document.getElementById('mnav-' + name);
   if (navEl) navEl.classList.add('active');
   if (mNavEl) mNavEl.classList.add('active');
+  if (name === 'siteconfig') loadSiteConfig();
 }
 
 async function doLogout(next = '/login') {
@@ -858,6 +892,67 @@ async function doLogout(next = '/login') {
   localStorage.removeItem('sma-token');
   localStorage.removeItem('serveMasterUser');
   window.location.href = next;
+}
+
+// ── Site Config ──────────────────────────────────────────────────────────────
+let crispEnabled = false;
+
+async function loadSiteConfig() {
+  try {
+    const r = await fetch('/api/admin/site-settings', { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const websiteId = d.crisp_website_id || '';
+    crispEnabled = d.crisp_enabled === 'true';
+    document.getElementById('crisp-website-id').value = websiteId;
+    updateCrispToggleUI(crispEnabled);
+  } catch (e) {}
+}
+
+function updateCrispToggleUI(enabled) {
+  const btn = document.getElementById('crisp-toggle-btn');
+  const knob = document.getElementById('crisp-toggle-knob');
+  const label = document.getElementById('crisp-toggle-label');
+  if (enabled) {
+    btn.classList.remove('bg-zinc-700');
+    btn.classList.add('bg-amber-400');
+    knob.classList.remove('translate-x-1');
+    knob.classList.add('translate-x-6');
+    label.textContent = 'Enabled';
+    label.classList.remove('text-zinc-400');
+    label.classList.add('text-amber-400');
+  } else {
+    btn.classList.remove('bg-amber-400');
+    btn.classList.add('bg-zinc-700');
+    knob.classList.remove('translate-x-6');
+    knob.classList.add('translate-x-1');
+    label.textContent = 'Disabled';
+    label.classList.remove('text-amber-400');
+    label.classList.add('text-zinc-400');
+  }
+}
+
+function toggleCrisp() {
+  crispEnabled = !crispEnabled;
+  updateCrispToggleUI(crispEnabled);
+}
+
+async function saveCrispSettings() {
+  const websiteId = document.getElementById('crisp-website-id').value.trim();
+  const msgEl = document.getElementById('crisp-save-msg');
+  const errEl = document.getElementById('crisp-save-err');
+  msgEl.classList.add('hidden');
+  errEl.classList.add('hidden');
+  try {
+    const saves = [
+      fetch('/api/admin/site-settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ key: 'crisp_enabled', value: String(crispEnabled) }) }),
+      fetch('/api/admin/site-settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ key: 'crisp_website_id', value: websiteId }) })
+    ];
+    const results = await Promise.all(saves);
+    const ok = results.every(r => r.ok);
+    if (ok) { msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 3000); }
+    else { errEl.textContent = 'Failed to save settings.'; errEl.classList.remove('hidden'); }
+  } catch (e) { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
 }
 
 function esc(str) {
