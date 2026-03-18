@@ -2520,7 +2520,9 @@ app.post('/api/chat', async (req, res) => {
 
     const messages = [
       { role: 'system', content: CHAT_SYSTEM_PROMPT },
-      ...history.slice(-10).map(m => ({ role: m.role, content: String(m.content).slice(0, 1000) })),
+      ...history.slice(-10)
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .map(m => ({ role: m.role, content: String(m.content).slice(0, 1000) })),
       { role: 'user', content: message.slice(0, 500) }
     ];
 
