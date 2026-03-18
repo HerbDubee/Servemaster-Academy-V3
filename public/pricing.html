@@ -112,9 +112,12 @@ details[open] summary::after { content: '−'; }
 
   <!-- Currency selector -->
   <div class="mb-8 text-center">
-    <label class="text-sm text-zinc-400 block mb-4" data-i18n="pricing_currency_label">Select Currency:</label>
-    <div id="currency-selector" class="inline-block mx-auto"></div>
-    <p id="currency-note" class="text-zinc-600 text-xs mt-2 hidden" data-i18n="pricing_currency_note">USD prices shown for reference. Checkout is processed in CAD.</p>
+    <label class="text-sm text-zinc-400 block mb-3" data-i18n="pricing_currency_label">Select Currency:</label>
+    <div class="inline-flex rounded-full border border-zinc-700 overflow-hidden">
+      <button id="btn-cad" onclick="setCurrency('cad')" class="px-5 py-1.5 text-sm font-semibold bg-amber-400 text-black transition-colors">CAD $</button>
+      <button id="btn-usd" onclick="setCurrency('usd')" class="px-5 py-1.5 text-sm font-semibold text-zinc-400 hover:text-white transition-colors">USD $</button>
+    </div>
+    <p id="currency-note" class="text-zinc-500 text-xs mt-2 hidden">USD prices shown for reference. Checkout is processed in CAD.</p>
   </div>
 
   <!-- Individual Plans -->
@@ -577,40 +580,30 @@ async function checkout(plan) {
   }
 }
 
-// ── Stripe Currency Selector ─────────────────────────────────────────────
-(async function initStripe() {
-  try {
-    const keyRes = await fetch('/api/stripe/publishable-key');
-    const { publishableKey } = await keyRes.json();
-    if (!publishableKey) return;
-    const stripe = Stripe(publishableKey);
-    const elements = stripe.elements({
-      mode: 'subscription',
-      amount: 1900,
-      currency: 'cad',
-      appearance: { theme: 'night' }
-    });
-    const currencySelector = elements.create('currencySelector', {
-      defaultCurrency: 'cad',
-      supportedCurrencies: ['cad', 'usd']
-    });
-    currencySelector.mount('#currency-selector');
-    document.getElementById('currency-note').classList.remove('hidden');
-
-    let selectedCurrency = 'cad';
-    currencySelector.on('change', (e) => {
-      selectedCurrency = e.value.currency;
-      const isUSD = selectedCurrency === 'usd';
-      document.querySelectorAll('.price-display').forEach(el => {
-        const base = parseFloat(el.dataset.baseAmount);
-        const converted = isUSD ? (base * 0.74).toFixed(0) : base;
-        const sym = el.querySelector('.currency-symbol');
-        el.childNodes[0].textContent = '$' + converted + ' ';
-        if (sym) sym.textContent = isUSD ? 'USD' : (sym.textContent.includes('mo') ? 'CAD / mo' : sym.textContent.includes('yr') ? 'CAD / yr' : 'CAD');
-      });
-    });
-  } catch (e) { console.error('Stripe init error', e); }
-})();
+// ── Currency Toggle ───────────────────────────────────────────────────────
+let selectedCurrency = 'cad';
+function setCurrency(cur) {
+  selectedCurrency = cur;
+  const isUSD = cur === 'usd';
+  document.getElementById('btn-cad').className = isUSD
+    ? 'px-5 py-1.5 text-sm font-semibold text-zinc-400 hover:text-white transition-colors'
+    : 'px-5 py-1.5 text-sm font-semibold bg-amber-400 text-black transition-colors';
+  document.getElementById('btn-usd').className = isUSD
+    ? 'px-5 py-1.5 text-sm font-semibold bg-amber-400 text-black transition-colors'
+    : 'px-5 py-1.5 text-sm font-semibold text-zinc-400 hover:text-white transition-colors';
+  const note = document.getElementById('currency-note');
+  if (isUSD) note.classList.remove('hidden'); else note.classList.add('hidden');
+  document.querySelectorAll('.price-display').forEach(el => {
+    const base = parseFloat(el.dataset.baseAmount);
+    const converted = isUSD ? Math.round(base * 0.74) : base;
+    const sym = el.querySelector('.currency-symbol');
+    const label = sym ? sym.textContent : '';
+    const suffix = label.includes('mo') ? (isUSD ? 'USD / mo' : 'CAD / mo') : label.includes('yr') ? (isUSD ? 'USD / yr' : 'CAD / yr') : (isUSD ? 'USD' : 'CAD');
+    const firstNode = Array.from(el.childNodes).find(n => n.nodeType === 3);
+    if (firstNode) firstNode.textContent = '$' + converted + ' ';
+    if (sym) sym.textContent = suffix;
+  });
+}
 </script>
 
 <!-- Crisp Chat Widget -->
