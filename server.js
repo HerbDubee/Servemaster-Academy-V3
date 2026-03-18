@@ -97,6 +97,15 @@ function getTTS() {
   return _tts;
 }
 
+let _grok = null;
+function getGrok() {
+  if (_grok) return _grok;
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) throw new Error('No xAI API key configured. Set XAI_API_KEY.');
+  _grok = new OpenAI({ apiKey, baseURL: 'https://api.x.ai/v1' });
+  return _grok;
+}
+
 // ── Referral credit helper ───────────────────────────────────────────────────
 async function processReferralCredit(payingUserEmail, payingUserId) {
   const client = await db.pool.connect();
@@ -2463,11 +2472,74 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       value TEXT NOT NULL,
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
-    await db.query(`INSERT INTO site_settings (key, value) VALUES ('crisp_enabled','false'),('crisp_website_id','') ON CONFLICT (key) DO NOTHING`);
+    await db.query(`INSERT INTO site_settings (key, value) VALUES ('crisp_enabled','false'),('crisp_website_id',''),('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
 // ── Site settings routes ────────────────────────────────────────────────────────
+app.get('/api/chat-config', async (req, res) => {
+  try {
+    const r = await db.query(`SELECT value FROM site_settings WHERE key = 'chat_enabled'`);
+    const enabled = r.rows.length > 0 && r.rows[0].value === 'true';
+    res.json({ enabled });
+  } catch (e) { res.json({ enabled: false }); }
+});
+
+const CHAT_SYSTEM_PROMPT = `You are the AI assistant for ServeMaster Academy (servemasteracademy.ca), a professional hospitality training platform based in Canada. You help visitors learn about the platform and decide if it's right for them.
+
+About ServeMaster Academy:
+- 30 expert training modules covering all aspects of professional restaurant service
+- 36 AI roleplay scenarios with an AI guest across 5 categories (Guest Relations, Wine & Beverage, Special Occasions, Rush & Pressure, Health & Safety)
+- Voice practice using Whisper AI transcription — speak out loud like the real floor
+- Completion certificate (PDF download) after finishing all 30 modules
+- Gamification: badges, daily streaks, leaderboard
+- Trilingual: English, French, Spanish (EN/FR/ES)
+- Manager Dashboard for restaurant owners/managers to track staff progress, assign modules, get weekly digest emails
+- PWA — works offline, mobile-first design
+
+Pricing (CAD, all with 14-day free trial):
+- Free: $0 — 3 modules, 5 AI scenarios, forever free
+- Premium Monthly: $19/mo — all 30 modules, all 36 scenarios, voice roleplay, certificate
+- Premium Annual: $149/yr (~$12.42/mo, save 35%) — same as Premium + 2 months free
+- Starter Team: $99/mo — up to 10 staff, manager dashboard, assign required modules, weekly digest
+- Pro Team: $199/mo — unlimited staff, custom AI scenarios, advanced analytics, priority support
+- Starter Team Annual: $990/yr (~$82.50/mo, save ~17%)
+- Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
+- Enterprise: custom pricing — multi-location, white-label, SSO, API access
+
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const settingRow = await db.query(`SELECT value FROM site_settings WHERE key = 'chat_enabled'`);
+    const chatEnabled = settingRow.rows.length > 0 && settingRow.rows[0].value === 'true';
+    if (!chatEnabled) return res.status(403).json({ error: 'Chat not enabled' });
+
+    const { message, history = [] } = req.body;
+    if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message required' });
+
+    const messages = [
+      { role: 'system', content: CHAT_SYSTEM_PROMPT },
+      ...history.slice(-10).map(m => ({ role: m.role, content: String(m.content).slice(0, 1000) })),
+      { role: 'user', content: message.slice(0, 500) }
+    ];
+
+    const grok = getGrok();
+    const completion = await grok.chat.completions.create({
+      model: 'grok-3-mini',
+      messages,
+      max_tokens: 400,
+      temperature: 0.7
+    });
+
+    const reply = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    res.json({ reply });
+  } catch (e) {
+    console.error('Chat error:', e.message);
+    res.status(500).json({ error: 'Chat service unavailable' });
+  }
+});
+
 app.get('/api/crisp-config', async (req, res) => {
   try {
     const r = await db.query(`SELECT key, value FROM site_settings WHERE key IN ('crisp_enabled','crisp_website_id')`);

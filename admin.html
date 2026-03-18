@@ -407,6 +407,31 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <p id="crisp-save-msg" class="hidden text-green-400 text-xs mt-3 text-center">Settings saved successfully.</p>
           <p id="crisp-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
         </div>
+
+        <!-- AI Chat -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6 max-w-xl">
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="text-lg font-semibold text-white">AI Chat Assistant</h2>
+            <span class="text-xs bg-amber-400/10 border border-amber-400/30 text-amber-300 px-2 py-0.5 rounded-full font-semibold">Powered by Grok</span>
+          </div>
+          <p class="text-zinc-500 text-sm mb-5">Enable the Grok AI chat widget on all public pages. Visitors can ask questions about pricing, plans, and modules — answered instantly by AI.</p>
+
+          <div class="flex items-center gap-3 mb-5">
+            <button id="chat-toggle-btn" onclick="toggleChat()"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none bg-zinc-700"
+              aria-pressed="false">
+              <span id="chat-toggle-knob" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+            </button>
+            <span id="chat-toggle-label" class="text-sm text-zinc-400">Disabled</span>
+          </div>
+
+          <button onclick="saveChatSettings()"
+            class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">
+            Save AI Chat Settings
+          </button>
+          <p id="chat-save-msg" class="hidden text-green-400 text-xs mt-3 text-center">Settings saved successfully.</p>
+          <p id="chat-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
+        </div>
       </div>
 
     </main>
@@ -896,6 +921,7 @@ async function doLogout(next = '/login') {
 
 // ── Site Config ──────────────────────────────────────────────────────────────
 let crispEnabled = false;
+let chatEnabled = false;
 
 async function loadSiteConfig() {
   try {
@@ -904,8 +930,10 @@ async function loadSiteConfig() {
     const d = await r.json();
     const websiteId = d.crisp_website_id || '';
     crispEnabled = d.crisp_enabled === 'true';
+    chatEnabled = d.chat_enabled === 'true';
     document.getElementById('crisp-website-id').value = websiteId;
     updateCrispToggleUI(crispEnabled);
+    updateChatToggleUI(chatEnabled);
   } catch (e) {}
 }
 
@@ -951,6 +979,46 @@ async function saveCrispSettings() {
     const results = await Promise.all(saves);
     const ok = results.every(r => r.ok);
     if (ok) { msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 3000); }
+    else { errEl.textContent = 'Failed to save settings.'; errEl.classList.remove('hidden'); }
+  } catch (e) { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
+}
+
+function updateChatToggleUI(enabled) {
+  const btn = document.getElementById('chat-toggle-btn');
+  const knob = document.getElementById('chat-toggle-knob');
+  const label = document.getElementById('chat-toggle-label');
+  if (enabled) {
+    btn.classList.remove('bg-zinc-700');
+    btn.classList.add('bg-amber-400');
+    knob.classList.remove('translate-x-1');
+    knob.classList.add('translate-x-6');
+    label.textContent = 'Enabled';
+    label.classList.remove('text-zinc-400');
+    label.classList.add('text-amber-400');
+  } else {
+    btn.classList.remove('bg-amber-400');
+    btn.classList.add('bg-zinc-700');
+    knob.classList.remove('translate-x-6');
+    knob.classList.add('translate-x-1');
+    label.textContent = 'Disabled';
+    label.classList.remove('text-amber-400');
+    label.classList.add('text-zinc-400');
+  }
+}
+
+function toggleChat() {
+  chatEnabled = !chatEnabled;
+  updateChatToggleUI(chatEnabled);
+}
+
+async function saveChatSettings() {
+  const msgEl = document.getElementById('chat-save-msg');
+  const errEl = document.getElementById('chat-save-err');
+  msgEl.classList.add('hidden');
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch('/api/admin/site-settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ key: 'chat_enabled', value: String(chatEnabled) }) });
+    if (res.ok) { msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 3000); }
     else { errEl.textContent = 'Failed to save settings.'; errEl.classList.remove('hidden'); }
   } catch (e) { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
 }
