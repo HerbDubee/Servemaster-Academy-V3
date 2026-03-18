@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Server's Complete Allergen & Dietary Guide – ServeMaster Academy</title>
+  <meta name="description" content="Allergen and dietary requests are safety-critical — and most servers handle them wrong. Here's the complete guide: the Big 14 allergens, celiac, vegan, halal, and how to communicate with the kitchen effectively.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) { nav { flex-direction: column; padding: 1rem; } .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; } }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Guest Safety</span>
+      <span class="text-zinc-500 text-sm">10 min read</span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">The Server's Complete Allergen & Dietary Guide</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">An allergen request is not an inconvenience — it is a safety issue. Mishandling it can send a guest to hospital. This guide covers the major allergens, common dietary needs, kitchen communication, and the exact language that protects both the guest and your professional reputation.</p>
+  </div>
+
+  <div class="prose">
+
+    <h2>Why allergen handling is a non-negotiable skill</h2>
+
+    <p>Food allergies affect roughly 2–3 million Canadians. Anaphylaxis — a life-threatening allergic reaction — can occur within minutes of exposure to even a trace amount of a trigger food. For a server, this means that an allergen request is never a preference you can deprioritise. It is a safety-critical communication that must be handled correctly every single time.</p>
+
+    <p>The legal exposure is real. Servers and restaurants have faced lawsuits and licensing actions following allergic reactions that resulted from staff misrepresentation or careless kitchen communication. More importantly: a guest can die. That is the actual stakes of this conversation.</p>
+
+    <blockquote>"When a guest mentions an allergy, your entire role changes. You are no longer just a salesperson for the menu — you are a safety checkpoint. Take every second of that responsibility seriously."</blockquote>
+
+    <h2>The major allergens you must know</h2>
+
+    <p>Canada's Food and Drug Regulations (and similar frameworks in most Western countries) identify a list of priority allergens. These are the ones responsible for the vast majority of serious reactions:</p>
+
+    <ul>
+      <li><strong>Peanuts</strong> — One of the most common causes of anaphylaxis. Peanuts are a legume, not a tree nut, but many people with peanut allergies also react to tree nuts. Traces in oils, sauces, and desserts are a common hidden source.</li>
+      <li><strong>Tree nuts</strong> — Includes almonds, cashews, walnuts, pecans, pistachios, hazelnuts, macadamia nuts, Brazil nuts, pine nuts. Each is distinct — a guest may be allergic to one but not others, or allergic to all of them.</li>
+      <li><strong>Milk (dairy)</strong> — Includes all forms: milk, butter, cream, cheese, yoghurt, whey, casein, lactalbumin. Different from lactose intolerance (which is a digestive sensitivity, not an immune response).</li>
+      <li><strong>Eggs</strong> — Present in many sauces (hollandaise, Caesar dressing, mayonnaise), baked goods, pasta, and coatings.</li>
+      <li><strong>Wheat / Gluten</strong> — Wheat is a top-9 allergen distinct from celiac disease (see below). Present in bread, pasta, soy sauce, beer, and many sauces as a thickener.</li>
+      <li><strong>Soy</strong> — Present in many Asian dishes, sauces, processed foods, and edamame. Soy lecithin in chocolate and baked goods is a hidden source.</li>
+      <li><strong>Fish</strong> — Specific to finfish (salmon, tuna, cod, halibut, etc.). Different from shellfish allergy.</li>
+      <li><strong>Shellfish / Crustaceans</strong> — Includes shrimp, lobster, crab, crawfish. Often triggers severe reactions.</li>
+      <li><strong>Molluscs</strong> — Includes clams, oysters, scallops, mussels. Separate from crustacean shellfish — a guest may be allergic to one but not the other.</li>
+      <li><strong>Sesame</strong> — One of the newest additions to top-allergen lists. Present in tahini, hummus, some breads, and Asian sauces. Growing in prevalence.</li>
+      <li><strong>Mustard</strong> — Present in mustard seeds, powder, and many prepared condiments and sauces.</li>
+      <li><strong>Sulphites</strong> — Found in wine, dried fruits, some condiments, and processed foods. Can trigger severe asthma-like reactions in sensitive individuals.</li>
+    </ul>
+
+    <h2>Understanding the difference: allergy vs. intolerance vs. preference</h2>
+
+    <p>These three categories require different levels of response, and a professional server can tell the difference by asking one question.</p>
+
+    <ul>
+      <li><strong>True food allergy</strong> — An immune system response. Even a trace amount can cause anaphylaxis. Must be communicated to the kitchen as a full allergen flag. The kitchen must use separate utensils, surfaces, and preparation areas to prevent cross-contamination.</li>
+      <li><strong>Food intolerance</strong> — A digestive response (not immune), such as lactose intolerance or non-celiac gluten sensitivity. Usually causes discomfort rather than a life-threatening reaction. The guest may be able to tolerate small amounts or certain preparations (e.g., lactose-free cheese, gluten-free pasta). Still important to communicate accurately.</li>
+      <li><strong>Dietary preference</strong> — A choice, not a medical necessity. Vegan, vegetarian, halal, and kosher are preferences that must be respected but do not carry the same cross-contamination risk as true allergies (though halal and kosher have preparation requirements of their own).</li>
+    </ul>
+
+    <p>The question to ask: "Is this an allergy or a preference?" Most guests are happy to clarify, and the answer tells you exactly how to communicate with the kitchen.</p>
+
+    <h2>Celiac disease: a special case</h2>
+
+    <p>Celiac disease is an autoimmune condition triggered by gluten. Unlike gluten sensitivity, celiac reactions are immune responses that cause intestinal damage. A guest with celiac disease cannot simply "avoid bread" — they need a completely gluten-free preparation, including:</p>
+
+    <ul>
+      <li>No shared cooking surfaces or utensils with gluten-containing foods</li>
+      <li>No cross-contamination from shared fryers, pasta water, or prep areas</li>
+      <li>No soy sauce (most contain wheat) — use tamari or gluten-free soy sauce</li>
+      <li>No malt vinegar, regular beer, standard oats, or most processed sauces</li>
+    </ul>
+
+    <p>When a guest says "I have celiac disease," the correct response is: "I'll flag this for the kitchen as a serious gluten allergy. Let me check which dishes we can prepare safely for you." Then go directly to the kitchen and confirm what is genuinely safe — do not guess.</p>
+
+    <h2>Vegan and vegetarian service</h2>
+
+    <p>Veganism excludes all animal products: meat, fish, poultry, dairy, eggs, honey, and gelatin. Vegetarians exclude meat and often fish, but some eat dairy and eggs. Know your venue's dishes thoroughly enough to identify hidden animal products.</p>
+
+    <h3>Common hidden non-vegan ingredients</h3>
+    <ul>
+      <li>Stocks and broths — often meat-based even in "vegetable" dishes</li>
+      <li>Worcestershire sauce — contains anchovies</li>
+      <li>Caesar dressing — contains anchovies and egg</li>
+      <li>Gelatin — in some desserts, jellies, and marshmallows</li>
+      <li>Rennet — in some cheeses (making them non-vegetarian)</li>
+      <li>Butter in pasta water or finishing sauces</li>
+      <li>Parmesan as a garnish on "vegetarian" dishes</li>
+    </ul>
+
+    <p>Never guess. If you are unsure whether a dish is vegan or vegetarian, say "Let me check with the kitchen to confirm" — and then actually confirm. Do not make assumptions based on appearance or general descriptions.</p>
+
+    <h2>Halal and kosher requests</h2>
+
+    <p><strong>Halal</strong> means the food is permissible under Islamic dietary law. Key restrictions include: no pork or pork products, no alcohol in food or preparation, and the animal must be slaughtered according to specific requirements. If your restaurant is not halal-certified, you cannot guarantee that your dishes are halal — be honest about this rather than guessing.</p>
+
+    <p><strong>Kosher</strong> is a complex set of Jewish dietary laws. Key restrictions include: no pork or shellfish, no mixing of meat and dairy, and specific slaughter and preparation requirements. Again, if your restaurant is not kosher-certified, be transparent rather than uncertain.</p>
+
+    <p>The honest response: "We're not a certified halal/kosher kitchen, but I can tell you the dishes that don't contain pork [or whatever the specific concern is]. Would that be helpful?" Honesty protects the guest and your professional integrity.</p>
+
+    <h2>How to communicate with the kitchen: the right way</h2>
+
+    <p>Verbal communication alone is not safe enough for serious allergen requests. In a busy kitchen, a verbal message delivered through a chain of two or three people will be corrupted. The correct process:</p>
+
+    <ul>
+      <li><strong>Flag on the ticket</strong> — Write the allergen clearly on the order ticket: "ALLERGEN: PEANUT" or "CELIAC — NO GLUTEN CROSS-CONTAMINATION." Most POS systems have an allergy flag or modifier field. Use it.</li>
+      <li><strong>Confirm verbally with the kitchen</strong> — During a service rush, drop in and say "I have a peanut allergy on table 12 — please confirm before that ticket goes." Direct confirmation from the chef or expediter is the safest practice.</li>
+      <li><strong>Confirm before running the food</strong> — When the food is ready, confirm with the kitchen that it was prepared safely before taking it to the table.</li>
+      <li><strong>Tell the guest when you deliver</strong> — "I've confirmed with the kitchen that this dish was prepared without peanuts and with separate utensils." The guest needs to hear this from you.</li>
+    </ul>
+
+    <blockquote>"If you are not certain a dish is safe for a guest's allergy, the answer is always 'Let me confirm before I put in the order.' It is never 'I think it should be fine.' The gap between those two answers is the difference between a safe meal and an emergency."</blockquote>
+
+    <h2>What to say when you can't guarantee safety</h2>
+
+    <p>Some kitchens cannot safely accommodate certain allergens due to shared fryers, shared prep areas, or the nature of the menu. This is a genuine limitation that must be communicated honestly:</p>
+
+    <p>"I've checked with the kitchen, and because we use shared fryers, I can't guarantee this dish is completely free of [allergen]. I want to be upfront about that so you can decide what's right for you. We do have [alternative dishes] that I can confirm are prepared separately — would one of those work?"</p>
+
+    <p>This approach is honest, respectful, and offers a path forward. It is far better than offering a false guarantee that could result in a serious reaction.</p>
+
+    <h2>Building your allergen knowledge into pre-shift prep</h2>
+
+    <p>Before each service, run through your menu with allergen awareness in mind. Know which dishes contain the top allergens. Know which dishes can be modified and which cannot. Know what the kitchen can safely accommodate and what they cannot.</p>
+
+    <p>This 10-minute investment before every shift is what separates a server who handles allergen requests with genuine confidence from one who stumbles, guesses, and exposes their guests to risk. It is one of the most important professional habits in the industry — and one of the least formally taught.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice allergen conversations and difficult guest scenarios with AI roleplay — 14 days free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Handle every dietary request with confidence</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy includes allergen communication scenarios, difficult request handling, and kitchen communication practice in its training modules. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/split-bills-allergies" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Skills & Technique</p>
+        <p class="font-semibold text-white">Splitting Bills, Allergies & Last-Minute Changes: Staying Calm Under Pressure</p>
+      </a>
+      <a href="/blog/difficult-guests-playbook" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Difficult Guests</p>
+        <p class="font-semibold text-white">The Difficult Guest Playbook: Every Scenario, One Framework</p>
+      </a>
+      <a href="/blog/recovering-from-mistakes" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Guest Experience</p>
+        <p class="font-semibold text-white">Recovering from Mistakes: Turning a Bad Moment into a Better Experience</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Knowledge Centre</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Systems, Table Management & Restaurant Tech: What Every Server Needs to Know – ServeMaster Academy</title>
+  <meta name="description" content="Restaurant technology has changed dramatically. Here's a practical guide to POS systems, table management software, QR menus, digital payments, and the tech every modern server needs to navigate confidently.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) { nav { flex-direction: column; padding: 1rem; } .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; } }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Technology</span>
+      <span class="text-zinc-500 text-sm">9 min read</span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">POS Systems, Table Management & Restaurant Tech: What Every Server Needs to Know</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">Restaurant technology has transformed how service runs. A server who understands the tools of the trade — POS systems, table management software, digital menus, and payment tech — moves faster, makes fewer errors, and adapts to any venue. Here is the practical guide no one gave you on your first day.</p>
+  </div>
+
+  <div class="prose">
+
+    <h2>Why restaurant technology is now a core server skill</h2>
+
+    <p>A decade ago, restaurant tech was a back-of-house concern. Servers took orders on a notepad and rang them in on a fixed terminal. Today, servers are expected to operate tablet POS systems, navigate table management apps, process tableside payments, handle QR menu questions, and sometimes manage online reservation platforms — all while delivering attentive service.</p>
+
+    <p>Technology literacy has become as foundational as wine knowledge. The servers who adapt quickly when a venue upgrades its system are the ones who get more shifts, get trained first, and get considered for senior roles. The ones who resist or fumble with technology become a liability in busy service.</p>
+
+    <h2>Point-of-sale (POS) systems: the foundation</h2>
+
+    <p>A POS system is the central nervous system of a restaurant. Every order, every modification, every void, every split bill, and every payment flows through it. The major platforms you are likely to encounter in Canadian restaurants include:</p>
+
+    <ul>
+      <li><strong>Toast</strong> — One of the most widely deployed restaurant POS systems. Tablet-based, with a kitchen display system (KDS) integration. Modifiers, 86'd items, and table assignment are core functions.</li>
+      <li><strong>Square for Restaurants</strong> — Common in independent and mid-market venues. Clean interface, strong offline functionality, easy split-bill processing.</li>
+      <li><strong>Lightspeed Restaurant</strong> — Popular in Canada, especially in full-service dining. Strong reporting and inventory integration.</li>
+      <li><strong>TouchBistro</strong> — A Canadian-built POS system with strong table management features. Widely used in Toronto and Vancouver.</li>
+      <li><strong>MICROS / Oracle Hospitality</strong> — The legacy system in many hotel restaurants, large chains, and fine dining venues. Older interface but very powerful.</li>
+      <li><strong>Aloha (NCR)</strong> — Another legacy enterprise system common in larger restaurants and casual dining chains.</li>
+    </ul>
+
+    <h3>Core POS skills every server must have</h3>
+    <ul>
+      <li><strong>Entering orders with modifiers</strong> — "No onions," "sauce on the side," "medium-rare" — these are modifiers. Every POS has a way to attach them to a menu item. Know where they are and how to use them before service starts.</li>
+      <li><strong>Firing courses</strong> — Most systems allow you to hold items and fire them to the kitchen at the right time. Understand how your restaurant stages orders: all at once, or by course. A misfired order that goes to the kitchen too early or too late creates a service breakdown.</li>
+      <li><strong>Voiding and modifying orders</strong> — Know your venue's void process before you need it. Some systems require manager approval for voids; others allow servers to void within a time window. Never try to work around the system.</li>
+      <li><strong>Splitting bills</strong> — Know how to split evenly, split by item, and split to multiple payment methods. This is one of the most common service requests and one of the most fumbled when servers are not practiced.</li>
+      <li><strong>Processing payments</strong> — Tap, chip, swipe, and mobile payments (Apple Pay, Google Pay). Know which payment methods your POS supports and how to process each one cleanly.</li>
+      <li><strong>Flagging allergens</strong> — Most POS systems have a note or modifier field for allergen flags. Use it. See the allergen guide for why this matters.</li>
+    </ul>
+
+    <blockquote>"The server who knows the POS better than anyone else is never waiting for a manager. They can handle voids, comps, split bills, and payment issues independently. That independence is worth more than almost any other skill in a busy service."</blockquote>
+
+    <h2>Table management software</h2>
+
+    <p>Table management platforms give the host, managers, and servers a real-time view of the floor: which tables are occupied, which are turning, which have special requests, and where reservations are slotted. Common platforms include <strong>OpenTable</strong>, <strong>Resy</strong>, <strong>SevenRooms</strong>, and <strong>Yelp Waitlist</strong>.</p>
+
+    <h3>What servers should understand about table management</h3>
+    <ul>
+      <li><strong>Reservation notes</strong> — Many guests add notes to their reservation (anniversary, dietary restriction, VIP repeat guest). These notes appear in the system. Check them before approaching a table — they tell you what the guest cares about before you say a word.</li>
+      <li><strong>Turn time estimates</strong> — Table management software often estimates how long each table will take based on party size and course count. Understanding these estimates helps you manage pacing, especially when there are waitlisted guests.</li>
+      <li><strong>Server section assignments</strong> — Floor assignments are often managed in the software. Know how to check your assigned tables and how to flag a table as needing attention or having been cleared.</li>
+      <li><strong>Guest history</strong> — Platforms like SevenRooms track guest visit history, preferences, and spend. If you have access to this, use it. Knowing a guest is a regular, or that they always order a specific wine, is powerful information.</li>
+    </ul>
+
+    <h2>QR menus: how to handle them gracefully</h2>
+
+    <p>QR code menus became mainstream during the pandemic and have remained a fixture in many venues. As a server, you are the human layer on top of the digital menu — your job is to add value that a QR code cannot.</p>
+
+    <h3>How to work alongside a QR menu</h3>
+    <ul>
+      <li>Know the current menu as well as — if not better than — the QR version. If the digital menu has not been updated to reflect an 86'd item or a new special, you are the correction mechanism.</li>
+      <li>Be the recommendation layer. A QR menu lists items; it cannot tell a guest which dish is exceptional tonight or which wine pairs with the tasting menu. That is your value-add.</li>
+      <li>Offer to take the order verbally if guests seem frustrated by the technology. Some guests — particularly older diners or large parties — find QR ordering impersonal and clunky. Give them the option of ordering through you without making them feel they need to ask.</li>
+      <li>Know the digital menu's allergen information. Most QR menus include allergen filters or ingredient lists. Know where they are so you can direct a guest to them — and still confirm with the kitchen.</li>
+    </ul>
+
+    <h2>Tableside payment and handheld terminals</h2>
+
+    <p>Tableside payment — processing the bill at the table rather than taking the card to a fixed terminal — is now standard in most Canadian restaurants. This is both a guest experience improvement (the card never leaves the table) and a legal best practice in many provinces.</p>
+
+    <h3>Using a handheld payment terminal</h3>
+    <ul>
+      <li>Know how to select the correct table and pull the correct check before presenting the terminal. Presenting the wrong bill is a common and entirely avoidable error.</li>
+      <li>Present the screen face-down or at an angle that does not expose the total before you have explained it to the guest. Especially relevant for large party bills.</li>
+      <li>Know the tip screen on your terminal — most Canadian payment systems present a tip prompt with percentage suggestions (15%, 18%, 20%) plus a custom option. Do not hover while the guest makes their selection.</li>
+      <li>Know how to process partial payments. If a guest wants to put $50 on one card and the rest on another, know your terminal's split-payment workflow before you arrive at the table.</li>
+      <li>Print receipts if the guest wants them. Know where your printer is and how to reprint if the first one fails.</li>
+    </ul>
+
+    <h2>Online reservations and waitlist management</h2>
+
+    <p>Many servers interact with reservation systems without realising it. If you are ever asked to seat a walk-in, update a wait time, or check whether a reservation has arrived, you are using the table management system. A few fundamentals:</p>
+
+    <ul>
+      <li>Never seat a reservation table with walk-in guests without checking the reservation time first. A table held for a 7:30 reservation should not be seated with walk-ins at 7:15.</li>
+      <li>Communicate estimated wait times honestly. If the system says 20 minutes, quote 25. Guests who are told 20 and seated at 22 are delighted; guests told 20 and seated at 28 are annoyed.</li>
+      <li>Flag large parties, VIPs, or special occasion reservations in the system before service so the whole team knows. A guest who mentioned their anniversary in their reservation should not have to mention it again at the table.</li>
+    </ul>
+
+    <h2>Adapting quickly when technology changes</h2>
+
+    <p>Restaurants upgrade and change their systems regularly. A venue that runs Toast this year may pilot a new platform next year. The most valuable skill is not expertise in a single system — it is the ability to learn new systems quickly.</p>
+
+    <p>When a new system is introduced: ask for a training session before service starts. Spend 15 minutes navigating the system before guests arrive. Find the three or four functions you use in every service (order entry, modifiers, split bills, payment) and practice them until they are automatic. Everything else can be learned on the fly.</p>
+
+    <p>Servers who treat technology as something that happens to them will always be behind. Servers who treat it as a tool they own will adapt faster, train their colleagues, and be recognised for it.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice service scenarios including technology and payment situations — 14 days free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Build the full skillset for modern service</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy trains servers on every dimension of professional service — including handling technology, split bills, and guest-facing challenges with AI-powered roleplay. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/split-bills-allergies" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Skills & Technique</p>
+        <p class="font-semibold text-white">Splitting Bills, Allergies & Last-Minute Changes: Staying Calm Under Pressure</p>
+      </a>
+      <a href="/blog/section-management-mastery" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Efficiency</p>
+        <p class="font-semibold text-white">Section Management Mastery: Running Your Tables Like a Pro</p>
+      </a>
+      <a href="/blog/restaurant-industry-trends-2026" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Industry Trends</p>
+        <p class="font-semibold text-white">Restaurant Industry Trends in 2026: What Servers Need to Know</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Knowledge Centre</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js"></script>
+</body>
+</html>
