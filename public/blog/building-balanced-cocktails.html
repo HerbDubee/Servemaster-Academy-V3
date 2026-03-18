@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building Balanced Cocktails: Sweet, Sour, Bitter, Strong – ServeMaster Academy</title>
+  <meta name="description" content="Every great cocktail is balanced. Understanding the four elements — sweet, sour, bitter, and strong — gives you the tools to fix any drink and create any cocktail.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) { nav { flex-direction: column; padding: 1rem; } .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; } }
+  </style>
+</head>
+<body>
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<main class="max-w-3xl mx-auto px-4 py-16">
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+  <div class="mt-8 mb-12">
+    <div class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Cocktail Knowledge</span>
+      <span class="text-zinc-500 text-sm">9 min read</span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">Building Balanced Cocktails: Sweet, Sour, Bitter, Strong</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">A balanced cocktail is not an accident — it is the result of understanding how four fundamental flavour elements interact, and knowing how to adjust when one is dominating or missing.</p>
+  </div>
+  <div class="prose">
+    <p>The framework of sweet, sour, bitter, and strong is one of the most useful mental models in bartending. Nearly every cocktail can be understood, adjusted, and created within this framework. A bartender who understands balance can taste a drink that isn't working and immediately identify why — and fix it. That diagnostic skill is what makes the difference between a bartender who follows recipes and one who actually understands cocktails.</p>
+
+    <h2>Sweet: the foundation and the danger</h2>
+    <p>Sweetness makes alcohol approachable. It rounds the sharp edges of high-proof spirits, contributes body and texture, and signals warmth and pleasure to the palate. But sweetness without counterbalance creates cloying, one-dimensional drinks that guests find difficult to finish.</p>
+    <p>Sources of sweetness in cocktails:</p>
+    <ul>
+      <li><strong>Simple syrup (1:1 sugar:water)</strong> — The most neutral sweetener. Adds sweetness without flavour complexity.</li>
+      <li><strong>Rich simple syrup (2:1)</strong> — More concentrated, so smaller amounts achieve the same sweetness with more body and a slightly more viscous texture.</li>
+      <li><strong>Honey syrup, agave nectar, maple syrup</strong> — Each adds sweetness plus its own flavour profile. Honey adds floral notes; agave adds an earthy warmth; maple adds caramel depth.</li>
+      <li><strong>Liqueurs</strong> — Triple sec, amaretto, St-Germain — these add sweetness plus the liqueur's own flavour character. Reducing sour or bitter elements when using a sweet liqueur is often required.</li>
+    </ul>
+
+    <h2>Sour: the brightening agent</h2>
+    <p>Sourness from citrus lifts a cocktail, adds freshness, and cuts through sweetness and alcohol. The interaction between sweet and sour is the engine of most approachable cocktails — the Daiquiri, the Margarita, the Whiskey Sour, the Gimlet. Without adequate acidity, these drinks are flat, sweet, and uninspiring.</p>
+    <p>Fresh citrus is non-negotiable for sour cocktails. Bottled citrus juice is oxidised, flatter in flavour, and often artificially sweetened — it fundamentally changes the cocktail. Squeeze citrus fresh daily. Know the acidity difference between lime (more intense, more tropical) and lemon (brighter, more floral) and use the correct one for each recipe.</p>
+
+    <blockquote>"A cocktail that tastes 'too strong' is almost always too sour or too weak on sweetness — the alcohol is the first flavour standing because nothing else is balanced against it."</blockquote>
+
+    <h2>Bitter: the sophisticating element</h2>
+    <p>Bitterness is an acquired taste that adds complexity and makes a drink feel more adult and sophisticated. It is the element that makes a Negroni or an Aperol Spritz feel like more than the sum of its parts. Sources of bitterness:</p>
+    <ul>
+      <li><strong>Aromatic bitters (Angostura, Peychaud's)</strong> — Used in small quantities (dashes), they add depth and complexity without dominating the drink.</li>
+      <li><strong>Campari, Aperol, Cynar, Fernet</strong> — Amaro-category liqueurs with significant bitterness as their defining characteristic. Used in larger proportions to make bitterness a feature, not a background note.</li>
+      <li><strong>Dry vermouth</strong> — Subtle herbal bitterness that contributes to the dryness in a Martini.</li>
+    </ul>
+
+    <h2>Strong: the spirit component</h2>
+    <p>The spirit is the structural element of a cocktail — the base around which everything else is balanced. "Strong" refers to both the volume and the proof of the spirit used. A 60ml measure of 80-proof spirit behaves differently in a cocktail than 60ml of 50-proof liqueur. When balancing a cocktail that tastes "too boozy," the answer is not necessarily to reduce the spirit — it is to increase the sweet and sour elements until they come back into balance with the strength.</p>
+
+    <h2>Diagnosing and fixing an imbalanced cocktail</h2>
+    <p>When a cocktail doesn't taste right, work through the balance framework systematically:</p>
+    <ul>
+      <li><strong>Too sour/sharp</strong> — Add a small amount of sweetener (half a barspoon of syrup at a time). A pinch of salt can also round out excess sourness.</li>
+      <li><strong>Too sweet/cloying</strong> — Add a small squeeze of citrus. A dash of bitters can help integrate sweetness without making the drink sour.</li>
+      <li><strong>Too boozy/hot</strong> — Increase sweet and sour proportionally. Check that dilution was adequate — a drink that wasn't shaken long enough will taste harsh.</li>
+      <li><strong>Flat/lacking dimension</strong> — A dash of bitters almost always helps. Check that your citrus is fresh and your proportions are correct.</li>
+    </ul>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Build cocktail knowledge that lets you create, not just copy — start free</a>.</p>
+  </div>
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Understand cocktails, not just recipes</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy teaches the principles behind great cocktails — so you can adapt, create, and fix any drink behind any bar. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/ten-classic-cocktails" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Cocktail Knowledge</p>
+        <p class="font-semibold text-white">The 10 Classic Cocktails Every Bartender Must Know</p>
+      </a>
+      <a href="/blog/modern-cocktail-twists" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Cocktail Knowledge</p>
+        <p class="font-semibold text-white">Modern Cocktail Twists: Creating Signature Drinks with Confidence</p>
+      </a>
+      <a href="/blog/understanding-spirits" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Cocktail Knowledge</p>
+        <p class="font-semibold text-white">Understanding Spirits: Whisky, Gin, Rum, Tequila & Vodka Profiles</p>
+      </a>
+    </div>
+  </div>
+</main>
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Knowledge Centre</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+    </div>
+  </div>
+</footer>
+<script src="/js/lang.js"></script>
+</body>
+</html>
