@@ -8,212 +8,522 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @media (max-width: 1024px) {
-      nav {
-        flex-direction: column;
-        padding: 1rem;
-      }
-      .nav-links {
-        flex-direction: column;
-        width: 100%;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-    }
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .tab-btn { cursor: pointer; padding: 10px 20px; border-radius: 12px; font-size: 0.875rem; font-weight: 500; color: #a1a1aa; transition: all 0.15s; white-space: nowrap; }
+    .tab-btn:hover { background: #27272a; color: #fff; }
+    .tab-btn.active { background: #78350f; color: #fbbf24; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .status-completed { background: #064e3b; color: #34d399; }
+    .status-on-track { background: #78350f; color: #fbbf24; }
+    .status-lagging { background: #7c2d12; color: #fb923c; }
+    .status-overdue { background: #450a0a; color: #f87171; }
   </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
+<body class="min-h-screen">
 
-  <div class="flex">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <div class="w-72 bg-zinc-900 h-screen p-6 border-r border-amber-900">
-      <div class="flex items-center gap-3 mb-12">
-        <img src="/logo-icon.svg" alt="ServeMaster Academy" class="h-10 w-auto">
-        <div>
-          <span class="heading text-2xl">ServeMaster</span>
-          <span class="block text-amber-400 text-xs tracking-widest">MANAGER DASHBOARD</span>
+    <div class="w-64 bg-zinc-900 flex-shrink-0 h-full flex flex-col border-r border-zinc-800">
+      <div class="p-6 border-b border-zinc-800">
+        <div class="flex items-center gap-3">
+          <img src="/logo-icon.svg" alt="ServeMaster Academy" class="h-9 w-auto">
+          <div>
+            <div class="heading text-xl font-bold text-white">ServeMaster</div>
+            <div class="text-amber-400 text-xs tracking-widest">MANAGER</div>
+          </div>
         </div>
       </div>
-      <nav class="space-y-2">
-        <a href="#" class="block py-4 px-6 bg-amber-900 rounded-2xl font-medium">Team Overview</a>
-        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Reports</a>
-        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Certificates</a>
-        <a href="#" class="block py-4 px-6 hover:bg-zinc-800 rounded-2xl">Settings</a>
+      <nav class="flex-1 p-4 space-y-1">
+        <button onclick="switchTab('team')" id="tab-team" class="tab-btn active w-full text-left flex items-center gap-3"><i class="fa-solid fa-users w-4"></i> Team Overview</button>
+        <button onclick="switchTab('certs')" id="tab-certs" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-certificate w-4"></i> Certificates</button>
+        <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-chart-bar w-4"></i> Reports</button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-gear w-4"></i> Settings</button>
       </nav>
+      <div class="p-4 border-t border-zinc-800">
+        <a href="/app" class="block w-full text-center py-2 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm transition-colors">
+          <i class="fa-solid fa-arrow-left mr-2"></i>Back to Training
+        </a>
+      </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-10">
-      <div class="flex justify-between items-center mb-10">
+    <!-- Main -->
+    <div class="flex-1 overflow-y-auto">
+      <!-- Header -->
+      <header class="bg-zinc-950 border-b border-zinc-800 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
-          <h1 class="text-4xl font-semibold">Team Overview</h1>
-          <p id="team-summary" class="text-zinc-400">Loading...</p>
+          <h1 class="text-2xl font-bold" id="tab-title">Team Overview</h1>
+          <p class="text-zinc-400 text-sm" id="team-summary">Loading…</p>
         </div>
-        <button onclick="exportReport()" class="bg-amber-400 hover:bg-amber-300 text-black px-8 py-4 rounded-3xl font-medium flex items-center gap-3">
-          <i class="fa-solid fa-download"></i> Export Report
+        <button onclick="exportReport()" class="bg-amber-400 hover:bg-amber-300 text-black px-5 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors">
+          <i class="fa-solid fa-download"></i> Export CSV
         </button>
-      </div>
+      </header>
 
-      <!-- Team Table -->
-      <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-        <table class="w-full">
-          <thead class="border-b border-zinc-800">
-            <tr>
-              <th class="text-left p-6">Server</th>
-              <th class="text-left p-6">Progress</th>
-              <th class="text-left p-6">Strongest Module</th>
-              <th class="text-left p-6">Status</th>
-              <th class="p-6"></th>
-            </tr>
-          </thead>
-          <tbody id="team-table" class="divide-y divide-zinc-800"></tbody>
-        </table>
-      </div>
+      <div class="p-8">
 
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
-        <div class="bg-zinc-900 rounded-3xl p-8">
-          <h3 class="font-semibold mb-6">Team Completion Trend</h3>
-          <canvas id="completionChart"></canvas>
+        <!-- TEAM TAB -->
+        <div id="content-team" class="tab-content active space-y-6">
+          <!-- Stats row -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+              <div class="text-zinc-400 text-xs mb-1">Team Members</div>
+              <div class="text-3xl font-bold" id="stat-members">—</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+              <div class="text-zinc-400 text-xs mb-1">Avg Completion</div>
+              <div class="text-3xl font-bold text-amber-400" id="stat-avg">—</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+              <div class="text-zinc-400 text-xs mb-1">Certified</div>
+              <div class="text-3xl font-bold text-emerald-400" id="stat-certified">—</div>
+            </div>
+            <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5">
+              <div class="text-zinc-400 text-xs mb-1">Needs Attention</div>
+              <div class="text-3xl font-bold text-red-400" id="stat-lagging">—</div>
+            </div>
+          </div>
+
+          <!-- Team Table -->
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+              <h2 class="font-semibold">Staff Progress</h2>
+              <input id="staff-search" oninput="filterStaff()" type="text" placeholder="Search staff…" class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-44">
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-zinc-800/60 text-zinc-400 text-xs uppercase tracking-wide">
+                  <tr>
+                    <th class="px-5 py-3 text-left">Name</th>
+                    <th class="px-5 py-3 text-left">Progress</th>
+                    <th class="px-5 py-3 text-left">Modules</th>
+                    <th class="px-5 py-3 text-left">Scenarios</th>
+                    <th class="px-5 py-3 text-left">Badges</th>
+                    <th class="px-5 py-3 text-left">Status</th>
+                    <th class="px-5 py-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="team-table" class="divide-y divide-zinc-800"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="bg-zinc-900 rounded-3xl p-8">
-          <h3 class="font-semibold mb-6">Top Modules</h3>
-          <canvas id="moduleChart"></canvas>
+
+        <!-- CERTIFICATES TAB -->
+        <div id="content-certs" class="tab-content space-y-6">
+          <div class="flex items-center justify-between">
+            <p class="text-zinc-400 text-sm">Issue certificates to staff who have completed all 30 modules. Each issuance is logged below.</p>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-zinc-800">
+              <h2 class="font-semibold">Certificate History</h2>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-zinc-800/60 text-zinc-400 text-xs uppercase tracking-wide">
+                  <tr>
+                    <th class="px-5 py-3 text-left">Staff Member</th>
+                    <th class="px-5 py-3 text-left">Issued By</th>
+                    <th class="px-5 py-3 text-left">Date Issued</th>
+                    <th class="px-5 py-3 text-left">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="cert-history" class="divide-y divide-zinc-800">
+                  <tr><td colspan="4" class="px-5 py-8 text-center text-zinc-500">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
+        <!-- REPORTS TAB -->
+        <div id="content-reports" class="tab-content space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+              <h3 class="font-semibold mb-4">Team Completion Distribution</h3>
+              <canvas id="completionChart" height="200"></canvas>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+              <h3 class="font-semibold mb-4">Strongest Modules</h3>
+              <canvas id="moduleChart" height="200"></canvas>
+            </div>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="font-semibold mb-4">Quiz Performance by Staff</h3>
+            <div id="quiz-table" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="content-settings" class="tab-content space-y-6">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <h2 class="font-semibold text-lg mb-1">Training Deadline</h2>
+            <p class="text-zinc-400 text-sm mb-5">Set a target completion date for your team. This date is shown as a reminder and helps you track urgency.</p>
+            <div class="flex gap-3 items-end">
+              <div class="flex-1">
+                <label class="text-xs text-zinc-400 block mb-1">Target Date</label>
+                <input id="deadline-input" type="date" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+              </div>
+              <button onclick="saveDeadline()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save</button>
+              <button onclick="clearDeadline()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors">Clear</button>
+            </div>
+            <p id="deadline-msg" class="text-sm mt-3 hidden"></p>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <h2 class="font-semibold text-lg mb-1">Invite Link</h2>
+            <p class="text-zinc-400 text-sm mb-4">Share this link with your staff to join your team on ServeMaster Academy.</p>
+            <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3">Loading invite code…</div>
+            <button onclick="copyInviteCode()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors">Copy Invite Link</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Drill-Down Modal -->
+  <div id="staff-modal" class="hidden modal-overlay" onclick="if(event.target===this)closeStaffModal()">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="px-7 py-5 border-b border-zinc-800 flex items-center justify-between sticky top-0 bg-zinc-900 z-10">
+        <div>
+          <h2 id="modal-staff-name" class="heading text-xl font-bold"></h2>
+          <p id="modal-staff-email" class="text-zinc-400 text-sm"></p>
+        </div>
+        <div class="flex gap-2">
+          <button id="modal-nudge-btn" onclick="nudgeStaff()" class="bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+            <i class="fa-solid fa-bell mr-1"></i> Send Nudge
+          </button>
+          <button id="modal-cert-btn" onclick="issueCertificate()" class="bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+            <i class="fa-solid fa-certificate mr-1"></i> Issue Certificate
+          </button>
+          <button onclick="closeStaffModal()" class="text-zinc-500 hover:text-white text-xl leading-none px-2">&times;</button>
+        </div>
+      </div>
+      <div class="p-7 space-y-6" id="modal-content">
+        <div class="text-zinc-500 text-sm">Loading…</div>
       </div>
     </div>
   </div>
 
   <script>
+    const MODULE_NAMES = ['Service Foundations','Menu Knowledge','Wine Essentials','Beverage Mastery','Upselling Techniques','Tray & Posture','Allergy Awareness','Guest Psychology','Tableside Etiquette','POS & Billing','Wine Service Advanced','Floor Leadership','Spirits & Cocktails','Coffee & Non-Alcoholic','Allergen Mastery','EQ & Reading Guests','Menu Knowledge Advanced','Managing the Rush','Host & Reception Skills','Cheese & Charcuterie','Sustainability','Digital Tools & POS','Team Culture','Wellness & Career Growth','Bar Setup & Mise en Place','Essential Bartending Techniques','Classic Cocktails & Drink Building','Bar Upselling & Guest Engagement','Responsible Service & Difficult Situations','Bar Career & Culture'];
+
+    let allTeamData = [];
+    let currentStaffId = null;
+    let inviteCode = '';
+    let completionChartInst = null;
+    let moduleChartInst = null;
+
     function authHeaders() {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sma-token') || localStorage.getItem('token');
       return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
-    async function loadTeam() {
-      const res = await fetch('/api/team', {
-        headers: authHeaders(),
-        credentials: 'include'
-      });
-      if (res.status === 401 || res.status === 403) {
-        window.location.href = '/login';
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
+    async function apiFetch(path, opts = {}) {
+      const res = await fetch(path, { headers: { ...authHeaders(), 'Content-Type': 'application/json' }, credentials: 'include', ...opts });
+      if (res.status === 401 || res.status === 403) { window.location.href = '/login'; throw new Error('Unauthorized'); }
+      return res.json();
     }
 
-    function renderTeamTable(teamData) {
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('content-' + name).classList.add('active');
+      const titles = { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' };
+      document.getElementById('tab-title').textContent = titles[name] || name;
+      if (name === 'reports') renderCharts();
+      if (name === 'certs') loadCertHistory();
+      if (name === 'settings') loadSettings();
+    }
+
+    function fmtDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function statusClass(s) {
+      if (s === 'completed') return 'status-completed';
+      if (s === 'on-track') return 'status-on-track';
+      if (s === 'lagging') return 'status-lagging';
+      return 'status-overdue';
+    }
+
+    function filterStaff() {
+      const q = document.getElementById('staff-search').value.toLowerCase();
+      const filtered = allTeamData.filter(m => (m.name || '').toLowerCase().includes(q));
+      renderTable(filtered);
+    }
+
+    function renderTable(data) {
       const tbody = document.getElementById('team-table');
-      if (!teamData.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-zinc-500">No team members found.</td></tr>';
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">No team members found.</td></tr>';
         return;
       }
-      tbody.innerHTML = teamData.map(member => `
-        <tr class="hover:bg-zinc-800 transition">
-          <td class="p-6 font-medium">${member.name}</td>
-          <td class="p-6">
-            <div class="flex items-center gap-3">
-              <div class="flex-1 bg-zinc-800 h-2 rounded-full">
-                <div class="h-2 bg-amber-400 rounded-full" style="width: ${member.progress}%"></div>
-              </div>
-              <span class="font-mono text-sm w-10">${member.progress}%</span>
+      tbody.innerHTML = data.map(m => `
+        <tr class="hover:bg-zinc-800/50 transition-colors cursor-pointer" onclick="openStaffModal(${m.id})">
+          <td class="px-5 py-4 font-medium">${esc(m.name)}</td>
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-2">
+              <div class="w-24 bg-zinc-800 h-1.5 rounded-full"><div class="h-1.5 bg-amber-400 rounded-full" style="width:${m.progress}%"></div></div>
+              <span class="font-mono text-xs text-zinc-300">${m.progress}%</span>
             </div>
           </td>
-          <td class="p-6 text-zinc-400">${member.strongest}</td>
-          <td class="p-6">
-            <span class="px-4 py-1 text-xs rounded-full ${member.status === 'completed' ? 'bg-emerald-900 text-emerald-400' : member.status === 'on-track' ? 'bg-amber-900 text-amber-400' : 'bg-red-900 text-red-400'}">
-              ${member.status.toUpperCase()}
-            </span>
+          <td class="px-5 py-4 text-zinc-300 text-sm">${m.modules_completed || 0}/30</td>
+          <td class="px-5 py-4 text-zinc-300 text-sm">${m.scenarios || 0}</td>
+          <td class="px-5 py-4 text-zinc-300 text-sm">${m.badges || 0}</td>
+          <td class="px-5 py-4">
+            <span class="px-2.5 py-1 text-xs rounded-full font-medium ${statusClass(m.status)}">${m.status.toUpperCase()}</span>
           </td>
-          <td class="p-6 text-right">
-            <button onclick="issueCertificate(${member.id})" class="text-amber-400 hover:text-amber-300 text-sm">Issue Certificate</button>
+          <td class="px-5 py-4" onclick="event.stopPropagation()">
+            <div class="flex gap-1">
+              <button onclick="openStaffModal(${m.id})" class="px-3 py-1 rounded-lg text-xs bg-zinc-700 hover:bg-zinc-600 text-white transition-colors">View</button>
+              ${(m.status === 'lagging' || m.status === 'overdue') ? `<button onclick="quickNudge(${m.id}, '${esc(m.name)}')" class="px-3 py-1 rounded-lg text-xs bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Nudge</button>` : ''}
+            </div>
           </td>
         </tr>
       `).join('');
     }
 
-    async function issueCertificate(userId) {
-      if (!confirm('Issue completion certificate for this server? This marks all 24 modules as complete.')) return;
+    async function loadTeam() {
       try {
-        const res = await fetch('/api/certificate', {
-          method: 'POST',
-          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId })
-        });
-        const data = await res.json();
+        const data = await apiFetch('/api/team');
+        allTeamData = Array.isArray(data) ? data : [];
+        const avg = allTeamData.length ? Math.round(allTeamData.reduce((s, m) => s + m.progress, 0) / allTeamData.length) : 0;
+        const certified = allTeamData.filter(m => m.status === 'completed').length;
+        const lagging = allTeamData.filter(m => m.status === 'lagging' || m.status === 'overdue').length;
+        document.getElementById('stat-members').textContent = allTeamData.length;
+        document.getElementById('stat-avg').textContent = avg + '%';
+        document.getElementById('stat-certified').textContent = certified;
+        document.getElementById('stat-lagging').textContent = lagging;
+        document.getElementById('team-summary').textContent = `${allTeamData.length} staff · ${avg}% average completion`;
+        renderTable(allTeamData);
+      } catch (e) { console.error(e); }
+    }
+
+    async function openStaffModal(staffId) {
+      currentStaffId = staffId;
+      const member = allTeamData.find(m => m.id === staffId);
+      if (member) {
+        document.getElementById('modal-staff-name').textContent = member.name;
+        document.getElementById('modal-staff-email').textContent = '';
+        document.getElementById('modal-content').innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+      }
+      document.getElementById('staff-modal').classList.remove('hidden');
+      try {
+        const data = await apiFetch(`/api/manager/staff/${staffId}`);
+        const { staff, progress, scenarios, badges, transcripts } = data;
+        document.getElementById('modal-staff-email').textContent = staff.email;
+        const completedModules = progress.filter(p => p.progress >= 100).length;
+        const avgQuiz = progress.length ? Math.round(progress.reduce((s, p) => s + (p.quiz_score || 0), 0) / progress.length) : 0;
+        const modGrid = Array.from({ length: 30 }, (_, i) => {
+          const mod = progress.find(p => p.module_id === i + 1);
+          const pct = mod ? mod.progress : 0;
+          const color = pct >= 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-400' : 'bg-zinc-700';
+          return `<div class="relative group">
+            <div class="h-8 ${color} rounded-lg flex items-center justify-center text-xs font-bold ${pct > 0 ? 'text-black' : 'text-zinc-600'}" title="${MODULE_NAMES[i]}: ${pct}%">${pct >= 100 ? '✓' : pct > 0 ? pct + '%' : i + 1}</div>
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">${MODULE_NAMES[i]}</div>
+          </div>`;
+        }).join('');
+        const badgeEmojis = { first_module: '📘', module_master: '🏆', first_scenario: '🎭', scenario_ace: '⭐', scenario_legend: '👑', week_warrior: '🔥', month_master: '💎', wine_expert: '🍷', perfect_scorer: '💯' };
+        const badgeHtml = badges.length
+          ? badges.map(b => `<span class="bg-zinc-800 px-2 py-1 rounded-lg text-xs flex items-center gap-1">${badgeEmojis[b.badge_id] || '🏅'} ${b.badge_id.replace(/_/g, ' ')}</span>`).join('')
+          : '<span class="text-zinc-600 text-sm">No badges yet</span>';
+        const transcriptHtml = transcripts && transcripts.length
+          ? transcripts.map(t => `<div class="flex items-center justify-between py-2 border-b border-zinc-800"><span class="text-sm text-zinc-300">Scenario #${t.scenario_id}</span><span class="text-xs text-zinc-500">${fmtDate(t.completed_at)}</span>${t.verdict ? `<span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300">${t.verdict}</span>` : ''}</div>`).join('')
+          : '<div class="text-zinc-600 text-sm">No recent transcripts</div>';
+        document.getElementById('modal-content').innerHTML = `
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-amber-400">${completedModules}/30</div><div class="text-zinc-400 text-xs mt-1">Modules Done</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${scenarios.length}</div><div class="text-zinc-400 text-xs mt-1">Scenarios</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-emerald-400">${avgQuiz}%</div><div class="text-zinc-400 text-xs mt-1">Avg Quiz</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${badges.length}</div><div class="text-zinc-400 text-xs mt-1">Badges</div></div>
+          </div>
+          <div>
+            <h3 class="font-semibold text-sm mb-3">Module Progress <span class="text-zinc-500 font-normal text-xs ml-1">(hover for name)</span></h3>
+            <div class="grid grid-cols-10 gap-1">${modGrid}</div>
+          </div>
+          <div>
+            <h3 class="font-semibold text-sm mb-3">Badges Earned</h3>
+            <div class="flex flex-wrap gap-2">${badgeHtml}</div>
+          </div>
+          <div>
+            <h3 class="font-semibold text-sm mb-3">Recent Scenario Sessions</h3>
+            <div class="bg-zinc-800 rounded-xl p-4">${transcriptHtml}</div>
+          </div>
+          <div class="text-xs text-zinc-500">Member since ${fmtDate(staff.created_at)} · Last login ${fmtDate(staff.last_login)}</div>
+        `;
+      } catch (e) { document.getElementById('modal-content').innerHTML = `<div class="text-red-400 text-sm">Error loading staff data.</div>`; }
+    }
+
+    function closeStaffModal() {
+      document.getElementById('staff-modal').classList.add('hidden');
+      currentStaffId = null;
+    }
+
+    async function nudgeStaff() {
+      if (!currentStaffId) return;
+      const btn = document.getElementById('modal-nudge-btn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+      try {
+        const data = await apiFetch('/api/manager/nudge', { method: 'POST', body: JSON.stringify({ userId: currentStaffId }) });
+        btn.textContent = data.success ? '✓ Sent!' : '✗ Failed';
+        btn.style.color = data.success ? '#34d399' : '#f87171';
+        setTimeout(() => { btn.textContent = 'Send Nudge'; btn.style.color = ''; btn.disabled = false; }, 2500);
+      } catch { btn.textContent = '✗ Error'; btn.disabled = false; }
+    }
+
+    async function quickNudge(userId, name) {
+      if (!confirm(`Send a training reminder email to ${name}?`)) return;
+      try {
+        const data = await apiFetch('/api/manager/nudge', { method: 'POST', body: JSON.stringify({ userId }) });
+        alert(data.success ? `Reminder sent to ${name}!` : 'Failed to send reminder.');
+      } catch { alert('Error sending reminder.'); }
+    }
+
+    async function issueCertificate() {
+      if (!currentStaffId) return;
+      const member = allTeamData.find(m => m.id === currentStaffId);
+      if (!confirm(`Issue completion certificate for ${member ? member.name : 'this staff member'}? This marks all 30 modules as complete.`)) return;
+      try {
+        const data = await apiFetch('/api/certificate', { method: 'POST', body: JSON.stringify({ userId: currentStaffId }) });
         if (data.success) {
           alert(data.message);
-          init();
-        } else {
-          alert('Error: ' + (data.error || 'Unknown error'));
+          closeStaffModal();
+          loadTeam();
+        } else { alert('Error: ' + (data.error || 'Unknown error')); }
+      } catch { alert('Failed to issue certificate.'); }
+    }
+
+    async function loadCertHistory() {
+      try {
+        const data = await apiFetch('/api/manager/certificates');
+        const tbody = document.getElementById('cert-history');
+        const certs = data.certificates || [];
+        if (!certs.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="px-5 py-8 text-center text-zinc-500">No certificates issued yet.</td></tr>';
+          return;
         }
-      } catch {
-        alert('Failed to issue certificate.');
-      }
+        tbody.innerHTML = certs.map(c => `
+          <tr class="hover:bg-zinc-800/50 transition-colors">
+            <td class="px-5 py-4 font-medium">${esc(c.user_name || c.user_email || '—')}</td>
+            <td class="px-5 py-4 text-zinc-400">${esc(c.issuer_name || 'System')}</td>
+            <td class="px-5 py-4 text-zinc-400 text-sm">${fmtDate(c.issued_at)}</td>
+            <td class="px-5 py-4">
+              <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-900 text-emerald-400">Issued</span>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadSettings() {
+      try {
+        const data = await apiFetch('/api/manager/deadline');
+        if (data.deadline) {
+          document.getElementById('deadline-input').value = data.deadline.split('T')[0];
+        }
+        const dashData = await apiFetch('/api/manager/dashboard');
+        if (dashData.restaurant) {
+          inviteCode = dashData.restaurant.invite_code || '';
+          document.getElementById('invite-display').textContent = inviteCode
+            ? `https://servemasteracademy.ca/app?invite=${inviteCode}`
+            : 'No invite code found.';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function saveDeadline() {
+      const val = document.getElementById('deadline-input').value;
+      const msg = document.getElementById('deadline-msg');
+      try {
+        await apiFetch('/api/manager/deadline', { method: 'POST', body: JSON.stringify({ deadline: val || null }) });
+        msg.textContent = val ? `Deadline set to ${fmtDate(val)}.` : 'Deadline cleared.';
+        msg.style.color = '#34d399';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+      } catch { msg.textContent = 'Failed to save.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
+    }
+
+    async function clearDeadline() {
+      document.getElementById('deadline-input').value = '';
+      await saveDeadline();
+    }
+
+    function copyInviteCode() {
+      if (!inviteCode) return;
+      const link = `https://servemasteracademy.ca/app?invite=${inviteCode}`;
+      navigator.clipboard.writeText(link).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy Invite Link', 2000);
+      });
     }
 
     async function exportReport() {
       try {
-        const res = await fetch('/api/export-report', {
-          headers: authHeaders(),
-          credentials: 'include'
-        });
+        const res = await fetch('/api/export-report', { headers: authHeaders(), credentials: 'include' });
         if (!res.ok) { alert('Export failed.'); return; }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'team-report.csv';
+        a.download = `team-report-${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-      } catch {
-        alert('Export failed.');
-      }
+      } catch { alert('Export failed.'); }
     }
 
-    async function init() {
-      const teamData = await loadTeam();
-
-      const avg = teamData.length
-        ? Math.round(teamData.reduce((s, m) => s + m.progress, 0) / teamData.length)
-        : 0;
-      document.getElementById('team-summary').textContent =
-        `${teamData.length} server${teamData.length !== 1 ? 's' : ''} · ${avg}% average completion`;
-
-      renderTeamTable(teamData);
-
-      const moduleCounts = {};
-      teamData.forEach(m => {
-        if (m.strongest && m.strongest !== 'N/A')
-          moduleCounts[m.strongest] = (moduleCounts[m.strongest] || 0) + 1;
+    function renderCharts() {
+      if (!allTeamData.length) return;
+      const buckets = { '0-25%': 0, '26-50%': 0, '51-75%': 0, '76-99%': 0, '100%': 0 };
+      allTeamData.forEach(m => {
+        if (m.progress >= 100) buckets['100%']++;
+        else if (m.progress >= 76) buckets['76-99%']++;
+        else if (m.progress >= 51) buckets['51-75%']++;
+        else if (m.progress >= 26) buckets['26-50%']++;
+        else buckets['0-25%']++;
       });
-      const moduleLabels = Object.keys(moduleCounts).slice(0, 6);
-      const moduleValues = moduleLabels.map(l => moduleCounts[l]);
-
-      new Chart(document.getElementById('completionChart'), {
-        type: 'line',
-        data: {
-          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-          datasets: [{ label: 'Team Average %', data: [42, 61, 78, avg], borderColor: '#d4af37', tension: 0.4 }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: { y: { max: 100 } } }
-      });
-
-      new Chart(document.getElementById('moduleChart'), {
+      const ctx1 = document.getElementById('completionChart');
+      if (completionChartInst) completionChartInst.destroy();
+      completionChartInst = new Chart(ctx1, {
         type: 'bar',
-        data: {
-          labels: moduleLabels.length ? moduleLabels : ['Wine', 'Etiquette', 'Upselling', 'Cocktails'],
-          datasets: [{ data: moduleValues.length ? moduleValues : [4, 3, 3, 2], backgroundColor: '#d4af37' }]
-        },
-        options: { plugins: { legend: { display: false } } }
+        data: { labels: Object.keys(buckets), datasets: [{ data: Object.values(buckets), backgroundColor: ['#ef4444','#f97316','#fbbf24','#34d399','#10b981'] }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#a1a1aa' }, grid: { color: '#27272a' } }, x: { ticks: { color: '#a1a1aa' }, grid: { display: false } } } }
       });
+      const moduleCounts = {};
+      allTeamData.forEach(m => { if (m.strongest && m.strongest !== 'N/A') moduleCounts[m.strongest] = (moduleCounts[m.strongest] || 0) + 1; });
+      const moduleLabels = Object.keys(moduleCounts).slice(0, 8);
+      const ctx2 = document.getElementById('moduleChart');
+      if (moduleChartInst) moduleChartInst.destroy();
+      moduleChartInst = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels: moduleLabels.length ? moduleLabels : ['N/A'], datasets: [{ data: moduleLabels.length ? moduleLabels.map(l => moduleCounts[l]) : [0], backgroundColor: '#d4af37' }] },
+        options: { plugins: { legend: { display: false } }, indexAxis: 'y', scales: { y: { ticks: { color: '#a1a1aa', font: { size: 10 } }, grid: { display: false } }, x: { ticks: { color: '#a1a1aa' }, grid: { color: '#27272a' } } } }
+      });
+      const quizTable = document.getElementById('quiz-table');
+      const sorted = [...allTeamData].sort((a, b) => b.avg_quiz_score - a.avg_quiz_score);
+      quizTable.innerHTML = sorted.map(m => `
+        <div class="flex items-center gap-4 py-2 border-b border-zinc-800">
+          <div class="w-36 text-sm text-zinc-300 truncate">${esc(m.name)}</div>
+          <div class="flex-1 bg-zinc-800 h-2 rounded-full"><div class="h-2 bg-amber-400 rounded-full" style="width:${m.avg_quiz_score || 0}%"></div></div>
+          <div class="text-sm font-mono w-12 text-right text-zinc-300">${m.avg_quiz_score || 0}%</div>
+        </div>
+      `).join('') || '<div class="text-zinc-500 text-sm">No quiz data yet.</div>';
     }
 
-    window.onload = init;
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    window.onload = loadTeam;
   </script>
-<script src="/js/lang.js"></script>
 </body>
 </html>

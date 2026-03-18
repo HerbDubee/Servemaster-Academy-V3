@@ -1073,19 +1073,6 @@ app.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch dashboard' }); }
 });
 
-app.get('/api/manager/staff/:id', authMiddleware, async (req, res) => {
-  try {
-    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
-    const user = userRes.rows[0];
-    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return res.status(403).json({ error: 'Manager access only' });
-    const staffRes = await db.query('SELECT id, name, email, experience_level, last_login FROM users WHERE id = $1 AND restaurant_id = $2', [req.params.id, user.restaurant_id]);
-    if (!staffRes.rows.length) return res.status(404).json({ error: 'Staff member not found' });
-    const progressRes = await db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1', [req.params.id]);
-    const scenarioRes = await db.query('SELECT scenario_id, completed_at FROM scenario_scores WHERE user_id = $1', [req.params.id]);
-    const badgeRes = await db.query('SELECT badge_id, earned_at FROM badges WHERE user_id = $1', [req.params.id]);
-    res.json({ staff: staffRes.rows[0], progress: progressRes.rows, scenarios: scenarioRes.rows, badges: badgeRes.rows });
-  } catch (err) { res.status(500).json({ error: 'Failed to fetch staff details' }); }
-});
 
 // ── Stripe payment routes ─────────────────────────────────────────────────────
 app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
@@ -1775,7 +1762,10 @@ const MODULE_NAMES = {
   13: 'Spirits & Cocktails', 14: 'Coffee & Non-Alcoholic', 15: 'Allergen Mastery',
   16: 'EQ & Reading Guests', 17: 'Menu Knowledge Advanced', 18: 'Managing the Rush',
   19: 'Host & Reception Skills', 20: 'Cheese & Charcuterie', 21: 'Sustainability',
-  22: 'Digital Tools & POS', 23: 'Team Culture', 24: 'Wellness & Career Growth'
+  22: 'Digital Tools & POS', 23: 'Team Culture', 24: 'Wellness & Career Growth',
+  25: 'Bar Setup & Mise en Place', 26: 'Essential Bartending Techniques',
+  27: 'Classic Cocktails & Drink Building', 28: 'Bar Upselling & Guest Engagement',
+  29: 'Responsible Service & Difficult Situations', 30: 'Bar Career & Culture'
 };
 
 function calculateStatus(progressValues) {
@@ -1799,21 +1789,43 @@ app.get('/api/team', managerMiddleware, async (req, res) => {
     const params = isAdmin && !user?.restaurant_id ? [] : [user?.restaurant_id];
 
     const staffRes = await db.query(`
-      SELECT u.id, u.name, u.email,
+      SELECT u.id, u.name, u.email, u.last_login,
         COALESCE(AVG(p.progress), 0) as avg_progress,
+        COUNT(CASE WHEN p.progress >= 100 THEN 1 END) as modules_completed,
+        COALESCE(AVG(p.quiz_score), 0) as avg_quiz_score,
         (SELECT module_id FROM user_progress WHERE user_id = u.id ORDER BY progress DESC LIMIT 1) as strongest_module_id
       FROM users u
       LEFT JOIN user_progress p ON p.user_id = u.id
       ${whereClause}
-      GROUP BY u.id, u.name, u.email
+      GROUP BY u.id, u.name, u.email, u.last_login
       ORDER BY avg_progress DESC
       LIMIT 100
     `, params);
+
+    const staffIds = staffRes.rows.map(r => r.id);
+    let scenarioCounts = {}, badgeCounts = {};
+    if (staffIds.length) {
+      const scRes = await db.query(
+        `SELECT user_id, COUNT(*) as cnt FROM scenario_scores WHERE user_id = ANY($1) GROUP BY user_id`,
+        [staffIds]
+      );
+      scRes.rows.forEach(r => { scenarioCounts[r.user_id] = parseInt(r.cnt); });
+      const bdRes = await db.query(
+        `SELECT user_id, COUNT(*) as cnt FROM badges WHERE user_id = ANY($1) GROUP BY user_id`,
+        [staffIds]
+      );
+      bdRes.rows.forEach(r => { badgeCounts[r.user_id] = parseInt(r.cnt); });
+    }
 
     const team = staffRes.rows.map(member => ({
       id: member.id,
       name: member.name || member.email,
       progress: Math.round(Number(member.avg_progress)),
+      modules_completed: parseInt(member.modules_completed) || 0,
+      avg_quiz_score: Math.round(Number(member.avg_quiz_score)) || 0,
+      scenarios: scenarioCounts[member.id] || 0,
+      badges: badgeCounts[member.id] || 0,
+      last_login: member.last_login,
       strongest: MODULE_NAMES[member.strongest_module_id] || 'N/A',
       status: calculateStatus([Number(member.avg_progress)])
     }));
@@ -1845,6 +1857,11 @@ app.post('/api/certificate', managerMiddleware, async (req, res) => {
           completed_at = COALESCE(user_progress.completed_at, NOW())
       `, [userId, moduleId]);
     }
+
+    await db.query(
+      'INSERT INTO certificate_log (user_id, issued_by, user_name) VALUES ($1, $2, $3)',
+      [userId, req.user.id, user.name || user.email]
+    ).catch(() => {});
 
     res.json({ success: true, message: `Certificate issued for ${user.name || user.email}` });
   } catch (err) {
@@ -1892,6 +1909,361 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
     console.error('Export error:', err.message);
     res.status(500).json({ error: 'Failed to export report' });
   }
+});
+
+// ── User: language preference ────────────────────────────────────────────────
+app.patch('/api/user/lang', authMiddleware, async (req, res) => {
+  const { lang } = req.body;
+  if (!['en', 'fr', 'es'].includes(lang)) return res.status(400).json({ error: 'Invalid lang' });
+  try {
+    await db.query('UPDATE users SET lang_preference = $1 WHERE id = $2', [lang, req.user.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to save language' }); }
+});
+
+// ── User: module bookmarks ───────────────────────────────────────────────────
+app.get('/api/user/bookmarks', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query('SELECT module_id, created_at FROM module_bookmarks WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+    res.json({ bookmarks: result.rows.map(r => r.module_id) });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch bookmarks' }); }
+});
+
+app.post('/api/user/bookmarks', authMiddleware, async (req, res) => {
+  const { moduleId } = req.body;
+  if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
+  try {
+    await db.query('INSERT INTO module_bookmarks (user_id, module_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.user.id, moduleId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to add bookmark' }); }
+});
+
+app.delete('/api/user/bookmarks/:moduleId', authMiddleware, async (req, res) => {
+  try {
+    await db.query('DELETE FROM module_bookmarks WHERE user_id = $1 AND module_id = $2', [req.user.id, req.params.moduleId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to remove bookmark' }); }
+});
+
+// ── User: scenario transcripts ───────────────────────────────────────────────
+app.post('/api/user/scenario-transcript', authMiddleware, async (req, res) => {
+  const { scenarioId, messages, verdict } = req.body;
+  if (!scenarioId || !messages) return res.status(400).json({ error: 'scenarioId and messages required' });
+  try {
+    await db.query(
+      'INSERT INTO scenario_transcripts (user_id, scenario_id, messages, verdict) VALUES ($1, $2, $3, $4)',
+      [req.user.id, scenarioId, JSON.stringify(messages), verdict || null]
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to save transcript' }); }
+});
+
+app.get('/api/user/scenario-transcripts', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, scenario_id, verdict, completed_at FROM scenario_transcripts WHERE user_id = $1 ORDER BY completed_at DESC LIMIT 50',
+      [req.user.id]
+    );
+    res.json({ transcripts: result.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch transcripts' }); }
+});
+
+app.get('/api/user/scenario-transcripts/:id', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, scenario_id, messages, verdict, completed_at FROM scenario_transcripts WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Transcript not found' });
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch transcript' }); }
+});
+
+// ── Manager: enhanced staff detail ──────────────────────────────────────────
+app.get('/api/manager/staff/:id', managerMiddleware, async (req, res) => {
+  try {
+    const staffId = parseInt(req.params.id);
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const mgr = userRes.rows[0];
+    const whereExtra = mgr.role === 'admin' && !mgr.restaurant_id ? '' : ' AND restaurant_id = $2';
+    const params = mgr.role === 'admin' && !mgr.restaurant_id ? [staffId] : [staffId, mgr.restaurant_id];
+    const staffRes = await db.query(
+      `SELECT id, name, email, experience_level, last_login, created_at FROM users WHERE id = $1${whereExtra}`,
+      params
+    );
+    if (!staffRes.rows.length) return res.status(404).json({ error: 'Staff member not found' });
+    const [progressRes, scenarioRes, badgeRes, transcriptRes] = await Promise.all([
+      db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1 ORDER BY module_id', [staffId]),
+      db.query('SELECT scenario_id, completed_at FROM scenario_scores WHERE user_id = $1 ORDER BY completed_at DESC', [staffId]),
+      db.query('SELECT badge_id, earned_at FROM badges WHERE user_id = $1', [staffId]),
+      db.query('SELECT id, scenario_id, verdict, completed_at FROM scenario_transcripts WHERE user_id = $1 ORDER BY completed_at DESC LIMIT 10', [staffId]),
+    ]);
+    res.json({
+      staff: staffRes.rows[0],
+      progress: progressRes.rows,
+      scenarios: scenarioRes.rows,
+      badges: badgeRes.rows,
+      transcripts: transcriptRes.rows
+    });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch staff details' }); }
+});
+
+// ── Manager: email nudge ─────────────────────────────────────────────────────
+app.post('/api/manager/nudge', managerMiddleware, async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+  try {
+    const userRes = await db.query('SELECT name, email FROM users WHERE id = $1', [userId]);
+    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
+    const { name, email } = userRes.rows[0];
+    const displayName = name || email.split('@')[0];
+    await resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: email,
+      subject: 'Your team wants you to keep training — you\'re almost there',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+        <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+        <p style="font-size:16px;line-height:1.7;">Hi ${escapeHtml(displayName)},</p>
+        <p style="font-size:16px;line-height:1.7;">Your manager wanted to check in and encourage you to continue your ServeMaster Academy training.</p>
+        <p style="font-size:16px;line-height:1.7;">Your team is making great progress — and every module you complete builds real skills you'll use on the floor every shift.</p>
+        <p style="margin:32px 0;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training →</a></p>
+        <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+        <p style="font-size:12px;color:#666;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+      </div>`
+    });
+    res.json({ success: true, to: email });
+  } catch (err) { res.status(500).json({ error: 'Failed to send nudge: ' + err.message }); }
+});
+
+// ── Manager: training deadline ───────────────────────────────────────────────
+app.get('/api/manager/deadline', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ deadline: null });
+    const result = await db.query('SELECT training_deadline FROM restaurants WHERE id = $1', [restaurantId]);
+    res.json({ deadline: result.rows[0]?.training_deadline || null });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch deadline' }); }
+});
+
+app.post('/api/manager/deadline', managerMiddleware, async (req, res) => {
+  const { deadline } = req.body;
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.status(400).json({ error: 'No restaurant found' });
+    await db.query('UPDATE restaurants SET training_deadline = $1 WHERE id = $2', [deadline || null, restaurantId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to set deadline' }); }
+});
+
+// ── Manager: certificate history ─────────────────────────────────────────────
+app.get('/api/manager/certificates', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const mgr = userRes.rows[0];
+    let logs;
+    if (mgr.role === 'admin' && !mgr.restaurant_id) {
+      logs = await db.query(`
+        SELECT cl.*, u.email as user_email, m.name as issuer_name
+        FROM certificate_log cl
+        JOIN users u ON u.id = cl.user_id
+        LEFT JOIN users m ON m.id = cl.issued_by
+        ORDER BY cl.issued_at DESC LIMIT 100
+      `);
+    } else {
+      logs = await db.query(`
+        SELECT cl.*, u.email as user_email, m.name as issuer_name
+        FROM certificate_log cl
+        JOIN users u ON u.id = cl.user_id AND u.restaurant_id = $1
+        LEFT JOIN users m ON m.id = cl.issued_by
+        ORDER BY cl.issued_at DESC LIMIT 100
+      `, [mgr.restaurant_id]);
+    }
+    res.json({ certificates: logs.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch certificates' }); }
+});
+
+// ── Admin: activation funnel ─────────────────────────────────────────────────
+app.get('/api/admin/funnel', adminMiddleware, async (req, res) => {
+  try {
+    const [signups, trialStarted, mod1, mod5, mod10, paid] = await Promise.all([
+      db.query('SELECT COUNT(*) as cnt FROM users'),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE trial_ends_at IS NOT NULL OR subscription_status != 'free' OR is_trial_active = true"),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 1 AND progress >= 50'),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 5 AND progress >= 100'),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 10 AND progress >= 100'),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE subscription_status NOT IN ('free') AND subscription_status IS NOT NULL"),
+    ]);
+    const total = parseInt(signups.rows[0].cnt) || 1;
+    res.json({
+      stages: [
+        { label: 'Signed Up', count: parseInt(signups.rows[0].cnt), pct: 100 },
+        { label: 'Started Trial', count: parseInt(trialStarted.rows[0].cnt), pct: Math.round(parseInt(trialStarted.rows[0].cnt) / total * 100) },
+        { label: 'Completed Module 1', count: parseInt(mod1.rows[0].cnt), pct: Math.round(parseInt(mod1.rows[0].cnt) / total * 100) },
+        { label: 'Completed Module 5', count: parseInt(mod5.rows[0].cnt), pct: Math.round(parseInt(mod5.rows[0].cnt) / total * 100) },
+        { label: 'Completed Module 10', count: parseInt(mod10.rows[0].cnt), pct: Math.round(parseInt(mod10.rows[0].cnt) / total * 100) },
+        { label: 'Converted to Paid', count: parseInt(paid.rows[0].cnt), pct: Math.round(parseInt(paid.rows[0].cnt) / total * 100) },
+      ]
+    });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch funnel data' }); }
+});
+
+// ── Admin: module analytics (drop-off) ──────────────────────────────────────
+app.get('/api/admin/analytics', adminMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT module_id,
+        COUNT(DISTINCT user_id) as started,
+        COUNT(CASE WHEN progress >= 100 THEN 1 END) as completed,
+        ROUND(AVG(progress)::numeric, 1) as avg_progress,
+        ROUND(AVG(quiz_score)::numeric, 1) as avg_quiz,
+        COUNT(CASE WHEN progress >= 100 THEN 1 END)::float / NULLIF(COUNT(DISTINCT user_id), 0) * 100 as completion_rate
+      FROM user_progress
+      GROUP BY module_id ORDER BY module_id
+    `);
+    res.json({ modules: result.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch analytics' }); }
+});
+
+// ── Admin: Stripe revenue ─────────────────────────────────────────────────────
+app.get('/api/admin/stripe-revenue', adminMiddleware, async (req, res) => {
+  try {
+    const stripe = await getUncachableStripeClient();
+    const [activeSubs, invoices30d] = await Promise.all([
+      stripe.subscriptions.list({ status: 'active', limit: 100 }),
+      stripe.invoices.list({ status: 'paid', limit: 100, created: { gte: Math.floor(Date.now() / 1000) - 30 * 86400 } }),
+    ]);
+    const mrr = activeSubs.data.reduce((sum, sub) => {
+      const item = sub.items?.data?.[0];
+      if (!item) return sum;
+      const amount = item.price?.unit_amount || 0;
+      const interval = item.price?.recurring?.interval;
+      if (interval === 'year') return sum + amount / 12;
+      return sum + amount;
+    }, 0);
+    const revenue30d = invoices30d.data.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
+    res.json({
+      mrr: Math.round(mrr / 100),
+      active_subscriptions: activeSubs.data.length,
+      revenue_30d: Math.round(revenue30d / 100),
+    });
+  } catch (err) {
+    console.error('Stripe revenue error:', err.message);
+    res.json({ mrr: 0, active_subscriptions: 0, revenue_30d: 0, error: 'Stripe unavailable' });
+  }
+});
+
+// ── Admin: failed payments ────────────────────────────────────────────────────
+app.get('/api/admin/failed-payments', adminMiddleware, async (req, res) => {
+  try {
+    const stripe = await getUncachableStripeClient();
+    const invoices = await stripe.invoices.list({ status: 'open', limit: 50 });
+    const failed = invoices.data.filter(inv => inv.attempt_count > 0);
+    const result = await Promise.all(failed.map(async inv => {
+      let email = '';
+      try {
+        const customer = await stripe.customers.retrieve(inv.customer);
+        email = customer.email || '';
+      } catch {}
+      return {
+        id: inv.id,
+        customer_email: email,
+        amount: Math.round((inv.amount_due || 0) / 100),
+        attempts: inv.attempt_count,
+        next_attempt: inv.next_payment_attempt ? new Date(inv.next_payment_attempt * 1000).toISOString() : null,
+        created: new Date(inv.created * 1000).toISOString(),
+      };
+    }));
+    res.json({ failed_payments: result });
+  } catch (err) {
+    console.error('Failed payments error:', err.message);
+    res.json({ failed_payments: [], error: 'Stripe unavailable' });
+  }
+});
+
+// ── Admin: bulk email by segment ─────────────────────────────────────────────
+app.post('/api/admin/bulk-email', adminMiddleware, async (req, res) => {
+  const { segment, emailType } = req.body;
+  if (!segment || !emailType) return res.status(400).json({ error: 'segment and emailType required' });
+  try {
+    let query = '';
+    if (segment === 'free_inactive') {
+      query = `SELECT id, name, email FROM users WHERE subscription_status = 'free' AND (last_login < NOW() - INTERVAL '7 days' OR last_login IS NULL) AND role = 'user' LIMIT 200`;
+    } else if (segment === 'trial_active') {
+      query = `SELECT id, name, email FROM users WHERE is_trial_active = true AND subscription_status = 'free' LIMIT 200`;
+    } else if (segment === 'paid_incomplete') {
+      query = `SELECT DISTINCT u.id, u.name, u.email FROM users u WHERE u.subscription_status NOT IN ('free') AND (SELECT COUNT(*) FROM user_progress WHERE user_id = u.id AND progress >= 100) < 30 LIMIT 200`;
+    } else if (segment === 'all_users') {
+      query = `SELECT id, name, email FROM users WHERE role = 'user' LIMIT 200`;
+    } else {
+      return res.status(400).json({ error: 'Unknown segment' });
+    }
+    const users = await db.query(query);
+    if (!users.rows.length) return res.json({ sent: 0, message: 'No users in this segment' });
+    const emailShell = (body) => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">${body}<hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`;
+    const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
+    const btn = (label, href) => `<p style="margin-bottom:32px;"><a href="${href}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">${label}</a></p>`;
+    const sig = `<p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:24px;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>`;
+    const emails = {
+      nudge: { subject: 'Your training is waiting — pick up where you left off', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("We noticed you haven't been in for a while — your training is still right where you left it.")}${p("Even 15 minutes a day adds up fast. Start your next module now.")}${btn("Continue Training →", "https://servemasteracademy.ca/app")}${sig}`) },
+      upgrade: { subject: 'Ready to go further? Upgrade your ServeMaster plan', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("You've been making progress on ServeMaster Academy — and there's so much more to unlock.")}${p("Upgrade today to access all 30 modules, AI role-play, voice practice, and your completion certificate.")}${btn("View Plans →", "https://servemasteracademy.ca/pricing")}${sig}`) },
+      comeback: { subject: 'We miss you at ServeMaster Academy', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("It's been a while since we've seen you in the training platform.")}${p("Your account is still active — log back in and continue from where you left off.")}${btn("Log Back In →", "https://servemasteracademy.ca/app")}${sig}`) },
+    };
+    const chosenEmail = emails[emailType];
+    if (!chosenEmail) return res.status(400).json({ error: `Unknown emailType. Valid: ${Object.keys(emails).join(', ')}` });
+    let sent = 0, failed = 0;
+    for (const user of users.rows) {
+      try {
+        await resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: user.email,
+          subject: chosenEmail.subject,
+          html: chosenEmail.html(escapeHtml(user.name || user.email.split('@')[0]))
+        });
+        sent++;
+        await new Promise(r => setTimeout(r, 100));
+      } catch { failed++; }
+    }
+    res.json({ sent, failed, total: users.rows.length });
+  } catch (err) { res.status(500).json({ error: 'Bulk email failed: ' + err.message }); }
+});
+
+// ── Admin: user impersonation ─────────────────────────────────────────────────
+app.post('/api/admin/impersonate/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userRes = await db.query('SELECT id, email, name, role FROM users WHERE id = $1', [id]);
+    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
+    const user = userRes.rows[0];
+    if (user.role === 'admin') return res.status(403).json({ error: 'Cannot impersonate admin' });
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: user.role, impersonated_by: req.user.id },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  } catch (err) { res.status(500).json({ error: 'Impersonation failed' }); }
+});
+
+// ── Admin: user progress detail ───────────────────────────────────────────────
+app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [userRes, progressRes, scenarioRes, badgeRes] = await Promise.all([
+      db.query('SELECT id, name, email, role, subscription_status, created_at, last_login FROM users WHERE id = $1', [id]),
+      db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1 ORDER BY module_id', [id]),
+      db.query('SELECT COUNT(*) as cnt FROM scenario_scores WHERE user_id = $1', [id]),
+      db.query('SELECT badge_id, earned_at FROM badges WHERE user_id = $1', [id]),
+    ]);
+    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
+    res.json({
+      user: userRes.rows[0],
+      progress: progressRes.rows,
+      scenario_count: parseInt(scenarioRes.rows[0]?.cnt) || 0,
+      badges: badgeRes.rows,
+    });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch user progress' }); }
 });
 
 // ── Catch-all: /app/* ─────────────────────────────────────────────────────────
@@ -1952,6 +2324,35 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
   await initStripe();
   // Auto-seed demo leaderboard users on every startup
   try { await seedDemoUsers(); } catch (e) { console.error('Demo seed error:', e.message); }
+
+  // New schema additions
+  try {
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lang_preference VARCHAR(5) DEFAULT 'en'`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS training_deadline DATE`);
+    await db.query(`CREATE TABLE IF NOT EXISTS certificate_log (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      issued_by INT REFERENCES users(id) ON DELETE SET NULL,
+      user_name VARCHAR(255),
+      issued_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS scenario_transcripts (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      scenario_id INT,
+      messages JSONB NOT NULL,
+      verdict TEXT,
+      completed_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_scenario_transcripts_user ON scenario_transcripts(user_id)`);
+    await db.query(`CREATE TABLE IF NOT EXISTS module_bookmarks (
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      module_id INT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (user_id, module_id)
+    )`);
+    console.log('Schema additions complete');
+  } catch (e) { console.error('Schema additions error:', e.message); }
 });
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;

@@ -74,6 +74,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
       <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
       <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
+      <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
+      <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
+      <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -85,6 +88,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
       <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
       <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
+      <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
+      <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
+      <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
     </div>
 
     <!-- Main content -->
@@ -100,6 +106,13 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+        </div>
+        <!-- Activation Funnel -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+          <h2 class="font-semibold text-lg mb-4">Activation Funnel</h2>
+          <div id="funnel-chart" class="space-y-3">
+            <div class="text-zinc-500 text-sm">Loading funnel data…</div>
+          </div>
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-4">
           <h2 class="font-semibold text-lg mb-1">Demo Leaderboard Users</h2>
@@ -272,12 +285,103 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
       </div>
 
+      <!-- REVENUE -->
+      <div id="section-revenue" class="section">
+        <h1 class="heading text-3xl font-bold mb-8">Revenue</h1>
+        <div id="revenue-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <h2 class="font-semibold text-lg mb-4">Module Analytics — Drop-off</h2>
+          <p class="text-zinc-400 text-sm mb-4">Completion rate per module. Low rates indicate where learners are dropping off.</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Module</th>
+                  <th class="px-4 py-3 text-left">Started</th>
+                  <th class="px-4 py-3 text-left">Completed</th>
+                  <th class="px-4 py-3 text-left">Completion Rate</th>
+                  <th class="px-4 py-3 text-left">Avg Quiz</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTREACH -->
+      <div id="section-outreach" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Email Outreach</h1>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-2xl mb-6">
+          <h2 class="font-semibold mb-4">Send Bulk Campaign</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1">Target Segment</label>
+              <select id="bulk-segment" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="free_inactive">Free users — inactive 7+ days</option>
+                <option value="trial_active">Active trial users</option>
+                <option value="paid_incomplete">Paid users — incomplete training</option>
+                <option value="all_users">All users (use sparingly)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1">Email Template</label>
+              <select id="bulk-template" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="nudge">Training Nudge — "Pick up where you left off"</option>
+                <option value="upgrade">Upgrade Campaign — "Unlock everything"</option>
+                <option value="comeback">Re-engagement — "We miss you"</option>
+              </select>
+            </div>
+            <div id="bulk-preview" class="hidden bg-zinc-800 rounded-xl p-4 text-sm text-zinc-300"></div>
+            <button onclick="sendBulkEmail()" id="bulk-send-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2 rounded-xl text-sm transition-colors">Send Campaign</button>
+            <div id="bulk-result" class="text-sm text-zinc-400 hidden"></div>
+          </div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <h2 class="font-semibold mb-1">Individual Emails</h2>
+          <p class="text-zinc-400 text-sm">Use the Users tab to find a specific user, then use the Edit button to access per-user email options in the Users section.</p>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="section-payments" class="section">
+        <h1 class="heading text-3xl font-bold mb-6">Failed Payments</h1>
+        <div id="payments-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-4 py-3 text-left">Customer</th>
+                  <th class="px-4 py-3 text-left">Amount</th>
+                  <th class="px-4 py-3 text-left">Attempts</th>
+                  <th class="px-4 py-3 text-left">Next Attempt</th>
+                  <th class="px-4 py-3 text-left">Invoice Date</th>
+                </tr>
+              </thead>
+              <tbody id="payments-tbody" class="divide-y divide-zinc-800">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
 
 <script>
-const MODULE_NAMES = ['Service Foundations','Menu Knowledge','Wine Essentials','Beverage Mastery','Upselling Techniques','Tray & Posture','Allergy Awareness','Guest Psychology','Tableside Etiquette','POS & Billing','Wine Service Advanced','Floor Leadership'];
+const MODULE_NAMES = ['Service Foundations','Menu Knowledge','Wine Essentials','Beverage Mastery','Upselling Techniques','Tray & Posture','Allergy Awareness','Guest Psychology','Tableside Etiquette','POS & Billing','Wine Service Advanced','Floor Leadership','Spirits & Cocktails','Coffee & Non-Alcoholic','Allergen Mastery','EQ & Reading Guests','Menu Knowledge Advanced','Managing the Rush','Host & Reception Skills','Cheese & Charcuterie','Sustainability','Digital Tools & POS','Team Culture','Wellness & Career Growth','Bar Setup & Mise en Place','Essential Bartending Techniques','Classic Cocktails & Drink Building','Bar Upselling & Guest Engagement','Responsible Service & Difficult Situations','Bar Career & Culture'];
 
 let token = localStorage.getItem('sma-token') || '';
 let allUsers = [];
@@ -314,6 +418,10 @@ async function loadAll() {
   loadRestaurants();
   loadContacts();
   loadInvites();
+  loadRevenue();
+  loadAnalytics();
+  loadFailedPayments();
+  loadFunnel();
 }
 
 async function loadOverview() {
@@ -352,14 +460,14 @@ function renderUsers(users) {
     const plan = u.subscription_status || 'free';
     const isPaid = PAID_PLANS.includes(plan);
     const planColor = PLAN_COLORS[plan] || PLAN_COLORS.free;
-    const actionBtn = `<button onclick="openEditUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Edit</button>`;
+    const actionBtn = `<div class="flex gap-1"><button onclick="openEditUser(${u.id})" class="px-3 py-1 rounded-lg text-xs font-medium bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Edit</button><button onclick="impersonateUser(${u.id},'${esc(u.email)}')" class="px-3 py-1 rounded-lg text-xs font-medium bg-blue-400/20 hover:bg-blue-400/30 text-blue-300 transition-colors" title="View as this user">View As</button></div>`;
     return `
     <tr class="hover:bg-zinc-800/50 transition-colors">
       <td class="px-4 py-3 font-medium">${esc(u.name || '—')}</td>
       <td class="px-4 py-3 text-zinc-400">${esc(u.email)}</td>
       <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${planColor}">${PLAN_LABELS[plan] || plan}</span></td>
       <td class="px-4 py-3 text-zinc-400 text-xs">${u.role}</td>
-      <td class="px-4 py-3">${u.modules_completed || 0} / 12</td>
+      <td class="px-4 py-3">${u.modules_completed || 0} / 30</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.last_login)}</td>
       <td class="px-4 py-3">${actionBtn}</td>
@@ -581,6 +689,160 @@ async function seedFakeUsers() {
   }
 }
 
+async function loadFunnel() {
+  try {
+    const data = await apiFetch('/api/admin/funnel');
+    const container = document.getElementById('funnel-chart');
+    if (!data.stages) { container.innerHTML = '<div class="text-zinc-500 text-sm">No funnel data.</div>'; return; }
+    container.innerHTML = data.stages.map((s, i) => `
+      <div class="flex items-center gap-4">
+        <div class="w-44 text-xs text-zinc-400 text-right shrink-0">${s.label}</div>
+        <div class="flex-1 bg-zinc-800 rounded-full h-6 relative">
+          <div class="bg-amber-400 h-6 rounded-full transition-all" style="width:${s.pct}%"></div>
+        </div>
+        <div class="w-24 text-xs font-mono text-right"><span class="text-white font-bold">${s.count.toLocaleString()}</span> <span class="text-zinc-500">(${s.pct}%)</span></div>
+      </div>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function loadRevenue() {
+  try {
+    const data = await apiFetch('/api/admin/stripe-revenue');
+    document.getElementById('revenue-cards').innerHTML = `
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Monthly Recurring Revenue</div>
+        <div class="text-3xl font-bold text-amber-400">$${(data.mrr || 0).toLocaleString()}</div>
+        <div class="text-zinc-500 text-xs mt-1">From active Stripe subscriptions</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Active Subscriptions</div>
+        <div class="text-3xl font-bold">${(data.active_subscriptions || 0).toLocaleString()}</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Revenue Last 30d</div>
+        <div class="text-3xl font-bold text-emerald-400">$${(data.revenue_30d || 0).toLocaleString()}</div>
+      </div>
+    `;
+  } catch (e) { console.error(e); }
+}
+
+async function loadAnalytics() {
+  try {
+    const data = await apiFetch('/api/admin/analytics');
+    const tbody = document.getElementById('analytics-tbody');
+    if (!data.modules || !data.modules.length) { tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">No data yet.</td></tr>'; return; }
+    tbody.innerHTML = data.modules.map(m => {
+      const rate = m.completion_rate ? Math.round(Number(m.completion_rate)) : 0;
+      const color = rate >= 70 ? 'bg-emerald-500' : rate >= 40 ? 'bg-amber-400' : 'bg-red-500';
+      return `
+        <tr class="hover:bg-zinc-800/50 transition-colors">
+          <td class="px-4 py-3 font-medium">${m.module_id}. ${MODULE_NAMES[m.module_id - 1] || 'Module ' + m.module_id}</td>
+          <td class="px-4 py-3">${m.started || 0}</td>
+          <td class="px-4 py-3">${m.completed || 0}</td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 bg-zinc-700 rounded-full h-1.5"><div class="${color} h-1.5 rounded-full" style="width:${rate}%"></div></div>
+              <span class="text-xs text-zinc-400 w-10">${rate}%</span>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-zinc-400">${m.avg_quiz ? Math.round(Number(m.avg_quiz)) + '%' : '—'}</td>
+        </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function loadFailedPayments() {
+  try {
+    const data = await apiFetch('/api/admin/failed-payments');
+    const failed = data.failed_payments || [];
+    document.getElementById('payments-cards').innerHTML = `
+      <div class="bg-zinc-900 border border-red-900/40 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Open Failed Invoices</div>
+        <div class="text-3xl font-bold text-red-400">${failed.length}</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Total Outstanding</div>
+        <div class="text-3xl font-bold">$${failed.reduce((s, f) => s + (f.amount || 0), 0).toLocaleString()}</div>
+      </div>
+    `;
+    const tbody = document.getElementById('payments-tbody');
+    if (!failed.length) { tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">No failed payments found.</td></tr>'; return; }
+    tbody.innerHTML = failed.map(f => `
+      <tr class="hover:bg-zinc-800/50 transition-colors">
+        <td class="px-4 py-3">${esc(f.customer_email) || '—'}</td>
+        <td class="px-4 py-3 text-red-400 font-medium">$${f.amount}</td>
+        <td class="px-4 py-3">${f.attempts}</td>
+        <td class="px-4 py-3 text-zinc-400 text-xs">${f.next_attempt ? fmtDate(f.next_attempt) : '—'}</td>
+        <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(f.created)}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function sendBulkEmail() {
+  const segment = document.getElementById('bulk-segment').value;
+  const emailType = document.getElementById('bulk-template').value;
+  const btn = document.getElementById('bulk-send-btn');
+  const result = document.getElementById('bulk-result');
+  const segmentLabels = {
+    free_inactive: 'free inactive users',
+    trial_active: 'active trial users',
+    paid_incomplete: 'paid users with incomplete training',
+    all_users: 'ALL users'
+  };
+  if (!confirm(`Send "${emailType}" campaign to ${segmentLabels[segment] || segment}? This will send real emails.`)) return;
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  result.classList.add('hidden');
+  try {
+    const res = await fetch('/api/admin/bulk-email', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ segment, emailType })
+    });
+    const data = await res.json();
+    if (!res.ok) { result.textContent = 'Error: ' + (data.error || 'Unknown'); result.style.color = '#f87171'; }
+    else { result.textContent = `Sent ${data.sent} emails (${data.failed || 0} failed) out of ${data.total} matching.`; result.style.color = '#4ade80'; }
+    result.classList.remove('hidden');
+  } catch (e) {
+    result.textContent = 'Network error: ' + e.message;
+    result.style.color = '#f87171';
+    result.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send Campaign';
+  }
+}
+
+async function impersonateUser(userId, email) {
+  if (!confirm(`View as ${email}? You'll receive a 1-hour token to access the app as this user. Keep the current tab open to return.`)) return;
+  try {
+    const res = await fetch(`/api/admin/impersonate/${userId}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Impersonation failed'); return; }
+    const url = '/app?impersonate=1';
+    const tab = window.open(url, '_blank');
+    if (tab) {
+      tab.addEventListener('load', () => {
+        tab.localStorage.setItem('sma-token', data.token);
+        tab.location.reload();
+      });
+      setTimeout(() => {
+        try {
+          tab.localStorage.setItem('sma-token', data.token);
+        } catch {}
+      }, 500);
+    }
+    const notice = document.createElement('div');
+    notice.innerHTML = `<div style="position:fixed;top:1rem;right:1rem;background:#1c1917;border:1px solid #d4af37;border-radius:12px;padding:1rem;z-index:9999;max-width:320px;"><div style="color:#d4af37;font-weight:600;margin-bottom:4px;">Impersonation Token</div><div style="color:#a1a1aa;font-size:12px;margin-bottom:8px;">Copy this token and paste it into localStorage key <code style="color:#d4af37;">sma-token</code> in the /app tab:</div><code style="display:block;background:#09090b;padding:8px;border-radius:8px;font-size:11px;word-break:break-all;color:#fbbf24;">${data.token.slice(0,40)}…</code><button onclick="navigator.clipboard.writeText('${data.token}');this.textContent='Copied!';" style="margin-top:8px;background:#d4af37;color:#000;font-weight:600;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;">Copy Token</button><button onclick="this.closest('div').parentNode.remove()" style="margin-top:8px;margin-left:8px;background:#27272a;color:#a1a1aa;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;">Close</button></div>`;
+    document.body.appendChild(notice);
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
 function showSection(name) {
   document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -637,7 +899,7 @@ function openViewUser(id) {
   document.getElementById('um-view-role').textContent = u.role || 'user';
   document.getElementById('um-view-joined').textContent = fmtDate(u.created_at);
   document.getElementById('um-view-last').textContent = fmtDate(u.last_login);
-  document.getElementById('um-view-modules').textContent = (u.modules_completed || 0) + ' / 12';
+  document.getElementById('um-view-modules').textContent = (u.modules_completed || 0) + ' / 30';
   document.getElementById('user-modal').classList.remove('hidden');
 }
 
