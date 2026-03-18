@@ -110,67 +110,168 @@
 
   <!-- DASHBOARD PREVIEW -->
   <section class="py-20 bg-black">
-    <div class="max-w-5xl mx-auto px-6 text-center">
+    <div class="max-w-6xl mx-auto px-6 text-center">
       <h2 class="text-4xl font-semibold mb-8" data-i18n="managers_preview_h">See the Manager Dashboard in Action</h2>
-      <div class="bg-zinc-900 border border-amber-900 rounded-3xl overflow-hidden shadow-2xl">
-        <div class="bg-zinc-800 p-6 text-left">
-          <div class="flex items-center justify-between mb-5 border-b border-zinc-700 pb-4">
-            <span class="text-amber-400 font-semibold text-sm uppercase tracking-widest">Team Progress — The Keg Downtown</span>
-            <span class="text-zinc-500 text-xs">4 staff active</span>
-          </div>
-          <div class="space-y-4">
-            <div class="bg-zinc-900 rounded-2xl p-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-sm">SM</div>
-                <div>
-                  <div class="text-white text-sm font-medium">Sarah M.</div>
-                  <div class="text-zinc-500 text-xs">8 / 30 modules &nbsp;·&nbsp; 🔥 14-day streak</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-emerald-400 text-xs font-semibold">87% avg quiz</div>
-                <div class="w-28 h-1.5 bg-zinc-700 rounded-full mt-1.5"><div class="h-1.5 bg-emerald-400 rounded-full" style="width:67%"></div></div>
-              </div>
-            </div>
-            <div class="bg-zinc-900 rounded-2xl p-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-sm">JL</div>
-                <div>
-                  <div class="text-white text-sm font-medium">James L.</div>
-                  <div class="text-zinc-500 text-xs">30 / 30 modules &nbsp;·&nbsp; 🏆 Certificate earned</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-amber-400 text-xs font-semibold">94% avg quiz</div>
-                <div class="w-28 h-1.5 bg-zinc-700 rounded-full mt-1.5"><div class="h-1.5 bg-amber-400 rounded-full" style="width:100%"></div></div>
-              </div>
-            </div>
-            <div class="bg-zinc-900 rounded-2xl p-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-sm">AT</div>
-                <div>
-                  <div class="text-white text-sm font-medium">Anika T.</div>
-                  <div class="text-zinc-500 text-xs">3 / 30 modules &nbsp;·&nbsp; 🔥 3-day streak</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-zinc-400 text-xs font-semibold">72% avg quiz</div>
-                <div class="w-28 h-1.5 bg-zinc-700 rounded-full mt-1.5"><div class="h-1.5 bg-zinc-400 rounded-full" style="width:25%"></div></div>
-              </div>
+
+      <div class="bg-zinc-950 border border-amber-900/50 rounded-3xl overflow-hidden shadow-2xl text-left flex" style="min-height:480px">
+
+        <!-- Sidebar -->
+        <div class="w-52 flex-shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col">
+          <div class="p-5 border-b border-zinc-800 flex items-center gap-2">
+            <img src="/logo.png" alt="ServeMaster" class="w-7 h-7 rounded-lg object-cover">
+            <div>
+              <div class="text-white font-bold text-sm leading-tight">ServeMaster</div>
+              <div class="text-amber-400 text-xs tracking-widest">MANAGER</div>
             </div>
           </div>
-          <div class="mt-5 flex gap-3">
-            <div class="flex-1 bg-zinc-900 rounded-2xl p-4 text-center">
-              <div class="text-amber-400 text-2xl font-bold">87%</div>
-              <div class="text-zinc-500 text-xs mt-1">Avg quiz score</div>
+          <nav class="flex-1 p-3 space-y-1 text-sm">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-900/40 text-amber-400 font-medium">
+              <i class="fa-solid fa-users w-4 text-xs"></i> Team Overview
             </div>
-            <div class="flex-1 bg-zinc-900 rounded-2xl p-4 text-center">
-              <div class="text-emerald-400 text-2xl font-bold">23 / 36</div>
-              <div class="text-zinc-500 text-xs mt-1">Modules completed</div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl text-zinc-400">
+              <i class="fa-solid fa-certificate w-4 text-xs"></i> Certificates
             </div>
-            <div class="flex-1 bg-zinc-900 rounded-2xl p-4 text-center">
-              <div class="text-white text-2xl font-bold">1</div>
-              <div class="text-zinc-500 text-xs mt-1">Certificates earned</div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl text-zinc-400">
+              <i class="fa-solid fa-chart-bar w-4 text-xs"></i> Reports
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl text-zinc-400">
+              <i class="fa-solid fa-gear w-4 text-xs"></i> Settings
+            </div>
+          </nav>
+          <div class="p-3 border-t border-zinc-800">
+            <div class="w-full text-center py-2 px-3 rounded-xl bg-zinc-800 text-zinc-400 text-xs">← Back to Training</div>
+          </div>
+        </div>
+
+        <!-- Main area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Header -->
+          <div class="bg-zinc-950 border-b border-zinc-800 px-6 py-3 flex items-center justify-between">
+            <div>
+              <div class="text-lg font-bold">Team Overview</div>
+              <div class="text-zinc-400 text-xs">The Keg Downtown · 5 members · avg 68% complete</div>
+            </div>
+            <div class="bg-amber-400 text-black text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5">
+              <i class="fa-solid fa-download text-xs"></i> Export CSV
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4 overflow-auto">
+            <!-- Stat cards -->
+            <div class="grid grid-cols-4 gap-3">
+              <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div class="text-zinc-400 text-xs mb-1">Team Members</div>
+                <div class="text-2xl font-bold">5</div>
+              </div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div class="text-zinc-400 text-xs mb-1">Avg Completion</div>
+                <div class="text-2xl font-bold text-amber-400">68%</div>
+              </div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div class="text-zinc-400 text-xs mb-1">Certified</div>
+                <div class="text-2xl font-bold text-emerald-400">1</div>
+              </div>
+              <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-4">
+                <div class="text-zinc-400 text-xs mb-1">Needs Attention</div>
+                <div class="text-2xl font-bold text-red-400">2</div>
+              </div>
+            </div>
+
+            <!-- Staff table -->
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+              <div class="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
+                <span class="font-semibold text-sm">Staff Progress</span>
+                <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1 text-xs text-zinc-400">Search staff…</div>
+              </div>
+              <table class="w-full text-xs">
+                <thead class="bg-zinc-800/60 text-zinc-400 uppercase tracking-wide">
+                  <tr>
+                    <th class="px-4 py-2 text-left">Name</th>
+                    <th class="px-4 py-2 text-left">Progress</th>
+                    <th class="px-4 py-2 text-left">Modules</th>
+                    <th class="px-4 py-2 text-left">Scenarios</th>
+                    <th class="px-4 py-2 text-left">Badges</th>
+                    <th class="px-4 py-2 text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800 text-xs">
+                  <tr>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">JL</div>
+                        <div class="text-white font-medium">James L.</div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full"><div class="h-1.5 bg-amber-400 rounded-full" style="width:100%"></div></div>
+                        <span class="text-amber-400">100%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-zinc-300">30 / 30</td>
+                    <td class="px-4 py-2.5 text-zinc-300">36 / 36</td>
+                    <td class="px-4 py-2.5 text-zinc-300">🏆 8</td>
+                    <td class="px-4 py-2.5"><span class="bg-emerald-900/60 text-emerald-400 px-2 py-0.5 rounded-full font-medium">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">SM</div>
+                        <div>
+                          <div class="text-white font-medium">Sarah M.</div>
+                          <div class="text-amber-500 text-xs">📌 2 required</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full"><div class="h-1.5 bg-amber-400 rounded-full" style="width:67%"></div></div>
+                        <span class="text-amber-400">67%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-zinc-300">20 / 30</td>
+                    <td class="px-4 py-2.5 text-zinc-300">18 / 36</td>
+                    <td class="px-4 py-2.5 text-zinc-300">🔥 5</td>
+                    <td class="px-4 py-2.5"><span class="bg-amber-900/50 text-amber-400 px-2 py-0.5 rounded-full font-medium">On Track</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">AT</div>
+                        <div class="text-white font-medium">Anika T.</div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full"><div class="h-1.5 bg-orange-500 rounded-full" style="width:23%"></div></div>
+                        <span class="text-orange-400">23%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-zinc-300">7 / 30</td>
+                    <td class="px-4 py-2.5 text-zinc-300">4 / 36</td>
+                    <td class="px-4 py-2.5 text-zinc-300">⭐ 2</td>
+                    <td class="px-4 py-2.5"><span class="bg-orange-900/50 text-orange-400 px-2 py-0.5 rounded-full font-medium">Lagging</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">MR</div>
+                        <div class="text-white font-medium">Marcus R.</div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full"><div class="h-1.5 bg-red-500 rounded-full" style="width:7%"></div></div>
+                        <span class="text-red-400">7%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-zinc-300">2 / 30</td>
+                    <td class="px-4 py-2.5 text-zinc-300">0 / 36</td>
+                    <td class="px-4 py-2.5 text-zinc-300">—</td>
+                    <td class="px-4 py-2.5"><span class="bg-red-900/40 text-red-400 px-2 py-0.5 rounded-full font-medium">Overdue</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
