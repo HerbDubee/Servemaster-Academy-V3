@@ -2665,15 +2665,6 @@ app.post('/api/manager/cert-logo', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Server error' }); }
 });
 
-// ── Crisp chat widget config ──────────────────────────────────────────────────
-app.get('/crisp.js', (req, res) => {
-  const id = process.env.CRISP_WEBSITE_ID || '';
-  res.setHeader('Content-Type', 'application/javascript');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
-  if (!id) return res.send('');
-  res.send(`window.$crisp=[];window.CRISP_WEBSITE_ID="${id}";(function(){var d=document,s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`);
-});
-
 // ── Admin weekly digest trigger ─────────────────────────────────────────────────
 app.post('/api/admin/trigger-weekly-digest', authMiddleware, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
