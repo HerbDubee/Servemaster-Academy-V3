@@ -421,30 +421,33 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
     res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: user.email,
-      subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
-      html: `
-        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
-          <p style="margin-bottom:32px;">
-            <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
-          </p>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p>
-          <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
-          <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
-          Founder, ServeMaster Academy<br>
-          <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
-          <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-          <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-        </div>
-      `
-    }).catch(err => console.error('Welcome email error:', err.message));
+    (async () => { try {
+      const unsubToken = await getOrCreateUnsubToken(user.id);
+      const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: user.email,
+        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+        html: `
+          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
+            <p style="margin-bottom:32px;">
+              <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
+            </p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p>
+            <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
+            <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
+            Founder, ServeMaster Academy<br>
+            <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+            ${emailFooter(unsubUrl)}
+          </div>
+        `
+      }).catch(err => console.error('Welcome email error:', err.message));
+    } catch(e) {} })();
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ error: 'Registration failed' });
@@ -652,12 +655,16 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const signupFlag = isNewUser ? '&signup=1' : '';
     res.redirect('/login?token=' + encodeURIComponent(token) + signupFlag);
     if (isNewUser) {
-      resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-        to: user.email,
-        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
-        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`
-      }).catch(err => console.error('Google welcome email error:', err.message));
+      (async () => { try {
+        const unsubToken = await getOrCreateUnsubToken(user.id);
+        const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+        resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: user.email,
+          subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${emailFooter(unsubUrl)}</div>`
+        }).catch(err => console.error('Google welcome email error:', err.message));
+      } catch(e) {} })();
     } else {
       sendTrialDripEmails(user);
     }
@@ -870,60 +877,66 @@ app.post('/api/user/progress', authMiddleware, progressLimiter, checkTrial, asyn
       const uRes = await db.query('SELECT name, email FROM users WHERE id = $1', [req.user.id]);
       const u = uRes.rows[0];
       if (u) {
-        resend.emails.send({
-          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-          to: u.email,
-          subject: 'Have you tried the AI role-play yet?',
-          html: `
-            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-              <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${u.name},</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">One of the most powerful features in ServeMaster Academy is the AI role-play.</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">It feels surprisingly real — and it's the fastest way to build confidence.</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Try one scenario today — it only takes 2 minutes.</p>
-              <p style="margin-bottom:32px;">
-                <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Open AI Role-Play Now</a>
-              </p>
-              <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
-                <strong style="color:#f5f5f5;">Kirk</strong><br>
-                <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-              </p>
-              <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-              <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-            </div>
-          `
-        }).catch(err => console.error('AI roleplay email error:', err.message));
+        (async () => { try {
+          const unsubToken = await getOrCreateUnsubToken(req.user.id);
+          const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+          resend.emails.send({
+            from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+            to: u.email,
+            subject: 'Have you tried the AI role-play yet?',
+            html: `
+              <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+                <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${u.name},</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">One of the most powerful features in ServeMaster Academy is the AI role-play.</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">It feels surprisingly real — and it's the fastest way to build confidence.</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Try one scenario today — it only takes 2 minutes.</p>
+                <p style="margin-bottom:32px;">
+                  <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Open AI Role-Play Now</a>
+                </p>
+                <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
+                  <strong style="color:#f5f5f5;">Kirk</strong><br>
+                  <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
+                </p>
+                ${emailFooter(unsubUrl)}
+              </div>
+            `
+          }).catch(err => console.error('AI roleplay email error:', err.message));
+        } catch(e) {} })();
       }
     }
     if (moduleId === 1 && progress >= 100 && !wasAlreadyComplete) {
       const uRes = await db.query('SELECT name, email FROM users WHERE id = $1', [req.user.id]);
       const u = uRes.rows[0];
       if (u) {
-        resend.emails.send({
-          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-          to: u.email,
-          subject: 'Module 1 complete — here\'s what\'s next',
-          html: `
-            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-              <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${u.name},</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">After countless years enjoying fine dining, I've learned that the entire dining experience is often decided in the first 30 seconds.</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">The way a server greets the table, handles coats, and makes the guest feel seen — that single moment sets the tone for the whole evening.</p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Module 2 teaches exactly how to master that moment. Would you like to try it now?</p>
-              <p style="margin-bottom:32px;">
-                <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue to Module 2 →</a>
-              </p>
-              <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Looking forward to hearing how it goes,</p>
-              <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
-                <strong style="color:#f5f5f5;">Kirk</strong><br>
-                <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
-              </p>
-              <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-              <p style="font-size:12px;color:#666;line-height:1.6;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
-            </div>
-          `
-        }).catch(err => console.error('Module 2 email error:', err.message));
+        (async () => { try {
+          const unsubToken = await getOrCreateUnsubToken(req.user.id);
+          const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+          resend.emails.send({
+            from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+            to: u.email,
+            subject: 'Module 1 complete — here\'s what\'s next',
+            html: `
+              <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+                <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${u.name},</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">After countless years enjoying fine dining, I've learned that the entire dining experience is often decided in the first 30 seconds.</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">The way a server greets the table, handles coats, and makes the guest feel seen — that single moment sets the tone for the whole evening.</p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Module 2 teaches exactly how to master that moment. Would you like to try it now?</p>
+                <p style="margin-bottom:32px;">
+                  <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue to Module 2 →</a>
+                </p>
+                <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Looking forward to hearing how it goes,</p>
+                <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">
+                  <strong style="color:#f5f5f5;">Kirk</strong><br>
+                  <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a>
+                </p>
+                ${emailFooter(unsubUrl)}
+              </div>
+            `
+          }).catch(err => console.error('Module 1 email error:', err.message));
+        } catch(e) {} })();
       }
     }
   } catch (err) { res.status(500).json({ error: 'Failed to save progress' }); }
@@ -2113,6 +2126,8 @@ app.post('/api/manager/nudge', managerMiddleware, async (req, res) => {
     if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
     const { name, email } = userRes.rows[0];
     const displayName = name || email.split('@')[0];
+    const nudgeUnsubToken = await getOrCreateUnsubToken(userId);
+    const nudgeUnsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${nudgeUnsubToken}`;
     await resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: email,
@@ -2123,8 +2138,7 @@ app.post('/api/manager/nudge', managerMiddleware, async (req, res) => {
         <p style="font-size:16px;line-height:1.7;">Your manager wanted to check in and encourage you to continue your ServeMaster Academy training.</p>
         <p style="font-size:16px;line-height:1.7;">Your team is making great progress — and every module you complete builds real skills you'll use on the floor every shift.</p>
         <p style="margin:32px 0;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training →</a></p>
-        <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-        <p style="font-size:12px;color:#666;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p>
+        ${emailFooter(nudgeUnsubUrl)}
       </div>`
     });
     res.json({ success: true, to: email });
@@ -2297,25 +2311,27 @@ app.post('/api/admin/bulk-email', adminMiddleware, async (req, res) => {
     }
     const users = await db.query(query);
     if (!users.rows.length) return res.json({ sent: 0, message: 'No users in this segment' });
-    const emailShell = (body) => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">${body}<hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:12px;color:#666;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#666;">servemasteracademy.ca</a></p></div>`;
+    const emailShell = (body, unsubUrl) => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">${body}${emailFooter(unsubUrl)}</div>`;
     const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
     const btn = (label, href) => `<p style="margin-bottom:32px;"><a href="${href}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">${label}</a></p>`;
     const sig = `<p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:24px;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>`;
     const emails = {
-      nudge: { subject: 'Your training is waiting — pick up where you left off', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("We noticed you haven't been in for a while — your training is still right where you left it.")}${p("Even 15 minutes a day adds up fast. Start your next module now.")}${btn("Continue Training →", "https://servemasteracademy.ca/app")}${sig}`) },
-      upgrade: { subject: 'Ready to go further? Upgrade your ServeMaster plan', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("You've been making progress on ServeMaster Academy — and there's so much more to unlock.")}${p("Upgrade today to access all 30 modules, AI role-play, voice practice, and your completion certificate.")}${btn("View Plans →", "https://servemasteracademy.ca/pricing")}${sig}`) },
-      comeback: { subject: 'We miss you at ServeMaster Academy', html: (name) => emailShell(`${p(`Hi ${name},`)}${p("It's been a while since we've seen you in the training platform.")}${p("Your account is still active — log back in and continue from where you left off.")}${btn("Log Back In →", "https://servemasteracademy.ca/app")}${sig}`) },
+      nudge: { subject: 'Your training is waiting — pick up where you left off', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("We noticed you haven't been in for a while — your training is still right where you left it.")}${p("Even 15 minutes a day adds up fast. Start your next module now.")}${btn("Continue Training →", "https://servemasteracademy.ca/app")}${sig}`, unsubUrl) },
+      upgrade: { subject: 'Ready to go further? Upgrade your ServeMaster plan', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("You've been making progress on ServeMaster Academy — and there's so much more to unlock.")}${p("Upgrade today to access all 30 modules, AI role-play, voice practice, and your completion certificate.")}${btn("View Plans →", "https://servemasteracademy.ca/pricing")}${sig}`, unsubUrl) },
+      comeback: { subject: 'We miss you at ServeMaster Academy', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("It's been a while since we've seen you in the training platform.")}${p("Your account is still active — log back in and continue from where you left off.")}${btn("Log Back In →", "https://servemasteracademy.ca/app")}${sig}`, unsubUrl) },
     };
     const chosenEmail = emails[emailType];
     if (!chosenEmail) return res.status(400).json({ error: `Unknown emailType. Valid: ${Object.keys(emails).join(', ')}` });
     let sent = 0, failed = 0;
     for (const user of users.rows) {
       try {
+        const bulkUnsubToken = await getOrCreateUnsubToken(user.id);
+        const bulkUnsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${bulkUnsubToken}`;
         await resend.emails.send({
           from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
           to: user.email,
           subject: chosenEmail.subject,
-          html: chosenEmail.html(escapeHtml(user.name || user.email.split('@')[0]))
+          html: chosenEmail.html(escapeHtml(user.name || user.email.split('@')[0]), bulkUnsubUrl)
         });
         sent++;
         await new Promise(r => setTimeout(r, 100));
@@ -2647,6 +2663,15 @@ app.post('/api/manager/cert-logo', authMiddleware, async (req, res) => {
     await db.query('UPDATE restaurants SET cert_logo_url = $1 WHERE manager_id = $2', [certLogoUrl || null, req.user.id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Crisp chat widget config ──────────────────────────────────────────────────
+app.get('/crisp.js', (req, res) => {
+  const id = process.env.CRISP_WEBSITE_ID || '';
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  if (!id) return res.send('');
+  res.send(`window.$crisp=[];window.CRISP_WEBSITE_ID="${id}";(function(){var d=document,s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`);
 });
 
 // ── Admin weekly digest trigger ─────────────────────────────────────────────────
