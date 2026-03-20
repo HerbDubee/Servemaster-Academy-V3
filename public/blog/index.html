@@ -7,10 +7,10 @@
   <title>Knowledge Centre – ServeMaster Academy</title>
   <meta name="description" content="Professional tips, techniques, and career advice for restaurant servers and hospitality professionals.">
   <link rel="stylesheet" href="/tailwind.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
-    .heading { font-family: 'Playfair Display', serif; }
+    .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
     @media (max-width: 1024px) {
       nav { flex-direction: column; padding: 1rem; }
       .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
@@ -24,12 +24,11 @@
     <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
       <a href="/" class="hover:text-white transition-colors">Home</a>
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      <a href="/features" class="hover:text-white transition-colors">Features</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/blog" class="text-white">Knowledge Centre</a>
+      <a href="/app" class="hover:text-white transition-colors">AI Role-Play</a>
       <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
-      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
-      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
-      <a href="/blog" class="hover:text-white transition-colors" data-i18n="nav_blog">Knowledge Centre</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
     </div>
     <div class="flex items-center gap-3">
       <div class="relative" id="lang-selector">
@@ -41,7 +40,7 @@
         </div>
       </div>
       <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Log in</a>
-      <a href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" data-i18n="nav_cta">Get Started Free</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Get Started Free</a>
     </div>
   </div>
 </nav>

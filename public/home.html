@@ -17,32 +17,27 @@
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 30 interactive modules. Earn your server certificate and level up your career.">
 <meta name="keywords" content="server training, fine dining etiquette, wine pairing for servers, cocktail service, restaurant staff training">
 <link rel="stylesheet" href="/tailwind.css">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
-  .heading { font-family: 'Playfair Display', serif; }
-  .amber-grad { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    @media (max-width: 1024px) {
-      nav {
-        flex-direction: column;
-        padding: 1rem;
-      }
-      .nav-links {
-        flex-direction: column;
-        width: 100%;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-    }
+  .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+  .btn-primary {
+    background-color: #FF5E3A;
+    color: #fff;
+    font-weight: 700;
+    transition: background-color 0.2s;
+  }
+  .btn-primary:hover { background-color: #e8522e; }
+  .accent { color: #FF5E3A; }
+  .teal { color: #0A4D68; }
 </style>
 </head>
 <body>
 
 <!-- TRIAL BANNER -->
-<div id="trial-banner" class="bg-amber-900 py-3 text-center text-sm font-medium hidden">
+<div id="trial-banner" class="py-3 text-center text-sm font-medium hidden" style="background:#0A4D68;">
   You have <span id="days-left" class="font-bold"></span> days left in your free trial &bull;
-  <a href="/pricing" class="underline hover:text-amber-200 transition-colors">Upgrade now to keep access</a>
+  <a href="/pricing" class="underline hover:opacity-80 transition-colors text-white">Upgrade now to keep access</a>
 </div>
 
 <!-- NAV -->
@@ -53,16 +48,15 @@
     </a>
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
       <a href="/" class="text-white">Home</a>
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      <a href="/features" class="hover:text-white transition-colors">Features</a>
-      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
-      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
-      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
       <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <a href="/app" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
     </div>
     <div class="flex items-center gap-3">
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-      <a id="nav-signup-d" href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
       <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button id="hamburger" onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
         <span class="w-6 h-0.5 bg-white block"></span>
         <span class="w-6 h-0.5 bg-white block"></span>
@@ -73,14 +67,13 @@
   <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
     <div class="flex flex-col px-4 py-2">
       <a href="/" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Home</a>
-      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Features</a>
-      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
-      <a href="/contact" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Contact</a>
-      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">For Managers</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
       <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
+      <a href="/app" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">AI Role-Play</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
-      <a id="nav-signup-m" href="/signup" class="my-3 bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl text-sm text-center transition-colors">Get Started Free</a>
+      <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
     </div>
   </div>
 </nav>
@@ -88,63 +81,52 @@
 <script src="/js/nav-auth.js"></script>
 
 <!-- HERO -->
-<section class="bg-gradient-to-br from-amber-900 via-amber-950 to-zinc-950 py-24">
+<section style="background: linear-gradient(135deg, #071a26 0%, #0c2d3d 40%, #09090b 100%);" class="py-24">
   <div class="max-w-5xl mx-auto px-6 text-center">
-    <h1 class="heading text-6xl md:text-7xl font-bold leading-tight mb-8" data-i18n-html="home_hero">
-      Great service shouldn't be rare.
-    </h1>
-    <p class="text-2xl text-white max-w-2xl mx-auto leading-relaxed">
-      <span data-i18n="home_subtitle">I'm Kirk Adamson — someone who has spent countless years enjoying fine dining. I built ServeMaster Academy because I kept seeing the same problem: servers who wanted to excel, but simply weren't taught how.</span>
-    </p>
-    <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold text-base py-3.5 px-10 rounded-3xl transition-colors" data-i18n="home_trial_btn">Start Free Trial →</a>
-      <a href="#how-it-works" class="border border-zinc-600 hover:border-amber-400 text-white font-semibold text-base py-3.5 px-8 rounded-3xl transition-colors" data-i18n="home_how_btn">See How It Works</a>
+    <div class="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-4 py-1.5 text-xs font-semibold text-zinc-400 mb-8 tracking-widest uppercase">
+      Free forever tier — no credit card required
     </div>
-    <p class="text-zinc-400 text-sm mt-5" data-i18n="home_no_cc">No credit card required. Free tier includes 3 modules &amp; 5 AI scenarios.</p>
+    <h1 class="heading text-6xl md:text-7xl leading-tight mb-6" data-i18n-html="home_hero">
+      Train Like a Pro Server
+    </h1>
+    <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto leading-relaxed mb-4">
+      <span data-i18n="home_subtitle">Master service with AI role-play, voice practice, and pro modules — start free, improve your next shift.</span>
+    </p>
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 justify-center text-sm text-zinc-400 mb-10">
+      <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check1">3 full training modules</span></li>
+      <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check2">5 AI role-play scenarios</span></li>
+      <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check3">Free forever — no expiry</span></li>
+    </ul>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/signup" class="btn-primary text-base py-3.5 px-10 rounded-3xl" data-i18n="home_trial_btn">Start Free →</a>
+      <a href="#how-it-works" class="border border-zinc-600 hover:border-zinc-400 text-white font-semibold text-base py-3.5 px-8 rounded-3xl transition-colors" data-i18n="home_how_btn">See How It Works</a>
+    </div>
   </div>
 </section>
 
-<!-- FREE TIER CALLOUT -->
-<div class="border-b border-zinc-800 bg-zinc-950">
-  <div class="max-w-5xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
-    <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 shrink-0">
-      <span class="text-3xl">🎁</span>
-    </div>
-    <div class="flex-1 text-center md:text-left">
-      <p class="text-xl font-bold mb-1" data-i18n="home_free_p1">Start completely free — no credit card required.</p>
-      <ul class="text-zinc-300 text-sm mt-2 flex flex-wrap gap-x-6 gap-y-1 justify-center md:justify-start">
-        <li class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">✓</span> <span data-i18n="home_free_check1">3 full training modules</span></li>
-        <li class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">✓</span> <span data-i18n="home_free_check2">5 AI role-play scenarios</span></li>
-        <li class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">✓</span> <span data-i18n="home_free_check3">Free forever — no expiry</span></li>
-      </ul>
-    </div>
-    <a href="/signup" class="shrink-0 text-amber-400 hover:text-amber-300 font-semibold text-sm underline underline-offset-4 transition-colors whitespace-nowrap" data-i18n="home_free_cta">Start free →</a>
-  </div>
-</div>
-
 <!-- HOW IT WORKS -->
-<section id="how-it-works" class="py-20 border-b border-zinc-800">
+<section id="how-it-works" class="py-20 border-b border-zinc-800 bg-zinc-950">
   <div class="max-w-5xl mx-auto px-6">
-    <h2 class="heading text-3xl md:text-4xl font-bold text-center mb-4" data-i18n="home_how_h">How It Works</h2>
+    <h2 class="heading text-3xl md:text-4xl text-center mb-4" data-i18n="home_how_h">How It Works</h2>
     <p class="text-zinc-400 text-center mb-14 max-w-lg mx-auto" data-i18n="home_how_sub">From sign-up to certificate in three simple steps.</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div class="text-center">
-        <div class="w-14 h-14 rounded-full bg-amber-400/10 border-2 border-amber-400 flex items-center justify-center mx-auto mb-5">
-          <span class="text-amber-400 font-black text-xl">1</span>
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 border-2" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A;">
+          <span class="font-black text-xl" style="color:#FF5E3A;">1</span>
         </div>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_step1_h">Create your free account</h3>
         <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_step1_p">Sign up in 30 seconds — no credit card needed. Access 3 modules and 5 AI scenarios immediately.</p>
       </div>
       <div class="text-center">
-        <div class="w-14 h-14 rounded-full bg-amber-400/10 border-2 border-amber-400 flex items-center justify-center mx-auto mb-5">
-          <span class="text-amber-400 font-black text-xl">2</span>
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 border-2" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A;">
+          <span class="font-black text-xl" style="color:#FF5E3A;">2</span>
         </div>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_step2_h">Train on real scenarios</h3>
         <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_step2_p">Practice with a live AI guest using text or voice. Get instant coaching feedback after every exchange.</p>
       </div>
       <div class="text-center">
-        <div class="w-14 h-14 rounded-full bg-amber-400/10 border-2 border-amber-400 flex items-center justify-center mx-auto mb-5">
-          <span class="text-amber-400 font-black text-xl">3</span>
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 border-2" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A;">
+          <span class="font-black text-xl" style="color:#FF5E3A;">3</span>
         </div>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_step3_h">Earn your certificate</h3>
         <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_step3_p">Complete all 30 modules and download your professional PDF certificate — ready for your resume or LinkedIn.</p>
@@ -155,27 +137,27 @@
 
 <!-- FEATURES GRID -->
 <section class="max-w-7xl mx-auto px-4 py-20">
-  <h2 class="heading text-3xl md:text-4xl font-bold text-center mb-4" data-i18n="home_features_h">Everything a great server needs</h2>
+  <h2 class="heading text-3xl md:text-4xl text-center mb-4" data-i18n="home_features_h">Everything a great server needs</h2>
   <p class="text-zinc-400 text-center mb-14 max-w-xl mx-auto" data-i18n="home_features_sub">From your first day on the floor to earning your certificate — we've got every stage covered.</p>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="bg-zinc-900 border border-zinc-800 hover:border-amber-400/50 rounded-3xl p-6 transition-all">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 transition-all" style="--tw-shadow:0;">
       <div class="text-4xl mb-4">🤖</div>
-      <h3 class="font-bold text-lg mb-2" data-i18n="home_ai_h">AI Roleplay</h3>
+      <h3 class="font-bold text-lg mb-2" style="color:#FF5E3A;" data-i18n="home_ai_h">AI Roleplay</h3>
       <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_ai_p">Practice 30 real guest scenarios with a live AI — from difficult guests to VIP service. Instant coaching feedback.</p>
     </div>
-    <div class="bg-zinc-900 border border-zinc-800 hover:border-amber-400/50 rounded-3xl p-6 transition-all">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 transition-all">
       <div class="text-4xl mb-4">🎤</div>
-      <h3 class="font-bold text-lg mb-2" data-i18n="home_voice_h">Voice Practice</h3>
+      <h3 class="font-bold text-lg mb-2" style="color:#FF5E3A;" data-i18n="home_voice_h">Voice Practice</h3>
       <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_voice_p">Speak your responses aloud. Whisper AI transcribes and the guest replies in speech — just like the real floor.</p>
     </div>
-    <div class="bg-zinc-900 border border-zinc-800 hover:border-amber-400/50 rounded-3xl p-6 transition-all">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 transition-all">
       <div class="text-4xl mb-4">🏆</div>
-      <h3 class="font-bold text-lg mb-2" data-i18n="home_gamification_h">Gamification</h3>
+      <h3 class="font-bold text-lg mb-2" style="color:#FF5E3A;" data-i18n="home_gamification_h">Gamification</h3>
       <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_gamification_p">Earn badges, build daily streaks, and climb the leaderboard. Training that keeps you coming back.</p>
     </div>
-    <div class="bg-zinc-900 border border-zinc-800 hover:border-amber-400/50 rounded-3xl p-6 transition-all">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 transition-all">
       <div class="text-4xl mb-4">🎓</div>
-      <h3 class="font-bold text-lg mb-2" data-i18n="home_cert_h">Certificate</h3>
+      <h3 class="font-bold text-lg mb-2" style="color:#FF5E3A;" data-i18n="home_cert_h">Certificate</h3>
       <p class="text-zinc-400 text-sm leading-relaxed" data-i18n="home_cert_p">Complete all 30 modules and earn a downloadable PDF certificate to add to your resume or portfolio.</p>
     </div>
   </div>
@@ -184,34 +166,34 @@
 <!-- FOUNDER STORY -->
 <section class="py-20 bg-zinc-900 border-t border-zinc-800">
   <div class="max-w-3xl mx-auto px-6 text-center">
-    <img src="/logo.png" alt="Kirk Adamson" class="w-24 h-24 rounded-full mx-auto mb-8 border-4 border-amber-400 object-cover">
-    <h2 class="heading text-4xl font-bold mb-6" data-i18n="home_founder_h">Hi, I'm Kirk Adamson</h2>
+    <img src="/logo.png" alt="Kirk Adamson" class="w-24 h-24 rounded-full mx-auto mb-8 object-cover border-4" style="border-color:#FF5E3A;">
+    <h2 class="heading text-4xl mb-6" data-i18n="home_founder_h">Hi, I'm Kirk Adamson</h2>
     <p class="text-xl text-zinc-300 leading-relaxed">
       <span data-i18n="home_founder_p1">I've spent countless years enjoying fine dining, and over those years I watched service standards slowly decline in restaurants I loved. Servers wanted to do better — they just weren't being taught the fundamentals.</span>
     </p>
-    <p class="mt-6 text-amber-400 font-medium text-lg" data-i18n="home_founder_cta">So I built ServeMaster Academy to fix that.</p>
+    <p class="mt-6 font-medium text-lg" style="color:#FF5E3A;" data-i18n="home_founder_cta">So I built ServeMaster Academy to fix that.</p>
   </div>
 </section>
 
 <!-- TESTIMONIALS -->
 <section class="bg-black py-20">
   <div class="max-w-7xl mx-auto px-4">
-    <h2 class="heading text-3xl md:text-4xl font-bold text-center mb-14" data-i18n-html="home_testimonials_h">Trusted by servers &amp; restaurants across North America</h2>
+    <h2 class="heading text-3xl md:text-4xl text-center mb-14" data-i18n-html="home_testimonials_h">Trusted by servers &amp; restaurants across North America</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-        <div class="text-amber-400 text-lg mb-3">★★★★★</div>
+        <div class="text-lg mb-3" style="color:#FF5E3A;">★★★★★</div>
         <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic" data-i18n="home_t1_quote">"Wine sales up 31% in the first month. The AI role-play is unreal."</p>
-        <div class="font-semibold text-sm" data-i18n="home_t1_attr">— Sarah M., Server, Vancouver</div>
+        <div class="font-semibold text-sm" data-i18n="home_t1_attr">— Sarah M., Server</div>
       </div>
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-        <div class="text-amber-400 text-lg mb-3">★★★★★</div>
+        <div class="text-lg mb-3" style="color:#FF5E3A;">★★★★★</div>
         <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic" data-i18n="home_t2_quote">"Cut onboarding from 6 weeks to 12 days. The manager dashboard is a game-changer."</p>
-        <div class="font-semibold text-sm" data-i18n="home_t2_attr">— David L., GM, Toronto (3 locations)</div>
+        <div class="font-semibold text-sm" data-i18n="home_t2_attr">— David L., General Manager (3 locations)</div>
       </div>
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-        <div class="text-amber-400 text-lg mb-3">★★★★★</div>
+        <div class="text-lg mb-3" style="color:#FF5E3A;">★★★★★</div>
         <p class="text-zinc-300 text-sm leading-relaxed mb-4 italic" data-i18n="home_t3_quote">"Finally, real training on special occasions. Guests are noticing the difference."</p>
-        <div class="font-semibold text-sm" data-i18n="home_t3_attr">— Elena R., Owner, Montreal Fine Dining</div>
+        <div class="font-semibold text-sm" data-i18n="home_t3_attr">— Elena R., Owner, Fine Dining</div>
       </div>
     </div>
   </div>
@@ -220,79 +202,84 @@
 <!-- BLOG TEASER -->
 <section class="py-20 bg-zinc-900 border-t border-zinc-800">
   <div class="max-w-6xl mx-auto px-6">
-    <h2 class="heading text-3xl font-bold text-center mb-12" data-i18n-html="home_blog_h">Server Tips &amp; Resources</h2>
+    <h2 class="heading text-3xl text-center mb-12" data-i18n-html="home_blog_h">Server Tips &amp; Resources</h2>
     <div class="grid md:grid-cols-2 gap-6">
-      <a href="/blog/wine-service-tips" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
-        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3" data-i18n="home_blog_wine_cat">Wine Service</p>
+      <a href="/blog/wine-service-tips" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 p-8 rounded-3xl transition-all">
+        <p class="text-xs font-medium uppercase tracking-widest mb-3" style="color:#FF5E3A;" data-i18n="home_blog_wine_cat">Wine Service</p>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_blog_wine_h">How to Sell Wine Confidently Without Being Pushy</h3>
         <p class="text-sm text-zinc-400" data-i18n="home_blog_wine_p">5 techniques — with real scripts — that increase check averages without the hard sell.</p>
       </a>
-      <a href="/blog/special-occasions" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
-        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3" data-i18n="home_blog_occ_cat">Guest Experience</p>
+      <a href="/blog/special-occasions" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 p-8 rounded-3xl transition-all">
+        <p class="text-xs font-medium uppercase tracking-widest mb-3" style="color:#FF5E3A;" data-i18n="home_blog_occ_cat">Guest Experience</p>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_blog_occ_h">Mastering Anniversary &amp; Birthday Tables</h3>
         <p class="text-sm text-zinc-400" data-i18n="home_blog_occ_p">Six steps to turning a milestone dinner into a memory the guest talks about for years.</p>
       </a>
-      <a href="/blog/tray-technique" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
-        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3" data-i18n="home_blog_tray_cat">Skills &amp; Technique</p>
+      <a href="/blog/tray-technique" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 p-8 rounded-3xl transition-all">
+        <p class="text-xs font-medium uppercase tracking-widest mb-3" style="color:#FF5E3A;" data-i18n="home_blog_tray_cat">Skills &amp; Technique</p>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_blog_tray_h">The Professional Tray Technique That Never Spills</h3>
         <p class="text-sm text-zinc-400" data-i18n="home_blog_tray_p">Load, lift, carry, set down — the physical mechanics most servers were never properly taught.</p>
       </a>
-      <a href="/blog/server-career" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-900 p-8 rounded-3xl transition-all">
-        <p class="text-amber-400 text-xs font-medium uppercase tracking-widest mb-3" data-i18n="home_blog_career_cat">Career Development</p>
+      <a href="/blog/server-career" class="block bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 p-8 rounded-3xl transition-all">
+        <p class="text-xs font-medium uppercase tracking-widest mb-3" style="color:#FF5E3A;" data-i18n="home_blog_career_cat">Career Development</p>
         <h3 class="font-bold text-lg mb-2" data-i18n="home_blog_career_h">From Server to Manager: Real Career Path</h3>
         <p class="text-sm text-zinc-400" data-i18n="home_blog_career_p">The 4-stage timeline I built into ServeMaster Academy — and what separates fast-track servers from everyone else.</p>
       </a>
     </div>
     <div class="text-center mt-10">
-      <a href="/blog" class="text-amber-400 hover:text-amber-300 font-medium transition-colors" data-i18n="home_blog_view_all">View all articles →</a>
+      <a href="/blog" class="font-medium transition-colors hover:opacity-80" style="color:#FF5E3A;" data-i18n="home_blog_view_all">View all in Knowledge Centre →</a>
     </div>
   </div>
 </section>
 
 <!-- CTA BANNER -->
 <section class="max-w-4xl mx-auto px-4 py-12">
-  <div class="bg-amber-900/60 border border-amber-700/50 p-10 rounded-3xl text-center">
+  <div class="p-10 rounded-3xl text-center border" style="background:rgba(10,77,104,0.3); border-color:rgba(10,77,104,0.5);">
     <p class="text-white text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto" data-i18n="home_cta_p">If you're a restaurant owner, manager, or server who believes great service should be the standard, not the exception — I'd love for you to try it.</p>
-    <a href="/signup" class="inline-block mt-6 bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 px-10 rounded-3xl text-lg transition-colors" data-i18n="home_cta_btn">Start Free Trial</a>
+    <a href="/signup" class="inline-block mt-6 btn-primary py-4 px-10 rounded-3xl text-lg" data-i18n="home_cta_btn">Start Free →</a>
   </div>
 </section>
 
 <!-- NEWSLETTER -->
 <section class="max-w-2xl mx-auto px-4 py-20 text-center">
   <div class="text-4xl mb-4">📬</div>
-  <h2 class="heading text-3xl font-bold mb-3" data-i18n="home_newsletter_h">Monthly tips for servers</h2>
+  <h2 class="heading text-3xl mb-3" data-i18n="home_newsletter_h">Monthly tips for servers</h2>
   <p class="text-zinc-400 mb-8" data-i18n="home_newsletter_sub">Get practical service tips, wine knowledge, and career advice — delivered free every month.</p>
   <form id="nl-form" onsubmit="submitNewsletter(event)" class="flex flex-col sm:flex-row gap-3">
-    <input id="nl-email" type="email" placeholder="your@email.com" required class="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400" data-i18n-placeholder="home_newsletter_placeholder">
-    <button type="submit" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3.5 rounded-2xl transition-colors whitespace-nowrap" data-i18n="home_newsletter_btn">Subscribe →</button>
+    <input id="nl-email" type="email" placeholder="your@email.com" required class="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-500 focus:outline-none" style="focus:border-color:#FF5E3A;" data-i18n-placeholder="home_newsletter_placeholder">
+    <button type="submit" class="btn-primary px-6 py-3.5 rounded-2xl whitespace-nowrap" data-i18n="home_newsletter_btn">Subscribe →</button>
   </form>
-  <p id="nl-msg" class="text-emerald-400 text-sm mt-3 hidden" data-i18n="home_newsletter_ok">You're subscribed! Welcome aboard.</p>
+  <p id="nl-msg" class="text-emerald-400 text-sm mt-3 hidden" data-i18n="home_newsletter_ok">You're in! Expect practical tips soon.</p>
 </section>
 
 <!-- FOOTER -->
 <footer class="border-t border-zinc-800 py-10">
-  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
-    <div class="flex items-center gap-2">
-      <img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover">
-      <span class="font-semibold text-zinc-400">ServeMaster Academy</span>
-      <span>© 2026</span>
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-6">
+      <p class="text-zinc-400 text-sm font-semibold tracking-wide">Shift Smarter. Tip Bigger. Burn Out Less.</p>
     </div>
-    <div class="flex gap-6 flex-wrap justify-center">
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      <a href="/features" class="hover:text-white transition-colors">Features</a>
-      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
-      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
-      <a href="/login" class="hover:text-white transition-colors">Login</a>
-      <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
-      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
-      <a href="mailto:support@servemasteracademy.ca" class="hover:text-white transition-colors" data-i18n="nav_support">Support</a>
-      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
-      <div class="border-t border-zinc-800 mt-2 pt-4 pb-3 flex gap-3 justify-center">
-        <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2">
+        <img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover">
+        <span class="font-semibold text-zinc-400">ServeMaster Academy</span>
+        <span>© 2026</span>
+      </div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Academy</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/login" class="hover:text-white transition-colors">Login</a>
+        <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
+        <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+        <a href="mailto:support@servemasteracademy.ca" class="hover:text-white transition-colors" data-i18n="nav_support">Support</a>
+      </div>
+      <div class="flex gap-3 justify-center">
+        <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">EN</button>
         <span class="text-zinc-700 self-center">|</span>
-        <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+        <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">FR</button>
         <span class="text-zinc-700 self-center">|</span>
-        <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-amber-400 text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+        <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">ES</button>
       </div>
     </div>
   </div>

@@ -133,6 +133,23 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 - Bootstrap endpoint disabled (returns 410)
 - Trial expiry check: validates `trial_end` is non-null before comparison
 
+## Brand Style Guide
+
+- **Headline font**: Montserrat Bold/Black (Google Fonts)
+- **Body font**: Inter
+- **Primary CTA color**: `#FF5E3A` (brand orange) — all buttons, highlights
+- **Secondary color**: `#0A4D68` (deep teal) — hero backgrounds, secondary elements
+- **Success**: `#22C55E` | **Warning/Error**: `#EF4444`
+- **Dark neutral**: `#1A1A1A` / `#09090b` | **Light neutral**: `#F8F9FA`
+- **Footer tagline**: "Shift Smarter. Tip Bigger. Burn Out Less."
+- Amber Tailwind utility classes are overridden to brand orange in `tailwind-input.css`
+- Run `npm run build:css` after any tailwind-input.css changes
+
+## Navigation Structure
+
+- Home `/` | Academy `/features` | Knowledge Centre `/blog` | AI Role-Play `/app` | Pricing `/pricing` | About `/about`
+- `lang.js` auto-translates nav links via `NAV_HREF_MAP` — update `nav_features`, `nav_blog`, `nav_roleplay` keys there
+
 ## Analytics & Tracking
 
 - Google Analytics: `G-1BPWXRYVXS` on all pages

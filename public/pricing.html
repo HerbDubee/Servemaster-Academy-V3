@@ -18,10 +18,10 @@
 <meta name="keywords" content="server training, fine dining etiquette, wine pairing for servers, cocktail service, restaurant staff training">
 <link rel="stylesheet" href="/tailwind.css">
 <script src="https://js.stripe.com/v3/"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
-.heading { font-family: 'Playfair Display', serif; }
+.heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
 details summary::-webkit-details-marker { display: none; }
 details summary::after { content: '+'; float: right; font-size: 1.2rem; color: #a1a1aa; transition: transform 0.2s; }
 details[open] summary::after { content: '−'; }
@@ -42,16 +42,15 @@ details[open] summary::after { content: '−'; }
     <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
       <a href="/" class="hover:text-white transition-colors">Home</a>
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      <a href="/features" class="hover:text-white transition-colors">Features</a>
-      <a href="/pricing" class="text-white">Pricing</a>
-      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
-      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
       <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <a href="/app" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/pricing" class="text-white">Pricing</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
     </div>
     <div class="flex items-center gap-3">
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-      <a id="nav-signup-d" href="/signup" class="hidden md:inline bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors">Get Started Free</a>
+      <a id="nav-signup-d" href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
       <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
         <span class="w-6 h-0.5 bg-white block"></span>
         <span class="w-6 h-0.5 bg-white block"></span>
@@ -62,14 +61,13 @@ details[open] summary::after { content: '−'; }
   <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
     <div class="flex flex-col px-4 py-2">
       <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
-      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Features</a>
-      <a href="/pricing" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Pricing</a>
-      <a href="/contact" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Contact</a>
-      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">For Managers</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
       <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
+      <a href="/app" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">AI Role-Play</a>
+      <a href="/pricing" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Pricing</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
-      <a id="nav-signup-m" href="/signup" class="my-3 bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl text-sm text-center transition-colors">Get Started Free</a>
+      <a id="nav-signup-m" href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
     </div>
   </div>
 </nav>
@@ -358,7 +356,7 @@ details[open] summary::after { content: '−'; }
           <div class="w-10 h-10 rounded-full bg-amber-900 flex items-center justify-center font-bold text-amber-300 text-sm">SL</div>
           <div>
             <div data-i18n="pricing_t2_name" class="text-sm font-semibold">Sophie L.</div>
-            <div data-i18n="pricing_t2_role" class="text-xs text-zinc-500">Senior Server, Vancouver</div>
+            <div data-i18n="pricing_t2_role" class="text-xs text-zinc-500">Senior Server</div>
           </div>
         </div>
       </div>
@@ -370,7 +368,7 @@ details[open] summary::after { content: '−'; }
           <div class="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center font-bold text-blue-300 text-sm">TC</div>
           <div>
             <div data-i18n="pricing_t3_name" class="text-sm font-semibold">Theo C.</div>
-            <div data-i18n="pricing_t3_role" class="text-xs text-zinc-500">Owner, Toronto bistro</div>
+            <div data-i18n="pricing_t3_role" class="text-xs text-zinc-500">Owner, Fine Dining</div>
           </div>
         </div>
       </div>

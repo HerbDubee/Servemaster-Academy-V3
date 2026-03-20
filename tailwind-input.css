@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ========================================
+   ServeMaster Academy Brand Color Overrides
+   Primary CTA: #FF5E3A (brand orange)
+   Secondary: #0A4D68 (brand teal)
+   Success: #22C55E
+   ======================================== */
+
+/* Primary brand orange replaces amber-400 */
+.bg-amber-400 { background-color: #FF5E3A !important; }
+.bg-amber-300 { background-color: #e8522e !important; }
+.hover\:bg-amber-400:hover { background-color: #FF5E3A !important; }
+.hover\:bg-amber-300:hover { background-color: #e8522e !important; }
+.text-amber-400 { color: #FF5E3A !important; }
+.hover\:text-amber-400:hover { color: #FF5E3A !important; }
+.hover\:text-amber-300:hover { color: #e8522e !important; }
+.border-amber-400 { border-color: #FF5E3A !important; }
+.hover\:border-amber-400:hover { border-color: #FF5E3A !important; }
+.focus\:border-amber-400:focus { border-color: #FF5E3A !important; }
+.ring-amber-400 { --tw-ring-color: #FF5E3A !important; }
+
+/* Lighter amber variants */
+.bg-amber-400\/10 { background-color: rgba(255, 94, 58, 0.1) !important; }
+.bg-amber-400\/20 { background-color: rgba(255, 94, 58, 0.2) !important; }
+.border-amber-400\/30 { border-color: rgba(255, 94, 58, 0.3) !important; }
+.border-amber-400\/50 { border-color: rgba(255, 94, 58, 0.5) !important; }
+.hover\:border-amber-400\/50:hover { border-color: rgba(255, 94, 58, 0.5) !important; }
+
+/* amber-900 used for hero gradient and dark accents — keep dark teal feel */
+.bg-amber-900 { background-color: #0c2d3d !important; }
+.bg-amber-900\/60 { background-color: rgba(12, 45, 61, 0.6) !important; }
+.border-amber-700 { border-color: rgba(10, 77, 104, 0.6) !important; }
+.border-amber-700\/50 { border-color: rgba(10, 77, 104, 0.5) !important; }
+.border-amber-900 { border-color: #0A4D68 !important; }
+.hover\:border-amber-900:hover { border-color: #0A4D68 !important; }
+.from-amber-900 { --tw-gradient-from: #0c2d3d !important; }
+.via-amber-950 { --tw-gradient-via: #071a26 !important; }
+.bg-amber-400\/10 { background-color: rgba(255, 94, 58, 0.08) !important; }
