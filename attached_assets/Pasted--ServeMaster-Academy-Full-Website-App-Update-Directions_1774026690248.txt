@@ -1,0 +1,122 @@
+# ServeMaster Academy – Full Website & App Update Directions
+**Handover for Replit Developer**  
+**Date**: March 2026  
+**Goal**: Make servemasteracademy.ca (and any linked app) feel professional, cohesive, and high-converting.  
+Focus: Clarity (visitors get it in <10s), Consistency (uniform visuals/voice), Confidence (trust-building elements).  
+No new content/topics — refine existing. Remove all location-specific references (e.g., Toronto in testimonials).  
+
+Current live site strengths to preserve/enhance:
+- Hero: "Train Like a Pro Server" + free start CTA
+- AI role-play + voice practice
+- 30+ modules, certificates, gamification (badges, streaks, leaderboard)
+- Free forever tier (3 modules + 5 scenarios)
+- Founder story (Kirk Adamson)
+- Testimonials
+- Sample articles on homepage
+- Newsletter signup
+- AI chat assistant
+
+## Phase 1: Brand Foundation & Style Guide Enforcement (Priority – Do First)
+1. **Create / enforce Brand Style Guide** (add as `/brand-guide.md` or Figma link in repo)
+   - Logo: Use current "ServeMaster Academy" wordmark. Add icon-only variant if missing (simple tray/shaker/server silhouette – keep bold/simple).
+   - Colors (hex):
+     - Primary accent: #FF5E3A (energetic orange – use for all CTAs, highlights)
+     - Trust/secondary: #0A4D68 (deep teal – headers, links)
+     - Dark neutral: #1A1A1A
+     - Light neutral: #F8F9FA
+     - Success: #22C55E (badges, wins)
+     - Warning: #EF4444
+   - Fonts:
+     - Headlines: Montserrat Bold / Black (or closest Google Font)
+     - Body: Inter or Open Sans (clean, readable)
+   - Imagery: Replace any stock/generic with real restaurant/service shots (action-oriented, diverse staff/guests, no models). Use warm filter + slight grain for authenticity.
+   - Voice/Tone: Conversational, direct, motivational + light humor. Examples:
+     - Good: "Nail this greeting in 60 seconds"
+     - Avoid: Corporate jargon ("leverage", "synergize")
+
+2. **Global Updates – Apply Everywhere**
+   - Header/Footer: Match colors/fonts. Add core tagline "Shift Smarter. Tip Bigger. Burn Out Less." in footer.
+   - Buttons/CTAs: All primary = #FF5E3A background, white text, bold. Hover: darken 10%.
+   - Remove any Toronto / location mentions:
+     - Testimonials: Change "David L., GM, Toronto (3 locations)" → "David L., General Manager (3 locations)"
+     - Any other city references → generalize (e.g., "across North America" stays)
+   - Language selector (EN/FR/ES): Keep if useful, but ensure brand voice consistent in all.
+
+## Phase 2: Homepage Polish (High-Impact – Visitors Land Here First)
+3. **Hero Section**
+   - Keep tagline: "Train Like a Pro Server"
+   - Subtitle/USP: Add below: "Master service with AI role-play, voice practice, and pro modules — start free, improve your next shift."
+   - Features bullets: Keep ✓ 3 modules, ✓ 5 scenarios, ✓ Free forever.
+   - CTA button: Prominent #FF5E3A "Start Free →" linking to /signup
+
+4. **How It Works / Features**
+   - Keep 3-step flow — make icons consistent (use brand orange accents).
+   - Features section: Reorder if needed → AI Roleplay first, then Voice, Gamification, Certificate.
+   - Add subtle icons in brand colors.
+
+5. **Founder Intro**
+   - Keep Kirk's bio — ensure voice matches (no-BS, relatable).
+   - Add photo if missing (real, approachable headshot).
+
+6. **Testimonials**
+   - Keep 3–5 strong ones.
+   - Remove any location specifics.
+   - Format: Star rating + quote + name/role (no city).
+
+7. **Server Tips / Resources**
+   - Keep 4 sample articles — these are teasers.
+   - CTA: "View all in Knowledge Centre →" linking to /knowledge-centre or /blog.
+   - No new articles here — just polish layout (cards, images).
+
+8. **Newsletter**
+   - Keep form — success message: "You're in! Expect practical tips soon."
+
+## Phase 3: Navigation & Site-Wide Structure
+9. **Main Nav (Keep Simple)**
+   - Home
+   - Academy (core training overview)
+   - Knowledge Centre (blog/guides – already rich; no new topics)
+   - AI Role-Play (dedicated landing)
+   - Pricing
+   - About
+
+10. **Add / Update Footer Links**
+    - Above + Privacy, Terms, Contact, © ServeMaster Academy
+
+## Phase 4: App Integration & Promotion (Critical – No Visible App Links Currently)
+11. **If Mobile App Exists (iOS/Android/PWA):**
+    - Add prominent promotion on homepage (below hero or features):
+      - Badge icons (App Store / Google Play) or "Add to Home Screen" for PWA.
+      - Text: "Train on the go — download the ServeMaster app for daily drills & offline access."
+    - In-app: Enforce same colors, fonts, voice (e.g., onboarding: "Master greetings tonight").
+    - Cross-links: Every Knowledge Centre post ends with "Practice this scenario in the app → Download / Open App".
+
+12. **If No Native App Yet (Likely PWA or Web App):**
+    - Make site mobile-first/responsive.
+    - Add PWA manifest + service worker for "Add to Home Screen" prompt.
+    - Promote as "App-like experience — install from browser".
+
+## Phase 5: Knowledge Centre / Blog Polish (No New Topics)
+13. **If /knowledge-centre 404s → Fix Redirect or Create**
+    - Structure: Categories (Server Topics, Bartender Topics, etc.) from prior planning.
+    - Each post: Hook intro → Steps/checklist → CTA: "Apply now in AI Role-Play → [link]"
+    - Consistent layout: H1/H2, bullets, brand images, orange CTAs.
+
+## Phase 6: Final Checks & Testing
+14. **Audit Checklist (Run After All Changes)**
+    - All pages use only approved colors/fonts.
+    - No location mentions remain.
+    - CTAs consistent (#FF5E3A, same wording).
+    - Mobile responsive (test on phone).
+    - Load speed: Optimize images.
+    - Analytics: Add GA4 / PostHog if missing.
+    - Conversion test: Signup flow smooth, no friction.
+
+15. **Quick Wins (Do Today)**
+    - Update hero subtitle for stronger USP.
+    - Fix any broken links (e.g., /knowledge-centre).
+    - Add brand orange to all buttons/links.
+
+Push changes to production only after preview review.  
+Questions? Screenshot issues or share repo preview link.  
+Let's make ServeMaster Academy convert like the pro training it delivers.
