@@ -1666,7 +1666,7 @@
     '/contact': 'nav_contact',
     '/managers': 'nav_managers',
     '/blog': 'nav_blog',
-    '/app': 'nav_roleplay',
+    '/ai-roleplay': 'nav_roleplay',
     '/login': 'nav_login',
     '/signup': 'nav_cta',
     '/privacy': 'nav_privacy',

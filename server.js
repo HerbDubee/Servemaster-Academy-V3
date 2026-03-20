@@ -357,6 +357,7 @@ app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'abo
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
+app.get('/ai-roleplay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ai-roleplay.html')));
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/blog/:slug', (req, res, next) => {

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async defer src="https://t.contentsquare.net/uxa/2e14c5cc7ec76.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1BPWXRYVXS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1BPWXRYVXS');
+  </script>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Role-Play — ServeMaster Academy</title>
+  <meta name="description" content="Practice real guest scenarios with a live AI before your next shift. Instant coaching feedback after every exchange. Try free — no credit card required.">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+    .btn-primary { background-color: #FF5E3A; color: #fff; font-weight: 700; transition: background-color 0.2s; }
+    .btn-primary:hover { background-color: #e8522e; }
+    .chat-bubble-guest {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px 18px 18px 4px;
+    }
+    .chat-bubble-server {
+      background: rgba(255,94,58,0.12);
+      border: 1px solid rgba(255,94,58,0.3);
+      border-radius: 18px 18px 4px 18px;
+    }
+    .scenario-card:hover { border-color: rgba(255,94,58,0.5); transform: translateY(-2px); transition: all 0.2s; }
+    .scenario-card { transition: all 0.2s; }
+    @keyframes pulse-dot { 0%,80%,100% { opacity:0; } 40% { opacity:1; } }
+    .typing-dot { animation: pulse-dot 1.4s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-white">AI Role-Play</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
+      <div class="relative" id="lang-selector">
+        <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button>
+        <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
+          <button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
+          <button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
+          <button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
+        </div>
+      </div>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">AI Role-Play</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
+      <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
+<script src="/js/nav-auth.js"></script>
+
+<!-- HERO -->
+<section style="background: linear-gradient(135deg, #071a26 0%, #0c2d3d 40%, #09090b 100%);" class="py-24">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <div class="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-4 py-1.5 text-xs font-semibold text-zinc-400 mb-8 tracking-widest uppercase">
+      Powered by AI · Text &amp; Voice · Instant Coaching
+    </div>
+    <h1 class="heading text-5xl md:text-7xl leading-tight mb-6">
+      Practice with an AI guest.<br>
+      <span style="color:#FF5E3A;">Before your next shift.</span>
+    </h1>
+    <p class="text-xl text-zinc-300 max-w-2xl mx-auto leading-relaxed mb-10">
+      30 real guest scenarios — difficult tables, upsell moments, allergy questions, VIP service. Your AI guest reacts the way real guests do, then coaches you on exactly what you said.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/signup" class="btn-primary text-base py-3.5 px-10 rounded-3xl">Try It Free →</a>
+      <a href="/pricing" class="border border-zinc-600 hover:border-zinc-400 text-white font-semibold text-base py-3.5 px-8 rounded-3xl transition-colors">See Pricing</a>
+    </div>
+    <p class="text-zinc-500 text-sm mt-5">Free tier includes 5 AI scenarios — no credit card required.</p>
+  </div>
+</section>
+
+<!-- LIVE DEMO MOCKUP -->
+<section class="py-20 border-b border-zinc-800">
+  <div class="max-w-4xl mx-auto px-6">
+    <h2 class="heading text-3xl md:text-4xl text-center mb-4">See it in action</h2>
+    <p class="text-zinc-400 text-center mb-12 max-w-xl mx-auto">A live roleplay session — the AI plays a real restaurant guest, you respond. Coaching appears after every exchange.</p>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+      <!-- Scenario header -->
+      <div class="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-zinc-500 uppercase tracking-widest mb-1">Scenario</p>
+          <p class="font-bold text-sm">The Wine Recommendation</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          <span class="text-xs text-zinc-400">Difficulty: Medium</span>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="p-6 space-y-5">
+        <div class="flex gap-4">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold" style="background:rgba(10,77,104,0.4); color:#7dd3fc;">G</div>
+          <div class="chat-bubble-guest px-4 py-3 max-w-sm">
+            <p class="text-sm text-zinc-200">"We're celebrating our anniversary — can you recommend a bottle of red? We usually like something smooth, not too tannic."</p>
+          </div>
+        </div>
+        <div class="flex gap-4 justify-end">
+          <div class="chat-bubble-server px-4 py-3 max-w-sm">
+            <p class="text-sm text-zinc-200">"Congratulations on your anniversary! For something smooth and approachable, I'd love to suggest our Malbec from Mendoza — it has rich dark fruit with a velvety finish, and pairs beautifully with the duck and the ribeye tonight."</p>
+          </div>
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold" style="background:rgba(255,94,58,0.2); color:#FF5E3A;">Y</div>
+        </div>
+        <div class="flex gap-4">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold" style="background:rgba(10,77,104,0.4); color:#7dd3fc;">G</div>
+          <div class="chat-bubble-guest px-4 py-3 max-w-sm">
+            <p class="text-sm text-zinc-200">"That sounds lovely. What's the price point?"</p>
+          </div>
+        </div>
+
+        <!-- Coaching card -->
+        <div class="rounded-2xl p-4 border mt-4" style="background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.2);">
+          <div class="flex items-center gap-2 mb-2">
+            <span style="color:#22C55E;" class="text-sm font-bold">✓ Coaching Feedback</span>
+          </div>
+          <p class="text-sm text-zinc-300 leading-relaxed"><strong>Strong:</strong> You acknowledged the occasion immediately — guests remember that. Great food pairing mention with the duck and ribeye.<br><br><strong>To improve:</strong> Lead with the guest's experience before the price. Try: "It's $68, and many of our guests say it's the highlight of their evening…" — price lands better after the emotion.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOICE PRACTICE -->
+<section class="py-20 bg-zinc-900 border-b border-zinc-800">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest mb-6" style="background:rgba(255,94,58,0.1); color:#FF5E3A;">Voice Mode</div>
+        <h2 class="heading text-3xl md:text-4xl mb-6">Speak out loud.<br>Like the real floor.</h2>
+        <p class="text-zinc-300 leading-relaxed mb-6">
+          Switch to voice mode and speak your responses aloud. AI transcribes your words in real-time and the guest replies back in speech — just like a real table conversation.
+        </p>
+        <ul class="space-y-3 text-sm text-zinc-400">
+          <li class="flex items-start gap-3">
+            <span style="color:#FF5E3A;" class="mt-0.5 font-bold">✓</span>
+            <span>Build muscle memory for real conversations — not just typing</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span style="color:#FF5E3A;" class="mt-0.5 font-bold">✓</span>
+            <span>Hear how your phrasing sounds before you use it on a real guest</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span style="color:#FF5E3A;" class="mt-0.5 font-bold">✓</span>
+            <span>Practice in 10 minutes on your commute or before a shift</span>
+          </li>
+        </ul>
+      </div>
+      <div class="bg-zinc-800 border border-zinc-700 rounded-3xl p-8 text-center">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style="background:rgba(255,94,58,0.1); border: 2px solid rgba(255,94,58,0.4);">
+          <span class="text-4xl">🎤</span>
+        </div>
+        <p class="text-zinc-300 text-sm leading-relaxed mb-4">
+          "I was terrified of recommending wine. After two weeks of voice practice I upsold a $180 bottle on my third day at a new restaurant."
+        </p>
+        <p class="text-xs font-semibold" style="color:#FF5E3A;">— Alex T., Server</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 30 SCENARIOS GRID -->
+<section class="py-20">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="heading text-3xl md:text-4xl text-center mb-4">30 scenarios across 5 categories</h2>
+    <p class="text-zinc-400 text-center mb-14 max-w-xl mx-auto">Every category has 3 difficulty levels — start easy, build confidence, tackle the hard ones.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-3">🍷</div>
+        <h3 class="font-bold text-base mb-2" style="color:#FF5E3A;">Wine &amp; Beverage</h3>
+        <p class="text-zinc-400 text-sm">Recommendations, pairings, confident upsells, handling "I don't know wine" guests.</p>
+        <p class="text-xs text-zinc-600 mt-3">6 scenarios · 3 difficulty levels</p>
+      </div>
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-3">😤</div>
+        <h3 class="font-bold text-base mb-2" style="color:#FF5E3A;">Difficult Guests</h3>
+        <p class="text-zinc-400 text-sm">Complaints, demanding tables, rude guests, recovering from mistakes gracefully.</p>
+        <p class="text-xs text-zinc-600 mt-3">6 scenarios · 3 difficulty levels</p>
+      </div>
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-3">🎂</div>
+        <h3 class="font-bold text-base mb-2" style="color:#FF5E3A;">Special Occasions</h3>
+        <p class="text-zinc-400 text-sm">Anniversaries, birthdays, proposals — creating memorable moments that get talked about.</p>
+        <p class="text-xs text-zinc-600 mt-3">6 scenarios · 3 difficulty levels</p>
+      </div>
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-3">⚠️</div>
+        <h3 class="font-bold text-base mb-2" style="color:#FF5E3A;">Allergies &amp; Dietary</h3>
+        <p class="text-zinc-400 text-sm">Handling allergy questions correctly, cross-contamination, confidently navigating restrictions.</p>
+        <p class="text-xs text-zinc-600 mt-3">6 scenarios · 3 difficulty levels</p>
+      </div>
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-3">👑</div>
+        <h3 class="font-bold text-base mb-2" style="color:#FF5E3A;">VIP &amp; Fine Dining</h3>
+        <p class="text-zinc-400 text-sm">Anticipating needs, formal tableside service, handling high-stakes tables under pressure.</p>
+        <p class="text-xs text-zinc-600 mt-3">6 scenarios · 3 difficulty levels</p>
+      </div>
+      <div class="scenario-card bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <div class="text-3xl mb-3">🔓</div>
+          <h3 class="font-bold text-base mb-2">Free tier: 5 scenarios</h3>
+          <p class="text-zinc-400 text-sm">Try one scenario from each category — free forever, no card required.</p>
+        </div>
+        <a href="/signup" class="mt-6 btn-primary py-3 px-6 rounded-2xl text-sm text-center block">Start for Free →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-20 bg-zinc-900 border-t border-zinc-800">
+  <div class="max-w-4xl mx-auto px-6">
+    <h2 class="heading text-3xl md:text-4xl text-center mb-14">How a session works</h2>
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 border-2 font-black text-lg" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A; color:#FF5E3A;">1</div>
+        <h3 class="font-bold text-sm mb-2">Pick a scenario</h3>
+        <p class="text-zinc-400 text-xs leading-relaxed">Choose a category and difficulty. The AI sets the scene.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 border-2 font-black text-lg" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A; color:#FF5E3A;">2</div>
+        <h3 class="font-bold text-sm mb-2">Respond</h3>
+        <p class="text-zinc-400 text-xs leading-relaxed">Type or speak your response. The guest reacts in real time.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 border-2 font-black text-lg" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A; color:#FF5E3A;">3</div>
+        <h3 class="font-bold text-sm mb-2">Get coached</h3>
+        <p class="text-zinc-400 text-xs leading-relaxed">After each exchange, coaching feedback appears on exactly what you said.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 border-2 font-black text-lg" style="background:rgba(255,94,58,0.1); border-color:#FF5E3A; color:#FF5E3A;">4</div>
+        <h3 class="font-bold text-sm mb-2">Review &amp; improve</h3>
+        <p class="text-zinc-400 text-xs leading-relaxed">Full session summary with every note the AI collected — so you can repeat until confident.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="max-w-4xl mx-auto px-4 py-16">
+  <div class="p-10 rounded-3xl text-center border" style="background:rgba(10,77,104,0.3); border-color:rgba(10,77,104,0.5);">
+    <h2 class="heading text-3xl md:text-4xl mb-4">Nail this greeting in 60 seconds.</h2>
+    <p class="text-zinc-300 text-lg max-w-xl mx-auto mb-8">Five free scenarios. No credit card. No commitment. Just better conversations with your next guest.</p>
+    <a href="/signup" class="inline-block btn-primary py-4 px-12 rounded-3xl text-lg">Start Free →</a>
+    <p class="text-zinc-600 text-sm mt-4">Already have an account? <a href="/login" class="text-zinc-400 hover:text-white underline transition-colors">Log in</a></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-zinc-800 py-10">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-6">
+      <p class="text-zinc-400 text-sm font-semibold tracking-wide">Shift Smarter. Tip Bigger. Burn Out Less.</p>
+    </div>
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2">
+        <img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover">
+        <span class="font-semibold text-zinc-400">ServeMaster Academy</span>
+        <span>© 2026</span>
+      </div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/about" class="hover:text-white transition-colors">About</a>
+        <a href="/features" class="hover:text-white transition-colors">Academy</a>
+        <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+        <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+        <a href="/login" class="hover:text-white transition-colors">Login</a>
+        <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
+        <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+        <a href="mailto:support@servemasteracademy.ca" class="hover:text-white transition-colors">Support</a>
+      </div>
+      <div class="flex gap-3 justify-center">
+        <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+        <span class="text-zinc-700 self-center">|</span>
+        <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js"></script>
+<script src="/js/chat-widget.js"></script>
+</body>
+</html>
