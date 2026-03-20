@@ -132,7 +132,28 @@
       '<div class="flex items-center gap-3 mt-6 text-sm text-zinc-500"><span>ServeMaster Academy</span><span>·</span><span>' + article.mins + ' ' + minRead + '</span></div>' +
     '</div>' +
     '<div id="article-body" class="prose text-zinc-400 text-center py-12"><p>Loading content…</p></div>' +
-    '<div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">' +
+    '<div class="mt-12 border-t border-zinc-800 pt-10">' +
+      '<p class="text-zinc-400 font-semibold mb-4">Loved this tip? Share it with your team!</p>' +
+      '<div class="flex flex-wrap gap-3 mb-8">' +
+        '<a href="https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(window.location.href) + '" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-blue-500 hover:text-white transition-colors"><img src="/images/linkedin-icon.svg" width="16" height="16" style="filter:invert(1) opacity(0.7);" alt="">LinkedIn</a>' +
+        '<a href="https://twitter.com/intent/tweet?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(title) + '" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-400 hover:text-white transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>X / Twitter</a>' +
+        '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href) + '" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-blue-600 hover:text-white transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</a>' +
+        '<a href="mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent('Thought you\'d find this useful: ' + window.location.href) + '" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-400 hover:text-white transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>Email</a>' +
+      '</div>' +
+      '<div class="flex items-start gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">' +
+        '<img src="/kirk-adamson.jpg" alt="Kirk Adamson" class="w-14 h-14 rounded-full object-cover shrink-0" style="object-position:top;">' +
+        '<div>' +
+          '<p class="font-semibold text-white text-sm mb-0.5">Written by Kirk Adamson</p>' +
+          '<p class="text-zinc-500 text-xs mb-3">Founder &amp; CEO, ServeMaster Academy</p>' +
+          '<div class="flex flex-wrap gap-3 text-xs">' +
+            '<a href="https://ca.linkedin.com/in/kirk-adamson-6372a7193" target="_blank" rel="noopener" class="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors"><img src="/images/linkedin-icon.svg" width="14" height="14" style="filter:invert(1) opacity(0.6);" alt="">Connect on LinkedIn</a>' +
+            '<span class="text-zinc-700">·</span>' +
+            '<a href="https://www.linkedin.com/newsletters/restaurant-service-edge" target="_blank" rel="noopener" class="text-zinc-400 hover:text-white transition-colors">Subscribe to <em>Restaurant Service Edge</em> newsletter →</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="mt-10 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">' +
       '<h3 class="heading text-2xl font-bold mb-3">' + ctaH + '</h3>' +
       '<p class="text-zinc-400 mb-6">' + ctaP + '</p>' +
       '<a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">' + ctaBtn + '</a>' +
