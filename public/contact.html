@@ -12,6 +12,12 @@
   </script>
 <meta charset="UTF-8">
   <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ServeMaster">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact — ServeMaster Academy</title>
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 30 interactive modules. Earn your server certificate and level up your career.">
@@ -32,6 +38,17 @@
       }
     }
 </style>
+<link rel="canonical" href="https://servemasteracademy.ca/contact">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ServeMaster Academy">
+<meta property="og:url" content="https://servemasteracademy.ca/contact">
+<meta property="og:title" content="Contact — ServeMaster Academy">
+<meta property="og:description" content="Get in touch with the ServeMaster Academy team. We'd love to hear from restaurant owners, managers, and servers.">
+<meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contact — ServeMaster Academy">
+<meta name="twitter:description" content="Get in touch with the ServeMaster Academy team. We'd love to hear from restaurant owners, managers, and servers.">
+<meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body>
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
@@ -194,5 +211,13 @@ async function submitContact(e) {
 }
 </script>
 <script src="/js/lang.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>

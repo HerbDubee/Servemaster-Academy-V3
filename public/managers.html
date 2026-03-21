@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ServeMaster">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>For Restaurant Owners & Managers – ServeMaster Academy</title>
   <link rel="stylesheet" href="/tailwind.css">
@@ -25,6 +31,17 @@
       }
     }
   </style>
+<link rel="canonical" href="https://servemasteracademy.ca/managers">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ServeMaster Academy">
+<meta property="og:url" content="https://servemasteracademy.ca/managers">
+<meta property="og:title" content="For Restaurant Owners & Managers — ServeMaster Academy">
+<meta property="og:description" content="Train your entire service team consistently. Assign modules, track progress, and cut onboarding time in half.">
+<meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="For Restaurant Owners & Managers — ServeMaster Academy">
+<meta name="twitter:description" content="Train your entire service team consistently. Assign modules, track progress, and cut onboarding time in half.">
+<meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body class="bg-zinc-950 text-white">
 
@@ -418,5 +435,13 @@
 
 <script src="/js/lang.js"></script>
 <script src="/js/chat-widget.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>

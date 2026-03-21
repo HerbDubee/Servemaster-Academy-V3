@@ -11,6 +11,12 @@
   </script>
   <meta charset="UTF-8">
   <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ServeMaster">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Role-Play — ServeMaster Academy</title>
   <meta name="description" content="Practice real guest scenarios with a live AI before your next shift. Instant coaching feedback after every exchange. Try free — no credit card required.">
@@ -38,6 +44,17 @@
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
   </style>
+<link rel="canonical" href="https://servemasteracademy.ca/ai-roleplay">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ServeMaster Academy">
+<meta property="og:url" content="https://servemasteracademy.ca/ai-roleplay">
+<meta property="og:title" content="AI Role-Play Training — ServeMaster Academy">
+<meta property="og:description" content="Practice real guest scenarios with a live AI before your next shift. Instant coaching feedback after every exchange. Try free.">
+<meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI Role-Play Training — ServeMaster Academy">
+<meta name="twitter:description" content="Practice real guest scenarios with a live AI before your next shift. Instant coaching feedback after every exchange. Try free.">
+<meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body>
 
@@ -332,5 +349,13 @@
 
 <script src="/js/lang.js"></script>
 <script src="/js/chat-widget.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>

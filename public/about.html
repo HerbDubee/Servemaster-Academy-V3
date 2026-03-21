@@ -12,6 +12,12 @@
   </script>
 <meta charset="UTF-8">
   <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ServeMaster">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>About — ServeMaster Academy</title>
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 30 interactive modules. Earn your server certificate and level up your career.">
@@ -32,6 +38,17 @@
       }
     }
 </style>
+<link rel="canonical" href="https://servemasteracademy.ca/about">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ServeMaster Academy">
+<meta property="og:url" content="https://servemasteracademy.ca/about">
+<meta property="og:title" content="About — Kirk Adamson & ServeMaster Academy">
+<meta property="og:description" content="Founded by Kirk Adamson, 20+ year hospitality veteran. We believe great service is a learnable skill — and AI can coach it.">
+<meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About — Kirk Adamson & ServeMaster Academy">
+<meta name="twitter:description" content="Founded by Kirk Adamson, 20+ year hospitality veteran. We believe great service is a learnable skill — and AI can coach it.">
+<meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body>
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
@@ -182,5 +199,13 @@
 </footer>
 <script src="/js/lang.js"></script>
 <script src="/js/chat-widget.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>
