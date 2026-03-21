@@ -1874,7 +1874,7 @@
       try {
         var path = new URL(a.href, window.location.origin).pathname;
         var key = NAV_HREF_MAP[path];
-        if (key && t[key] !== undefined) a.textContent = t[key];
+        if (key && t[key] !== undefined && !a.querySelector('img')) a.textContent = t[key];
       } catch (e) {}
     });
 
