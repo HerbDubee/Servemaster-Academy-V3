@@ -1740,12 +1740,15 @@ let glossaryOpen = false;
 function openGlossaryPanel() {
   document.getElementById('glossary-panel').classList.remove('hidden');
   document.getElementById('glossary-search').value = '';
+  document.body.style.overflow = 'hidden';
   renderGlossaryPanel();
   setTimeout(() => document.getElementById('glossary-search').focus(), 100);
 }
 
 function closeGlossaryPanel() {
   document.getElementById('glossary-panel').classList.add('hidden');
+  const modalStillOpen = !document.getElementById('module-modal').classList.contains('hidden');
+  if (!modalStillOpen) document.body.style.overflow = '';
 }
 
 function renderGlossaryPanel() {
@@ -2398,8 +2401,12 @@ function openModule(id) {
   document.getElementById('modal-content').innerHTML = getModuleContent(id);
   document.getElementById('modal-content').scrollTop = 0;
   document.getElementById('module-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
-function closeModal() { document.getElementById('module-modal').classList.add('hidden'); }
+function closeModal() {
+  document.getElementById('module-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
 
 function navigate(screen) {
   document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
