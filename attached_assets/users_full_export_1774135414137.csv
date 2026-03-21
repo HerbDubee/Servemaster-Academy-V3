@@ -1,0 +1,12 @@
+id,email,name,role,password_hash,google_id,subscription_status,stripe_customer_id,stripe_subscription_id,experience_level,lang_preference,trial_ends_at,is_trial_active,is_unsubscribed,created_at,last_login
+61,thecedarplanter@gmail.com,Kirk Adamson,student,,102523167502750032571,free,,,New to serving,en,2026-04-04 12:06:38.763+00,true,false,2026-03-21 12:06:38.780832,2026-03-21 12:06:38.944194
+60,emilyemily0711@gmail.com,Emily Thomas,student,,103421441668554704916,free,,,New to serving,en,2026-04-03 20:09:27.463+00,true,false,2026-03-20 20:09:27.481695,2026-03-20 20:10:31.901177
+59,marcarmount@gmail.com,Mary-Rachael Carmount,manager,"$2b$10$Pva4L.eRWPRN7.EdYyVv8ebWglMkkLk3/syQTsuLmz5XHV.BdSez2",,pro_team,,,New to serving,en,,false,false,2026-03-17 01:28:58.003186,2026-03-17 01:28:58.003186
+32,gnr9793@proton.me,G & R,student,"$2b$10$2mg5Wl6VYgR8B7IYM14HEegfVGn4yut4tH0QYavv9qVzyTEOVjixe",,premium,,,Senior / team lead,en,2026-03-25 22:47:43.071+00,true,false,2026-03-11 22:47:43.090015,2026-03-11 22:47:43.090015
+31,kirk_adamson@servemasteracademy.ca,Kirk,admin,"$2b$10$Do/f3wjrIyrzpDp/IeveguwWq1kT079zCvO8eHbAL7BOpwiFO0tiu",,premium,cus_U9YbCJfwNtGVG2,,Senior / team lead,en,2026-03-24 23:25:36.575+00,true,false,2026-03-10 23:25:36.853551,2026-03-21 23:13:00.940849
+30,brookespq@gmail.com,Brooke Plourde-Atkinson,student,,103706108450236726715,premium,,,New to serving,en,2026-03-21 23:59:32.379+00,true,false,2026-03-07 23:59:32.396749,2026-03-08 01:00:14.610203
+29,lhvadamson@gmail.com,laura adamson,student,,107779069017552350724,premium,,,New to serving,en,2026-03-21 14:27:08.29+00,true,false,2026-03-07 14:27:08.308423,2026-03-08 21:44:09.356037
+4,mainsail65@msn.com,mainsail,student,,106713267091204480397,premium,,,New to serving,en,,false,false,2026-03-01 20:27:51.534604,2026-03-02 14:30:44.621419
+3,daniel.more@brigham1906.com,Daniel More,student,"$2b$10$ZTPek31MIUxl1MTB9BCbfOaiROF6Div/XAV0EAAhg8AHbsVIYSxoe",,pro_team,,,New to serving,en,,false,false,2026-03-01 16:36:39.102431,2026-03-01 16:36:39.102431
+2,tsekbivoac@gmail.com,Kirk Adamson,admin,,113638909101151846515,premium,cus_U4PBzzKuRHaRo4,,New to serving,en,,false,false,2026-03-01 15:48:51.732464,2026-03-21 12:04:17.394035
+1,herb.dubee@gmail.com,Herb Dubee,manager,,116904167889997939001,pro_team,cus_U4NW21rizVo1iw,,New to serving,en,,false,false,2026-03-01 15:39:57.202103,2026-03-20 18:07:18.641053
