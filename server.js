@@ -1485,32 +1485,35 @@ app.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
 });
 
+const TOTAL_MODULES = 30;
+const TOTAL_SCENARIOS = 36;
+
 const DEMO_USERS = [
-  { name: 'Sophie Tremblay',   email: 'sophie.tremblay.sma@example.com',   modules: 24 },
-  { name: 'Liam Chen',         email: 'liam.chen.sma@example.com',          modules: 24 },
-  { name: 'Émilie Gagnon',     email: 'emilie.gagnon.sma@example.com',      modules: 24 },
-  { name: 'Marcus Williams',   email: 'marcus.williams.sma@example.com',    modules: 24 },
-  { name: 'Chloé Bouchard',    email: 'chloe.bouchard.sma@example.com',     modules: 24 },
-  { name: 'Noah Patel',        email: 'noah.patel.sma@example.com',         modules: 24 },
-  { name: 'Camille Roy',       email: 'camille.roy.sma@example.com',        modules: 24 },
-  { name: 'Ethan MacLeod',     email: 'ethan.macleod.sma@example.com',      modules: 22 },
-  { name: 'Amélie Côté',       email: 'amelie.cote.sma@example.com',        modules: 21 },
-  { name: 'Jasmine Singh',     email: 'jasmine.singh.sma@example.com',      modules: 20 },
-  { name: 'Gabriel Fortin',    email: 'gabriel.fortin.sma@example.com',     modules: 19 },
+  { name: 'Sophie Tremblay',   email: 'sophie.tremblay.sma@example.com',   modules: 30 },
+  { name: 'Liam Chen',         email: 'liam.chen.sma@example.com',          modules: 30 },
+  { name: 'Émilie Gagnon',     email: 'emilie.gagnon.sma@example.com',      modules: 30 },
+  { name: 'Marcus Williams',   email: 'marcus.williams.sma@example.com',    modules: 29 },
+  { name: 'Chloé Bouchard',    email: 'chloe.bouchard.sma@example.com',     modules: 28 },
+  { name: 'Noah Patel',        email: 'noah.patel.sma@example.com',         modules: 27 },
+  { name: 'Camille Roy',       email: 'camille.roy.sma@example.com',        modules: 26 },
+  { name: 'Ethan MacLeod',     email: 'ethan.macleod.sma@example.com',      modules: 25 },
+  { name: 'Amélie Côté',       email: 'amelie.cote.sma@example.com',        modules: 24 },
+  { name: 'Jasmine Singh',     email: 'jasmine.singh.sma@example.com',      modules: 22 },
+  { name: 'Gabriel Fortin',    email: 'gabriel.fortin.sma@example.com',     modules: 20 },
   { name: 'Olivia Thompson',   email: 'olivia.thompson.sma@example.com',    modules: 18 },
   { name: 'Félix Lavoie',      email: 'felix.lavoie.sma@example.com',       modules: 17 },
-  { name: 'Ava Morrison',      email: 'ava.morrison.sma@example.com',       modules: 16 },
-  { name: 'Raphaël Bergeron',  email: 'raphael.bergeron.sma@example.com',   modules: 15 },
-  { name: 'Maya Okafor',       email: 'maya.okafor.sma@example.com',        modules: 14 },
-  { name: 'Lucas Pelletier',   email: 'lucas.pelletier.sma@example.com',    modules: 13 },
-  { name: 'Isabella Nguyen',   email: 'isabella.nguyen.sma@example.com',    modules: 12 },
-  { name: 'Antoine Gauthier',  email: 'antoine.gauthier.sma@example.com',   modules: 11 },
-  { name: 'Zara Ahmed',        email: 'zara.ahmed.sma@example.com',         modules: 10 },
-  { name: 'Samuel Morin',      email: 'samuel.morin.sma@example.com',       modules: 9  },
-  { name: 'Emma Dubois',       email: 'emma.dubois.sma@example.com',        modules: 8  },
-  { name: 'Nathan Lefebvre',   email: 'nathan.lefebvre.sma@example.com',    modules: 7  },
-  { name: 'Mia Campbell',      email: 'mia.campbell.sma@example.com',       modules: 6  },
-  { name: 'Julien Bélanger',   email: 'julien.belanger.sma@example.com',    modules: 5  },
+  { name: 'Ava Morrison',      email: 'ava.morrison.sma@example.com',       modules: 15 },
+  { name: 'Raphaël Bergeron',  email: 'raphael.bergeron.sma@example.com',   modules: 14 },
+  { name: 'Maya Okafor',       email: 'maya.okafor.sma@example.com',        modules: 12 },
+  { name: 'Lucas Pelletier',   email: 'lucas.pelletier.sma@example.com',    modules: 11 },
+  { name: 'Isabella Nguyen',   email: 'isabella.nguyen.sma@example.com',    modules: 10 },
+  { name: 'Antoine Gauthier',  email: 'antoine.gauthier.sma@example.com',   modules: 9  },
+  { name: 'Zara Ahmed',        email: 'zara.ahmed.sma@example.com',         modules: 8  },
+  { name: 'Samuel Morin',      email: 'samuel.morin.sma@example.com',       modules: 7  },
+  { name: 'Emma Dubois',       email: 'emma.dubois.sma@example.com',        modules: 6  },
+  { name: 'Nathan Lefebvre',   email: 'nathan.lefebvre.sma@example.com',    modules: 5  },
+  { name: 'Mia Campbell',      email: 'mia.campbell.sma@example.com',       modules: 4  },
+  { name: 'Julien Bélanger',   email: 'julien.belanger.sma@example.com',    modules: 3  },
 ];
 
 async function seedDemoUsers() {
@@ -1550,7 +1553,7 @@ async function seedDemoUsers() {
         );
       }
       await db.query('DELETE FROM scenario_scores WHERE user_id = $1', [userId]);
-      const scenarios = Math.min(Math.floor(u.modules / 2), 18);
+      const scenarios = Math.min(Math.floor(u.modules / 2), TOTAL_SCENARIOS);
       for (let sc = 1; sc <= scenarios; sc++) {
         await db.query(
           `INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)`,
@@ -1564,6 +1567,42 @@ async function seedDemoUsers() {
   }
   console.log(`Demo users seeded: ${inserted} new, ${skipped} updated${errors.length ? ', ' + errors.length + ' errors' : ''}`);
   return { inserted, skipped, errors };
+}
+
+async function seedAdminProgress() {
+  try {
+    const existing = await db.query('SELECT id, password_hash FROM users WHERE email = $1', [ADMIN_EMAIL]);
+    if (!existing.rows.length) return;
+    // If a placeholder demo account was created, remove it so the real admin can register
+    if (existing.rows[0].password_hash && existing.rows[0].password_hash.startsWith('$2b$10$demoplaceholder')) {
+      await db.query('DELETE FROM users WHERE id = $1', [existing.rows[0].id]);
+      console.log(`Removed placeholder admin account for ${ADMIN_EMAIL} — please sign up at /signup`);
+      return;
+    }
+    const userId = existing.rows[0].id;
+    await db.query('DELETE FROM user_progress WHERE user_id = $1', [userId]);
+    for (let m = 1; m <= TOTAL_MODULES; m++) {
+      await db.query(
+        `INSERT INTO user_progress (user_id, module_id, progress, completed_at)
+         VALUES ($1, $2, 100, NOW())
+         ON CONFLICT (user_id, module_id) DO UPDATE SET progress = 100, completed_at = NOW()`,
+        [userId, m]
+      );
+    }
+    await db.query(
+      `INSERT INTO streaks (user_id, current_streak, longest_streak, last_activity_date)
+       VALUES ($1, 90, 90, CURRENT_DATE)
+       ON CONFLICT (user_id) DO UPDATE SET current_streak = 90, longest_streak = GREATEST(streaks.longest_streak, 90), last_activity_date = CURRENT_DATE`,
+      [userId]
+    );
+    await db.query('DELETE FROM scenario_scores WHERE user_id = $1', [userId]);
+    for (let sc = 1; sc <= TOTAL_SCENARIOS; sc++) {
+      await db.query(`INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [userId, sc]);
+    }
+    console.log(`Admin progress seeded for ${ADMIN_EMAIL}: ${TOTAL_MODULES} modules, ${TOTAL_SCENARIOS} scenarios`);
+  } catch (err) {
+    console.warn('Admin progress seed warning (non-fatal):', err.message);
+  }
 }
 
 app.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
@@ -2439,6 +2478,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
   await initStripe();
   // Auto-seed demo leaderboard users on every startup
   try { await seedDemoUsers(); } catch (e) { console.error('Demo seed error:', e.message); }
+  // Seed admin (Kirk) progress to 100% if account exists
+  try { await seedAdminProgress(); } catch (e) { console.warn('Admin progress seed warning:', e.message); }
 
   // New schema additions
   try {

@@ -2193,7 +2193,7 @@ async function loadLeaderboard() {
         <div class="text-2xl w-10 text-center">${medal}</div>
         <div class="flex-1"><div class="font-semibold">${escHtml(entry.name)}</div>
         <div class="text-zinc-400 text-xs mt-1">${entry.modules_completed} ${lang==='fr'?'modules':'modules'} · ${entry.scenarios_done} ${lang==='fr'?'scénarios':'scenarios'} · 🔥${entry.streak}</div></div>
-        <div class="text-amber-400 font-bold text-lg">${Math.round(entry.total_progress / 24)}%</div>
+        <div class="text-amber-400 font-bold text-lg">${Math.min(100, Math.round(entry.total_progress / 30))}%</div>
       </div>`;
     }).join('');
   } catch {}
@@ -2254,14 +2254,14 @@ function renderManagerDashboard(data) {
   }
   tableEl.innerHTML = staff.map(s => {
     const lastSeen = s.last_login ? new Date(s.last_login).toLocaleDateString() : lang==='fr'?'Jamais':'Never';
-    const pct = Math.round((parseInt(s.modules_completed) / 24) * 100);
+    const pct = Math.min(100, Math.round((parseInt(s.modules_completed) / 30) * 100));
     return `<div class="bg-zinc-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4">
       <div class="flex-1">
         <div class="font-semibold">${escHtml(s.name)}</div>
         <div class="text-zinc-400 text-xs mt-0.5">${escHtml(s.email)}</div>
       </div>
       <div class="flex items-center gap-6 text-sm">
-        <div class="text-center"><div class="font-bold text-amber-400">${s.modules_completed}/24</div><div class="text-zinc-500 text-xs">${lang==='fr'?'modules':'modules'}</div></div>
+        <div class="text-center"><div class="font-bold text-amber-400">${s.modules_completed}/30</div><div class="text-zinc-500 text-xs">${lang==='fr'?'modules':'modules'}</div></div>
         <div class="text-center"><div class="font-bold">${Math.round(s.avg_score)}%</div><div class="text-zinc-500 text-xs">${lang==='fr'?'score':'score'}</div></div>
         <div class="text-center"><div class="font-bold">${s.scenarios_done}</div><div class="text-zinc-500 text-xs">${lang==='fr'?'scénarios':'scenarios'}</div></div>
         <div class="text-center"><div class="font-bold">🔥${s.streak}</div><div class="text-zinc-500 text-xs">${lang==='fr'?'série':'streak'}</div></div>
