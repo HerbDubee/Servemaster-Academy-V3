@@ -2451,6 +2451,85 @@ async function initStripe() {
   }
 }
 
+// ── One-time V2 → V3 migration endpoint ──────────────────────────────────────
+const MIGRATION_TOKEN = 'sma-migrate-v2-2026';
+app.post('/api/admin/migrate-v2', express.json({ limit: '10mb' }), async (req, res) => {
+  if (req.headers['x-migration-token'] !== MIGRATION_TOKEN) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  const { users = [], progress = [], streaks = [], scenarios = [] } = req.body;
+  const summary = { imported: 0, skipped: 0, errors: [] };
+  const idMap = {}; // old V2 id → new V3 id
+
+  for (const u of users) {
+    // Skip obvious test/verify accounts
+    if (/verify_|testplan_|checkout_test_|@test\.com/i.test(u.email)) {
+      summary.skipped++;
+      continue;
+    }
+    try {
+      const existing = await db.query('SELECT id FROM users WHERE email = $1', [u.email]);
+      if (existing.rows.length) {
+        idMap[u.id] = existing.rows[0].id;
+        summary.skipped++;
+        continue;
+      }
+      const r = await db.query(
+        `INSERT INTO users (name, email, password_hash, google_id, experience_level, role,
+           subscription_status, lang_preference, created_at, stripe_customer_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+        [u.name, u.email, u.password_hash, u.google_id || null, u.experience_level || null,
+         u.role || 'student', u.subscription_status || 'free', u.lang_preference || 'en',
+         u.created_at || new Date(), u.stripe_customer_id || null]
+      );
+      idMap[u.id] = r.rows[0].id;
+      summary.imported++;
+    } catch (err) {
+      summary.errors.push(`user ${u.email}: ${err.message}`);
+    }
+  }
+
+  for (const p of progress) {
+    const newId = idMap[p.user_id];
+    if (!newId) continue;
+    try {
+      await db.query(
+        `INSERT INTO user_progress (user_id, module_id, progress, quiz_score, completed_at)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (user_id, module_id) DO NOTHING`,
+        [newId, p.module_id, p.progress, p.quiz_score || 0, p.completed_at || null]
+      );
+    } catch (err) { summary.errors.push(`progress uid${newId} mod${p.module_id}: ${err.message}`); }
+  }
+
+  for (const s of streaks) {
+    const newId = idMap[s.user_id];
+    if (!newId) continue;
+    try {
+      await db.query(
+        `INSERT INTO streaks (user_id, current_streak, longest_streak, last_activity_date)
+         VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO NOTHING`,
+        [newId, s.current_streak || 0, s.longest_streak || 0, s.last_activity_date || new Date()]
+      );
+    } catch (err) { summary.errors.push(`streak uid${newId}: ${err.message}`); }
+  }
+
+  for (const sc of scenarios) {
+    const newId = idMap[sc.user_id];
+    if (!newId) continue;
+    try {
+      await db.query(
+        `INSERT INTO scenario_scores (user_id, scenario_id, completed_at)
+         VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
+        [newId, sc.scenario_id, sc.completed_at || new Date()]
+      );
+    } catch (err) { summary.errors.push(`scenario uid${newId}: ${err.message}`); }
+  }
+
+  console.log('V2 migration complete:', summary);
+  res.json({ ok: true, ...summary, idMap });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`ServeMaster Academy running on port ${PORT}`);
