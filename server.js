@@ -1368,7 +1368,7 @@ app.get('/api/admin/users', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT u.id, u.name, u.email, u.role, u.subscription_status, u.created_at, u.last_login,
-        COALESCE(SUM(p.progress)/24, 0) as avg_progress,
+        COALESCE(SUM(p.progress)/30, 0) as avg_progress,
         COUNT(CASE WHEN p.progress >= 100 THEN 1 END) as modules_completed
       FROM users u
       LEFT JOIN user_progress p ON p.user_id = u.id
