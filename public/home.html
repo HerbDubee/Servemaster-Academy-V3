@@ -12,6 +12,11 @@
   </script>
 <meta charset="UTF-8">
   <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ServeMaster">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ServeMaster Academy — Train Like a Pro Server</title>
 <meta name="description" content="Master fine-dining service with AI role-play, voice practice, and 30 interactive modules. Earn your server certificate and level up your career.">
@@ -239,6 +244,42 @@
   </div>
 </section>
 
+<!-- PWA INSTALL PROMPT -->
+<section class="max-w-4xl mx-auto px-4 py-10">
+  <div class="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 flex flex-col md:flex-row items-center gap-8">
+    <div class="text-5xl shrink-0">📲</div>
+    <div class="flex-1">
+      <h3 class="heading text-xl font-bold mb-2">Train on the go — install the app</h3>
+      <p class="text-zinc-400 text-sm leading-relaxed">Add ServeMaster Academy to your home screen for quick access before any shift. Works offline, no app store required.</p>
+    </div>
+    <button id="pwa-install-btn" onclick="triggerPWAInstall()" class="hidden shrink-0 font-bold px-6 py-3 rounded-2xl text-sm whitespace-nowrap" style="background:#FF5E3A;color:#fff;">Add to Home Screen</button>
+    <div id="pwa-install-instructions" class="shrink-0 text-xs text-zinc-500 text-center hidden">
+      <p class="mb-1">On iPhone: tap <strong class="text-zinc-300">Share →</strong></p>
+      <p><strong class="text-zinc-300">Add to Home Screen</strong></p>
+    </div>
+  </div>
+</section>
+<script>
+  var pwaInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    pwaInstallPrompt = e;
+    document.getElementById('pwa-install-btn').classList.remove('hidden');
+  });
+  function triggerPWAInstall() {
+    if (pwaInstallPrompt) {
+      pwaInstallPrompt.prompt();
+      pwaInstallPrompt.userChoice.then(function() { pwaInstallPrompt = null; });
+    }
+  }
+  // Show iOS instructions on Safari
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isInStandalone = window.navigator.standalone;
+  if (isIOS && !isInStandalone) {
+    document.getElementById('pwa-install-instructions').classList.remove('hidden');
+  }
+</script>
+
 <!-- NEWSLETTER -->
 <section class="max-w-2xl mx-auto px-4 py-20 text-center">
   <div class="text-4xl mb-4">📬</div>
@@ -324,5 +365,12 @@ showTrialBanner();
 </script>
 <script src="/js/lang.js"></script>
 <script src="/js/chat-widget.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>
