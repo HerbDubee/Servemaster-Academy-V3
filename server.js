@@ -2457,7 +2457,7 @@ app.post('/api/admin/migrate-v2', express.json({ limit: '10mb' }), async (req, r
   if (req.headers['x-migration-token'] !== MIGRATION_TOKEN) {
     return res.status(403).json({ error: 'Forbidden' });
   }
-  const { users = [], progress = [], streaks = [], scenarios = [] } = req.body;
+  const { users = [], progress = [], streaks = [], scenarios = [], restaurants = [] } = req.body;
   const summary = { imported: 0, skipped: 0, errors: [] };
   const idMap = {}; // old V2 id → new V3 id
 
@@ -2525,8 +2525,26 @@ app.post('/api/admin/migrate-v2', express.json({ limit: '10mb' }), async (req, r
     } catch (err) { summary.errors.push(`scenario uid${newId}: ${err.message}`); }
   }
 
+  const restaurantsImported = [];
+  for (const r of restaurants) {
+    try {
+      const ownerRow = await db.query('SELECT id FROM users WHERE email = $1', [r.owner_email]);
+      if (!ownerRow.rows.length) { summary.errors.push(`restaurant ${r.name}: owner ${r.owner_email} not found`); continue; }
+      const ownerId = ownerRow.rows[0].id;
+      const existing = await db.query('SELECT id FROM restaurants WHERE name = $1 AND owner_id = $2', [r.name, ownerId]);
+      if (existing.rows.length) { summary.skipped++; continue; }
+      const ins = await db.query(
+        `INSERT INTO restaurants (name, owner_id, invite_code, plan, created_at) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+        [r.name, ownerId, r.invite_code, r.plan || 'free', r.created_at || new Date()]
+      );
+      await db.query('UPDATE users SET restaurant_id = $1 WHERE id = $2 AND restaurant_id IS NULL', [ins.rows[0].id, ownerId]);
+      restaurantsImported.push({ id: ins.rows[0].id, name: r.name });
+      summary.imported++;
+    } catch (err) { summary.errors.push(`restaurant ${r.name}: ${err.message}`); }
+  }
+
   console.log('V2 migration complete:', summary);
-  res.json({ ok: true, ...summary, idMap });
+  res.json({ ok: true, ...summary, idMap, restaurantsImported });
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
