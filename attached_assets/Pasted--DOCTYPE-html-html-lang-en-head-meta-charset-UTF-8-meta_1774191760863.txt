@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ServeMaster Academy — Revive Exceptional Service</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; background: #f9f9f9; }
+    header { background: linear-gradient(to right, #1e3a8a, #3b82f6); color: white; text-align: center; padding: 5rem 1rem; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+    h1 { font-size: 3rem; margin: 0; }
+    h2 { font-size: 2.2rem; color: #1e3a8a; }
+    .cta { display: inline-block; background: #f59e0b; color: white; padding: 1rem 2rem; font-size: 1.3rem; border-radius: 8px; text-decoration: none; margin: 1rem 0; font-weight: bold; }
+    .cta:hover { background: #d97706; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 3rem 0; }
+    .feature { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .testimonial { background: #eff6ff; padding: 1.5rem; border-left: 5px solid #3b82f6; margin: 1.5rem 0; font-style: italic; }
+    .founder { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 3rem 0; }
+    footer { text-align: center; padding: 2rem; background: #1e3a8a; color: white; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Revive Fine Dining Excellence</h1>
+    <p style="font-size: 1.4rem; max-width: 800px; margin: 1.5rem auto;">AI-powered training to standardize exceptional service, slash onboarding costs, reduce turnover, and build kind, family-like restaurant cultures where staff stay for decades — not weeks.</p>
+    <a href="https://servemasteracademy.ca/signup" class="cta" target="_blank">Start Free Training Now — No Card Needed</a>
+    <p style="font-size: 1.1rem; margin-top: 1rem;">Free forever. 30 modules, AI role-play, voice practice, certificate. Join 30+ beta servers already improving.</p>
+  </header>
+
+  <div class="container">
+
+    <section>
+      <h2>Why ServeMaster? The Problem — and the Fix</h2>
+      <p>I've loved fine dining my entire life. Over decades, I've watched service standards slip in restaurants I cherished. Servers want to excel — they just aren't given the tools or training. High turnover costs restaurants thousands in rehiring and lost tips. Inconsistent service erodes guest loyalty.</p>
+      <p>After deep study, I designed ServeMaster Academy to:</p>
+      <ul>
+        <li>Standardize pro-level knowledge across servers</li>
+        <li>Cut onboarding from weeks/months to days</li>
+        <li>Revive the elegance and warmth of fine dining from a century ago</li>
+        <li>Foster kindness and family cultures — inspired by companies where employees stay 20+ years</li>
+      </ul>
+      <p>This isn't just training; it's a mission to bring back exceptional hospitality and stable, rewarding careers.</p>
+    </section>
+
+    <section class="founder">
+      <h2>Hi, I'm Kirk Adamson</h2>
+      <p>Not a lifelong server, but a lifelong fine-dining enthusiast who's seen the decline firsthand. I've researched the industry's challenges in depth — from turnover stats to what makes great cultures thrive. Drawing from businesses that retain staff for decades through kindness and family feel, I built this system to help restaurants and servers win together.</p>
+    </section>
+
+    <section>
+      <h2>What You Get — Free Forever</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>AI Role-Play Scenarios</h3>
+          <p>Practice 30 real guest situations — difficult diners, VIPs, anniversaries. Instant AI coaching.</p>
+        </div>
+        <div class="feature">
+          <h3>Voice Practice</h3>
+          <p>Speak aloud; AI transcribes and responds like a real guest. Train on the floor — without the floor.</p>
+        </div>
+        <div class="feature">
+          <h3>Gamification</h3>
+          <p>Badges, streaks, leaderboards. Make learning addictive and fun.</p>
+        </div>
+        <div class="feature">
+          <h3>Professional Certificate</h3>
+          <p>Complete all modules → downloadable PDF for your resume or LinkedIn.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Early Testers Are Saying</h2>
+      <div class="testimonial">
+        <p>"Wine sales up 31% in the first month. The AI role-play is unreal."</p>
+        <p><strong>— Sarah M., Server ★★★★★</strong></p>
+      </div>
+      <div class="testimonial">
+        <p>"Cut onboarding from 6 weeks to 12 days. The manager dashboard is a game-changer."</p>
+        <p><strong>— David L., General Manager (3 locations) ★★★★★</strong></p>
+      </div>
+      <div class="testimonial">
+        <p>"Finally, real training on special occasions. Guests are noticing the difference."</p>
+        <p><strong>— Elena R., Owner, Fine Dining ★★★★★</strong></p>
+      </div>
+      <p style="text-align: center; font-weight: bold;">Trusted by servers & restaurants across North America. Be part of the revival.</p>
+    </section>
+
+    <section style="text-align: center; margin: 4rem 0;">
+      <h2>Don't Let Turnover Drain Your Restaurant</h2>
+      <p>High server churn costs thousands. Inconsistent service loses guests and tips. Start standardizing excellence today — free.</p>
+      <a href="https://servemasteracademy.ca/signup" class="cta" target="_blank">Sign Up in 30 Seconds — Free Forever</a>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2026 ServeMaster Academy. Mission: Bring back exceptional service and lasting hospitality careers.</p>
+  </footer>
+
+</body>
+</html>
