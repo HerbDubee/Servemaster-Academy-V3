@@ -1415,6 +1415,57 @@ app.delete('/api/admin/users/:id', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to delete user' }); }
 });
 
+// Welcome-back email blast for migrated V2 users
+app.post('/api/admin/send-welcome-back', adminMiddleware, async (req, res) => {
+  try {
+    const { rows: users } = await db.query(`
+      SELECT u.id, u.name, u.email, u.role, u.google_id, u.restaurant_id,
+             r.name AS restaurant_name, r.invite_code,
+             COUNT(p.module_id) FILTER (WHERE p.progress >= 100) AS modules_done
+      FROM users u
+      LEFT JOIN restaurants r ON r.id = u.restaurant_id
+      LEFT JOIN user_progress p ON p.user_id = u.id
+      WHERE u.email NOT LIKE '%@example.com%'
+        AND u.email NOT LIKE '%@test.com%'
+        AND u.is_unsubscribed = false
+      GROUP BY u.id, u.name, u.email, u.role, u.google_id, u.restaurant_id, r.name, r.invite_code
+    `);
+    const sent = []; const failed = [];
+    for (const u of users) {
+      try {
+        const loginMethod = u.google_id
+          ? `<p style="font-size:15px;line-height:1.7;margin-bottom:16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:14px;">👉 Click <strong>Sign in with Google</strong> on the login page — no password needed.</p>`
+          : `<p style="font-size:15px;line-height:1.7;margin-bottom:16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:14px;">👉 Log in with your email and your existing password at <a href="https://servemasteracademy.ca/login" style="color:#d4af37;">servemasteracademy.ca/login</a></p>`;
+        const inviteSection = (u.role === 'manager' || u.role === 'admin') && u.invite_code
+          ? `<div style="background:#1a1a1a;border:1px solid #d4af37;border-radius:12px;padding:20px;margin-bottom:24px;"><p style="font-size:14px;color:#a3a3a3;margin:0 0 6px;">Your restaurant invite code</p><p style="font-size:24px;font-weight:700;color:#d4af37;letter-spacing:4px;margin:0;">${u.invite_code}</p><p style="font-size:13px;color:#a3a3a3;margin:8px 0 0;">Share this with your staff so they can join ${escapeHtml(u.restaurant_name || 'your restaurant')} on ServeMaster Academy.</p></div>`
+          : '';
+        const progressNote = parseInt(u.modules_done) > 0
+          ? `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your progress is right where you left it — <strong>${u.modules_done} module${u.modules_done === '1' ? '' : 's'} completed</strong>. Pick up where you left off.</p>`
+          : `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your account is ready. Start with <strong>Module 1 — Foundations of Exceptional Service</strong> and work through the course at your own pace.</p>`;
+        const html = `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(u.name)},</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;"><strong>ServeMaster Academy has a new home.</strong> We've upgraded the platform and moved to <a href="https://servemasteracademy.ca" style="color:#d4af37;">servemasteracademy.ca</a> — and your account and progress came with it.</p>
+          ${progressNote}
+          <p style="font-size:16px;line-height:1.7;margin-bottom:8px;">To log back in:</p>
+          ${loginMethod}
+          ${inviteSection}
+          <p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#FF5E3A;color:#fff;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training →</a></p>
+          <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+        </div>`;
+        await resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: u.email,
+          subject: 'ServeMaster Academy has a new home — your account is ready',
+          html
+        });
+        sent.push(u.email);
+      } catch (e) { failed.push({ email: u.email, error: e.message }); }
+    }
+    res.json({ ok: true, sent: sent.length, failed });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.get('/api/admin/modules', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
@@ -2451,109 +2502,13 @@ async function initStripe() {
   }
 }
 
-// ── One-time V2 → V3 migration endpoint ──────────────────────────────────────
-const MIGRATION_TOKEN = 'sma-migrate-v2-2026';
-app.post('/api/admin/migrate-v2', express.json({ limit: '10mb' }), async (req, res) => {
-  if (req.headers['x-migration-token'] !== MIGRATION_TOKEN) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  const { users = [], progress = [], streaks = [], scenarios = [], restaurants = [] } = req.body;
-  const summary = { imported: 0, skipped: 0, errors: [] };
-  const idMap = {}; // old V2 id → new V3 id
-
-  for (const u of users) {
-    // Skip obvious test/verify accounts
-    if (/verify_|testplan_|checkout_test_|@test\.com/i.test(u.email)) {
-      summary.skipped++;
-      continue;
-    }
-    try {
-      const existing = await db.query('SELECT id FROM users WHERE email = $1', [u.email]);
-      if (existing.rows.length) {
-        idMap[u.id] = existing.rows[0].id;
-        summary.skipped++;
-        continue;
-      }
-      const r = await db.query(
-        `INSERT INTO users (name, email, password_hash, google_id, experience_level, role,
-           subscription_status, lang_preference, created_at, stripe_customer_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-        [u.name, u.email, u.password_hash, u.google_id || null, u.experience_level || null,
-         u.role || 'student', u.subscription_status || 'free', u.lang_preference || 'en',
-         u.created_at || new Date(), u.stripe_customer_id || null]
-      );
-      idMap[u.id] = r.rows[0].id;
-      summary.imported++;
-    } catch (err) {
-      summary.errors.push(`user ${u.email}: ${err.message}`);
-    }
-  }
-
-  for (const p of progress) {
-    const newId = idMap[p.user_id];
-    if (!newId) continue;
-    try {
-      await db.query(
-        `INSERT INTO user_progress (user_id, module_id, progress, quiz_score, completed_at)
-         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (user_id, module_id) DO NOTHING`,
-        [newId, p.module_id, p.progress, p.quiz_score || 0, p.completed_at || null]
-      );
-    } catch (err) { summary.errors.push(`progress uid${newId} mod${p.module_id}: ${err.message}`); }
-  }
-
-  for (const s of streaks) {
-    const newId = idMap[s.user_id];
-    if (!newId) continue;
-    try {
-      await db.query(
-        `INSERT INTO streaks (user_id, current_streak, longest_streak, last_activity_date)
-         VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO NOTHING`,
-        [newId, s.current_streak || 0, s.longest_streak || 0, s.last_activity_date || new Date()]
-      );
-    } catch (err) { summary.errors.push(`streak uid${newId}: ${err.message}`); }
-  }
-
-  for (const sc of scenarios) {
-    const newId = idMap[sc.user_id];
-    if (!newId) continue;
-    try {
-      await db.query(
-        `INSERT INTO scenario_scores (user_id, scenario_id, completed_at)
-         VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
-        [newId, sc.scenario_id, sc.completed_at || new Date()]
-      );
-    } catch (err) { summary.errors.push(`scenario uid${newId}: ${err.message}`); }
-  }
-
-  const restaurantsImported = [];
-  for (const r of restaurants) {
-    try {
-      const ownerRow = await db.query('SELECT id FROM users WHERE email = $1', [r.owner_email]);
-      if (!ownerRow.rows.length) { summary.errors.push(`restaurant ${r.name}: owner ${r.owner_email} not found`); continue; }
-      const ownerId = ownerRow.rows[0].id;
-      const existing = await db.query('SELECT id FROM restaurants WHERE name = $1 AND owner_id = $2', [r.name, ownerId]);
-      if (existing.rows.length) { summary.skipped++; continue; }
-      const ins = await db.query(
-        `INSERT INTO restaurants (name, owner_id, invite_code, plan, created_at) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-        [r.name, ownerId, r.invite_code, r.plan || 'free', r.created_at || new Date()]
-      );
-      await db.query('UPDATE users SET restaurant_id = $1 WHERE id = $2 AND restaurant_id IS NULL', [ins.rows[0].id, ownerId]);
-      restaurantsImported.push({ id: ins.rows[0].id, name: r.name });
-      summary.imported++;
-    } catch (err) { summary.errors.push(`restaurant ${r.name}: ${err.message}`); }
-  }
-
-  console.log('V2 migration complete:', summary);
-  res.json({ ok: true, ...summary, idMap, restaurantsImported });
-});
-// ─────────────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`ServeMaster Academy running on port ${PORT}`);
   try {
     const updated = await db.query(
-      "UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE email = $1 AND role != 'admin' RETURNING email",
+      "UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE email = $1 RETURNING email",
       [ADMIN_EMAIL]
     );
     if (updated.rows.length) console.log(`Admin role granted to ${ADMIN_EMAIL} on startup`);
