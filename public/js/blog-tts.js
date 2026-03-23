@@ -2,12 +2,26 @@
   if (!window.speechSynthesis) return;
 
   var LANG_MAP = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
+
+  var UI_LABELS = {
+    en: { listen: 'Listen',   pause: 'Pause',  resume: 'Resume',   stop: 'Stop',    aria: 'Listen to this article' },
+    fr: { listen: 'Écouter',  pause: 'Pause',  resume: 'Reprendre',stop: 'Arrêter', aria: 'Écouter cet article' },
+    es: { listen: 'Escuchar', pause: 'Pausar', resume: 'Reanudar', stop: 'Detener', aria: 'Escuchar este artículo' }
+  };
+
   var state = 'idle';
   var keepAliveTimer = null;
 
-  function getLang() {
-    var l = localStorage.getItem('sma-lang') || 'en';
-    return LANG_MAP[l] || 'en-CA';
+  function getSiteLang() {
+    return localStorage.getItem('sma-lang') || 'en';
+  }
+
+  function getVoiceLang() {
+    return LANG_MAP[getSiteLang()] || 'en-CA';
+  }
+
+  function getLabels() {
+    return UI_LABELS[getSiteLang()] || UI_LABELS.en;
   }
 
   function nodeText(el) {
@@ -29,7 +43,6 @@
       var sib = h1.nextElementSibling;
       while (sib) {
         var tag = sib.tagName;
-        // stop when we hit the metadata line or prose
         if (tag === 'DIV') break;
         if (tag === 'P' && !sib.hasAttribute('data-i18n')) {
           var subText = nodeText(sib);
@@ -56,7 +69,6 @@
       }
     }
 
-    // Join sections with a period so TTS pauses naturally at section boundaries
     return sections.join('. ');
   }
 
@@ -122,19 +134,24 @@
     var stopBtn = document.getElementById('tts-stop-btn');
     if (!btn) return;
 
+    var lbl = getLabels();
     var isActive = state !== 'idle';
     btn.style.borderColor = isActive ? '#f59e0b' : '#3f3f46';
     btn.style.color = isActive ? '#f59e0b' : '#a1a1aa';
+    btn.setAttribute('aria-label', lbl.aria);
+    btn.setAttribute('title', lbl.aria);
 
     if (state === 'playing') {
-      btn.innerHTML = htmlEqualizer() + '<span style="white-space:nowrap">Pause</span>';
+      btn.innerHTML = htmlEqualizer() + '<span style="white-space:nowrap">' + lbl.pause + '</span>';
     } else if (state === 'paused') {
-      btn.innerHTML = svgPlay() + '<span style="white-space:nowrap">Resume</span>';
+      btn.innerHTML = svgPlay() + '<span style="white-space:nowrap">' + lbl.resume + '</span>';
     } else {
-      btn.innerHTML = svgSpeaker() + '<span style="white-space:nowrap">Listen</span>';
+      btn.innerHTML = svgSpeaker() + '<span style="white-space:nowrap">' + lbl.listen + '</span>';
     }
 
     if (stopBtn) {
+      stopBtn.setAttribute('aria-label', lbl.stop);
+      stopBtn.setAttribute('title', lbl.stop);
       stopBtn.style.display = isActive ? 'inline-flex' : 'none';
     }
   }
@@ -150,7 +167,7 @@
       var text = getProseText();
       if (isPlaceholderText(text)) return;
       var utt = new SpeechSynthesisUtterance(text);
-      utt.lang = getLang();
+      utt.lang = getVoiceLang();
       utt.rate = 0.92;
       utt.pitch = 1;
       utt.onend = function () { setState('idle'); };
@@ -180,7 +197,6 @@
     injectStyles();
 
     var container = null;
-
     var minReadEl = document.querySelector('[data-i18n="blog_min_read"]');
     if (minReadEl) {
       container = minReadEl.closest('.flex');
@@ -199,6 +215,8 @@
 
     if (!container) return;
 
+    var lbl = getLabels();
+
     var sep = document.createElement('span');
     sep.textContent = '·';
     sep.style.color = '#52525b';
@@ -206,8 +224,8 @@
 
     var btn = document.createElement('button');
     btn.id = 'tts-listen-btn';
-    btn.setAttribute('aria-label', 'Listen to this article');
-    btn.setAttribute('title', 'Listen to this article');
+    btn.setAttribute('aria-label', lbl.aria);
+    btn.setAttribute('title', lbl.aria);
     btn.style.cssText = [
       'display:inline-flex',
       'align-items:center',
@@ -227,14 +245,14 @@
       'font-family:inherit',
       'vertical-align:middle'
     ].join(';');
-    btn.innerHTML = svgSpeaker() + '<span style="white-space:nowrap">Listen</span>';
+    btn.innerHTML = svgSpeaker() + '<span style="white-space:nowrap">' + lbl.listen + '</span>';
     btn.addEventListener('click', handlePlay);
     container.appendChild(btn);
 
     var stopBtn = document.createElement('button');
     stopBtn.id = 'tts-stop-btn';
-    stopBtn.setAttribute('aria-label', 'Stop listening');
-    stopBtn.setAttribute('title', 'Stop');
+    stopBtn.setAttribute('aria-label', lbl.stop);
+    stopBtn.setAttribute('title', lbl.stop);
     stopBtn.style.cssText = [
       'display:none',
       'align-items:center',
@@ -261,6 +279,18 @@
       stopBtn.style.color = '#71717a';
     });
     container.appendChild(stopBtn);
+
+    // Hook into window.setLang so button label updates on language switch
+    var _origSetLang = window.setLang;
+    window.setLang = function (lang) {
+      if (state !== 'idle') {
+        window.speechSynthesis.cancel();
+        state = 'idle';
+        stopKeepalive();
+      }
+      if (typeof _origSetLang === 'function') _origSetLang(lang);
+      renderButton();
+    };
   }
 
   if (document.readyState === 'loading') {
