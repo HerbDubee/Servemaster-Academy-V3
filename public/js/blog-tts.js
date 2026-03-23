@@ -84,10 +84,16 @@
     }
   }
 
+  function isPlaceholderText(text) {
+    if (!text || text.length < 100) return true;
+    var lower = text.toLowerCase();
+    return lower.indexOf('loading content') !== -1 || lower === 'loading…' || lower === 'loading...';
+  }
+
   function handlePlay() {
     if (state === 'idle') {
       var text = getProseText();
-      if (!text || text.length < 10) return;
+      if (isPlaceholderText(text)) return;
       var utt = new SpeechSynthesisUtterance(text);
       utt.lang = getLang();
       utt.rate = 0.92;
