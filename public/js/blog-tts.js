@@ -10,20 +10,54 @@
     return LANG_MAP[l] || 'en-CA';
   }
 
+  function nodeText(el) {
+    return (el ? (el.innerText || el.textContent || '') : '').replace(/\s+/g, ' ').trim();
+  }
+
   function getProseText() {
+    var sections = [];
+
+    // 1. Title — first h1 on the page (outside prose)
+    var h1 = document.querySelector('h1');
+    if (h1 && !h1.closest('.prose') && !h1.closest('#article-body')) {
+      var titleText = nodeText(h1);
+      if (titleText) sections.push(titleText);
+    }
+
+    // 2. Subtitle — p immediately after h1 that is not a category label
+    if (h1) {
+      var sib = h1.nextElementSibling;
+      while (sib) {
+        var tag = sib.tagName;
+        // stop when we hit the metadata line or prose
+        if (tag === 'DIV') break;
+        if (tag === 'P' && !sib.hasAttribute('data-i18n')) {
+          var subText = nodeText(sib);
+          if (subText.length > 10) { sections.push(subText); break; }
+        }
+        sib = sib.nextElementSibling;
+      }
+    }
+
+    // 3. Body — structural elements inside .prose / #article-body
     var root = document.getElementById('article-body') || document.querySelector('.prose');
-    if (!root) return '';
-    var nodes = root.querySelectorAll('h1, h2, h3, h4, p, li, blockquote');
-    if (!nodes.length) {
-      return (root.innerText || root.textContent || '').replace(/\s+/g, ' ').trim();
+    if (root) {
+      var nodes = root.querySelectorAll('h1, h2, h3, h4, p, li, blockquote');
+      if (nodes.length) {
+        var bodyParts = [];
+        for (var i = 0; i < nodes.length; i++) {
+          var t = nodeText(nodes[i]);
+          if (t.length > 3) bodyParts.push(t);
+        }
+        if (bodyParts.length) sections.push(bodyParts.join(' '));
+      } else {
+        var raw = nodeText(root);
+        if (raw) sections.push(raw);
+      }
     }
-    var parts = [];
-    for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      var text = (node.innerText || node.textContent || '').replace(/\s+/g, ' ').trim();
-      if (text.length > 3) { parts.push(text); }
-    }
-    return parts.join(' ');
+
+    // Join sections with a period so TTS pauses naturally at section boundaries
+    return sections.join('. ');
   }
 
   function injectStyles() {
