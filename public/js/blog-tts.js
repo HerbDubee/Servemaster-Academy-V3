@@ -26,12 +26,33 @@
     return parts.join(' ');
   }
 
-  function svgSpeaker() {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:block"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  function injectStyles() {
+    if (document.getElementById('tts-styles')) return;
+    var s = document.createElement('style');
+    s.id = 'tts-styles';
+    s.textContent = [
+      '@keyframes sma-eq1{0%,100%{height:4px;margin-top:8px}50%{height:12px;margin-top:0px}}',
+      '@keyframes sma-eq2{0%,100%{height:8px;margin-top:4px}33%{height:4px;margin-top:8px}66%{height:12px;margin-top:0px}}',
+      '@keyframes sma-eq3{0%,100%{height:6px;margin-top:6px}50%{height:4px;margin-top:8px}}',
+      '@keyframes sma-eq4{0%,100%{height:10px;margin-top:2px}40%{height:4px;margin-top:8px}70%{height:12px;margin-top:0px}}'
+    ].join('');
+    document.head.appendChild(s);
   }
 
-  function svgPause() {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;display:block"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+  function htmlEqualizer() {
+    var bar = 'display:inline-block;width:3px;background:currentColor;border-radius:2px;';
+    return [
+      '<span style="display:inline-flex;align-items:flex-end;gap:2px;height:12px;flex-shrink:0;overflow:hidden">',
+      '<span style="' + bar + 'animation:sma-eq1 0.75s ease-in-out infinite"></span>',
+      '<span style="' + bar + 'animation:sma-eq2 0.75s ease-in-out infinite 0.1s"></span>',
+      '<span style="' + bar + 'animation:sma-eq4 0.75s ease-in-out infinite 0.2s"></span>',
+      '<span style="' + bar + 'animation:sma-eq3 0.75s ease-in-out infinite 0.3s"></span>',
+      '</span>'
+    ].join('');
+  }
+
+  function svgSpeaker() {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:block"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
   }
 
   function svgPlay() {
@@ -72,7 +93,7 @@
     btn.style.color = isActive ? '#f59e0b' : '#a1a1aa';
 
     if (state === 'playing') {
-      btn.innerHTML = svgPause() + '<span style="white-space:nowrap">Pause</span>';
+      btn.innerHTML = htmlEqualizer() + '<span style="white-space:nowrap">Pause</span>';
     } else if (state === 'paused') {
       btn.innerHTML = svgPlay() + '<span style="white-space:nowrap">Resume</span>';
     } else {
@@ -122,6 +143,7 @@
 
   function injectButton() {
     if (document.getElementById('tts-listen-btn')) return;
+    injectStyles();
 
     var container = null;
 
