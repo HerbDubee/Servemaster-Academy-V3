@@ -197,17 +197,33 @@
     injectStyles();
 
     var container = null;
+
+    // Strategy 1 — Layout A: metadata line has data-i18n="blog_min_read"
     var minReadEl = document.querySelector('[data-i18n="blog_min_read"]');
     if (minReadEl) {
       container = minReadEl.closest('.flex');
     }
 
+    // Strategy 2 — Layout A fallback: flex with both "ServeMaster" and "min"
     if (!container) {
       var flexDivs = document.querySelectorAll('.flex.items-center');
       for (var i = 0; i < flexDivs.length; i++) {
         var t = flexDivs[i].textContent || '';
-        if (t.indexOf('min') !== -1 && t.indexOf('ServeMaster') !== -1) {
+        if (t.indexOf('ServeMaster') !== -1 && t.indexOf('min') !== -1) {
           container = flexDivs[i];
+          break;
+        }
+      }
+    }
+
+    // Strategy 3 — Layout B: category pill + "X min read" above the h1
+    // Matches any flex div containing "N min" (e.g. "6 min read") without "ServeMaster"
+    if (!container) {
+      var allFlex = document.querySelectorAll('.flex.items-center');
+      for (var j = 0; j < allFlex.length; j++) {
+        var txt = allFlex[j].textContent || '';
+        if (/\d+\s*min/.test(txt)) {
+          container = allFlex[j];
           break;
         }
       }
