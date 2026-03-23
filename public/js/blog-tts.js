@@ -1,20 +1,29 @@
 (function () {
   if (!window.speechSynthesis) return;
 
-  var LANG_MAP = { en: 'en-US', fr: 'fr-FR', es: 'es-ES' };
+  var LANG_MAP = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
   var state = 'idle';
   var keepAliveTimer = null;
 
   function getLang() {
     var l = localStorage.getItem('sma-lang') || 'en';
-    return LANG_MAP[l] || 'en-US';
+    return LANG_MAP[l] || 'en-CA';
   }
 
   function getProseText() {
-    var el = document.getElementById('article-body') || document.querySelector('.prose');
-    if (!el) return '';
-    var raw = el.innerText || el.textContent || '';
-    return raw.replace(/\s+/g, ' ').trim();
+    var root = document.getElementById('article-body') || document.querySelector('.prose');
+    if (!root) return '';
+    var nodes = root.querySelectorAll('h1, h2, h3, h4, p, li, blockquote');
+    if (!nodes.length) {
+      return (root.innerText || root.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    var parts = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      var text = (node.innerText || node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text.length > 3) { parts.push(text); }
+    }
+    return parts.join(' ');
   }
 
   function svgSpeaker() {
