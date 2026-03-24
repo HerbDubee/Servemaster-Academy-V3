@@ -84,10 +84,11 @@ function getOpenAI() {
 let _whisper = null;
 function getWhisper() {
   if (_whisper) return _whisper;
-  // Whisper must use standard OpenAI API — Azure integration does not have Whisper deployed.
-  // Prefer OPENAI_API_KEY (direct) over the Azure-routed AI_INTEGRATIONS key, and never
-  // pass AI_INTEGRATIONS_OPENAI_BASE_URL so requests go to api.openai.com, not Azure.
-  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  // Whisper must use standard OpenAI API — Azure does not have Whisper deployed.
+  // Skip any dummy/placeholder key so the real integration key is used.
+  const direct = process.env.OPENAI_API_KEY;
+  const apiKey = (direct && !direct.startsWith('_DUMMY_') ? direct : null)
+    || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
   if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
   _whisper = new OpenAI({ apiKey });
   return _whisper;
@@ -97,8 +98,10 @@ let _tts = null;
 function getTTS() {
   if (_tts) return _tts;
   // OpenAI TTS must use the standard OpenAI API — Azure does not expose the TTS endpoint.
-  // Prefer OPENAI_API_KEY (direct) and never pass the Azure base URL.
-  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  // Skip any dummy/placeholder key so the real integration key is used.
+  const directTts = process.env.OPENAI_API_KEY;
+  const apiKey = (directTts && !directTts.startsWith('_DUMMY_') ? directTts : null)
+    || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
   if (!apiKey) throw new Error('No OpenAI API key configured. Set OPENAI_API_KEY.');
   _tts = new OpenAI({ apiKey });
   return _tts;
