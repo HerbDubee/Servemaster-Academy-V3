@@ -232,7 +232,6 @@
   }
 
   function playChunk(index) {
-    if (state === 'idle') return;
     if (index >= ttsChunks.length) { setState('idle'); return; }
 
     setState('loading');
