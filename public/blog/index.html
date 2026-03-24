@@ -280,6 +280,14 @@
       }
     });
     applyFilter();
+    var target = document.getElementById('blog-sections-container');
+    if (target) {
+      var navHeight = 72;
+      var filterBar = document.getElementById('blog-filter-bar');
+      var filterHeight = filterBar ? filterBar.offsetHeight : 0;
+      var offset = target.getBoundingClientRect().top + window.pageYOffset - navHeight - filterHeight - 12;
+      window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+    }
   };
 
   function hookSearch() {
