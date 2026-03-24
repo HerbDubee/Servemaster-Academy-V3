@@ -8,10 +8,16 @@
   };
 
   var state = 'idle';
-  var currentAudio = null;
   var ttsChunks = [];
   var ttsChunkIndex = 0;
   var usingOpenAI = false;
+
+  // Web Audio API state (used for OpenAI TTS playback)
+  var audioCtx = null;
+  var activeSource = null;
+
+  // Browser speech state (fallback)
+  var keepAliveTimer = null;
 
   function getSiteLang() {
     return localStorage.getItem('sma-lang') || 'en';
@@ -32,14 +38,12 @@
   function getProseText() {
     var sections = [];
 
-    // 1. Title — first h1 on the page (outside prose)
     var h1 = document.querySelector('h1');
     if (h1 && !h1.closest('.prose') && !h1.closest('#article-body')) {
       var titleText = nodeText(h1);
       if (titleText) sections.push(titleText);
     }
 
-    // 2. Subtitle — p immediately after h1 that is not a category label
     if (h1) {
       var sib = h1.nextElementSibling;
       while (sib) {
@@ -53,7 +57,6 @@
       }
     }
 
-    // 3. Body — structural elements inside .prose / #article-body
     var root = document.getElementById('article-body') || document.querySelector('.prose');
     if (root) {
       var nodes = root.querySelectorAll('h1, h2, h3, h4, p, li, blockquote');
@@ -81,7 +84,8 @@
       '@keyframes sma-eq1{0%,100%{height:4px;margin-top:8px}50%{height:12px;margin-top:0px}}',
       '@keyframes sma-eq2{0%,100%{height:8px;margin-top:4px}33%{height:4px;margin-top:8px}66%{height:12px;margin-top:0px}}',
       '@keyframes sma-eq3{0%,100%{height:6px;margin-top:6px}50%{height:4px;margin-top:8px}}',
-      '@keyframes sma-eq4{0%,100%{height:10px;margin-top:2px}40%{height:4px;margin-top:8px}70%{height:12px;margin-top:0px}}'
+      '@keyframes sma-eq4{0%,100%{height:10px;margin-top:2px}40%{height:4px;margin-top:8px}70%{height:12px;margin-top:0px}}',
+      '@keyframes spin{to{transform:rotate(360deg)}}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -111,7 +115,7 @@
   }
 
   function svgSpinner() {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;display:block;animation:spin 0.8s linear infinite"><style>@keyframes spin{to{transform:rotate(360deg)}}</style><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;display:block;animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
   }
 
   function setState(s) {
@@ -151,18 +155,11 @@
   function preprocessForTTS(text, lang) {
     if (!lang || !lang.startsWith('en')) return text;
 
-    // Past-tense "read" → "red" (must run BEFORE the catch-all below)
     text = text.replace(/\b(have|has|had)\s+read\b/gi, '$1 red');
     text = text.replace(/([''`]ve)\s+read\b/gi, '$1 red');
     text = text.replace(/\bget\s+read\b/gi, 'get noticed');
-
-    // Present/imperative "read" → "reed" (catch-all for remaining uses)
     text = text.replace(/\bread\b/g, 'reed');
-
-    // "tear up" (to cry) → phonetically clear synonym
     text = text.replace(/\btear\s+up\b/gi, 'well up with tears');
-
-    // "close" as proximity → "near"
     text = text.replace(/\bclose\s+to\b/gi, 'near to');
     text = text.replace(/\bis\s+close\b(?!\s+to)/gi, 'is nearby');
 
@@ -187,7 +184,6 @@
     while (remaining.length > maxLen) {
       var slice = remaining.substring(0, maxLen);
       var cut = -1;
-      // Prefer sentence-ending boundaries
       var candidates = [
         slice.lastIndexOf('. '),
         slice.lastIndexOf('! '),
@@ -197,14 +193,8 @@
       for (var i = 0; i < candidates.length; i++) {
         if (candidates[i] > cut) cut = candidates[i];
       }
-      // If no sentence boundary found in a reasonable range, try comma
-      if (cut < Math.floor(maxLen / 2)) {
-        cut = slice.lastIndexOf(', ');
-      }
-      // Last resort: hard cut at maxLen
-      if (cut < 100) {
-        cut = maxLen - 1;
-      }
+      if (cut < Math.floor(maxLen / 2)) cut = slice.lastIndexOf(', ');
+      if (cut < 100) cut = maxLen - 1;
       chunks.push(remaining.substring(0, cut + 1).trim());
       remaining = remaining.substring(cut + 1).trim();
     }
@@ -212,24 +202,38 @@
     return chunks;
   }
 
-  // ── OpenAI TTS playback ───────────────────────────────────────────────────────
+  // ── Web Audio API playback (OpenAI TTS) ──────────────────────────────────────
+  // Using AudioContext instead of <audio> element so that iOS/DuckDuckGo
+  // honours the user-gesture unlock from the original button click.
 
-  function stopOpenAI() {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.src = '';
-      currentAudio = null;
+  function getAudioCtx() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx || audioCtx.state === 'closed') {
+      audioCtx = new AC();
     }
-    ttsChunks = [];
-    ttsChunkIndex = 0;
+    return audioCtx;
+  }
+
+  function stopActiveSource() {
+    if (activeSource) {
+      try { activeSource.stop(); } catch (e) {}
+      try { activeSource.disconnect(); } catch (e) {}
+      activeSource = null;
+    }
+  }
+
+  function closeAudioCtx() {
+    stopActiveSource();
+    if (audioCtx && audioCtx.state !== 'closed') {
+      try { audioCtx.close(); } catch (e) {}
+    }
+    audioCtx = null;
   }
 
   function playChunk(index) {
     if (state === 'idle') return;
-    if (index >= ttsChunks.length) {
-      setState('idle');
-      return;
-    }
+    if (index >= ttsChunks.length) { setState('idle'); return; }
 
     setState('loading');
 
@@ -240,34 +244,68 @@
     })
     .then(function (res) {
       if (!res.ok) throw new Error('TTS API ' + res.status);
-      return res.blob();
+      return res.arrayBuffer();
     })
-    .then(function (blob) {
+    .then(function (arrayBuffer) {
       if (state === 'idle') return;
-      var url = URL.createObjectURL(blob);
-      currentAudio = new Audio(url);
-      currentAudio.onended = function () {
-        URL.revokeObjectURL(url);
+      var ctx = getAudioCtx();
+      if (!ctx) throw new Error('No AudioContext');
+
+      // Resume context in case it was suspended (required on some browsers)
+      var resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+      return resume.then(function () {
+        return new Promise(function (resolve, reject) {
+          ctx.decodeAudioData(arrayBuffer, resolve, reject);
+        });
+      });
+    })
+    .then(function (decoded) {
+      if (state === 'idle') return;
+      var ctx = getAudioCtx();
+      if (!ctx) return;
+
+      stopActiveSource();
+      activeSource = ctx.createBufferSource();
+      activeSource.buffer = decoded;
+      activeSource.connect(ctx.destination);
+      activeSource.onended = function () {
         if (state !== 'idle') {
           ttsChunkIndex++;
           playChunk(ttsChunkIndex);
         }
       };
-      currentAudio.onerror = function () {
-        URL.revokeObjectURL(url);
-        setState('idle');
-      };
-      currentAudio.play();
+      activeSource.start(0);
       setState('playing');
     })
     .catch(function (err) {
-      console.warn('OpenAI TTS failed, using browser voice:', err.message);
+      console.warn('OpenAI TTS failed, falling back to browser voice:', err.message);
       usingOpenAI = false;
+      closeAudioCtx();
       useBrowserTTS(ttsChunks.join(' '));
     });
   }
 
+  function stopOpenAI() {
+    closeAudioCtx();
+    ttsChunks = [];
+    ttsChunkIndex = 0;
+  }
+
   // ── Browser (Web Speech API) fallback ────────────────────────────────────────
+
+  function startBrowserKeepalive() {
+    if (keepAliveTimer) return;
+    keepAliveTimer = setInterval(function () {
+      if (state === 'playing' && window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      if (state === 'idle') { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+    }, 10000);
+  }
+
+  function stopBrowserKeepalive() {
+    if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+  }
 
   function useBrowserTTS(text) {
     if (!window.speechSynthesis) { setState('idle'); return; }
@@ -276,17 +314,20 @@
     utt.lang = lang;
     utt.rate = 0.92;
     utt.pitch = 1;
-    utt.onend = function () { setState('idle'); };
+    utt.onend = function () { stopBrowserKeepalive(); setState('idle'); };
     utt.onerror = function (e) {
+      stopBrowserKeepalive();
       if (e.error !== 'interrupted' && e.error !== 'canceled') { setState('idle'); }
     };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utt);
     window._smaTTSUtterance = utt;
+    startBrowserKeepalive();
     setState('playing');
   }
 
   function stopBrowserTTS() {
+    stopBrowserKeepalive();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   }
 
@@ -303,29 +344,37 @@
       var text = preprocessForTTS(rawText, getVoiceLang());
 
       if (siteLang === 'en') {
-        // Use OpenAI TTS (high-quality voice)
         usingOpenAI = true;
         ttsChunks = splitIntoChunks(text);
         ttsChunkIndex = 0;
+
+        // Unlock the AudioContext synchronously within the user gesture.
+        // iOS/DuckDuckGo require this to happen before any async work.
+        var ctx = getAudioCtx();
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
         playChunk(0);
       } else {
-        // Use browser speech for FR/ES
         usingOpenAI = false;
         useBrowserTTS(text);
       }
+
     } else if (state === 'playing') {
-      if (usingOpenAI && currentAudio) {
-        currentAudio.pause();
-        setState('paused');
-      } else if (!usingOpenAI && window.speechSynthesis) {
+      if (usingOpenAI) {
+        var ctx2 = getAudioCtx();
+        if (ctx2) ctx2.suspend().then(function () { setState('paused'); });
+      } else if (window.speechSynthesis) {
         window.speechSynthesis.pause();
         setState('paused');
       }
+
     } else if (state === 'paused') {
-      if (usingOpenAI && currentAudio) {
-        currentAudio.play();
-        setState('playing');
-      } else if (!usingOpenAI && window.speechSynthesis) {
+      if (usingOpenAI) {
+        var ctx3 = getAudioCtx();
+        if (ctx3) ctx3.resume().then(function () { setState('playing'); });
+      } else if (window.speechSynthesis) {
         window.speechSynthesis.resume();
         setState('playing');
       }
@@ -333,7 +382,9 @@
   }
 
   function handleStop() {
-    if (usingOpenAI) {
+    var wasOpenAI = usingOpenAI;
+    usingOpenAI = false;
+    if (wasOpenAI) {
       stopOpenAI();
     } else {
       stopBrowserTTS();
@@ -349,33 +400,24 @@
 
     var container = null;
 
-    // Strategy 1 — Layout A: metadata line has data-i18n="blog_min_read"
     var minReadEl = document.querySelector('[data-i18n="blog_min_read"]');
-    if (minReadEl) {
-      container = minReadEl.closest('.flex');
-    }
+    if (minReadEl) container = minReadEl.closest('.flex');
 
-    // Strategy 2 — Layout A fallback: flex with both "ServeMaster" and "min"
     if (!container) {
       var flexDivs = document.querySelectorAll('.flex.items-center');
       for (var i = 0; i < flexDivs.length; i++) {
         var t = flexDivs[i].textContent || '';
         if (t.indexOf('ServeMaster') !== -1 && t.indexOf('min') !== -1) {
-          container = flexDivs[i];
-          break;
+          container = flexDivs[i]; break;
         }
       }
     }
 
-    // Strategy 3 — Layout B: category pill + "X min read" above the h1
     if (!container) {
       var allFlex = document.querySelectorAll('.flex.items-center');
       for (var j = 0; j < allFlex.length; j++) {
         var txt = allFlex[j].textContent || '';
-        if (/\d+\s*min/.test(txt)) {
-          container = allFlex[j];
-          break;
-        }
+        if (/\d+\s*min/.test(txt)) { container = allFlex[j]; break; }
       }
     }
 
@@ -393,22 +435,12 @@
     btn.setAttribute('aria-label', lbl.aria);
     btn.setAttribute('title', lbl.aria);
     btn.style.cssText = [
-      'display:inline-flex',
-      'align-items:center',
-      'gap:5px',
-      'padding:3px 10px 3px 8px',
-      'border-radius:9999px',
-      'border:1px solid #3f3f46',
-      'background:transparent',
-      'color:#a1a1aa',
-      'font-size:0.7rem',
-      'font-weight:600',
-      'cursor:pointer',
-      'transition:border-color 0.15s,color 0.15s',
-      'letter-spacing:0.05em',
-      'text-transform:uppercase',
-      'line-height:1.4',
-      'font-family:inherit',
+      'display:inline-flex', 'align-items:center', 'gap:5px',
+      'padding:3px 10px 3px 8px', 'border-radius:9999px',
+      'border:1px solid #3f3f46', 'background:transparent', 'color:#a1a1aa',
+      'font-size:0.7rem', 'font-weight:600', 'cursor:pointer',
+      'transition:border-color 0.15s,color 0.15s', 'letter-spacing:0.05em',
+      'text-transform:uppercase', 'line-height:1.4', 'font-family:inherit',
       'vertical-align:middle'
     ].join(';');
     btn.innerHTML = svgSpeaker() + '<span style="white-space:nowrap">' + lbl.listen + '</span>';
@@ -420,33 +452,22 @@
     stopBtn.setAttribute('aria-label', lbl.stop);
     stopBtn.setAttribute('title', lbl.stop);
     stopBtn.style.cssText = [
-      'display:none',
-      'align-items:center',
-      'justify-content:center',
-      'width:22px',
-      'height:22px',
-      'border-radius:9999px',
-      'border:1px solid #3f3f46',
-      'background:transparent',
-      'color:#71717a',
-      'cursor:pointer',
-      'transition:border-color 0.15s,color 0.15s',
-      'padding:0',
-      'flex-shrink:0'
+      'display:none', 'align-items:center', 'justify-content:center',
+      'width:22px', 'height:22px', 'border-radius:9999px',
+      'border:1px solid #3f3f46', 'background:transparent', 'color:#71717a',
+      'cursor:pointer', 'transition:border-color 0.15s,color 0.15s',
+      'padding:0', 'flex-shrink:0'
     ].join(';');
     stopBtn.innerHTML = svgStop();
     stopBtn.addEventListener('click', handleStop);
     stopBtn.addEventListener('mouseenter', function () {
-      stopBtn.style.borderColor = '#ef4444';
-      stopBtn.style.color = '#ef4444';
+      stopBtn.style.borderColor = '#ef4444'; stopBtn.style.color = '#ef4444';
     });
     stopBtn.addEventListener('mouseleave', function () {
-      stopBtn.style.borderColor = '#3f3f46';
-      stopBtn.style.color = '#71717a';
+      stopBtn.style.borderColor = '#3f3f46'; stopBtn.style.color = '#71717a';
     });
     container.appendChild(stopBtn);
 
-    // Stop playback on language switch (language changes the voice/service used)
     var _origSetLang = window.setLang;
     window.setLang = function (lang) {
       handleStop();
