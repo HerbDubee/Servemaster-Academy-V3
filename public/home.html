@@ -282,10 +282,10 @@
         </div>
       </div>
       <p class="text-zinc-400 text-sm mb-8">Per location · Unlimited staff · Cancel any time</p>
-      <a href="/pricing" class="inline-block font-bold text-lg py-4 px-10 rounded-3xl text-black transition-colors hover:opacity-90" style="background:#7dd3fc;">
-        Start 30-Day Free Pro Team Trial – No Credit Card Needed
-      </a>
-      <p class="mt-3 text-xs text-zinc-500">First 30 days only $49 — cancel any time</p>
+      <button onclick="openTrialModal()" class="inline-block font-bold text-lg py-4 px-10 rounded-3xl text-black transition-colors hover:opacity-90 cursor-pointer" style="background:#7dd3fc;">
+        Request Your 30-Day Free Trial Code →
+      </button>
+      <p class="mt-3 text-xs text-zinc-500">Kirk will send your access code within 1 business day</p>
     </div>
 
   </div>
@@ -391,8 +391,8 @@
       <div class="text-2xl mb-3">🏨</div>
       <h2 class="heading text-2xl mb-3 text-white">For Restaurant Owners</h2>
       <p class="text-zinc-300 text-sm leading-relaxed mb-2">Unlimited staff. Manager dashboard. Custom AI scenarios. $199/mo per location.</p>
-      <p class="text-zinc-400 text-xs mb-6">First 30 days only $49 — cancel any time</p>
-      <a href="/pricing" class="mt-auto inline-block font-bold py-3.5 px-8 rounded-3xl transition-colors hover:opacity-90 text-black" style="background:#7dd3fc;">Start 30-Day Pro Team Trial →</a>
+      <p class="text-zinc-400 text-xs mb-6">30-day free trial · Kirk sends your code within 1 business day</p>
+      <button onclick="openTrialModal()" class="mt-auto inline-block font-bold py-3.5 px-8 rounded-3xl transition-colors hover:opacity-90 text-black cursor-pointer" style="background:#7dd3fc;">Request Your Free Trial Code →</button>
     </div>
 
   </div>
@@ -445,6 +445,90 @@
   </form>
   <p id="nl-msg" class="text-emerald-400 text-sm mt-3 hidden" data-i18n="home_newsletter_ok">You're in! Expect practical tips soon.</p>
 </section>
+
+<!-- TEAM TRIAL REQUEST MODAL -->
+<div id="trial-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" style="background:rgba(0,0,0,0.75);">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-8 relative">
+    <button onclick="closeTrialModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+
+    <!-- Default state -->
+    <div id="trial-form-wrap">
+      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Pro Team Trial</p>
+      <h3 class="heading text-2xl text-white mb-1">Request Your Free 30-Day Code</h3>
+      <p class="text-zinc-400 text-sm mb-6">Fill in your details below and Kirk will send your access code within 1 business day.</p>
+      <form id="trial-form" onsubmit="submitTrialRequest(event)" class="space-y-4">
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1">Your Name</label>
+          <input id="tr-name" type="text" required placeholder="Jane Smith" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1">Your Email</label>
+          <input id="tr-email" type="email" required placeholder="jane@yourrestaurant.com" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1">Restaurant Name</label>
+          <input id="tr-restaurant" type="text" required placeholder="The Grand Bistro" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 text-sm">
+        </div>
+        <button type="submit" id="tr-btn" class="w-full font-bold py-3.5 rounded-2xl text-black transition-colors hover:opacity-90 text-sm" style="background:#7dd3fc;">Send Request →</button>
+        <p id="tr-error" class="text-red-400 text-xs text-center hidden"></p>
+      </form>
+    </div>
+
+    <!-- Success state -->
+    <div id="trial-success" class="text-center hidden">
+      <div class="text-5xl mb-4">🎉</div>
+      <h3 class="heading text-2xl text-white mb-2">Request Sent!</h3>
+      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and send your 30-day access code within 1 business day.</p>
+      <button onclick="closeTrialModal()" class="font-semibold text-sm py-2.5 px-6 rounded-2xl border border-zinc-600 hover:border-zinc-400 text-white transition-colors">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openTrialModal() {
+  document.getElementById('trial-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeTrialModal() {
+  document.getElementById('trial-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('trial-form-wrap').classList.remove('hidden');
+  document.getElementById('trial-success').classList.add('hidden');
+  document.getElementById('trial-form').reset();
+  document.getElementById('tr-error').classList.add('hidden');
+}
+document.getElementById('trial-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeTrialModal();
+});
+async function submitTrialRequest(e) {
+  e.preventDefault();
+  const btn = document.getElementById('tr-btn');
+  const errEl = document.getElementById('tr-error');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch('/api/request-team-trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('tr-name').value.trim(),
+        email: document.getElementById('tr-email').value.trim(),
+        restaurantName: document.getElementById('tr-restaurant').value.trim()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+    document.getElementById('trial-form-wrap').classList.add('hidden');
+    document.getElementById('trial-success').classList.remove('hidden');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+    btn.textContent = 'Send Request →';
+    btn.disabled = false;
+  }
+}
+</script>
 
 <!-- FOOTER -->
 <footer class="border-t border-zinc-800 py-12">

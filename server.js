@@ -1103,6 +1103,32 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to send message' }); }
 });
 
+app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
+  const { name, email, restaurantName } = req.body;
+  if (!name || !email || !restaurantName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
+  try {
+    await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restaurantName}`]);
+    resend.emails.send({
+      from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
+      to: 'kirk_adamson@servemasteracademy.ca',
+      subject: `Pro Team Trial Request — ${restaurantName}`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+        <h2 style="color:#7dd3fc;margin-top:0;">New Pro Team Trial Request</h2>
+        <table style="font-size:15px;width:100%;border-collapse:collapse;">
+          <tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(name)}</td></tr>
+          <tr><td style="padding:8px 0;color:#a1a1aa;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(email)}" style="color:#7dd3fc;">${escapeHtml(email)}</a></td></tr>
+          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restaurantName)}</td></tr>
+        </table>
+        <p style="margin-top:24px;font-size:14px;color:#71717a;">Received via the homepage team trial request form.</p>
+      </div>`
+    }).catch(e => console.error('Team trial request email error:', e.message));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Team trial request error:', err.message);
+    res.status(500).json({ error: 'Failed to send request' });
+  }
+});
+
 app.post('/api/enterprise-request', contactLimiter, async (req, res) => {
   const { name, email, company, locations, message } = req.body;
   if (!name || !email || !company) return res.status(400).json({ error: 'Name, email and company are required' });
