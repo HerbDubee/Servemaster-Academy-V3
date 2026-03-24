@@ -156,6 +156,24 @@
     }
   }
 
+  function preprocessForTTS(text, lang) {
+    if (!lang || !lang.startsWith('en')) return text;
+
+    // Past-tense "read" → "red" (identical pronunciation; avoids the engine choosing "reed")
+    text = text.replace(/\b(have|has|had)\s+read\b/gi, '$1 red');
+    text = text.replace(/([''`]ve)\s+read\b/gi, '$1 red');
+    text = text.replace(/\bget\s+read\b/gi, 'get noticed');
+
+    // "tear up" (to cry) → phonetically clear synonym so TTS says "teer" not "tare"
+    text = text.replace(/\btear\s+up\b/gi, 'well up with tears');
+
+    // "close" as proximity adjective → "near" so TTS says "klohs" not "klohz"
+    text = text.replace(/\bclose\s+to\b/gi, 'near to');
+    text = text.replace(/\bis\s+close\b(?!\s+to)/g, 'is nearby');
+
+    return text;
+  }
+
   function isPlaceholderText(text) {
     if (!text || text.length < 100) return true;
     var lower = text.toLowerCase();
@@ -164,10 +182,11 @@
 
   function handlePlay() {
     if (state === 'idle') {
-      var text = getProseText();
+      var lang = getVoiceLang();
+      var text = preprocessForTTS(getProseText(), lang);
       if (isPlaceholderText(text)) return;
       var utt = new SpeechSynthesisUtterance(text);
-      utt.lang = getVoiceLang();
+      utt.lang = lang;
       utt.rate = 0.92;
       utt.pitch = 1;
       utt.onend = function () { setState('idle'); };
