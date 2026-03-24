@@ -15,6 +15,46 @@
       nav { flex-direction: column; padding: 1rem; }
       .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
     }
+    #blog-filter-bar {
+      position: sticky;
+      top: 72px;
+      z-index: 40;
+      background: #09090b;
+      padding: 14px 0 12px;
+      margin-bottom: 28px;
+    }
+    #blog-search {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 9999px;
+      padding: 10px 16px 10px 42px;
+      color: #fafafa;
+      font-size: 0.9rem;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    #blog-search:focus { border-color: #71717a; }
+    #blog-search::placeholder { color: #52525b; }
+    .blog-pill {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid #3f3f46;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+    .blog-pill:hover:not(.active) { border-color: #71717a; color: #d4d4d8; }
+    .blog-pill.active { border-color: #FF5E3A; background: rgba(255,94,58,0.12); color: #FF5E3A; }
+    .blog-section { border-top: none; padding-top: 0; }
   </style>
 </head>
 <body>
@@ -52,7 +92,10 @@
     <p class="text-zinc-400 text-xl max-w-xl mx-auto" data-i18n="blog_index_sub">Professional tips, techniques, and career advice for restaurant servers and hospitality professionals.</p>
   </div>
 </section>
-<main class="max-w-5xl mx-auto px-4 py-16">
+
+<main class="max-w-5xl mx-auto px-4 pt-6 pb-16">
+
+  <div id="blog-filter-wrap"></div>
 
   <div id="blog-sections-container">
     <div class="text-center py-10 text-zinc-500">Loading articles…</div>
@@ -86,7 +129,175 @@
 <script src="/js/content.js"></script>
 <script src="/js/lang.js"></script>
 <script>
-(function() {
+(function () {
+  var filterState = { section: 'all', query: '' };
+
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function shortLabel(sectionId, title) {
+    if (sectionId.indexOf('bar-') === 0) {
+      var dash = title.indexOf(' \u2014 ');
+      if (dash !== -1) return title.slice(dash + 3);
+      dash = title.indexOf(' - ');
+      if (dash !== -1) return title.slice(dash + 3);
+    }
+    return title;
+  }
+
+  function renderFilterBar(sections, lang) {
+    var allLabel = lang === 'fr' ? 'Tous' : lang === 'es' ? 'Todos' : 'All';
+    var placeholder = lang === 'fr' ? 'Rechercher des articles\u2026' : lang === 'es' ? 'Buscar art\u00edculos\u2026' : 'Search articles\u2026';
+
+    var html = '<div id="blog-filter-bar">';
+
+    html += '<div style="position:relative;margin-bottom:12px">';
+    html += '<svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#52525b;pointer-events:none;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+    html += '<input id="blog-search" type="text" autocomplete="off" value="' + escHtml(filterState.query) + '" placeholder="' + escHtml(placeholder) + '">';
+    html += '</div>';
+
+    html += '<div style="display:flex;flex-wrap:wrap;gap:7px;padding-bottom:14px;border-bottom:1px solid #27272a">';
+
+    var allActive = filterState.section === 'all';
+    html += '<button class="blog-pill' + (allActive ? ' active' : '') + '" data-pill-id="all" onclick="window.setBlogSection(\'all\')">' + escHtml(allLabel) + '</button>';
+
+    sections.forEach(function (section) {
+      var sTitle = lang === 'fr' && section.titleFr ? section.titleFr : lang === 'es' && section.titleEs ? section.titleEs : section.title;
+      var label = shortLabel(section.id, sTitle);
+      var isActive = filterState.section === section.id;
+      html += '<button class="blog-pill' + (isActive ? ' active' : '') + '" data-pill-id="' + escHtml(section.id) + '" onclick="window.setBlogSection(\'' + escHtml(section.id) + '\')">' + escHtml(label) + '</button>';
+    });
+
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderSections(sections, articleMap, lang) {
+    var readLabel = lang === 'fr' ? 'Lire l\'article \u2192' : lang === 'es' ? 'Leer art\u00edculo \u2192' : 'Read article \u2192';
+    var noResultsMsg = lang === 'fr' ? 'Aucun article trouv\u00e9.' : lang === 'es' ? 'No se encontraron art\u00edculos.' : 'No articles found.';
+
+    var html = '';
+    sections.forEach(function (section) {
+      var sTitle = lang === 'fr' && section.titleFr ? section.titleFr : lang === 'es' && section.titleEs ? section.titleEs : section.title;
+      var sSub = lang === 'fr' && section.subFr ? section.subFr : lang === 'es' && section.subEs ? section.subEs : section.sub;
+
+      html += '<div class="blog-section" data-section-id="' + escHtml(section.id) + '">';
+      html += '<div class="mb-4">';
+      html += '<h2 class="heading text-2xl font-bold text-white">' + escHtml(sTitle) + '</h2>';
+      if (sSub) html += '<p class="text-zinc-500 text-sm mt-1">' + escHtml(sSub) + '</p>';
+      html += '</div>';
+      html += '<div class="grid md:grid-cols-2 gap-8 mb-6">';
+
+      section.slugs.forEach(function (slug) {
+        var a = articleMap[slug];
+        if (!a) return;
+        var aTitle = lang === 'fr' && a.titleFr ? a.titleFr : lang === 'es' && a.titleEs ? a.titleEs : a.title;
+        var aDesc = a.desc || '';
+        var aCat = lang === 'fr' && a.categoryFr ? a.categoryFr : lang === 'es' && a.categoryEs ? a.categoryEs : a.category;
+        var searchText = (aTitle + ' ' + aDesc + ' ' + aCat).toLowerCase();
+
+        html += '<a href="/blog/' + slug + '" class="blog-card bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group" data-search-text="' + escHtml(searchText) + '">';
+        html += '<p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">' + escHtml(aCat) + '</p>';
+        html += '<h2 class="heading text-2xl font-bold mb-3 group-hover:text-amber-100 transition-colors">' + escHtml(aTitle) + '</h2>';
+        html += '<p class="text-zinc-400 leading-relaxed">' + escHtml(aDesc) + '</p>';
+        html += '<p class="text-amber-400 text-sm mt-6">' + readLabel + '</p>';
+        html += '</a>';
+      });
+
+      html += '</div>';
+      html += '</div>';
+    });
+
+    html += '<div id="blog-no-results" style="display:none;text-align:center;padding:3rem 0 1rem;color:#71717a;font-size:0.95rem">' + escHtml(noResultsMsg) + '</div>';
+    return html;
+  }
+
+  function applyFilter() {
+    var query = filterState.query.trim().toLowerCase();
+    var sectionId = filterState.section;
+    var sections = document.querySelectorAll('.blog-section');
+    var totalVisible = 0;
+    var visibleSections = [];
+
+    sections.forEach(function (sectionEl) {
+      var sid = sectionEl.getAttribute('data-section-id');
+      if (sectionId !== 'all' && sectionId !== sid) {
+        sectionEl.style.display = 'none';
+        return;
+      }
+
+      var cards = sectionEl.querySelectorAll('.blog-card');
+      var visibleCount = 0;
+
+      if (query) {
+        cards.forEach(function (card) {
+          var text = card.getAttribute('data-search-text') || '';
+          var show = text.indexOf(query) !== -1;
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
+        });
+      } else {
+        cards.forEach(function (card) { card.style.display = ''; });
+        visibleCount = cards.length;
+      }
+
+      if (visibleCount > 0) {
+        sectionEl.style.display = '';
+        visibleSections.push(sectionEl);
+      } else {
+        sectionEl.style.display = 'none';
+      }
+      totalVisible += visibleCount;
+    });
+
+    visibleSections.forEach(function (sectionEl, i) {
+      if (i === 0) {
+        sectionEl.style.borderTop = 'none';
+        sectionEl.style.paddingTop = '0';
+        sectionEl.style.marginTop = '0';
+      } else {
+        sectionEl.style.borderTop = '1px solid #27272a';
+        sectionEl.style.paddingTop = '3rem';
+        sectionEl.style.marginTop = '1rem';
+      }
+    });
+
+    var noResults = document.getElementById('blog-no-results');
+    if (noResults) noResults.style.display = totalVisible === 0 ? 'block' : 'none';
+  }
+
+  window.setBlogSection = function (id) {
+    filterState.section = id;
+    var pills = document.querySelectorAll('.blog-pill');
+    pills.forEach(function (pill) {
+      var pid = pill.getAttribute('data-pill-id');
+      if (pid === id) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+    applyFilter();
+  };
+
+  function hookSearch() {
+    var el = document.getElementById('blog-search');
+    if (!el) return;
+    el.addEventListener('input', function () {
+      filterState.query = this.value;
+      applyFilter();
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        filterState.query = '';
+        this.value = '';
+        applyFilter();
+      }
+    });
+  }
+
   function renderBlog() {
     var lang = localStorage.getItem('sma-lang') || 'en';
     var SMA = window.SMAContent;
@@ -96,43 +307,15 @@
     var sections = SMA.blogSections;
 
     var articleMap = {};
-    articles.forEach(function(a) {
+    articles.forEach(function (a) {
       if (!articleMap[a.slug]) articleMap[a.slug] = a;
     });
 
-    var readLabel = lang === 'fr' ? 'Lire l\'article →' : lang === 'es' ? 'Leer artículo →' : 'Read article →';
+    document.getElementById('blog-filter-wrap').innerHTML = renderFilterBar(sections, lang);
+    document.getElementById('blog-sections-container').innerHTML = renderSections(sections, articleMap, lang);
 
-    var html = '';
-    sections.forEach(function(section, si) {
-      var sTitle = lang === 'fr' && section.titleFr ? section.titleFr : lang === 'es' && section.titleEs ? section.titleEs : section.title;
-      var sSub = lang === 'fr' && section.subFr ? section.subFr : lang === 'es' && section.subEs ? section.subEs : section.sub;
-
-      var borderClass = si === 0 ? 'mb-4' : 'border-t border-zinc-800 pt-14 mb-4';
-      html += '<div class="' + borderClass + '">';
-      html += '<h2 class="heading text-2xl font-bold text-white">' + sTitle + '</h2>';
-      if (sSub) html += '<p class="text-zinc-500 text-sm mt-1">' + sSub + '</p>';
-      html += '</div>';
-      html += '<div class="grid md:grid-cols-2 gap-8 mb-16">';
-
-      section.slugs.forEach(function(slug) {
-        var a = articleMap[slug];
-        if (!a) return;
-        var aTitle = lang === 'fr' && a.titleFr ? a.titleFr : lang === 'es' && a.titleEs ? a.titleEs : a.title;
-        var aDesc = a.desc || '';
-        var aCat = lang === 'fr' && a.categoryFr ? a.categoryFr : lang === 'es' && a.categoryEs ? a.categoryEs : a.category;
-
-        html += '<a href="/blog/' + slug + '" class="bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group">';
-        html += '<p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">' + aCat + '</p>';
-        html += '<h2 class="heading text-2xl font-bold mb-3 group-hover:text-amber-100 transition-colors">' + aTitle + '</h2>';
-        html += '<p class="text-zinc-400 leading-relaxed">' + aDesc + '</p>';
-        html += '<p class="text-amber-400 text-sm mt-6">' + readLabel + '</p>';
-        html += '</a>';
-      });
-
-      html += '</div>';
-    });
-
-    document.getElementById('blog-sections-container').innerHTML = html;
+    hookSearch();
+    applyFilter();
   }
 
   if (document.readyState === 'loading') {
@@ -141,9 +324,9 @@
     renderBlog();
   }
 
-  window.addEventListener('load', function() {
+  window.addEventListener('load', function () {
     var _origSetLang = window.setLang;
-    window.setLang = function(lang) {
+    window.setLang = function (lang) {
       if (_origSetLang) _origSetLang(lang);
       else { localStorage.setItem('sma-lang', lang); }
       renderBlog();
