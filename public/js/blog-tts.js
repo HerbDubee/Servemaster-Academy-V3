@@ -169,7 +169,7 @@
 
     // "close" as proximity adjective → "near" so TTS says "klohs" not "klohz"
     text = text.replace(/\bclose\s+to\b/gi, 'near to');
-    text = text.replace(/\bis\s+close\b(?!\s+to)/g, 'is nearby');
+    text = text.replace(/\bis\s+close\b(?!\s+to)/gi, 'is nearby');
 
     return text;
   }
