@@ -328,15 +328,32 @@ async function adminMiddleware(req, res, next) {
 async function checkTrial(req, res, next) {
   try {
     const { rows } = await db.query(
-      'SELECT subscription_status, trial_ends_at, is_trial_active FROM users WHERE id = $1',
+      'SELECT subscription_status, trial_ends_at, is_trial_active, invite_access_expires_at FROM users WHERE id = $1',
       [req.user.id]
     );
     if (!rows.length) return res.status(401).json({ error: 'User not found' });
     const user = rows[0];
+    const now = new Date();
+
+    // Time-limited invite access: check before the paid-plan pass-through so that
+    // an expired invite code trial correctly reverts even if subscription_status is 'premium'.
+    if (user.invite_access_expires_at) {
+      if (now > new Date(user.invite_access_expires_at)) {
+        await db.query(
+          "UPDATE users SET subscription_status = 'none', invite_access_expires_at = NULL WHERE id = $1",
+          [req.user.id]
+        );
+        return res.status(402).json({
+          error: 'Trial expired',
+          message: 'Your complimentary access period has ended. Please subscribe to continue.'
+        });
+      }
+      // Still within the invite window — allow through
+      return next();
+    }
 
     if (PAID_PLAN_STATUSES.has(user.subscription_status)) return next();
 
-    const now = new Date();
     const trialEnd = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
 
     if (trialEnd && now <= trialEnd) return next();
@@ -1518,13 +1535,13 @@ app.get('/api/admin/contacts', adminMiddleware, async (req, res) => {
 // ── Invite code admin routes ──────────────────────────────────────────────────
 app.post('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   try {
-    const { plan = 'premium', maxUses = 1, expiresAt } = req.body;
+    const { plan = 'premium', maxUses = 1, expiresAt, accessDays = 0 } = req.body;
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     const code = `SMA-${part()}-${part()}`;
     await db.query(
-      'INSERT INTO invite_codes (code, plan, max_uses, expires_at, created_by) VALUES ($1, $2, $3, $4, $5)',
-      [code, plan, maxUses === 0 ? 999999 : maxUses, expiresAt || null, req.user.id]
+      'INSERT INTO invite_codes (code, plan, max_uses, expires_at, access_days, created_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [code, plan, maxUses === 0 ? 999999 : maxUses, expiresAt || null, accessDays > 0 ? accessDays : null, req.user.id]
     );
     res.json({ code });
   } catch (err) { res.status(500).json({ error: 'Failed to create invite code' }); }
@@ -1773,9 +1790,12 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
     if (already.rows.length) return res.status(400).json({ error: 'You have already redeemed this code' });
     await db.query('INSERT INTO invite_code_redemptions (code, user_id) VALUES ($1, $2)', [ic.code, req.user.id]);
     await db.query('UPDATE invite_codes SET uses_count = uses_count + 1 WHERE code = $1', [ic.code]);
+    const inviteAccessExpiresAt = ic.access_days
+      ? new Date(Date.now() + ic.access_days * 24 * 60 * 60 * 1000)
+      : null;
     await db.query(
-      'UPDATE users SET subscription_status = $1, is_trial_active = false, trial_ends_at = NULL WHERE id = $2',
-      [ic.plan, req.user.id]
+      'UPDATE users SET subscription_status = $1, is_trial_active = false, trial_ends_at = NULL, invite_access_expires_at = $3 WHERE id = $2',
+      [ic.plan, req.user.id, inviteAccessExpiresAt]
     );
     const userRes = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
@@ -2595,6 +2615,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
     await db.query(`INSERT INTO site_settings (key, value) VALUES ('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
+    await db.query(`ALTER TABLE invite_codes ADD COLUMN IF NOT EXISTS access_days INT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_access_expires_at TIMESTAMPTZ`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
