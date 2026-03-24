@@ -1776,7 +1776,7 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 });
 
 // ── AI routes ─────────────────────────────────────────────────────────────────
-app.post('/api/tts', authMiddleware, aiLimiter, async (req, res) => {
+app.post('/api/tts', aiLimiter, async (req, res) => {
   const { text, lang } = req.body;
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'Missing text' });
   if (lang && lang !== 'en') return res.status(400).json({ error: 'TTS only supports English; use browser TTS for other languages.' });

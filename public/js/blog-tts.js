@@ -1,16 +1,17 @@
 (function () {
-  if (!window.speechSynthesis) return;
-
   var LANG_MAP = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
 
   var UI_LABELS = {
-    en: { listen: 'Listen',   pause: 'Pause',  resume: 'Resume',   stop: 'Stop',    aria: 'Listen to this article' },
-    fr: { listen: 'Écouter',  pause: 'Pause',  resume: 'Reprendre',stop: 'Arrêter', aria: 'Écouter cet article' },
-    es: { listen: 'Escuchar', pause: 'Pausar', resume: 'Reanudar', stop: 'Detener', aria: 'Escuchar este artículo' }
+    en: { listen: 'Listen',   pause: 'Pause',  resume: 'Resume',   stop: 'Stop',    loading: 'Loading…', aria: 'Listen to this article' },
+    fr: { listen: 'Écouter',  pause: 'Pause',  resume: 'Reprendre',stop: 'Arrêter', loading: 'Chargement…', aria: 'Écouter cet article' },
+    es: { listen: 'Escuchar', pause: 'Pausar', resume: 'Reanudar', stop: 'Detener', loading: 'Cargando…', aria: 'Escuchar este artículo' }
   };
 
   var state = 'idle';
-  var keepAliveTimer = null;
+  var currentAudio = null;
+  var ttsChunks = [];
+  var ttsChunkIndex = 0;
+  var usingOpenAI = false;
 
   function getSiteLang() {
     return localStorage.getItem('sma-lang') || 'en';
@@ -109,23 +110,12 @@
     return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;display:block"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>';
   }
 
-  function stopKeepalive() {
-    if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
-  }
-
-  function startKeepalive() {
-    stopKeepalive();
-    keepAliveTimer = setInterval(function () {
-      if (state === 'playing' && window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      }
-      if (state === 'idle') { stopKeepalive(); }
-    }, 10000);
+  function svgSpinner() {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;display:block;animation:spin 0.8s linear infinite"><style>@keyframes spin{to{transform:rotate(360deg)}}</style><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
   }
 
   function setState(s) {
     state = s;
-    if (s === 'playing') { startKeepalive(); } else { stopKeepalive(); }
     renderButton();
   }
 
@@ -141,7 +131,9 @@
     btn.setAttribute('aria-label', lbl.aria);
     btn.setAttribute('title', lbl.aria);
 
-    if (state === 'playing') {
+    if (state === 'loading') {
+      btn.innerHTML = svgSpinner() + '<span style="white-space:nowrap">' + lbl.loading + '</span>';
+    } else if (state === 'playing') {
       btn.innerHTML = htmlEqualizer() + '<span style="white-space:nowrap">' + lbl.pause + '</span>';
     } else if (state === 'paused') {
       btn.innerHTML = svgPlay() + '<span style="white-space:nowrap">' + lbl.resume + '</span>';
@@ -159,20 +151,18 @@
   function preprocessForTTS(text, lang) {
     if (!lang || !lang.startsWith('en')) return text;
 
-    // Past-tense "read" → "red" (identical pronunciation; must run BEFORE the catch-all below)
+    // Past-tense "read" → "red" (must run BEFORE the catch-all below)
     text = text.replace(/\b(have|has|had)\s+read\b/gi, '$1 red');
     text = text.replace(/([''`]ve)\s+read\b/gi, '$1 red');
     text = text.replace(/\bget\s+read\b/gi, 'get noticed');
 
-    // Present/imperative "read" → "reed" so the TTS engine always says "reed" not "red".
-    // Runs after past-tense cases are already converted to "red", so only present-tense
-    // instances remain. "reed" is always pronounced "reed" (the plant) by every TTS engine.
+    // Present/imperative "read" → "reed" (catch-all for remaining uses)
     text = text.replace(/\bread\b/g, 'reed');
 
-    // "tear up" (to cry) → phonetically clear synonym so TTS says "teer" not "tare"
+    // "tear up" (to cry) → phonetically clear synonym
     text = text.replace(/\btear\s+up\b/gi, 'well up with tears');
 
-    // "close" as proximity adjective → "near" so TTS says "klohs" not "klohz"
+    // "close" as proximity → "near"
     text = text.replace(/\bclose\s+to\b/gi, 'near to');
     text = text.replace(/\bis\s+close\b(?!\s+to)/gi, 'is nearby');
 
@@ -185,36 +175,173 @@
     return lower.indexOf('loading content') !== -1 || lower === 'loading…' || lower === 'loading...';
   }
 
-  function handlePlay() {
-    if (state === 'idle') {
-      var lang = getVoiceLang();
-      var text = preprocessForTTS(getProseText(), lang);
-      if (isPlaceholderText(text)) return;
-      var utt = new SpeechSynthesisUtterance(text);
-      utt.lang = lang;
-      utt.rate = 0.92;
-      utt.pitch = 1;
-      utt.onend = function () { setState('idle'); };
-      utt.onerror = function (e) {
-        if (e.error !== 'interrupted' && e.error !== 'canceled') { setState('idle'); }
+  // ── Chunking ──────────────────────────────────────────────────────────────────
+
+  function splitIntoChunks(text, maxLen) {
+    maxLen = maxLen || 3900;
+    if (text.length <= maxLen) return [text];
+
+    var chunks = [];
+    var remaining = text;
+
+    while (remaining.length > maxLen) {
+      var slice = remaining.substring(0, maxLen);
+      var cut = -1;
+      // Prefer sentence-ending boundaries
+      var candidates = [
+        slice.lastIndexOf('. '),
+        slice.lastIndexOf('! '),
+        slice.lastIndexOf('? '),
+        slice.lastIndexOf('\n')
+      ];
+      for (var i = 0; i < candidates.length; i++) {
+        if (candidates[i] > cut) cut = candidates[i];
+      }
+      // If no sentence boundary found in a reasonable range, try comma
+      if (cut < Math.floor(maxLen / 2)) {
+        cut = slice.lastIndexOf(', ');
+      }
+      // Last resort: hard cut at maxLen
+      if (cut < 100) {
+        cut = maxLen - 1;
+      }
+      chunks.push(remaining.substring(0, cut + 1).trim());
+      remaining = remaining.substring(cut + 1).trim();
+    }
+    if (remaining) chunks.push(remaining);
+    return chunks;
+  }
+
+  // ── OpenAI TTS playback ───────────────────────────────────────────────────────
+
+  function stopOpenAI() {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.src = '';
+      currentAudio = null;
+    }
+    ttsChunks = [];
+    ttsChunkIndex = 0;
+  }
+
+  function playChunk(index) {
+    if (state === 'idle') return;
+    if (index >= ttsChunks.length) {
+      setState('idle');
+      return;
+    }
+
+    setState('loading');
+
+    fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: ttsChunks[index], lang: 'en' })
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('TTS API ' + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      if (state === 'idle') return;
+      var url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+      currentAudio.onended = function () {
+        URL.revokeObjectURL(url);
+        if (state !== 'idle') {
+          ttsChunkIndex++;
+          playChunk(ttsChunkIndex);
+        }
       };
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utt);
-      window._smaTTSUtterance = utt;
+      currentAudio.onerror = function () {
+        URL.revokeObjectURL(url);
+        setState('idle');
+      };
+      currentAudio.play();
       setState('playing');
+    })
+    .catch(function (err) {
+      console.warn('OpenAI TTS failed, using browser voice:', err.message);
+      usingOpenAI = false;
+      useBrowserTTS(ttsChunks.join(' '));
+    });
+  }
+
+  // ── Browser (Web Speech API) fallback ────────────────────────────────────────
+
+  function useBrowserTTS(text) {
+    if (!window.speechSynthesis) { setState('idle'); return; }
+    var lang = getVoiceLang();
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.lang = lang;
+    utt.rate = 0.92;
+    utt.pitch = 1;
+    utt.onend = function () { setState('idle'); };
+    utt.onerror = function (e) {
+      if (e.error !== 'interrupted' && e.error !== 'canceled') { setState('idle'); }
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+    window._smaTTSUtterance = utt;
+    setState('playing');
+  }
+
+  function stopBrowserTTS() {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+
+  // ── Main controls ─────────────────────────────────────────────────────────────
+
+  function handlePlay() {
+    if (state === 'loading') return;
+
+    var siteLang = getSiteLang();
+
+    if (state === 'idle') {
+      var rawText = getProseText();
+      if (isPlaceholderText(rawText)) return;
+      var text = preprocessForTTS(rawText, getVoiceLang());
+
+      if (siteLang === 'en') {
+        // Use OpenAI TTS (high-quality voice)
+        usingOpenAI = true;
+        ttsChunks = splitIntoChunks(text);
+        ttsChunkIndex = 0;
+        playChunk(0);
+      } else {
+        // Use browser speech for FR/ES
+        usingOpenAI = false;
+        useBrowserTTS(text);
+      }
     } else if (state === 'playing') {
-      window.speechSynthesis.pause();
-      setState('paused');
+      if (usingOpenAI && currentAudio) {
+        currentAudio.pause();
+        setState('paused');
+      } else if (!usingOpenAI && window.speechSynthesis) {
+        window.speechSynthesis.pause();
+        setState('paused');
+      }
     } else if (state === 'paused') {
-      window.speechSynthesis.resume();
-      setState('playing');
+      if (usingOpenAI && currentAudio) {
+        currentAudio.play();
+        setState('playing');
+      } else if (!usingOpenAI && window.speechSynthesis) {
+        window.speechSynthesis.resume();
+        setState('playing');
+      }
     }
   }
 
   function handleStop() {
-    window.speechSynthesis.cancel();
+    if (usingOpenAI) {
+      stopOpenAI();
+    } else {
+      stopBrowserTTS();
+    }
     setState('idle');
   }
+
+  // ── Button injection ──────────────────────────────────────────────────────────
 
   function injectButton() {
     if (document.getElementById('tts-listen-btn')) return;
@@ -241,7 +368,6 @@
     }
 
     // Strategy 3 — Layout B: category pill + "X min read" above the h1
-    // Matches any flex div containing "N min" (e.g. "6 min read") without "ServeMaster"
     if (!container) {
       var allFlex = document.querySelectorAll('.flex.items-center');
       for (var j = 0; j < allFlex.length; j++) {
@@ -320,14 +446,10 @@
     });
     container.appendChild(stopBtn);
 
-    // Hook into window.setLang so button label updates on language switch
+    // Stop playback on language switch (language changes the voice/service used)
     var _origSetLang = window.setLang;
     window.setLang = function (lang) {
-      if (state !== 'idle') {
-        window.speechSynthesis.cancel();
-        state = 'idle';
-        stopKeepalive();
-      }
+      handleStop();
       if (typeof _origSetLang === 'function') _origSetLang(lang);
       renderButton();
     };
@@ -341,13 +463,6 @@
     requestAnimationFrame(injectButton);
   }
 
-  window.addEventListener('beforeunload', function () {
-    window.speechSynthesis.cancel();
-    stopKeepalive();
-  });
-
-  window.addEventListener('pagehide', function () {
-    window.speechSynthesis.cancel();
-    stopKeepalive();
-  });
+  window.addEventListener('beforeunload', handleStop);
+  window.addEventListener('pagehide', handleStop);
 })();
