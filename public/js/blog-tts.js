@@ -159,10 +159,15 @@
   function preprocessForTTS(text, lang) {
     if (!lang || !lang.startsWith('en')) return text;
 
-    // Past-tense "read" → "red" (identical pronunciation; avoids the engine choosing "reed")
+    // Past-tense "read" → "red" (identical pronunciation; must run BEFORE the catch-all below)
     text = text.replace(/\b(have|has|had)\s+read\b/gi, '$1 red');
     text = text.replace(/([''`]ve)\s+read\b/gi, '$1 red');
     text = text.replace(/\bget\s+read\b/gi, 'get noticed');
+
+    // Present/imperative "read" → "reed" so the TTS engine always says "reed" not "red".
+    // Runs after past-tense cases are already converted to "red", so only present-tense
+    // instances remain. "reed" is always pronounced "reed" (the plant) by every TTS engine.
+    text = text.replace(/\bread\b/g, 'reed');
 
     // "tear up" (to cry) → phonetically clear synonym so TTS says "teer" not "tare"
     text = text.replace(/\btear\s+up\b/gi, 'well up with tears');
