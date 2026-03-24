@@ -187,7 +187,12 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   if (!signature) return res.status(400).json({ error: 'Missing stripe-signature' });
   const sig = Array.isArray(signature) ? signature[0] : signature;
 
-  if (process.env.REPLIT_DOMAINS) {
+  // If an explicit webhook secret is set (required in production / custom domain),
+  // verify directly with it.  Only fall back to the Replit-managed integration when
+  // no explicit secret is configured (local dev via Replit workspace).
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret && process.env.REPLIT_DOMAINS) {
     try {
       const sync = await getStripeSync();
       await sync.processWebhook(req.body, sig);
@@ -210,7 +215,6 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     }
   }
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error('STRIPE_WEBHOOK_SECRET not set');
     return res.status(500).json({ error: 'Webhook secret not configured' });
