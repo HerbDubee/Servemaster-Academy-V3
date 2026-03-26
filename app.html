@@ -2709,7 +2709,8 @@ function renderHub() {
       if (nudgeEl) {
         const beginnerScens = hubScenarios.filter(s => s.difficulty === 'Beginner');
         const _hubScenRes = getScenarioResults();
-        const allBeginnerDone = beginnerScens.length > 0 && beginnerScens.every(s =>
+        // Require at least 3 Beginner scenarios in topic AND all completed with passing verdict
+        const allBeginnerDone = beginnerScens.length >= 3 && beginnerScens.every(s =>
           completedScenarios.includes(s.id) && _hubScenRes[s.id] &&
           (_hubScenRes[s.id].verdict === 'excellent' || _hubScenRes[s.id].verdict === 'good'));
         if (allBeginnerDone) {
@@ -2984,7 +2985,8 @@ function computeSmartRecommendations() {
       const t = scenarioTs[sid] ? new Date(scenarioTs[sid]).getTime() : 0;
       return Math.max(mx, t);
     }, 0);
-    const daysSince = lastTs ? (now - lastTs) / 86400000 : 999;
+    // Legacy users without timestamps but with completed scenarios → treat as recent (not stale)
+    const daysSince = lastTs ? (now - lastTs) / 86400000 : (doneSids.length > 0 ? 0 : 999);
     const quizTaken = quizScore != null;
     const quizLow = quizTaken && quizScore < 70;
     const fewScen = doneSids.length < 3;
@@ -3055,11 +3057,14 @@ function renderReviewRecommended() {
   const reviews = modules.filter(mod => {
     const quizScore = savedQuizScores[mod.id];
     if (quizScore == null || quizScore >= 70) return false;
-    const lastTs = (mod.scenarioIds || []).reduce((mx, sid) => {
+    const scenIds = mod.scenarioIds || [];
+    const doneSids = scenIds.filter(sid => completedScenarios.includes(sid));
+    const lastTs = scenIds.reduce((mx, sid) => {
       const t = scenarioTs[sid] ? new Date(scenarioTs[sid]).getTime() : 0;
       return Math.max(mx, t);
     }, 0);
-    const daysSince = lastTs ? (now - lastTs) / 86400000 : 999;
+    // Legacy: if no timestamps but user has completed scenarios in topic, treat as recent
+    const daysSince = lastTs ? (now - lastTs) / 86400000 : (doneSids.length > 0 ? 0 : 999);
     return daysSince > 7;
   });
   if (!reviews.length) { el.innerHTML = ''; el.classList.add('hidden'); return; }
