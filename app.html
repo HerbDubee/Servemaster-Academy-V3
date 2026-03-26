@@ -329,6 +329,7 @@
           </div>
         </div>
       </div>
+      <div id="review-recommended" class="hidden"></div>
       <div id="next-module-card"></div>
       <div>
         <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
@@ -371,6 +372,7 @@
           <h1 class="heading text-4xl lg:text-5xl mb-2" id="practice-title">AI Role-Play Practice</h1>
           <p class="text-zinc-400 text-lg" id="practice-sub">Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.</p>
         </div>
+        <div id="recommended-panel"></div>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="scenario-grid"></div>
       </div>
       <div id="practice-chat" class="hidden flex flex-col" style="min-height: calc(100dvh - 56px);">
@@ -521,6 +523,7 @@
           </div>
           <div id="hub-scenarios-done-badge" class="hidden text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"></div>
         </div>
+        <div id="hub-difficulty-nudge" class=""></div>
         <div id="hub-scenarios-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
       </div>
       <div id="hub-blog-section" class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 lg:p-8">
@@ -1530,6 +1533,7 @@ function renderScenarios() {
     : lang === 'fr'
     ? 'Choisissez un scénario. Vous jouez le serveur — l\'IA joue le client.'
     : 'Choose a scenario. You play the server — the AI plays the guest.';
+  renderRecommendedPanel();
 }
 
 function startChat(scenarioId) {
@@ -1626,6 +1630,9 @@ async function sendChat() {
     if (userTurns === 3) {
       completedScenarios.push(chatScenarioId);
       localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
+      const _scenTs = JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
+      _scenTs[chatScenarioId] = new Date().toISOString();
+      localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
       pushScenarioToServer(chatScenarioId);
       checkBadgesLocal();
       renderScenarios();
@@ -2682,6 +2689,35 @@ function renderHub() {
         <a href="/pricing" class="text-amber-400 hover:underline text-sm">${lang === 'fr' ? 'Mettre à niveau →' : lang === 'es' ? 'Actualizar →' : 'Upgrade now →'}</a>
       </div>`;
     } else {
+      const nudgeEl = document.getElementById('hub-difficulty-nudge');
+      if (nudgeEl) {
+        const beginnerScens = hubScenarios.filter(s => s.difficulty === 'Beginner');
+        const allBeginnerDone = beginnerScens.length > 0 && beginnerScens.every(s => completedScenarios.includes(s.id));
+        const harderScens = hubScenarios.filter(s => (s.difficulty === 'Intermediate' || s.difficulty === 'Advanced') && !completedScenarios.includes(s.id));
+        if (allBeginnerDone && harderScens.length > 0) {
+          const next = harderScens[0];
+          const nextDiff = DIFFICULTY_STYLES[next.difficulty] || DIFFICULTY_STYLES.Intermediate;
+          const nextDiffLabel = lang === 'es' && nextDiff.labelEs ? nextDiff.labelEs : lang === 'fr' ? nextDiff.labelFr : nextDiff.label;
+          const nudgeText = lang === 'fr'
+            ? `Tous les scénarios Débutant de ce sujet sont terminés ! Essayez un défi plus difficile.`
+            : lang === 'es'
+            ? `¡Completaste todos los escenarios de Principiante! Prueba un desafío más difícil.`
+            : `You've finished all Beginner scenarios in this topic. Ready for a harder challenge?`;
+          const nudgeBtnText = lang === 'fr' ? 'Essayer →' : lang === 'es' ? 'Intentar →' : 'Try it →';
+          nudgeEl.innerHTML = `<div class="mb-4 bg-gradient-to-r from-violet-900/30 to-zinc-900 border border-violet-700/50 rounded-2xl p-4 flex items-center gap-4">
+            <div class="text-2xl shrink-0">🎯</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-semibold text-violet-400 mb-1 uppercase tracking-wider">${lang === 'fr' ? 'Prêt pour la suite ?' : lang === 'es' ? '¿Listo para subir de nivel?' : 'Level Up'}</div>
+              <div class="text-sm text-zinc-300">${nudgeText}</div>
+            </div>
+            <button onclick="startChatFromHub(${next.id})" class="shrink-0 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors whitespace-nowrap">
+              ${next.emoji} ${nudgeBtnText}
+            </button>
+          </div>`;
+        } else {
+          nudgeEl.innerHTML = '';
+        }
+      }
       scenariosGrid.innerHTML = hubScenarios.map(s => {
         const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
         const scene = lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : (s.scene || '');
@@ -2884,6 +2920,121 @@ async function loadScenarioHistory() {
   } catch (e) { listEl.innerHTML = '<div class="text-zinc-500 text-sm">Unable to load scenario history.</div>'; }
 }
 
+// ── Smart Learning Engine ─────────────────────────────────────────────────────
+
+function getScenarioTimestamps() {
+  return JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
+}
+
+function computeSmartRecommendations() {
+  const scenarioTs = getScenarioTimestamps();
+  const now = Date.now();
+  const scored = modules.map(mod => {
+    const quizScore = savedQuizScores[mod.id];
+    const scenIds = mod.scenarioIds || [];
+    const doneSids = scenIds.filter(sid => completedScenarios.includes(sid));
+    const lastTs = scenIds.reduce((mx, sid) => {
+      const t = scenarioTs[sid] ? new Date(scenarioTs[sid]).getTime() : 0;
+      return Math.max(mx, t);
+    }, 0);
+    const daysSince = lastTs ? (now - lastTs) / 86400000 : 999;
+    const quizTaken = quizScore != null;
+    const quizLow = quizTaken && quizScore < 70;
+    const fewScen = doneSids.length < 3;
+    const stale = daysSince > 7;
+    let urgency = 0;
+    if (quizLow && stale) urgency = 4;
+    else if (quizLow) urgency = 3;
+    else if (quizTaken && fewScen && stale) urgency = 2;
+    else if (fewScen && doneSids.length > 0) urgency = 1;
+    return { mod, quizScore, doneSids, quizLow, fewScen, stale, urgency };
+  }).filter(x => x.urgency > 0).sort((a, b) => b.urgency - a.urgency);
+  const recs = [];
+  for (const item of scored) {
+    if (recs.length >= 3) break;
+    const notDone = (item.mod.scenarioIds || [])
+      .map(sid => practiceScenarios.find(s => s.id === sid))
+      .filter(Boolean)
+      .filter(s => !completedScenarios.includes(s.id));
+    if (notDone.length > 0) {
+      recs.push({ scenario: notDone[0], topic: item.mod, reason: item.quizLow ? 'low-quiz' : 'practice-gap', quizScore: item.quizScore });
+    }
+  }
+  return recs;
+}
+
+function renderRecommendedPanel() {
+  const panel = document.getElementById('recommended-panel');
+  if (!panel) return;
+  if (!hasPaidPlan()) { panel.innerHTML = ''; return; }
+  const recs = computeSmartRecommendations();
+  if (!recs.length) { panel.innerHTML = ''; return; }
+  const heading = lang === 'fr' ? 'Recommandés pour vous' : lang === 'es' ? 'Recomendados para ti' : 'Recommended for you';
+  const cards = recs.map(({ scenario: s, topic, reason, quizScore }) => {
+    const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+    const diff = DIFFICULTY_STYLES[s.difficulty] || DIFFICULTY_STYLES.Beginner;
+    const diffLabel = lang === 'es' && diff.labelEs ? diff.labelEs : lang === 'fr' ? diff.labelFr : diff.label;
+    const modTitle = lang === 'fr' && topic.titleFr ? topic.titleFr : lang === 'es' && topic.titleEs ? topic.titleEs : topic.title;
+    const reasonText = reason === 'low-quiz'
+      ? (lang === 'fr' ? `Quiz: ${quizScore}%` : lang === 'es' ? `Quiz: ${quizScore}%` : `Quiz: ${quizScore}%`)
+      : (lang === 'fr' ? 'Peu pratiqué' : lang === 'es' ? 'Poco practicado' : 'Needs practice');
+    return `<div onclick="startChat(${s.id})" class="bg-zinc-900 border border-amber-900/60 hover:border-amber-400 rounded-2xl p-4 cursor-pointer transition-all flex gap-3 items-start">
+      <div class="text-2xl mt-0.5 shrink-0">${s.emoji}</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs text-amber-500 font-semibold mb-1 truncate">${topic.emoji} ${modTitle}</div>
+        <div class="font-semibold text-sm mb-1.5 leading-snug">${title}</div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs px-2 py-0.5 rounded-lg border ${diff.cls}">${diffLabel}</span>
+          <span class="text-xs text-rose-400 font-semibold">⚡ ${reasonText}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  panel.innerHTML = `<div class="mb-2 flex items-center gap-2">
+    <h3 class="text-sm font-semibold uppercase tracking-wider text-amber-400">✨ ${heading}</h3>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${cards}</div>`;
+}
+
+function renderReviewRecommended() {
+  const el = document.getElementById('review-recommended');
+  if (!el) return;
+  const scenarioTs = getScenarioTimestamps();
+  const now = Date.now();
+  const reviews = modules.filter(mod => {
+    const quizScore = savedQuizScores[mod.id];
+    if (quizScore == null || quizScore >= 70) return false;
+    const lastTs = (mod.scenarioIds || []).reduce((mx, sid) => {
+      const t = scenarioTs[sid] ? new Date(scenarioTs[sid]).getTime() : 0;
+      return Math.max(mx, t);
+    }, 0);
+    const daysSince = lastTs ? (now - lastTs) / 86400000 : 999;
+    return daysSince > 7;
+  }).slice(0, 2);
+  if (!reviews.length) { el.innerHTML = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const sectionHeading = lang === 'fr' ? '📖 Révision recommandée' : lang === 'es' ? '📖 Revisión recomendada' : '📖 Review recommended';
+  const cards = reviews.map(mod => {
+    const quizScore = savedQuizScores[mod.id];
+    const modTitle = lang === 'fr' && mod.titleFr ? mod.titleFr : lang === 'es' && mod.titleEs ? mod.titleEs : mod.title;
+    const subText = lang === 'fr'
+      ? `Score quiz : ${quizScore}% — pratiquez pour vous améliorer`
+      : lang === 'es'
+      ? `Puntuación quiz: ${quizScore}% — practica para mejorar`
+      : `Quiz score: ${quizScore}% — practice to improve`;
+    const btnText = lang === 'fr' ? 'Réviser →' : lang === 'es' ? 'Revisar →' : 'Review →';
+    return `<div onclick="openTopicHub(${mod.id},'dashboard')" class="bg-zinc-900 border border-rose-900/50 hover:border-rose-600 rounded-2xl p-4 cursor-pointer transition-all flex items-center gap-4">
+      <div class="text-3xl shrink-0">${mod.emoji}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm">${modTitle}</div>
+        <div class="text-zinc-400 text-xs mt-1">${subText}</div>
+      </div>
+      <div class="text-amber-400 text-sm font-semibold whitespace-nowrap">${btnText}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<h2 class="text-base font-semibold mb-3">${sectionHeading}</h2><div class="space-y-3">${cards}</div>`;
+}
+
 function renderAll() {
   renderScenarios();
   const nextCardEl = document.getElementById('next-module-card');
@@ -3026,6 +3177,7 @@ function renderAll() {
     }).join('');
   }
   checkCertificate();
+  renderReviewRecommended();
 }
 
 // =========================================================
