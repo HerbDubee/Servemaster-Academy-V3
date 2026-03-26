@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="/tailwind.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
@@ -1848,8 +1849,33 @@ function checkCertificate() {
   }
 }
 
-function downloadCertificate() {
+let _lastCertToken = null;
+
+async function downloadCertificate() {
   if (!hasPaidPlan()) { window.location.href = '/pricing'; return; }
+
+  let certToken = null;
+  if (authToken) {
+    try {
+      const tr = await fetch('/api/cert-token', { headers: { Authorization: 'Bearer ' + authToken } });
+      if (tr.ok) { const td = await tr.json(); certToken = td.token || null; }
+    } catch (e) {}
+  }
+  _lastCertToken = certToken;
+
+  const verifyUrl = certToken ? 'https://servemasteracademy.ca/verify/' + certToken : 'https://servemasteracademy.ca';
+
+  let qrDataUrl = null;
+  if (certToken && window.QRCode) {
+    try {
+      qrDataUrl = await new Promise((resolve, reject) => {
+        QRCode.toDataURL(verifyUrl, { width: 160, margin: 1, color: { dark: '#d4af37', light: '#190911' } }, (err, url) => {
+          if (err) reject(err); else resolve(url);
+        });
+      });
+    } catch (e) {}
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
   const w = doc.internal.pageSize.getWidth();
@@ -1895,9 +1921,20 @@ function downloadCertificate() {
   doc.setTextColor(150, 150, 150);
   const today = new Date().toLocaleDateString(lang==='fr'?'fr-CA':'en-CA', { year:'numeric', month:'long', day:'numeric' });
   doc.text((lang==='fr'?'Délivré le : ':'Issued: ') + today, w/2, 148, { align:'center' });
+
+  if (qrDataUrl) {
+    const qrSize = 34;
+    const qrX = w - 20 - qrSize;
+    const qrY = h - 20 - qrSize;
+    doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+    doc.setFontSize(6.5);
+    doc.setTextColor(140, 120, 80);
+    doc.text(lang==='fr'?'Scanner pour vérifier':'Scan to verify', qrX + qrSize/2, qrY - 2, { align:'center' });
+  }
+
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
-  doc.text('servemaster.academy', w/2, h-18, { align:'center' });
+  doc.text('servemasteracademy.ca', w/2, h-18, { align:'center' });
   doc.save('ServeMaster-Certificate.pdf');
   setTimeout(() => showLinkedInShare(), 600);
 }
@@ -1917,8 +1954,8 @@ function showLinkedInShare() {
 
 function shareLinkedIn() {
   const user = currentUser || JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
-  const name = encodeURIComponent(user.name || 'ServeMaster Graduate');
-  const certUrl = encodeURIComponent('https://servemasteracademy.ca');
+  const verifyUrl = _lastCertToken ? 'https://servemasteracademy.ca/verify/' + _lastCertToken : 'https://servemasteracademy.ca';
+  const certUrl = encodeURIComponent(verifyUrl);
   const title = encodeURIComponent('ServeMaster Academy — Certificate of Completion');
   const summary = encodeURIComponent(`I just completed the full ServeMaster Academy hospitality training program — 30 modules covering service mastery, beverage expertise, upselling, and leadership. Proud to have earned my certificate! 🍽️`);
   const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${certUrl}&title=${title}&summary=${summary}`;

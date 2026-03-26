@@ -414,6 +414,7 @@ app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'pub
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+app.get('/verify/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'verify.html')));
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
@@ -2138,6 +2139,52 @@ app.post('/api/certificate', managerMiddleware, async (req, res) => {
   }
 });
 
+// ── Certificate token: get or create a unique verification token for the user ──
+app.get('/api/cert-token', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT cert_token FROM users WHERE id = $1', [req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
+    let token = rows[0].cert_token;
+    if (!token) {
+      token = crypto.randomBytes(32).toString('hex');
+      await db.query('UPDATE users SET cert_token = $1 WHERE id = $2', [token, req.user.id]);
+    }
+    res.json({ token });
+  } catch (err) {
+    console.error('cert-token error:', err.message);
+    res.status(500).json({ error: 'Failed to get cert token' });
+  }
+});
+
+// ── Public certificate verification endpoint ───────────────────────────────────
+app.get('/api/verify/:token', async (req, res) => {
+  const token = (req.params.token || '').replace(/[^a-zA-Z0-9]/g, '');
+  if (!token) return res.json({ verified: false });
+  try {
+    const userRes = await db.query('SELECT id, name FROM users WHERE cert_token = $1', [token]);
+    if (!userRes.rows.length) return res.json({ verified: false });
+    const user = userRes.rows[0];
+    const progressRes = await db.query(
+      `SELECT COUNT(*) AS completed,
+              MAX(completed_at) AS last_completed
+       FROM user_progress
+       WHERE user_id = $1 AND progress >= 100`,
+      [user.id]
+    );
+    const completed = parseInt(progressRes.rows[0]?.completed || 0, 10);
+    if (completed < 30) return res.json({ verified: false });
+    res.json({
+      verified: true,
+      name: user.name || 'ServeMaster Graduate',
+      modulesCompleted: completed,
+      completedAt: progressRes.rows[0]?.last_completed || null
+    });
+  } catch (err) {
+    console.error('verify error:', err.message);
+    res.status(500).json({ verified: false });
+  }
+});
+
 // Export team report as CSV
 app.get('/api/export-report', managerMiddleware, async (req, res) => {
   try {
@@ -2653,6 +2700,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`INSERT INTO site_settings (key, value) VALUES ('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
     await db.query(`ALTER TABLE invite_codes ADD COLUMN IF NOT EXISTS access_days INT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_access_expires_at TIMESTAMPTZ`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cert_token VARCHAR(64)`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_cert_token ON users(cert_token) WHERE cert_token IS NOT NULL`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });

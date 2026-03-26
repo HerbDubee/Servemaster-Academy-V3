@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificate Verification — ServeMaster Academy</title>
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #09090b;
+      color: #f4f4f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo { margin-bottom: 32px; }
+    .logo img { height: 48px; }
+    .logo-text { font-size: 22px; font-weight: 700; color: #f4f4f5; margin-top: 8px; }
+    .logo-sub { font-size: 11px; letter-spacing: 0.2em; color: #f59e0b; text-transform: uppercase; }
+    .badge-valid {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #052e16; border: 1px solid #166534; color: #4ade80;
+      font-size: 14px; font-weight: 600; padding: 8px 20px; border-radius: 9999px;
+      margin-bottom: 28px;
+    }
+    .badge-invalid {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #2d0909; border: 1px solid #7f1d1d; color: #f87171;
+      font-size: 14px; font-weight: 600; padding: 8px 20px; border-radius: 9999px;
+      margin-bottom: 28px;
+    }
+    .name { font-size: 28px; font-weight: 700; color: #f59e0b; margin-bottom: 8px; }
+    .label { font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .value { font-size: 15px; color: #d4d4d8; margin-bottom: 20px; }
+    .divider { border: none; border-top: 1px solid #27272a; margin: 24px 0; }
+    .footer { font-size: 12px; color: #52525b; margin-top: 32px; }
+    .footer a { color: #f59e0b; text-decoration: none; }
+    .loading { color: #71717a; font-size: 16px; }
+    .check { display: inline-block; width: 18px; height: 18px; }
+    .sma-link { display: inline-block; margin-top: 24px; color: #f59e0b; font-size: 14px; text-decoration: none; }
+    .sma-link:hover { text-decoration: underline; }
+    .modules-badge {
+      display: inline-block;
+      background: #1c1917; border: 1px solid #44403c; border-radius: 12px;
+      padding: 8px 16px; font-size: 14px; color: #d6d3d1; margin-bottom: 20px;
+    }
+    .modules-badge strong { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <img src="/logo-icon.svg" alt="ServeMaster Academy" onerror="this.style.display='none'">
+      <div class="logo-text">ServeMaster Academy</div>
+      <div class="logo-sub">Certificate Verification</div>
+    </div>
+
+    <div id="content" class="loading">Verifying certificate...</div>
+  </div>
+
+  <div class="footer">
+    <a href="https://servemasteracademy.ca">servemasteracademy.ca</a>
+    &nbsp;·&nbsp; Professional Restaurant Server Training
+  </div>
+
+  <script>
+    (function() {
+      var token = window.location.pathname.split('/verify/')[1] || '';
+      token = token.replace(/[^a-zA-Z0-9]/g, '');
+      if (!token) {
+        document.getElementById('content').innerHTML = '<div class="badge-invalid">❌ Invalid verification link</div><p class="value">This verification link is not valid.</p>';
+        return;
+      }
+      fetch('/api/verify/' + token)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var el = document.getElementById('content');
+          if (!data.verified) {
+            el.innerHTML = '<div class="badge-invalid">❌ Certificate Not Found</div><p class="value">This verification link is not valid or the certificate has not been issued.</p>';
+            return;
+          }
+          var completedDate = data.completedAt ? new Date(data.completedAt).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
+          el.innerHTML = [
+            '<div class="badge-valid"><span>✓</span> Verified Certificate</div>',
+            '<p class="label">Awarded to</p>',
+            '<p class="name">' + escHtml(data.name) + '</p>',
+            '<div class="modules-badge"><strong>' + (data.modulesCompleted || 30) + ' of 30 modules</strong> completed</div>',
+            '<p class="label">Completion date</p>',
+            '<p class="value">' + completedDate + '</p>',
+            '<hr class="divider">',
+            '<p class="label">Program</p>',
+            '<p class="value">ServeMaster Academy — Professional Restaurant Server Training</p>',
+            '<p class="label" style="margin-top:16px">Issued by</p>',
+            '<p class="value">ServeMaster Academy · servemasteracademy.ca</p>',
+            '<a href="https://servemasteracademy.ca" class="sma-link">Visit ServeMaster Academy →</a>'
+          ].join('');
+        })
+        .catch(function() {
+          document.getElementById('content').innerHTML = '<div class="badge-invalid">❌ Verification failed</div><p class="value">Could not connect to the verification service. Please try again.</p>';
+        });
+
+      function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+    })();
+  </script>
+</body>
+</html>
