@@ -3002,6 +3002,7 @@ app.get('/api/user/training-plan', authMiddleware, async (req, res) => {
 });
 
 app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
+  const ALL_MODULE_IDS = Array.from({ length: 30 }, (_, i) => i + 1);
   try {
     const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
     const mgr = userRes.rows[0];
@@ -3013,29 +3014,50 @@ app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
     );
     if (!staffRes.rows.length) return res.json({ modules: [], staff: staffRes.rows });
     const staffIds = staffRes.rows.map(s => s.id);
+    const totalStaff = staffRes.rows.length;
     const progressRes = await db.query(
       `SELECT module_id,
               ROUND(AVG(quiz_score)::numeric,1) as avg_quiz,
               COUNT(DISTINCT user_id) as attempted,
               COUNT(CASE WHEN progress >= 100 THEN 1 END) as completed,
-              array_agg(DISTINCT user_id) as attempted_user_ids
+              array_agg(DISTINCT user_id) FILTER (WHERE quiz_score IS NOT NULL) as attempted_user_ids
        FROM user_progress
-       WHERE user_id = ANY($1::int[]) AND quiz_score IS NOT NULL
-       GROUP BY module_id
-       ORDER BY avg_quiz ASC`,
+       WHERE user_id = ANY($1::int[])
+       GROUP BY module_id`,
       [staffIds]
     );
-    const totalStaff = staffRes.rows.length;
-    const modulesData = progressRes.rows.map(row => {
-      const notAttempted = staffRes.rows.filter(s => !row.attempted_user_ids.includes(s.id)).map(s => s.name);
+    const progressByModule = {};
+    for (const row of progressRes.rows) {
+      progressByModule[row.module_id] = row;
+    }
+    const modulesData = ALL_MODULE_IDS.map(moduleId => {
+      const row = progressByModule[moduleId];
+      if (!row || !row.avg_quiz) {
+        return {
+          module_id: moduleId,
+          avg_quiz: null,
+          attempted: row ? parseInt(row.attempted) : 0,
+          completed: row ? parseInt(row.completed) : 0,
+          total_staff: totalStaff,
+          not_attempted: staffRes.rows.map(s => s.name)
+        };
+      }
+      const attemptedIds = row.attempted_user_ids || [];
+      const notAttempted = staffRes.rows.filter(s => !attemptedIds.includes(s.id)).map(s => s.name);
       return {
-        module_id: row.module_id,
+        module_id: moduleId,
         avg_quiz: parseFloat(row.avg_quiz),
         attempted: parseInt(row.attempted),
         completed: parseInt(row.completed),
         total_staff: totalStaff,
         not_attempted: notAttempted
       };
+    });
+    modulesData.sort((a, b) => {
+      if (a.avg_quiz === null && b.avg_quiz === null) return a.module_id - b.module_id;
+      if (a.avg_quiz === null) return -1;
+      if (b.avg_quiz === null) return 1;
+      return a.avg_quiz - b.avg_quiz;
     });
     res.json({ modules: modulesData, staff: staffRes.rows });
   } catch (err) { res.status(500).json({ error: 'Failed to fetch skill gap: ' + err.message }); }
