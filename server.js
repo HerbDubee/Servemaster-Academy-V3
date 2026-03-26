@@ -3017,8 +3017,8 @@ app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
     const totalStaff = staffRes.rows.length;
     const progressRes = await db.query(
       `SELECT module_id,
-              ROUND(AVG(quiz_score)::numeric,1) as avg_quiz,
-              COUNT(DISTINCT user_id) as attempted,
+              ROUND(AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL)::numeric,1) as avg_quiz,
+              COUNT(DISTINCT user_id) FILTER (WHERE quiz_score IS NOT NULL) as attempted,
               COUNT(CASE WHEN progress >= 100 THEN 1 END) as completed,
               array_agg(DISTINCT user_id) FILTER (WHERE quiz_score IS NOT NULL) as attempted_user_ids
        FROM user_progress
@@ -3032,7 +3032,7 @@ app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
     }
     const modulesData = ALL_MODULE_IDS.map(moduleId => {
       const row = progressByModule[moduleId];
-      if (!row || !row.avg_quiz) {
+      if (!row || row.avg_quiz === null) {
         return {
           module_id: moduleId,
           avg_quiz: null,
