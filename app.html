@@ -2484,11 +2484,12 @@ function getCategoryLabel(cat) {
   return entry[lang] || entry.en;
 }
 
+const TOPIC_QUIZ_PASS = 70;
+
 function isTopicComplete(mod) {
-  const progress = userProgress.find(u => u.id === mod.id);
-  const lessonDone = (progress && progress.progress >= 100) || savedQuizScores[mod.id] != null;
+  const quizPassed = savedQuizScores[mod.id] != null && savedQuizScores[mod.id] >= TOPIC_QUIZ_PASS;
   const scenariosDone = (mod.scenarioIds || []).filter(sid => completedScenarios.includes(sid)).length;
-  return lessonDone && scenariosDone >= 3;
+  return quizPassed && scenariosDone >= 3;
 }
 
 function getTopicScenariosDoneCount(mod) {
@@ -2549,8 +2550,9 @@ function renderHub() {
     const completeTag = topicComplete
       ? `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">✓ ${lang === 'fr' ? 'Sujet terminé' : lang === 'es' ? 'Tema completado' : 'Topic Complete'}</span>`
       : '';
+    const quizPassed = quizScore != null && quizScore >= TOPIC_QUIZ_PASS;
     const lessonStatusText = quizScore != null
-      ? `<span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${quizScore}%</span>`
+      ? `<span class="text-xs px-2 py-0.5 rounded-lg ${quizPassed ? 'bg-emerald-400/10 text-emerald-400' : 'bg-amber-400/10 text-amber-400'} font-semibold">Quiz ${quizScore}% ${quizPassed ? '✓' : '— retake to pass'}</span>`
       : progress.progress > 0
       ? `<span class="text-zinc-400 text-xs">${progress.progress}% ${lang === 'fr' ? 'terminé' : lang === 'es' ? 'completado' : 'complete'}</span>`
       : '';
@@ -2590,10 +2592,17 @@ function renderHub() {
         </div>
         <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${progress.progress}%"></div></div>
       </div>` : '';
+    const quizPassedLesson = quizScore != null && quizScore >= TOPIC_QUIZ_PASS;
+    const quizStatusHint = quizScore != null
+      ? quizPassedLesson
+        ? `<div class="mt-3 text-xs text-emerald-400 font-semibold">✓ ${lang === 'fr' ? `Quiz passé avec ${quizScore}%` : lang === 'es' ? `Quiz aprobado con ${quizScore}%` : `Quiz passed with ${quizScore}%`}</div>`
+        : `<div class="mt-3 text-xs text-amber-400 font-semibold">⚠ ${lang === 'fr' ? `Quiz: ${quizScore}% — il faut ≥${TOPIC_QUIZ_PASS}% pour valider le sujet` : lang === 'es' ? `Quiz: ${quizScore}% — se requiere ≥${TOPIC_QUIZ_PASS}% para completar el tema` : `Quiz: ${quizScore}% — need ≥${TOPIC_QUIZ_PASS}% to complete topic`}</div>`
+      : `<div class="mt-3 text-xs text-zinc-500">${lang === 'fr' ? `Passez le quiz avec ≥${TOPIC_QUIZ_PASS}% pour valider le sujet` : lang === 'es' ? `Aprueba el quiz con ≥${TOPIC_QUIZ_PASS}% para completar el tema` : `Pass the quiz with ≥${TOPIC_QUIZ_PASS}% to mark this topic complete`}</div>`;
     lessonBody.innerHTML = `
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
         <div class="flex-1">
           <p class="text-zinc-400 text-sm">${lang === 'fr' ? 'Lisez la leçon complète, les conseils pratiques, et passez le quiz.' : lang === 'es' ? 'Lee la lección completa, los consejos prácticos y realiza el quiz.' : 'Read the full lesson, practical tips, and take the quiz.'}</p>
+          ${quizStatusHint}
           ${progressBar}
         </div>
         <button onclick="openModule(${mod.id})" class="shrink-0 bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors text-sm whitespace-nowrap">${lessonBtnLabel}</button>
