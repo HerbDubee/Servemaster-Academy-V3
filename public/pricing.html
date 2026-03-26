@@ -54,6 +54,7 @@ details[open] summary::after { content: '−'; }
 <meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-amber-400 focus:text-black focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
@@ -97,9 +98,7 @@ details[open] summary::after { content: '−'; }
     <p class="text-zinc-400 text-xl max-w-2xl mx-auto" data-i18n="pricing_sub">Start free. Upgrade when you're ready. Every plan built for real restaurant teams.</p>
   </div>
 </section>
-<main class="max-w-7xl mx-auto px-4 py-16">
-
-  <!-- Header -->
+<main id="main-content" class="max-w-7xl mx-auto px-4 py-16">
 
   <!-- Social proof bar -->
   <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 py-5 mb-8 border-y border-zinc-800">
@@ -138,6 +137,7 @@ details[open] summary::after { content: '−'; }
   </div>
 
   <!-- Individual Plans -->
+  <h2 class="sr-only">Individual Plans</h2>
   <div id="individual-plans" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
 
     <!-- Free -->
@@ -453,6 +453,10 @@ details[open] summary::after { content: '−'; }
       <a href="/signup" class="hover:text-white transition-colors font-semibold" style="color:#FF5E3A;">Start Free</a>
       <span class="text-zinc-700">|</span>
       <a href="/contact" class="hover:text-white transition-colors">Contact Us</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
     </div>
     <div class="text-center mb-6">
       <p class="text-zinc-500 text-xs uppercase tracking-widest mb-4">Follow for weekly insights</p>

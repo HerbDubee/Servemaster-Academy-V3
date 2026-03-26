@@ -57,6 +57,7 @@
   <meta name="twitter:image" content="https://servemasteracademy.ca/logo.png">
 </head>
 <body>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-amber-400 focus:text-black focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
 
 <!-- NAV -->
 <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
@@ -103,6 +104,8 @@
 </nav>
 <script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
 <script src="/js/nav-auth.js"></script>
+
+<main id="main-content">
 
 <!-- HERO -->
 <section style="background: linear-gradient(135deg, #071a26 0%, #0c2d3d 40%, #09090b 100%);" class="py-24">
@@ -305,6 +308,8 @@
   </div>
 </section>
 
+</main>
+
 <!-- FOOTER -->
 <footer class="border-t border-zinc-800 py-12">
   <div class="max-w-6xl mx-auto px-4">
@@ -319,6 +324,10 @@
       <a href="/signup" class="hover:text-white transition-colors font-semibold" style="color:#FF5E3A;" data-i18n="footer_start">Start Free</a>
       <span class="text-zinc-700">|</span>
       <a href="/contact" class="hover:text-white transition-colors" data-i18n="footer_contact">Contact Us</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/privacy" class="hover:text-white transition-colors" data-i18n="footer_privacy">Privacy</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/terms" class="hover:text-white transition-colors" data-i18n="footer_terms">Terms</a>
     </div>
     <div class="text-center mb-6">
       <p class="text-zinc-500 text-xs uppercase tracking-widest mb-4" data-i18n="footer_follow">Follow for weekly insights</p>

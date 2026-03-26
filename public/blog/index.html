@@ -34,9 +34,9 @@
       outline: none;
       box-sizing: border-box;
       font-family: inherit;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    #blog-search:focus { border-color: #71717a; }
+    #blog-search:focus { border-color: #71717a; box-shadow: 0 0 0 2px rgba(251,191,36,0.35); }
     #blog-search::placeholder { color: #52525b; }
     .blog-pill {
       padding: 6px 14px;
@@ -93,7 +93,7 @@
   </div>
 </section>
 
-<main class="max-w-5xl mx-auto px-4 pt-6 pb-16">
+<main id="main-content" class="max-w-5xl mx-auto px-4 pt-6 pb-16">
 
   <div id="blog-filter-wrap"></div>
 
@@ -102,7 +102,7 @@
   </div>
 
   <div class="mt-4 bg-zinc-900 border border-amber-900 rounded-3xl p-12 text-center">
-    <h3 class="heading text-3xl font-bold mb-3" data-i18n="blog_cta_h">Put it into practice</h3>
+    <h2 class="heading text-3xl font-bold mb-3" data-i18n="blog_cta_h">Put it into practice</h2>
     <p class="text-zinc-400 text-lg mb-8 max-w-xl mx-auto" data-i18n="blog_cta_p">ServeMaster Academy turns knowledge into skill through structured modules, AI roleplay, and voice practice. Free to start.</p>
     <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-12 py-5 rounded-3xl text-lg transition-colors" data-i18n="nav_cta">Get Started Free</a>
   </div>
