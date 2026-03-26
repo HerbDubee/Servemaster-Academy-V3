@@ -1494,8 +1494,9 @@ function renderScenarios() {
   const FREE_SCENARIO_LIMIT = 5;
   let scenariosShown = 0;
   let proGateShown = false;
-  const completedBeginnerCount = practiceScenarios.filter(s => s.difficulty === 'Beginner' && completedScenarios.includes(s.id)).length;
-  const showHarderBadge = completedBeginnerCount >= 3;
+  const _scenRes = getScenarioResults();
+  const excellentBeginnerCount = practiceScenarios.filter(s => s.difficulty === 'Beginner' && completedScenarios.includes(s.id) && _scenRes[s.id] && _scenRes[s.id].verdict === 'excellent').length;
+  const showHarderBadge = excellentBeginnerCount >= 3;
   const harderBadgeText = lang === 'fr' ? 'Essayez un défi plus difficile →' : lang === 'es' ? 'Prueba un desafío más difícil →' : 'Try a harder challenge →';
 
   DIFFICULTY_LEVELS.forEach(level => {
@@ -1683,6 +1684,14 @@ async function showScenarioSummary() {
     const data = await res.json();
 
     if (!res.ok || data.error) throw new Error(data.error || 'Failed');
+
+    // Derive and persist a local verdict quality from right/wrong counts
+    const _wrongs = Array.isArray(data.wrong) ? data.wrong.length : 0;
+    const _rights = Array.isArray(data.right) ? data.right.length : 0;
+    const _localVerdict = _wrongs === 0 ? 'excellent' : (_wrongs === 1 && _rights >= 1) ? 'good' : 'needs_work';
+    const _scenRes = JSON.parse(localStorage.getItem('sma-scenario-results') || '{}');
+    _scenRes[chatScenarioId] = { verdict: _localVerdict, ts: new Date().toISOString() };
+    localStorage.setItem('sma-scenario-results', JSON.stringify(_scenRes));
 
     const rightItems = Array.isArray(data.right) && data.right.length
       ? data.right.map(r => `<li class="flex gap-2"><span class="text-emerald-400 shrink-0">✓</span><span>${escHtml(r)}</span></li>`).join('')
@@ -2699,7 +2708,10 @@ function renderHub() {
       const nudgeEl = document.getElementById('hub-difficulty-nudge');
       if (nudgeEl) {
         const beginnerScens = hubScenarios.filter(s => s.difficulty === 'Beginner');
-        const allBeginnerDone = beginnerScens.length > 0 && beginnerScens.every(s => completedScenarios.includes(s.id));
+        const _hubScenRes = getScenarioResults();
+        const allBeginnerDone = beginnerScens.length > 0 && beginnerScens.every(s =>
+          completedScenarios.includes(s.id) && _hubScenRes[s.id] &&
+          (_hubScenRes[s.id].verdict === 'excellent' || _hubScenRes[s.id].verdict === 'good'));
         if (allBeginnerDone) {
           // Find harder scenario in a RELATED topic (same category), else any topic
           let nudgeScenario = null;
@@ -2956,8 +2968,13 @@ function getScenarioTimestamps() {
   return JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
 }
 
+function getScenarioResults() {
+  return JSON.parse(localStorage.getItem('sma-scenario-results') || '{}');
+}
+
 function computeSmartRecommendations() {
   const scenarioTs = getScenarioTimestamps();
+  const scenarioResults = getScenarioResults();
   const now = Date.now();
   const scored = modules.map(mod => {
     const quizScore = savedQuizScores[mod.id];
@@ -2972,12 +2989,17 @@ function computeSmartRecommendations() {
     const quizLow = quizTaken && quizScore < 70;
     const fewScen = doneSids.length < 3;
     const stale = daysSince > 7;
+    // Count needs_work verdicts in this topic — adds urgency
+    const weakVerdicts = doneSids.filter(sid => scenarioResults[sid] && scenarioResults[sid].verdict === 'needs_work').length;
     let urgency = 0;
-    if (quizLow && stale) urgency = 4;
-    else if (quizLow) urgency = 3;
+    if (quizLow && stale) urgency = 5;
+    else if (quizLow && weakVerdicts > 0) urgency = 4.5;
+    else if (quizLow) urgency = 4;
+    else if (weakVerdicts > 0 && stale) urgency = 3;
+    else if (weakVerdicts > 0) urgency = 2.5;
     else if (quizTaken && fewScen && stale) urgency = 2;
     else if (fewScen && doneSids.length > 0) urgency = 1;
-    return { mod, quizScore, doneSids, quizLow, fewScen, stale, urgency };
+    return { mod, quizScore, doneSids, quizLow, fewScen, stale, weakVerdicts, urgency };
   }).filter(x => x.urgency > 0).sort((a, b) => b.urgency - a.urgency);
   const recs = [];
   for (const item of scored) {
