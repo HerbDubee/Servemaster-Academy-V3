@@ -2696,7 +2696,7 @@ function renderSkillGap(mods, staff) {
         const isWeak = score < 70;
         const barColor = isWeak ? 'bg-red-500' : score < 85 ? 'bg-amber-400' : 'bg-emerald-500';
         const notAttempted = mod.not_attempted || [];
-        const notAttemptedHtml = notAttempted.length ? `<div class="text-xs text-zinc-500 mt-1">Not attempted: <span class="text-orange-400">${notAttempted.slice(0,5).join(', ')}${notAttempted.length > 5 ? ' +'+( notAttempted.length-5)+' more' : ''}</span></div>` : '';
+        const notAttemptedHtml = notAttempted.length ? `<div class="text-xs text-zinc-500 mt-1">Not attempted: <span class="text-orange-400">${notAttempted.slice(0,5).map(n=>escHtml(n)).join(', ')}${notAttempted.length > 5 ? ' +'+( notAttempted.length-5)+' more' : ''}</span></div>` : '';
         return `<div class="rounded-2xl p-4 ${isWeak ? 'bg-red-950/30 border border-red-900/40' : 'bg-zinc-800/60 border border-zinc-700/40'}">
           <div class="flex items-center justify-between mb-2">
             <div class="font-medium text-sm ${isWeak ? 'text-red-300' : 'text-white'}">${mod.module_id}. ${MODULE_NAMES_CLIENT[mod.module_id] || 'Module '+mod.module_id}</div>

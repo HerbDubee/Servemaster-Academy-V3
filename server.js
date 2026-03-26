@@ -2886,6 +2886,11 @@ app.post('/api/manager/training-plans', managerMiddleware, async (req, res) => {
     const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
     const restaurantId = userRes.rows[0]?.restaurant_id;
     if (!restaurantId) return res.status(400).json({ error: 'No restaurant found' });
+    const staffCheck = await db.query(
+      `SELECT id FROM users WHERE id = $1 AND restaurant_id = $2 AND role NOT IN ('manager','admin')`,
+      [userId, restaurantId]
+    );
+    if (!staffCheck.rows.length) return res.status(403).json({ error: 'User is not a staff member of your restaurant' });
     const planTitle = (title || 'Onboarding Plan').slice(0, 100);
     const r = await db.query(
       `INSERT INTO training_plans (restaurant_id, user_id, title, created_by) VALUES ($1,$2,$3,$4) RETURNING *`,
