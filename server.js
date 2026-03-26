@@ -2718,6 +2718,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       due_date DATE,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_training_plans_restaurant_user ON training_plans(restaurant_id, user_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_training_plan_items_plan_pos ON training_plan_items(plan_id, position)`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
