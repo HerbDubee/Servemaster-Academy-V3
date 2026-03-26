@@ -1427,7 +1427,6 @@ function speakTextAsync(text) {
 async function speakOpenAI(text) {
   if (!aiSpeechEnabled) return Promise.resolve();
   _stopTtsAudio();
-  if (lang !== 'en') return speakTextAsync(text);
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
