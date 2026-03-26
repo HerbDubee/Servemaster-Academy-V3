@@ -3100,24 +3100,31 @@ function renderReviewRecommended() {
 
 // ── Daily Micro-Challenges ─────────────────────────────────────────────────────
 
+// Unified UTC date helpers — ensures scenario rotation, completion state,
+// and streak tracking all use the same day boundary everywhere.
+function getUTCDateKey() {
+  return new Date().toISOString().split('T')[0]; // "YYYY-MM-DD" in UTC
+}
+
+function getUTCDayIndex() {
+  const startOfYear = Date.UTC(new Date().getUTCFullYear(), 0, 1);
+  return Math.floor((Date.now() - startOfYear) / 86400000);
+}
+
 function getTodaysDailyScenario() {
   if (!practiceScenarios || !practiceScenarios.length) return null;
-  const today = new Date();
-  const start = new Date(today.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((today - start) / 86400000);
-  return practiceScenarios[dayOfYear % practiceScenarios.length];
+  return practiceScenarios[getUTCDayIndex() % practiceScenarios.length];
 }
 
 function isDailyChallengeCompletedToday() {
-  const today = new Date().toISOString().split('T')[0];
-  return localStorage.getItem('sma-daily-challenge-date') === today;
+  return localStorage.getItem('sma-daily-challenge-date') === getUTCDateKey();
 }
 
 function completeDailyChallenge() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getUTCDateKey();
   if (isDailyChallengeCompletedToday()) return;
   const last = localStorage.getItem('sma-daily-challenge-streak-last');
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]; // UTC yesterday
   let streak = parseInt(localStorage.getItem('sma-daily-challenge-streak') || '0');
   streak = last === yesterday ? streak + 1 : 1;
   localStorage.setItem('sma-daily-challenge-date', today);
