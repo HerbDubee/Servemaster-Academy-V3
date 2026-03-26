@@ -1494,6 +1494,9 @@ function renderScenarios() {
   const FREE_SCENARIO_LIMIT = 5;
   let scenariosShown = 0;
   let proGateShown = false;
+  const completedBeginnerCount = practiceScenarios.filter(s => s.difficulty === 'Beginner' && completedScenarios.includes(s.id)).length;
+  const showHarderBadge = completedBeginnerCount >= 3;
+  const harderBadgeText = lang === 'fr' ? 'Essayez un défi plus difficile →' : lang === 'es' ? 'Prueba un desafío más difícil →' : 'Try a harder challenge →';
 
   DIFFICULTY_LEVELS.forEach(level => {
     const levelScenarios = practiceScenarios.filter(s => s.difficulty === level.key);
@@ -1515,11 +1518,15 @@ function renderScenarios() {
         }
         return;
       }
+      const isHarder = s.difficulty === 'Intermediate' || s.difficulty === 'Advanced';
+      const topBadge = done
+        ? `<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">${t('doneLabel')}</div>`
+        : (isHarder && showHarderBadge ? `<div class="absolute top-3 right-3 text-violet-400 text-xs font-semibold whitespace-nowrap">⬆ ${harderBadgeText}</div>` : '');
       html += `<div onclick="startChat(${s.id})" class="bg-zinc-900 border ${done?'border-emerald-800':level.borderCls} hover:border-amber-400 rounded-3xl p-5 cursor-pointer transition-all flex gap-4 items-start relative">
-        ${done ? `<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">${t('doneLabel')}</div>` : ''}
+        ${topBadge}
         <div class="text-3xl mt-1">${s.emoji}</div>
         <div class="flex-1 min-w-0">
-          <div class="font-semibold text-base mb-1 pr-10">${title}</div>
+          <div class="font-semibold text-base mb-1 ${isHarder && showHarderBadge && !done ? 'pr-40' : 'pr-10'}">${title}</div>
           <div class="text-zinc-400 text-sm mb-2">${desc}</div>
           <span class="inline-block text-xs px-2 py-0.5 rounded-lg border ${diff.cls}">${diffLabel}</span>
         </div>
@@ -2693,27 +2700,50 @@ function renderHub() {
       if (nudgeEl) {
         const beginnerScens = hubScenarios.filter(s => s.difficulty === 'Beginner');
         const allBeginnerDone = beginnerScens.length > 0 && beginnerScens.every(s => completedScenarios.includes(s.id));
-        const harderScens = hubScenarios.filter(s => (s.difficulty === 'Intermediate' || s.difficulty === 'Advanced') && !completedScenarios.includes(s.id));
-        if (allBeginnerDone && harderScens.length > 0) {
-          const next = harderScens[0];
-          const nextDiff = DIFFICULTY_STYLES[next.difficulty] || DIFFICULTY_STYLES.Intermediate;
-          const nextDiffLabel = lang === 'es' && nextDiff.labelEs ? nextDiff.labelEs : lang === 'fr' ? nextDiff.labelFr : nextDiff.label;
-          const nudgeText = lang === 'fr'
-            ? `Tous les scénarios Débutant de ce sujet sont terminés ! Essayez un défi plus difficile.`
-            : lang === 'es'
-            ? `¡Completaste todos los escenarios de Principiante! Prueba un desafío más difícil.`
-            : `You've finished all Beginner scenarios in this topic. Ready for a harder challenge?`;
-          const nudgeBtnText = lang === 'fr' ? 'Essayer →' : lang === 'es' ? 'Intentar →' : 'Try it →';
-          nudgeEl.innerHTML = `<div class="mb-4 bg-gradient-to-r from-violet-900/30 to-zinc-900 border border-violet-700/50 rounded-2xl p-4 flex items-center gap-4">
-            <div class="text-2xl shrink-0">🎯</div>
-            <div class="flex-1 min-w-0">
-              <div class="text-xs font-semibold text-violet-400 mb-1 uppercase tracking-wider">${lang === 'fr' ? 'Prêt pour la suite ?' : lang === 'es' ? '¿Listo para subir de nivel?' : 'Level Up'}</div>
-              <div class="text-sm text-zinc-300">${nudgeText}</div>
-            </div>
-            <button onclick="startChatFromHub(${next.id})" class="shrink-0 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors whitespace-nowrap">
-              ${next.emoji} ${nudgeBtnText}
-            </button>
-          </div>`;
+        if (allBeginnerDone) {
+          // Find harder scenario in a RELATED topic (same category), else any topic
+          let nudgeScenario = null;
+          let nudgeTopic = null;
+          const relatedMods = modules.filter(m => m.id !== mod.id && m.category === mod.category);
+          for (const rm of relatedMods) {
+            const harder = (rm.scenarioIds || [])
+              .map(sid => practiceScenarios.find(ps => ps.id === sid))
+              .filter(Boolean)
+              .filter(ps => (ps.difficulty === 'Intermediate' || ps.difficulty === 'Advanced') && !completedScenarios.includes(ps.id));
+            if (harder.length > 0) { nudgeScenario = harder[0]; nudgeTopic = rm; break; }
+          }
+          if (!nudgeScenario) {
+            for (const m of modules) {
+              if (m.id === mod.id) continue;
+              const harder = (m.scenarioIds || [])
+                .map(sid => practiceScenarios.find(ps => ps.id === sid))
+                .filter(Boolean)
+                .filter(ps => (ps.difficulty === 'Intermediate' || ps.difficulty === 'Advanced') && !completedScenarios.includes(ps.id));
+              if (harder.length > 0) { nudgeScenario = harder[0]; nudgeTopic = m; break; }
+            }
+          }
+          if (nudgeScenario && nudgeTopic) {
+            const nudgeTopicTitle = lang === 'fr' && nudgeTopic.titleFr ? nudgeTopic.titleFr : lang === 'es' && nudgeTopic.titleEs ? nudgeTopic.titleEs : nudgeTopic.title;
+            const nudgeText = lang === 'fr'
+              ? `Vous maîtrisez les scénarios Débutant de ce sujet. Essayez un défi plus difficile dans un sujet connexe.`
+              : lang === 'es'
+              ? `Dominas los escenarios de Principiante de este tema. Prueba un desafío más difícil en un tema relacionado.`
+              : `You've mastered the Beginner scenarios here. Try a harder challenge in a related topic.`;
+            const nudgeBtnText = lang === 'fr' ? 'Essayer →' : lang === 'es' ? 'Intentar →' : 'Try it →';
+            nudgeEl.innerHTML = `<div class="mb-4 bg-gradient-to-r from-violet-900/30 to-zinc-900 border border-violet-700/50 rounded-2xl p-4 flex items-center gap-4">
+              <div class="text-2xl shrink-0">🎯</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-semibold text-violet-400 mb-1 uppercase tracking-wider">${lang === 'fr' ? 'Prêt pour la suite ?' : lang === 'es' ? '¿Listo para subir de nivel?' : 'Level Up'}</div>
+                <div class="text-sm text-zinc-300 mb-1">${nudgeText}</div>
+                <div class="text-xs text-zinc-500">${nudgeTopic.emoji} ${nudgeTopicTitle}</div>
+              </div>
+              <button onclick="startChatFromHub(${nudgeScenario.id})" class="shrink-0 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors whitespace-nowrap">
+                ${nudgeScenario.emoji} ${nudgeBtnText}
+              </button>
+            </div>`;
+          } else {
+            nudgeEl.innerHTML = '';
+          }
         } else {
           nudgeEl.innerHTML = '';
         }
@@ -2966,7 +2996,6 @@ function computeSmartRecommendations() {
 function renderRecommendedPanel() {
   const panel = document.getElementById('recommended-panel');
   if (!panel) return;
-  if (!hasPaidPlan()) { panel.innerHTML = ''; return; }
   const recs = computeSmartRecommendations();
   if (!recs.length) { panel.innerHTML = ''; return; }
   const heading = lang === 'fr' ? 'Recommandés pour vous' : lang === 'es' ? 'Recomendados para ti' : 'Recommended for you';
@@ -3010,7 +3039,7 @@ function renderReviewRecommended() {
     }, 0);
     const daysSince = lastTs ? (now - lastTs) / 86400000 : 999;
     return daysSince > 7;
-  }).slice(0, 2);
+  });
   if (!reviews.length) { el.innerHTML = ''; el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
   const sectionHeading = lang === 'fr' ? '📖 Révision recommandée' : lang === 'es' ? '📖 Revisión recomendada' : '📖 Review recommended';
