@@ -1850,7 +1850,6 @@ app.post('/api/tts', aiLimiter, async (req, res) => {
     // allows per-language tuning without relying on browser Speech Synthesis.
     const TTS_VOICE_MAP = { en: 'nova', fr: 'nova', es: 'nova' };
     const voice = TTS_VOICE_MAP[reqLang] || 'nova';
-    console.log(`TTS request: lang=${reqLang}, voice=${voice}, chars=${trimmed.length}`);
     const response = await getTTS().audio.speech.create({
       model: 'tts-1',
       voice,
