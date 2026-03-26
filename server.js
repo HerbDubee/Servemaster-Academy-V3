@@ -2702,6 +2702,22 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_access_expires_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cert_token VARCHAR(64)`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_cert_token ON users(cert_token) WHERE cert_token IS NOT NULL`);
+    await db.query(`CREATE TABLE IF NOT EXISTS training_plans (
+      id SERIAL PRIMARY KEY,
+      restaurant_id INT REFERENCES restaurants(id) ON DELETE CASCADE,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL DEFAULT 'Onboarding Plan',
+      created_by INT REFERENCES users(id),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
+      id SERIAL PRIMARY KEY,
+      plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,
+      module_id INT NOT NULL,
+      position INT NOT NULL DEFAULT 0,
+      due_date DATE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
@@ -2860,6 +2876,164 @@ app.get('/api/user/assigned-modules', authMiddleware, async (req, res) => {
     const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [memRes.rows[0].restaurant_id]);
     res.json({ modules: r.rows.map(x => x.module_id) });
   } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Training plans routes ───────────────────────────────────────────────────────
+app.post('/api/manager/training-plans', managerMiddleware, async (req, res) => {
+  const { userId, title } = req.body;
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.status(400).json({ error: 'No restaurant found' });
+    const planTitle = (title || 'Onboarding Plan').slice(0, 100);
+    const r = await db.query(
+      `INSERT INTO training_plans (restaurant_id, user_id, title, created_by) VALUES ($1,$2,$3,$4) RETURNING *`,
+      [restaurantId, userId, planTitle, req.user.id]
+    );
+    res.json({ plan: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: 'Failed to create plan: ' + err.message }); }
+});
+
+app.get('/api/manager/training-plans', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const mgr = userRes.rows[0];
+    const restaurantId = mgr?.restaurant_id;
+    if (!restaurantId) return res.json({ plans: [] });
+    const plansRes = await db.query(
+      `SELECT tp.*, u.name as staff_name, u.email as staff_email
+       FROM training_plans tp
+       JOIN users u ON u.id = tp.user_id
+       WHERE tp.restaurant_id = $1
+       ORDER BY tp.created_at DESC`,
+      [restaurantId]
+    );
+    const itemsRes = await db.query(
+      `SELECT tpi.*, up.progress, up.quiz_score
+       FROM training_plan_items tpi
+       LEFT JOIN user_progress up ON up.module_id = tpi.module_id AND up.user_id = (
+         SELECT tp2.user_id FROM training_plans tp2 WHERE tp2.id = tpi.plan_id
+       )
+       WHERE tpi.plan_id = ANY($1::int[])
+       ORDER BY tpi.plan_id, tpi.position`,
+      [plansRes.rows.map(p => p.id)]
+    );
+    const itemsByPlan = {};
+    for (const item of itemsRes.rows) {
+      if (!itemsByPlan[item.plan_id]) itemsByPlan[item.plan_id] = [];
+      itemsByPlan[item.plan_id].push(item);
+    }
+    const plans = plansRes.rows.map(p => ({ ...p, items: itemsByPlan[p.id] || [] }));
+    res.json({ plans });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch plans: ' + err.message }); }
+});
+
+app.post('/api/manager/training-plans/:planId/items', managerMiddleware, async (req, res) => {
+  const { moduleId, dueDate, position } = req.body;
+  const planId = parseInt(req.params.planId);
+  if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    const planCheck = await db.query('SELECT id FROM training_plans WHERE id = $1 AND restaurant_id = $2', [planId, restaurantId]);
+    if (!planCheck.rows.length) return res.status(404).json({ error: 'Plan not found' });
+    const posRes = await db.query('SELECT COALESCE(MAX(position),0)+1 as pos FROM training_plan_items WHERE plan_id = $1', [planId]);
+    const pos = position ?? posRes.rows[0].pos;
+    const r = await db.query(
+      `INSERT INTO training_plan_items (plan_id, module_id, position, due_date) VALUES ($1,$2,$3,$4) RETURNING *`,
+      [planId, moduleId, pos, dueDate || null]
+    );
+    res.json({ item: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: 'Failed to add item: ' + err.message }); }
+});
+
+app.delete('/api/manager/training-plans/:planId/items/:itemId', managerMiddleware, async (req, res) => {
+  const planId = parseInt(req.params.planId);
+  const itemId = parseInt(req.params.itemId);
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    const planCheck = await db.query('SELECT id FROM training_plans WHERE id = $1 AND restaurant_id = $2', [planId, restaurantId]);
+    if (!planCheck.rows.length) return res.status(404).json({ error: 'Plan not found' });
+    await db.query('DELETE FROM training_plan_items WHERE id = $1 AND plan_id = $2', [itemId, planId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to remove item: ' + err.message }); }
+});
+
+app.delete('/api/manager/training-plans/:planId', managerMiddleware, async (req, res) => {
+  const planId = parseInt(req.params.planId);
+  try {
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    await db.query('DELETE FROM training_plans WHERE id = $1 AND restaurant_id = $2', [planId, restaurantId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to delete plan: ' + err.message }); }
+});
+
+app.get('/api/user/training-plan', authMiddleware, async (req, res) => {
+  try {
+    const planRes = await db.query(
+      `SELECT tp.id, tp.title, tp.created_at, u.name as manager_name
+       FROM training_plans tp
+       JOIN users u ON u.id = tp.created_by
+       WHERE tp.user_id = $1
+       ORDER BY tp.created_at DESC LIMIT 1`,
+      [req.user.id]
+    );
+    if (!planRes.rows.length) return res.json({ plan: null });
+    const plan = planRes.rows[0];
+    const itemsRes = await db.query(
+      `SELECT tpi.id, tpi.module_id, tpi.position, tpi.due_date,
+              up.progress, up.quiz_score, up.completed_at
+       FROM training_plan_items tpi
+       LEFT JOIN user_progress up ON up.module_id = tpi.module_id AND up.user_id = $1
+       WHERE tpi.plan_id = $2
+       ORDER BY tpi.position`,
+      [req.user.id, plan.id]
+    );
+    res.json({ plan: { ...plan, items: itemsRes.rows } });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch training plan: ' + err.message }); }
+});
+
+app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
+  try {
+    const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
+    const mgr = userRes.rows[0];
+    const restaurantId = mgr?.restaurant_id;
+    if (!restaurantId) return res.json({ modules: [], staff: [] });
+    const staffRes = await db.query(
+      `SELECT id, name FROM users WHERE restaurant_id = $1 AND role NOT IN ('manager','admin')`,
+      [restaurantId]
+    );
+    if (!staffRes.rows.length) return res.json({ modules: [], staff: staffRes.rows });
+    const staffIds = staffRes.rows.map(s => s.id);
+    const progressRes = await db.query(
+      `SELECT module_id,
+              ROUND(AVG(quiz_score)::numeric,1) as avg_quiz,
+              COUNT(DISTINCT user_id) as attempted,
+              COUNT(CASE WHEN progress >= 100 THEN 1 END) as completed,
+              array_agg(DISTINCT user_id) as attempted_user_ids
+       FROM user_progress
+       WHERE user_id = ANY($1::int[]) AND quiz_score IS NOT NULL
+       GROUP BY module_id
+       ORDER BY avg_quiz ASC`,
+      [staffIds]
+    );
+    const totalStaff = staffRes.rows.length;
+    const modulesData = progressRes.rows.map(row => {
+      const notAttempted = staffRes.rows.filter(s => !row.attempted_user_ids.includes(s.id)).map(s => s.name);
+      return {
+        module_id: row.module_id,
+        avg_quiz: parseFloat(row.avg_quiz),
+        attempted: parseInt(row.attempted),
+        completed: parseInt(row.completed),
+        total_staff: totalStaff,
+        not_attempted: notAttempted
+      };
+    });
+    res.json({ modules: modulesData, staff: staffRes.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch skill gap: ' + err.message }); }
 });
 
 // ── Certificate logo routes ─────────────────────────────────────────────────────

@@ -331,6 +331,16 @@
       </div>
       <div id="review-recommended" class="hidden"></div>
       <div id="daily-challenge-card"></div>
+      <div id="my-training-plan-section" class="hidden bg-zinc-900 border border-blue-900/40 rounded-3xl p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-2xl">📋</div>
+          <div>
+            <h2 class="text-lg font-semibold" id="my-plan-title">My Training Plan</h2>
+            <div class="text-zinc-400 text-xs" id="my-plan-manager">Assigned by your manager</div>
+          </div>
+        </div>
+        <div id="my-plan-items" class="space-y-2"></div>
+      </div>
       <div id="next-module-card"></div>
       <div>
         <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
@@ -490,15 +500,68 @@
       </div>
       <div id="manager-content" class="hidden space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="mgr-stats"></div>
-        <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
-          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <h2 class="text-xl font-semibold" id="mgr-staff-title">Staff Progress</h2>
-            <div class="flex gap-3">
-              <button onclick="exportCSV()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-export-btn">Export CSV</button>
-              <button onclick="copyInviteCode()" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-invite-btn">Copy Invite Link</button>
+        <!-- Manager Tabs -->
+        <div class="flex gap-2 border-b border-zinc-800 pb-0">
+          <button onclick="switchMgrTab('staff')" id="mgr-tab-staff" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-amber-400 text-amber-400 transition-colors">👥 Staff Progress</button>
+          <button onclick="switchMgrTab('plans')" id="mgr-tab-plans" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📋 Onboarding Plans</button>
+          <button onclick="switchMgrTab('skillgap')" id="mgr-tab-skillgap" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📊 Skill Gap</button>
+        </div>
+
+        <!-- Staff Progress Tab -->
+        <div id="mgr-panel-staff" class="space-y-4">
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <h2 class="text-xl font-semibold" id="mgr-staff-title">Staff Progress</h2>
+              <div class="flex gap-3">
+                <button onclick="exportCSV()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-export-btn">Export CSV</button>
+                <button onclick="copyInviteCode()" class="bg-amber-400 hover:bg-amber-300 text-black font-semibold px-4 py-2 rounded-xl text-sm transition-colors" id="mgr-invite-btn">Copy Invite Link</button>
+              </div>
+            </div>
+            <div id="staff-table" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <!-- Onboarding Plans Tab -->
+        <div id="mgr-panel-plans" class="hidden space-y-6">
+          <!-- Create Plan Form -->
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <h2 class="text-lg font-semibold mb-4">Create Onboarding Plan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Staff Member</label>
+                <select id="plan-staff-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
+                  <option value="">Select staff member…</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Plan Title</label>
+                <input id="plan-title-input" type="text" placeholder="e.g. New Hire Week 1" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div class="flex items-end">
+                <button onclick="createTrainingPlan()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2 rounded-xl text-sm transition-colors">Create Plan</button>
+              </div>
+            </div>
+            <div id="plan-create-msg" class="text-sm text-zinc-400 hidden"></div>
+          </div>
+
+          <!-- Plans List -->
+          <div id="plans-list" class="space-y-4">
+            <div class="text-zinc-500 text-sm">Loading plans…</div>
+          </div>
+        </div>
+
+        <!-- Skill Gap Analysis Tab -->
+        <div id="mgr-panel-skillgap" class="hidden space-y-6">
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-lg font-semibold">Team Skill Gap Analysis</h2>
+              <button onclick="loadSkillGap()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
+            </div>
+            <p class="text-zinc-400 text-sm mb-6">Average quiz scores per module across your team. Modules below 70% are highlighted in red.</p>
+            <div id="skill-gap-content">
+              <div class="text-zinc-500 text-sm">Loading skill gap data…</div>
             </div>
           </div>
-          <div id="staff-table" class="space-y-3"></div>
         </div>
       </div>
     </div>
@@ -2387,6 +2450,11 @@ function renderManagerDashboard(data) {
       </div>
     </div>`;
   }).join('');
+  const staffSel = document.getElementById('plan-staff-select');
+  if (staffSel) {
+    staffSel.innerHTML = '<option value="">Select staff member…</option>' +
+      staff.map(s => `<option value="${s.id}">${escHtml(s.name)} (${escHtml(s.email)})</option>`).join('');
+  }
 }
 
 async function createRestaurant() {
@@ -2443,6 +2511,259 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'staff-progress.csv';
   a.click();
+}
+
+// =========================================================
+// MANAGER INTELLIGENCE TOOLS
+// =========================================================
+const MODULE_NAMES_CLIENT = {
+  1:'Service Foundations',2:'Menu Knowledge',3:'Wine Essentials',4:'Beverage Mastery',
+  5:'Upselling Techniques',6:'Tray & Posture',7:'Allergy Awareness',8:'Guest Psychology',
+  9:'Tableside Etiquette',10:'POS & Billing',11:'Wine Service Advanced',12:'Floor Leadership',
+  13:'Spirits & Cocktails',14:'Coffee & Non-Alcoholic',15:'Allergen Mastery',16:'EQ & Reading Guests',
+  17:'Menu Knowledge Advanced',18:'Managing the Rush',19:'Host & Reception Skills',
+  20:'Cheese & Charcuterie',21:'Sustainability',22:'Digital Tools & POS',23:'Team Culture',
+  24:'Wellness & Career Growth',25:'Bar Setup & Mise en Place',26:'Essential Bartending',
+  27:'Classic Cocktails',28:'Bar Upselling',29:'Responsible Service',30:'Bar Career & Culture'
+};
+
+function switchMgrTab(tab) {
+  ['staff','plans','skillgap'].forEach(t => {
+    const panel = document.getElementById('mgr-panel-'+t);
+    const btn = document.getElementById('mgr-tab-'+t);
+    if (panel) panel.classList.toggle('hidden', t !== tab);
+    if (btn) {
+      btn.classList.toggle('border-amber-400', t === tab);
+      btn.classList.toggle('text-amber-400', t === tab);
+      btn.classList.toggle('border-transparent', t !== tab);
+      btn.classList.toggle('text-zinc-400', t !== tab);
+    }
+  });
+  if (tab === 'plans') loadTrainingPlans();
+  if (tab === 'skillgap') loadSkillGap();
+}
+
+async function createTrainingPlan() {
+  const userId = document.getElementById('plan-staff-select').value;
+  const title = document.getElementById('plan-title-input').value.trim();
+  const msgEl = document.getElementById('plan-create-msg');
+  if (!userId) { msgEl.textContent = 'Please select a staff member.'; msgEl.classList.remove('hidden','text-emerald-400'); msgEl.classList.add('text-red-400'); return; }
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/manager/training-plans', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+authToken},
+      body: JSON.stringify({ userId: parseInt(userId), title: title || 'Onboarding Plan' })
+    });
+    const data = await res.json();
+    if (data.plan) {
+      msgEl.textContent = 'Plan created!';
+      msgEl.classList.remove('hidden','text-red-400');
+      msgEl.classList.add('text-emerald-400');
+      document.getElementById('plan-title-input').value = '';
+      document.getElementById('plan-staff-select').value = '';
+      setTimeout(() => msgEl.classList.add('hidden'), 2000);
+      loadTrainingPlans();
+    } else {
+      msgEl.textContent = data.error || 'Error creating plan.';
+      msgEl.classList.remove('hidden','text-emerald-400'); msgEl.classList.add('text-red-400');
+    }
+  } catch { msgEl.textContent = 'Error creating plan.'; msgEl.classList.remove('hidden','text-emerald-400'); msgEl.classList.add('text-red-400'); }
+}
+
+async function loadTrainingPlans() {
+  if (!authToken) return;
+  const listEl = document.getElementById('plans-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/manager/training-plans', { headers:{ Authorization:'Bearer '+authToken } });
+    const data = await res.json();
+    renderTrainingPlans(data.plans || []);
+  } catch { listEl.innerHTML = '<div class="text-red-400 text-sm">Failed to load plans.</div>'; }
+}
+
+function renderTrainingPlans(plans) {
+  const listEl = document.getElementById('plans-list');
+  if (!listEl) return;
+  if (!plans.length) {
+    listEl.innerHTML = '<div class="text-zinc-500 text-sm">No onboarding plans yet. Create one above.</div>';
+    return;
+  }
+  listEl.innerHTML = plans.map(plan => {
+    const items = plan.items || [];
+    const done = items.filter(i => (i.progress || 0) >= 100).length;
+    const total = items.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const itemsHtml = items.length ? items.map((item, idx) => {
+      const prog = item.progress || 0;
+      const isDone = prog >= 100;
+      const due = item.due_date ? new Date(item.due_date).toLocaleDateString('en-CA', { month:'short', day:'numeric' }) : '';
+      const overdue = item.due_date && !isDone && new Date(item.due_date) < new Date();
+      return `<div class="flex items-center gap-3 py-2 border-b border-zinc-800 last:border-0">
+        <span class="text-zinc-500 text-xs w-5">${idx+1}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium ${isDone ? 'line-through text-zinc-500' : ''}">${MODULE_NAMES_CLIENT[item.module_id] || 'Module '+item.module_id}</div>
+          ${due ? `<div class="text-xs ${overdue ? 'text-red-400' : 'text-zinc-500'}">${overdue?'⚠ Overdue — ':''}Due ${due}</div>` : ''}
+        </div>
+        <div class="text-xs ${isDone ? 'text-emerald-400' : 'text-zinc-500'}">${isDone ? '✓ Done' : prog+'%'}</div>
+        <button onclick="removePlanItem(${plan.id},${item.id})" class="text-zinc-600 hover:text-red-400 text-xs transition-colors">✕</button>
+      </div>`;
+    }).join('') : '<div class="text-zinc-600 text-xs py-2">No modules added yet.</div>';
+
+    return `<div class="bg-zinc-900 border border-amber-900/30 rounded-3xl p-5">
+      <div class="flex items-start justify-between mb-3 gap-3">
+        <div>
+          <div class="font-semibold">${escHtml(plan.title)}</div>
+          <div class="text-zinc-400 text-xs mt-0.5">For: <span class="text-white">${escHtml(plan.staff_name)}</span> · ${escHtml(plan.staff_email)}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-zinc-400">${done}/${total} done</span>
+          <button onclick="deleteTrainingPlan(${plan.id})" class="text-zinc-600 hover:text-red-400 text-xs transition-colors px-2 py-1 rounded-lg hover:bg-red-900/20">Delete</button>
+        </div>
+      </div>
+      ${total > 0 ? `<div class="w-full bg-zinc-700 rounded-full h-1.5 mb-4"><div class="bg-amber-400 h-1.5 rounded-full" style="width:${pct}%"></div></div>` : ''}
+      <div class="mb-4">${itemsHtml}</div>
+      <div class="flex gap-2 flex-wrap">
+        <select id="add-module-select-${plan.id}" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
+          ${Object.entries(MODULE_NAMES_CLIENT).map(([id,name]) => `<option value="${id}">${id}. ${name}</option>`).join('')}
+        </select>
+        <input type="date" id="add-due-${plan.id}" class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+        <button onclick="addPlanItem(${plan.id})" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors">Add Module</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addPlanItem(planId) {
+  if (!authToken) return;
+  const moduleId = parseInt(document.getElementById('add-module-select-'+planId).value);
+  const dueDate = document.getElementById('add-due-'+planId).value || null;
+  try {
+    await fetch(`/api/manager/training-plans/${planId}/items`, {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+authToken},
+      body: JSON.stringify({ moduleId, dueDate })
+    });
+    loadTrainingPlans();
+  } catch {}
+}
+
+async function removePlanItem(planId, itemId) {
+  if (!authToken) return;
+  try {
+    await fetch(`/api/manager/training-plans/${planId}/items/${itemId}`, {
+      method:'DELETE', headers:{ Authorization:'Bearer '+authToken }
+    });
+    loadTrainingPlans();
+  } catch {}
+}
+
+async function deleteTrainingPlan(planId) {
+  if (!authToken) return;
+  if (!confirm('Delete this onboarding plan? This cannot be undone.')) return;
+  try {
+    await fetch(`/api/manager/training-plans/${planId}`, {
+      method:'DELETE', headers:{ Authorization:'Bearer '+authToken }
+    });
+    loadTrainingPlans();
+  } catch {}
+}
+
+async function loadSkillGap() {
+  if (!authToken) return;
+  const el = document.getElementById('skill-gap-content');
+  if (!el) return;
+  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/manager/skill-gap', { headers:{ Authorization:'Bearer '+authToken } });
+    const data = await res.json();
+    renderSkillGap(data.modules || [], data.staff || []);
+  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load skill gap data.</div>'; }
+}
+
+function renderSkillGap(mods, staff) {
+  const el = document.getElementById('skill-gap-content');
+  if (!el) return;
+  if (!mods.length) {
+    el.innerHTML = `<div class="text-zinc-500 text-sm py-4">${staff.length ? 'No quiz data yet — staff need to complete modules and take quizzes.' : 'No staff in your team yet.'}</div>`;
+    return;
+  }
+  const sorted = [...mods].sort((a,b) => a.avg_quiz - b.avg_quiz);
+  const maxScore = 100;
+  el.innerHTML = `
+    <div class="space-y-3">
+      ${sorted.map(mod => {
+        const score = mod.avg_quiz;
+        const isWeak = score < 70;
+        const barColor = isWeak ? 'bg-red-500' : score < 85 ? 'bg-amber-400' : 'bg-emerald-500';
+        const notAttempted = mod.not_attempted || [];
+        const notAttemptedHtml = notAttempted.length ? `<div class="text-xs text-zinc-500 mt-1">Not attempted: <span class="text-orange-400">${notAttempted.slice(0,5).join(', ')}${notAttempted.length > 5 ? ' +'+( notAttempted.length-5)+' more' : ''}</span></div>` : '';
+        return `<div class="rounded-2xl p-4 ${isWeak ? 'bg-red-950/30 border border-red-900/40' : 'bg-zinc-800/60 border border-zinc-700/40'}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-medium text-sm ${isWeak ? 'text-red-300' : 'text-white'}">${mod.module_id}. ${MODULE_NAMES_CLIENT[mod.module_id] || 'Module '+mod.module_id}</div>
+            <div class="text-right">
+              <span class="font-bold text-sm ${isWeak ? 'text-red-400' : score < 85 ? 'text-amber-400' : 'text-emerald-400'}">${score}%</span>
+              ${isWeak ? '<span class="ml-1 text-xs text-red-500 font-semibold">NEEDS WORK</span>' : ''}
+            </div>
+          </div>
+          <div class="w-full bg-zinc-700 rounded-full h-2 mb-2">
+            <div class="${barColor} h-2 rounded-full transition-all" style="width:${Math.min(100,score)}%"></div>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-zinc-400">
+            <span>${mod.attempted}/${mod.total_staff} attempted</span>
+            <span>·</span>
+            <span>${mod.completed} completed</span>
+          </div>
+          ${notAttemptedHtml}
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="mt-4 pt-4 border-t border-zinc-800 flex gap-4 text-xs text-zinc-500">
+      <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>Below 70% — needs work</span>
+      <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>70–84%</span>
+      <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>85%+</span>
+    </div>`;
+}
+
+async function loadUserTrainingPlan() {
+  if (!authToken) return;
+  const section = document.getElementById('my-training-plan-section');
+  if (!section) return;
+  try {
+    const res = await fetch('/api/user/training-plan', { headers:{ Authorization:'Bearer '+authToken } });
+    const data = await res.json();
+    if (!data.plan || !data.plan.items || !data.plan.items.length) {
+      section.classList.add('hidden'); return;
+    }
+    const plan = data.plan;
+    document.getElementById('my-plan-title').textContent = plan.title || 'My Training Plan';
+    document.getElementById('my-plan-manager').textContent = `Assigned by ${plan.manager_name || 'your manager'}`;
+    const itemsEl = document.getElementById('my-plan-items');
+    const items = plan.items;
+    const done = items.filter(i => (i.progress || 0) >= 100).length;
+    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    itemsEl.innerHTML = `
+      <div class="w-full bg-zinc-700 rounded-full h-1.5 mb-4"><div class="bg-blue-500 h-1.5 rounded-full" style="width:${pct}%"></div></div>
+      <div class="text-xs text-zinc-400 mb-3">${done} of ${items.length} modules complete (${pct}%)</div>
+      ${items.map((item, idx) => {
+        const prog = item.progress || 0;
+        const isDone = prog >= 100;
+        const due = item.due_date ? new Date(item.due_date).toLocaleDateString('en-CA', { month:'short', day:'numeric' }) : '';
+        const overdue = item.due_date && !isDone && new Date(item.due_date) < new Date();
+        const modObj = modules.find(m => m.id === item.module_id);
+        const emoji = modObj ? modObj.emoji : '📖';
+        return `<div class="flex items-center gap-3 py-2.5 border-b border-zinc-800 last:border-0 cursor-pointer hover:opacity-80" onclick="openTopicHub(${item.module_id},'dashboard')">
+          <span class="text-lg">${emoji}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium ${isDone ? 'line-through text-zinc-500' : ''}">${MODULE_NAMES_CLIENT[item.module_id] || 'Module '+item.module_id}</div>
+            ${due ? `<div class="text-xs ${overdue ? 'text-red-400 font-semibold' : 'text-zinc-500'}">${overdue?'⚠ Overdue — ':''}Due ${due}</div>` : ''}
+          </div>
+          <div class="text-right">
+            ${isDone ? '<span class="text-emerald-400 text-xs font-semibold">✓ Done</span>' : `<span class="text-zinc-400 text-xs">${prog}%</span>`}
+          </div>
+        </div>`;
+      }).join('')}`;
+    section.classList.remove('hidden');
+  } catch { /* silently fail — not all users have training plans */ }
 }
 
 // =========================================================
@@ -3199,6 +3520,7 @@ function startDailyChallenge() {
 
 function renderAll() {
   renderScenarios();
+  loadUserTrainingPlan();
   const nextCardEl = document.getElementById('next-module-card');
   const continueEl = document.getElementById('continue-modules');
   const allEl = document.getElementById('all-modules');
