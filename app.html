@@ -499,6 +499,38 @@
       </div>
     </div>
 
+    <!-- TOPIC HUB -->
+    <div id="hub-screen" class="hidden space-y-10">
+      <div class="flex items-center gap-3 mb-2">
+        <button id="hub-back-btn" onclick="hubGoBack()" class="flex items-center gap-2 text-zinc-400 hover:text-amber-400 text-sm transition-colors font-semibold">← <span id="hub-back-label">All Modules</span></button>
+      </div>
+      <div id="hub-header"></div>
+      <div id="hub-lesson-section" class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-2xl">📚</span>
+          <h2 class="text-xl font-semibold" id="hub-lesson-heading">Lesson</h2>
+        </div>
+        <div id="hub-lesson-body"></div>
+      </div>
+      <div id="hub-practice-section" class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 lg:p-8">
+        <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🎭</span>
+            <h2 class="text-xl font-semibold" id="hub-practice-heading">Practice Scenarios</h2>
+          </div>
+          <div id="hub-scenarios-done-badge" class="hidden text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"></div>
+        </div>
+        <div id="hub-scenarios-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </div>
+      <div id="hub-blog-section" class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-2xl">📰</span>
+          <h2 class="text-xl font-semibold" id="hub-blog-heading">Deep Dive</h2>
+        </div>
+        <div id="hub-blog-body"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2412,14 +2444,231 @@ function navigate(screen) {
   document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
   const el = document.getElementById(screen + '-screen');
   if (el) el.classList.remove('hidden');
-  ['dashboard','learn','practice','achievements','leaderboard','manager'].forEach(s => {
+  const navScreens = ['dashboard','learn','practice','achievements','leaderboard','manager'];
+  navScreens.forEach(s => {
     const n = document.getElementById('nav-'+s);
-    if (n) n.classList.toggle('active', s === screen);
+    if (n) n.classList.toggle('active', s === screen || (screen === 'hub' && s === 'learn'));
   });
   if (screen === 'practice') exitChat();
   if (screen === 'leaderboard') loadLeaderboard();
   if (screen === 'achievements') renderAchievements();
   if (screen === 'manager') loadManagerDashboard();
+}
+
+// =========================================================
+// TOPIC HUB
+// =========================================================
+let hubCurrentModId = null;
+let hubFromScreen = 'learn';
+
+const HUB_CATEGORY_LABELS = {
+  'fine-dining': { en: 'Fine Dining', fr: 'Fine Cuisine', es: 'Alta Cocina' },
+  'beverage': { en: 'Beverage Service', fr: 'Service des Boissons', es: 'Servicio de Bebidas' },
+  'guest-experience': { en: 'Guest Experience', fr: 'Expérience Client', es: 'Experiencia del Huésped' },
+  'menu-upselling': { en: 'Menu & Upselling', fr: 'Menu & Vente Suggestive', es: 'Menú y Venta Sugestiva' },
+  'team-management': { en: 'Team Management', fr: 'Gestion d\'Équipe', es: 'Gestión de Equipo' },
+  'tech': { en: 'Training Technology', fr: 'Technologie de Formation', es: 'Tecnología de Formación' }
+};
+const HUB_CATEGORY_STYLE = {
+  'fine-dining': 'bg-amber-400/15 text-amber-400 border-amber-400/30',
+  'beverage': 'bg-blue-400/15 text-blue-400 border-blue-400/30',
+  'guest-experience': 'bg-rose-400/15 text-rose-400 border-rose-400/30',
+  'menu-upselling': 'bg-emerald-400/15 text-emerald-400 border-emerald-400/30',
+  'team-management': 'bg-purple-400/15 text-purple-400 border-purple-400/30',
+  'tech': 'bg-sky-400/15 text-sky-400 border-sky-400/30'
+};
+
+function getCategoryLabel(cat) {
+  const entry = HUB_CATEGORY_LABELS[cat];
+  if (!entry) return cat;
+  return entry[lang] || entry.en;
+}
+
+function isTopicComplete(mod) {
+  const progress = userProgress.find(u => u.id === mod.id);
+  const lessonDone = (progress && progress.progress >= 100) || savedQuizScores[mod.id] != null;
+  const scenariosDone = (mod.scenarioIds || []).filter(sid => completedScenarios.includes(sid)).length;
+  return lessonDone && scenariosDone >= 3;
+}
+
+function getTopicScenariosDoneCount(mod) {
+  return (mod.scenarioIds || []).filter(sid => completedScenarios.includes(sid)).length;
+}
+
+function openTopicHub(id, fromScreen) {
+  if (!hasPaidPlan() && id > 3) {
+    window.location.href = '/pricing';
+    return;
+  }
+  hubCurrentModId = id;
+  hubFromScreen = fromScreen || 'learn';
+  navigate('hub');
+  renderHub();
+}
+
+function hubGoBack() {
+  navigate(hubFromScreen || 'learn');
+}
+
+function startChatFromHub(scenarioId) {
+  navigate('practice');
+  setTimeout(() => startChat(scenarioId), 50);
+}
+
+function renderHub() {
+  const mod = modules.find(m => m.id === hubCurrentModId);
+  if (!mod) return;
+
+  const modTitle = lang === 'fr' && mod.titleFr ? mod.titleFr : lang === 'es' && mod.titleEs ? mod.titleEs : mod.title;
+  const catStyle = HUB_CATEGORY_STYLE[mod.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
+  const catLabel = getCategoryLabel(mod.category);
+  const progress = userProgress.find(u => u.id === mod.id) || { progress: 0 };
+  const quizScore = savedQuizScores[mod.id];
+  const scenDone = getTopicScenariosDoneCount(mod);
+  const topicComplete = isTopicComplete(mod);
+
+  // Back button label
+  const backLabelEl = document.getElementById('hub-back-label');
+  if (backLabelEl) {
+    backLabelEl.textContent = hubFromScreen === 'dashboard'
+      ? (lang === 'fr' ? 'Tableau de bord' : lang === 'es' ? 'Panel' : 'Dashboard')
+      : (lang === 'fr' ? 'Tous les modules' : lang === 'es' ? 'Todos los módulos' : 'All Modules');
+  }
+
+  // Section headings i18n
+  const lessonHeadEl = document.getElementById('hub-lesson-heading');
+  if (lessonHeadEl) lessonHeadEl.textContent = lang === 'fr' ? 'Leçon' : lang === 'es' ? 'Lección' : 'Lesson';
+  const practiceHeadEl = document.getElementById('hub-practice-heading');
+  if (practiceHeadEl) practiceHeadEl.textContent = lang === 'fr' ? 'Scénarios de Pratique' : lang === 'es' ? 'Escenarios de Práctica' : 'Practice Scenarios';
+  const blogHeadEl = document.getElementById('hub-blog-heading');
+  if (blogHeadEl) blogHeadEl.textContent = lang === 'fr' ? 'Approfondissement' : lang === 'es' ? 'Profundización' : 'Deep Dive';
+
+  // Header
+  const headerEl = document.getElementById('hub-header');
+  if (headerEl) {
+    const completeTag = topicComplete
+      ? `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">✓ ${lang === 'fr' ? 'Sujet terminé' : lang === 'es' ? 'Tema completado' : 'Topic Complete'}</span>`
+      : '';
+    const lessonStatusText = quizScore != null
+      ? `<span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${quizScore}%</span>`
+      : progress.progress > 0
+      ? `<span class="text-zinc-400 text-xs">${progress.progress}% ${lang === 'fr' ? 'terminé' : lang === 'es' ? 'completado' : 'complete'}</span>`
+      : '';
+    const scenBadgeText = lang === 'fr' ? `${scenDone}/5 scénarios` : lang === 'es' ? `${scenDone}/5 escenarios` : `${scenDone}/5 scenarios`;
+    headerEl.innerHTML = `
+      <div class="flex items-start gap-5">
+        <div class="text-6xl shrink-0">${mod.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${catStyle}">${catLabel}</span>
+            ${completeTag}
+          </div>
+          <h1 class="heading text-3xl lg:text-4xl mb-3">${modTitle}</h1>
+          <div class="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
+            <span>⏱ ~${mod.mins} min</span>
+            <span>•</span>
+            <span>${lang === 'fr' ? 'Module' : 'Module'} ${mod.id} ${lang === 'fr' ? 'sur' : lang === 'es' ? 'de' : 'of'} 30</span>
+            ${lessonStatusText ? '<span>•</span>' + lessonStatusText : ''}
+            <span>•</span>
+            <span class="${scenDone >= 3 ? 'text-emerald-400' : ''}">${scenBadgeText}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Lesson section
+  const lessonBody = document.getElementById('hub-lesson-body');
+  if (lessonBody) {
+    const lessonBtnLabel = progress.progress > 0 || quizScore != null
+      ? (lang === 'fr' ? 'Revoir la leçon →' : lang === 'es' ? 'Revisar la lección →' : 'Review Lesson →')
+      : (lang === 'fr' ? 'Commencer la leçon →' : lang === 'es' ? 'Comenzar la lección →' : 'Start Lesson →');
+    const progressBar = progress.progress > 0 ? `
+      <div class="mt-4">
+        <div class="flex justify-between text-xs text-zinc-500 mb-1">
+          <span>${lang === 'fr' ? 'Progression' : lang === 'es' ? 'Progreso' : 'Progress'}</span>
+          <span>${progress.progress}%</span>
+        </div>
+        <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${progress.progress}%"></div></div>
+      </div>` : '';
+    lessonBody.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="flex-1">
+          <p class="text-zinc-400 text-sm">${lang === 'fr' ? 'Lisez la leçon complète, les conseils pratiques, et passez le quiz.' : lang === 'es' ? 'Lee la lección completa, los consejos prácticos y realiza el quiz.' : 'Read the full lesson, practical tips, and take the quiz.'}</p>
+          ${progressBar}
+        </div>
+        <button onclick="openModule(${mod.id})" class="shrink-0 bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors text-sm whitespace-nowrap">${lessonBtnLabel}</button>
+      </div>`;
+  }
+
+  // Practice section
+  const scenariosGrid = document.getElementById('hub-scenarios-grid');
+  const scenBadgeEl = document.getElementById('hub-scenarios-done-badge');
+  if (scenBadgeEl) {
+    if (scenDone > 0) {
+      scenBadgeEl.classList.remove('hidden');
+      scenBadgeEl.textContent = lang === 'fr' ? `${scenDone}/5 terminés` : lang === 'es' ? `${scenDone}/5 completados` : `${scenDone}/5 done`;
+    } else {
+      scenBadgeEl.classList.add('hidden');
+    }
+  }
+  if (scenariosGrid) {
+    const hubScenarios = (mod.scenarioIds || []).map(sid => practiceScenarios.find(s => s.id === sid)).filter(Boolean);
+    const lockedScenarios = !hasPaidPlan() && mod.id > 3;
+    if (lockedScenarios) {
+      scenariosGrid.innerHTML = `<div class="col-span-full text-center py-8 text-zinc-400 text-sm">
+        <div class="text-3xl mb-3">🔒</div>
+        <div class="font-semibold mb-2">${lang === 'fr' ? 'Accès Pro requis' : lang === 'es' ? 'Se requiere acceso Pro' : 'Pro access required'}</div>
+        <a href="/pricing" class="text-amber-400 hover:underline text-sm">${lang === 'fr' ? 'Mettre à niveau →' : lang === 'es' ? 'Actualizar →' : 'Upgrade now →'}</a>
+      </div>`;
+    } else {
+      scenariosGrid.innerHTML = hubScenarios.map(s => {
+        const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+        const scene = lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : (s.scene || '');
+        const desc = lang === 'es' && s.descEs ? s.descEs : lang === 'fr' && s.descFr ? s.descFr : (s.desc || '');
+        const done = completedScenarios.includes(s.id);
+        const diff = DIFFICULTY_STYLES[s.difficulty] || DIFFICULTY_STYLES.Beginner;
+        const diffLabel = lang === 'es' && diff.labelEs ? diff.labelEs : lang === 'fr' ? diff.labelFr : diff.label;
+        const practiceBtn = lang === 'fr' ? 'Pratiquer →' : lang === 'es' ? 'Practicar →' : 'Practice →';
+        const excerpt = (scene || desc).substring(0, 110).trim();
+        const doneLabel = lang === 'fr' ? 'Terminé' : lang === 'es' ? 'Completado' : 'Done';
+        return `<div class="bg-zinc-800/50 border ${done ? 'border-emerald-800/60' : diff.borderCls} rounded-2xl p-5 flex flex-col gap-3 relative">
+          ${done ? `<div class="absolute top-3 right-3 text-emerald-400 text-xs font-semibold">✓ ${doneLabel}</div>` : ''}
+          <div class="flex items-start gap-3">
+            <div class="text-2xl shrink-0">${s.emoji}</div>
+            <div class="flex-1 min-w-0 pr-12">
+              <div class="font-semibold text-sm mb-1 leading-snug">${title}</div>
+              <span class="inline-block text-xs px-2 py-0.5 rounded-lg border ${diff.cls}">${diffLabel}</span>
+            </div>
+          </div>
+          ${excerpt ? `<p class="text-zinc-400 text-xs leading-relaxed">${escHtml(excerpt)}${(scene || desc).length > 110 ? '…' : ''}</p>` : ''}
+          <button onclick="startChatFromHub(${s.id})" class="mt-auto w-full bg-zinc-700 hover:bg-amber-400 hover:text-black text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">${practiceBtn}</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Blog section
+  const blogBody = document.getElementById('hub-blog-body');
+  if (blogBody) {
+    const article = (window.SMAContent && window.SMAContent.blogArticles ? window.SMAContent.blogArticles : []).find(a => a.slug === mod.blogSlug);
+    if (article) {
+      const artTitle = lang === 'fr' && article.titleFr ? article.titleFr : lang === 'es' && article.titleEs ? article.titleEs : article.title;
+      const artDesc = lang === 'fr' && article.descFr ? article.descFr : lang === 'es' && article.descEs ? article.descEs : article.desc;
+      const artCat = lang === 'fr' && article.categoryFr ? article.categoryFr : lang === 'es' && article.categoryEs ? article.categoryEs : article.category;
+      const readLabel = lang === 'fr' ? 'Lire l\'article →' : lang === 'es' ? 'Leer el artículo →' : 'Read full article →';
+      blogBody.innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-5 items-start">
+          <div class="flex-1">
+            <div class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">${artCat} · ${article.mins} min read</div>
+            <h3 class="font-semibold text-lg mb-2 leading-snug">${artTitle}</h3>
+            <p class="text-zinc-400 text-sm leading-relaxed">${artDesc}</p>
+          </div>
+          <a href="/blog/${mod.blogSlug}" target="_blank" class="shrink-0 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-400 text-white font-semibold px-5 py-3 rounded-2xl text-sm transition-all whitespace-nowrap">${readLabel}</a>
+        </div>`;
+    } else {
+      blogBody.innerHTML = `<p class="text-zinc-500 text-sm">${lang === 'fr' ? 'Article bientôt disponible.' : lang === 'es' ? 'Artículo próximamente.' : 'Article coming soon.'}</p>`;
+    }
+  }
 }
 
 function renderAchievements() {
@@ -2596,7 +2845,7 @@ function renderAll() {
       const stepLabel = t('stepOf').replace('{n}', nextModule.id);
       const btnLabel = p.progress > 0 ? t('continueBtn') : t('startCta');
       const heading = p.progress > 0 ? t('pickUpLabel') : t('startHereLabel');
-      nextCardEl.innerHTML = `<div onclick="openModule(${nextModule.id})" class="cursor-pointer bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 hover:border-amber-400 rounded-3xl p-6 flex items-center gap-6 mb-2 transition-all">
+      nextCardEl.innerHTML = `<div onclick="openTopicHub(${nextModule.id},'dashboard')" class="cursor-pointer bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 hover:border-amber-400 rounded-3xl p-6 flex items-center gap-6 mb-2 transition-all">
         <div class="text-5xl">${nextModule.emoji}</div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">${heading}</div>
@@ -2624,13 +2873,18 @@ function renderAll() {
     continueEl.innerHTML = inProgress.map(m => {
       const p = userProgress.find(u => u.id === m.id);
       const qs = savedQuizScores[m.id];
-      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
+      const catStyle = HUB_CATEGORY_STYLE[m.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
+      const catLabel = getCategoryLabel(m.category);
+      return `<div onclick="openTopicHub(${m.id},'dashboard')" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
         <div class="flex justify-between items-start mb-3">
           <div class="text-4xl">${m.emoji}</div>
           ${qs != null ? `<span class="text-xs px-2 py-1 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
         </div>
         <div class="font-semibold text-lg mb-1">${getModuleTitle(m)}</div>
-        <div class="text-zinc-500 text-xs mb-3">⏱ ~${m.mins} min</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
+          <span class="text-xs px-2 py-0.5 rounded-full border ${catStyle} font-medium">${catLabel}</span>
+        </div>
         <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
         <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${t('pctComplete')}</div>
       </div>`;
@@ -2661,22 +2915,32 @@ function renderAll() {
       }
       const isBookmarked = userBookmarks.has(m.id);
       const isRequired = assignedModuleIds.has(m.id);
-      return `<div onclick="openModule(${m.id})" class="bg-zinc-900 border ${done?'border-emerald-800':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
+      const topicComplete = isTopicComplete(m);
+      const catStyle = HUB_CATEGORY_STYLE[m.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
+      const catLabel = getCategoryLabel(m.category);
+      const scenDone = getTopicScenariosDoneCount(m);
+      const scenBadge = scenDone > 0 ? `<span class="text-xs text-zinc-400">${scenDone}/5 scenarios</span>` : '';
+      const topicCompleteBadge = topicComplete ? `<span class="text-xs font-semibold text-emerald-400">✓ Complete</span>` : '';
+      return `<div onclick="openTopicHub(${m.id})" class="bg-zinc-900 border ${topicComplete?'border-emerald-800':done?'border-emerald-800/50':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
         <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
         <button id="bookmark-${m.id}" onclick="toggleBookmark(${m.id}, event)" title="Bookmark" class="absolute top-3 right-3 text-lg leading-none ${isBookmarked ? 'text-amber-400' : 'text-zinc-700 hover:text-zinc-400'} transition-colors">★</button>
         <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <div class="font-semibold mb-1">${getModuleTitle(m)}</div>
-            ${done?'<span class="text-emerald-400 text-xs">✓</span>':''}
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <div class="font-semibold">${getModuleTitle(m)}</div>
             ${isRequired?'<span class="text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30 font-semibold">Required</span>':''}
           </div>
-          <div class="flex items-center gap-3 mb-2">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span class="text-xs px-2 py-0.5 rounded-full border ${catStyle} font-medium">${catLabel}</span>
+            <span class="text-zinc-600">•</span>
             <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
-            ${qs != null ? `<span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
+            ${qs != null ? `<span class="text-zinc-600">•</span><span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
           </div>
-          <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
-          <div class="text-zinc-400 text-xs mt-1">${p.progress}% ${t('pctComplete')}</div>
+          <div class="flex items-center gap-3 mb-2">
+            ${scenBadge}
+            ${topicCompleteBadge}
+          </div>
+          <div class="w-full bg-zinc-700 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full" style="width:${p.progress}%"></div></div>
         </div>
       </div>`;
     }).join('');
