@@ -2828,19 +2828,17 @@ function renderAll() {
   const nextCardEl = document.getElementById('next-module-card');
   const continueEl = document.getElementById('continue-modules');
   const allEl = document.getElementById('all-modules');
-  const nextModule = modules.find(m => {
-    const p = userProgress.find(u => u.id === m.id);
-    return p && p.progress < 100;
-  });
+  const nextModule = modules.find(m => !isTopicComplete(m));
 
   const inProgress = modules.filter(m => {
     const p = userProgress.find(u => u.id === m.id);
-    return p && p.progress < 100;
+    const hasEngagement = (p && p.progress > 0) || getTopicScenariosDoneCount(m) > 0;
+    return hasEngagement && !isTopicComplete(m);
   }).slice(0, 3);
 
   if (nextCardEl) {
     if (nextModule) {
-      const p = userProgress.find(u => u.id === nextModule.id);
+      const p = userProgress.find(u => u.id === nextModule.id) || { progress: 0 };
       const minsLabel = `~${nextModule.mins} min`;
       const stepLabel = t('stepOf').replace('{n}', nextModule.id);
       const btnLabel = p.progress > 0 ? t('continueBtn') : t('startCta');
@@ -2871,22 +2869,26 @@ function renderAll() {
 
   if (continueEl) {
     continueEl.innerHTML = inProgress.map(m => {
-      const p = userProgress.find(u => u.id === m.id);
+      const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
       const qs = savedQuizScores[m.id];
       const catStyle = HUB_CATEGORY_STYLE[m.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
       const catLabel = getCategoryLabel(m.category);
+      const scenDoneC = getTopicScenariosDoneCount(m);
       return `<div onclick="openTopicHub(${m.id},'dashboard')" class="bg-zinc-900 border border-amber-900/40 hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all">
         <div class="flex justify-between items-start mb-3">
           <div class="text-4xl">${m.emoji}</div>
           ${qs != null ? `<span class="text-xs px-2 py-1 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
         </div>
         <div class="font-semibold text-lg mb-1">${getModuleTitle(m)}</div>
-        <div class="flex items-center gap-2 mb-3">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
           <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
           <span class="text-xs px-2 py-0.5 rounded-full border ${catStyle} font-medium">${catLabel}</span>
         </div>
-        <div class="w-full bg-zinc-700 rounded-full h-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
-        <div class="text-zinc-400 text-sm mt-2">${p.progress}% ${t('pctComplete')}</div>
+        <div class="w-full bg-zinc-700 rounded-full h-2 mb-2"><div class="bg-amber-400 h-2 rounded-full" style="width:${p.progress}%"></div></div>
+        <div class="flex items-center justify-between text-xs text-zinc-400">
+          <span>${p.progress}% ${t('pctComplete')}</span>
+          <span class="${scenDoneC >= 3 ? 'text-emerald-400' : 'text-zinc-500'}">${scenDoneC}/5 scenarios</span>
+        </div>
       </div>`;
     }).join('');
   }
