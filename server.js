@@ -2914,6 +2914,7 @@ app.get('/api/manager/training-plans', managerMiddleware, async (req, res) => {
        ORDER BY tp.created_at DESC`,
       [restaurantId]
     );
+    if (!plansRes.rows.length) return res.json({ plans: [] });
     const itemsRes = await db.query(
       `SELECT tpi.*, up.progress, up.quiz_score
        FROM training_plan_items tpi
@@ -3061,8 +3062,8 @@ app.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
     });
     modulesData.sort((a, b) => {
       if (a.avg_quiz === null && b.avg_quiz === null) return a.module_id - b.module_id;
-      if (a.avg_quiz === null) return -1;
-      if (b.avg_quiz === null) return 1;
+      if (a.avg_quiz === null) return 1;
+      if (b.avg_quiz === null) return -1;
       return a.avg_quiz - b.avg_quiz;
     });
     res.json({ modules: modulesData, staff: staffRes.rows });
