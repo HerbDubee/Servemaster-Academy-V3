@@ -330,6 +330,7 @@
         </div>
       </div>
       <div id="review-recommended" class="hidden"></div>
+      <div id="daily-challenge-card"></div>
       <div id="next-module-card"></div>
       <div>
         <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
@@ -988,6 +989,7 @@ const BADGE_DEFS = [
   { id:'voice_pro', icon:'🎤', name:'Voice Pro', nameFr:'Pro de la voix', nameEs:'Pro de la Voz', desc:'Complete 3 voice sessions', descFr:'Complétez 3 sessions vocales', descEs:'Completa 3 sesiones de práctica vocal' },
   { id:'bilingual', icon:'🌍', name:'Bilingual', nameFr:'Bilingue', nameEs:'Multilingüe', desc:'Use French mode', descFr:'Utilisez le mode français', descEs:'Usa el modo español' },
   { id:'speed_learner', icon:'⚡', name:'Speed Learner', nameFr:'Apprenant rapide', nameEs:'Aprendiz Veloz', desc:'Complete 3 modules in one day', descFr:'Complétez 3 modules en un jour', descEs:'Completa 3 módulos en un día' },
+  { id:'daily_challenger', icon:'📅', name:'Daily Challenger', nameFr:'Challenger du jour', nameEs:'Retador Diario', desc:'Complete 7 consecutive daily challenges', descFr:'Relevez 7 défis quotidiens consécutifs', descEs:'Completa 7 desafíos diarios consecutivos' },
 ];
 
 function checkBadgesLocal() {
@@ -1004,6 +1006,8 @@ function checkBadgesLocal() {
   const bevOk = [3,4,11].every(id => userProgress.find(p => p.id === id && p.progress >= 100));
   if (bevOk && !earnedBadges.includes('wine_expert')) newBadges.push('wine_expert');
   if ((lang === 'fr' || lang === 'es') && !earnedBadges.includes('bilingual')) newBadges.push('bilingual');
+  const dailyStreak = parseInt(localStorage.getItem('sma-daily-challenge-streak') || '0');
+  if (dailyStreak >= 7 && !earnedBadges.includes('daily_challenger')) newBadges.push('daily_challenger');
   newBadges.forEach(b => {
     earnedBadges.push(b);
     showBadgeNotification(b);
@@ -1642,6 +1646,9 @@ async function sendChat() {
       _scenTs[chatScenarioId] = new Date().toISOString();
       localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
       pushScenarioToServer(chatScenarioId);
+      // Mark daily challenge complete if this is today's daily scenario
+      const _daily = getTodaysDailyScenario();
+      if (_daily && _daily.id === chatScenarioId) completeDailyChallenge();
       checkBadgesLocal();
       renderScenarios();
       showScenarioSummary();
@@ -3091,6 +3098,98 @@ function renderReviewRecommended() {
   el.innerHTML = `<h2 class="text-base font-semibold mb-3">${sectionHeading}</h2><div class="space-y-3">${cards}</div>`;
 }
 
+// ── Daily Micro-Challenges ─────────────────────────────────────────────────────
+
+function getTodaysDailyScenario() {
+  if (!practiceScenarios || !practiceScenarios.length) return null;
+  const today = new Date();
+  const start = new Date(today.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((today - start) / 86400000);
+  return practiceScenarios[dayOfYear % practiceScenarios.length];
+}
+
+function isDailyChallengeCompletedToday() {
+  const today = new Date().toISOString().split('T')[0];
+  return localStorage.getItem('sma-daily-challenge-date') === today;
+}
+
+function completeDailyChallenge() {
+  const today = new Date().toISOString().split('T')[0];
+  if (isDailyChallengeCompletedToday()) return;
+  const last = localStorage.getItem('sma-daily-challenge-streak-last');
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  let streak = parseInt(localStorage.getItem('sma-daily-challenge-streak') || '0');
+  streak = last === yesterday ? streak + 1 : 1;
+  localStorage.setItem('sma-daily-challenge-date', today);
+  localStorage.setItem('sma-daily-challenge-streak', streak);
+  localStorage.setItem('sma-daily-challenge-streak-last', today);
+  // Count toward the main app streak
+  updateLocalStreak();
+  // Check badge
+  checkBadgesLocal();
+  // Re-render card
+  renderDailyChallengeCard();
+}
+
+function renderDailyChallengeCard() {
+  const el = document.getElementById('daily-challenge-card');
+  if (!el) return;
+  const scenario = getTodaysDailyScenario();
+  if (!scenario) { el.innerHTML = ''; return; }
+  const done = isDailyChallengeCompletedToday();
+  const streak = parseInt(localStorage.getItem('sma-daily-challenge-streak') || '0');
+
+  const cardTitle   = lang === 'fr' ? 'Défi du jour' : lang === 'es' ? 'Desafío del día' : "Today's Daily Challenge";
+  const streakLabel = lang === 'fr' ? 'série quotidienne' : lang === 'es' ? 'racha diaria' : 'day streak';
+  const diffLabel   = lang === 'fr'
+    ? (scenario.difficulty === 'Beginner' ? 'Débutant' : scenario.difficulty === 'Intermediate' ? 'Intermédiaire' : 'Avancé')
+    : lang === 'es'
+    ? (scenario.difficulty === 'Beginner' ? 'Principiante' : scenario.difficulty === 'Intermediate' ? 'Intermedio' : 'Avanzado')
+    : scenario.difficulty;
+  const diffColor   = scenario.difficulty === 'Beginner' ? 'text-emerald-400' : scenario.difficulty === 'Intermediate' ? 'text-amber-400' : 'text-rose-400';
+
+  if (done) {
+    const doneTitle = lang === 'fr' ? '✓ Défi du jour accompli !' : lang === 'es' ? '✓ ¡Desafío del día completado!' : '✓ Daily Challenge Complete!';
+    const doneSub   = lang === 'fr'
+      ? `Beau travail ! Revenez demain pour votre prochain défi.${streak >= 1 ? ` <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`
+      : lang === 'es'
+      ? `¡Buen trabajo! Vuelve mañana para tu próximo desafío.${streak >= 1 ? ` <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`
+      : `Nice work! Come back tomorrow for your next challenge.${streak >= 1 ? ` <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`;
+    el.innerHTML = `<div class="bg-emerald-950/50 border border-emerald-700/50 rounded-3xl p-6 flex items-center gap-5">
+      <div class="text-4xl">${scenario.emoji || '🎭'}</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-1">${doneTitle}</div>
+        <div class="font-semibold">${scenario.title}</div>
+        <div class="text-zinc-400 text-sm mt-1">${doneSub}</div>
+      </div>
+      <div class="text-3xl">🏅</div>
+    </div>`;
+  } else {
+    const btnText = lang === 'fr' ? "Relever le défi →" : lang === 'es' ? 'Aceptar el desafío →' : "Start Today's Challenge →";
+    const sub     = lang === 'fr'
+      ? `Scénario du jour — prend moins de 3 minutes${streak > 0 ? ` · <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`
+      : lang === 'es'
+      ? `Escenario del día — menos de 3 minutos${streak > 0 ? ` · <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`
+      : `Today's scenario — takes under 3 minutes${streak > 0 ? ` · <span class="text-amber-400 font-semibold">${streak} ${streakLabel}</span>` : ''}`;
+    el.innerHTML = `<div class="bg-gradient-to-r from-violet-900/30 to-zinc-900 border border-violet-600/50 hover:border-violet-400 rounded-3xl p-6 flex items-center gap-5 cursor-pointer transition-all" onclick="startDailyChallenge()">
+      <div class="text-5xl">${scenario.emoji || '🎭'}</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-violet-400 text-xs font-semibold uppercase tracking-wider mb-1">📅 ${cardTitle}</div>
+        <div class="font-semibold text-xl mb-1">${scenario.title}</div>
+        <div class="text-sm mb-2">${sub}</div>
+        <span class="${diffColor} text-xs font-semibold">${diffLabel}</span>
+      </div>
+      <div class="bg-violet-500 hover:bg-violet-400 text-white font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm transition-colors">${btnText}</div>
+    </div>`;
+  }
+}
+
+function startDailyChallenge() {
+  const scenario = getTodaysDailyScenario();
+  if (!scenario) return;
+  startChat(scenario.id);
+}
+
 function renderAll() {
   renderScenarios();
   const nextCardEl = document.getElementById('next-module-card');
@@ -3234,6 +3333,7 @@ function renderAll() {
   }
   checkCertificate();
   renderReviewRecommended();
+  renderDailyChallengeCard();
 }
 
 // =========================================================
