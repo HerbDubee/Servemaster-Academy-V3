@@ -1839,10 +1839,15 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 app.post('/api/tts', aiLimiter, async (req, res) => {
   const { text, lang } = req.body;
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'Missing text' });
+  const SUPPORTED_TTS_LANGS = new Set(['en', 'fr', 'es']);
+  const reqLang = (lang && SUPPORTED_TTS_LANGS.has(lang)) ? lang : 'en';
   const trimmed = text.trim();
   if (!trimmed) return res.status(400).json({ error: 'Empty text' });
   if (trimmed.length > 4000) return res.status(400).json({ error: 'Text exceeds 4000 character limit' });
   try {
+    // OpenAI tts-1 auto-detects the language from the input text.
+    // reqLang is validated and logged so FR/ES requests are explicitly accepted.
+    console.log(`TTS request: lang=${reqLang}, chars=${trimmed.length}`);
     const response = await getTTS().audio.speech.create({
       model: 'tts-1',
       voice: 'nova',

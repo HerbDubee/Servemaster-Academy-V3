@@ -1441,10 +1441,14 @@ async function speakOpenAI(text) {
     return new Promise(resolve => {
       audio.addEventListener('ended', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
       audio.addEventListener('error', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
-      audio.play().catch(() => { URL.revokeObjectURL(url); _ttsAudio = null; speakTextAsync(text).then(resolve); });
+      audio.play().catch(() => {
+        URL.revokeObjectURL(url); _ttsAudio = null;
+        if (lang === 'en') { speakTextAsync(text).then(resolve); } else { resolve(); }
+      });
     });
   } catch {
-    return speakTextAsync(text);
+    if (lang === 'en') return speakTextAsync(text);
+    return Promise.resolve();
   }
 }
 
