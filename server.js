@@ -2937,7 +2937,13 @@ app.get('/api/manager/training-plans', managerMiddleware, async (req, res) => {
 app.post('/api/manager/training-plans/:planId/items', managerMiddleware, async (req, res) => {
   const { moduleId, dueDate, position } = req.body;
   const planId = parseInt(req.params.planId);
-  if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
+  const moduleIdInt = parseInt(moduleId);
+  if (!moduleId || isNaN(moduleIdInt) || moduleIdInt < 1 || moduleIdInt > 30) {
+    return res.status(400).json({ error: 'moduleId must be a number between 1 and 30' });
+  }
+  if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    return res.status(400).json({ error: 'dueDate must be in YYYY-MM-DD format' });
+  }
   try {
     const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
     const restaurantId = userRes.rows[0]?.restaurant_id;
