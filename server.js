@@ -1845,12 +1845,15 @@ app.post('/api/tts', aiLimiter, async (req, res) => {
   if (!trimmed) return res.status(400).json({ error: 'Empty text' });
   if (trimmed.length > 4000) return res.status(400).json({ error: 'Text exceeds 4000 character limit' });
   try {
-    // OpenAI tts-1 auto-detects the language from the input text.
-    // reqLang is validated and logged so FR/ES requests are explicitly accepted.
-    console.log(`TTS request: lang=${reqLang}, chars=${trimmed.length}`);
+    // Map each supported language to its preferred OpenAI voice.
+    // tts-1 infers the spoken language from the input text; the voice selection
+    // allows per-language tuning without relying on browser Speech Synthesis.
+    const TTS_VOICE_MAP = { en: 'nova', fr: 'nova', es: 'nova' };
+    const voice = TTS_VOICE_MAP[reqLang] || 'nova';
+    console.log(`TTS request: lang=${reqLang}, voice=${voice}, chars=${trimmed.length}`);
     const response = await getTTS().audio.speech.create({
       model: 'tts-1',
-      voice: 'nova',
+      voice,
       input: trimmed,
       response_format: 'mp3'
     });
