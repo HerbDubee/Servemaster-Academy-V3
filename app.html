@@ -1858,22 +1858,34 @@ async function downloadCertificate() {
   if (authToken) {
     try {
       const tr = await fetch('/api/cert-token', { headers: { Authorization: 'Bearer ' + authToken } });
-      if (tr.ok) { const td = await tr.json(); certToken = td.token || null; }
-    } catch (e) {}
+      if (!tr.ok) throw new Error('token fetch failed');
+      const td = await tr.json();
+      certToken = td.token || null;
+    } catch (e) {
+      alert('Unable to generate your verification token. Please check your connection and try again.');
+      return;
+    }
   }
   _lastCertToken = certToken;
 
   const verifyUrl = certToken ? 'https://servemasteracademy.ca/verify/' + certToken : 'https://servemasteracademy.ca';
 
   let qrDataUrl = null;
-  if (certToken && window.QRCode) {
+  if (certToken) {
+    if (!window.QRCode) {
+      alert('QR code library is still loading. Please try again in a moment.');
+      return;
+    }
     try {
       qrDataUrl = await new Promise((resolve, reject) => {
         QRCode.toDataURL(verifyUrl, { width: 160, margin: 1, color: { dark: '#d4af37', light: '#190911' } }, (err, url) => {
           if (err) reject(err); else resolve(url);
         });
       });
-    } catch (e) {}
+    } catch (e) {
+      alert('QR code generation failed. Please try again.');
+      return;
+    }
   }
 
   const { jsPDF } = window.jspdf;
