@@ -78,6 +78,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
       <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
       <div class="nav-item" onclick="showSection('siteconfig')" id="nav-siteconfig">⚙️ Site Config</div>
+      <div class="nav-item" onclick="showSection('scholarships')" id="nav-scholarships">🎓 Scholarships</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -93,6 +94,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
       <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
       <button onclick="showSection('siteconfig')" class="nav-item whitespace-nowrap" id="mnav-siteconfig">⚙️</button>
+      <button onclick="showSection('scholarships')" class="nav-item whitespace-nowrap" id="mnav-scholarships">🎓</button>
     </div>
 
     <!-- Main content -->
@@ -419,6 +421,38 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           </button>
           <p id="chat-save-msg" class="hidden text-green-400 text-xs mt-3 text-center">Settings saved successfully.</p>
           <p id="chat-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
+        </div>
+      </div>
+
+      <!-- SCHOLARSHIPS -->
+      <div id="section-scholarships" class="section">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="heading text-3xl font-bold">Scholarships</h1>
+            <p class="text-zinc-400 text-sm mt-1">Career Launch Scholarship applications — review, approve, and track graduates.</p>
+          </div>
+          <a href="/scholarship" target="_blank" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">View Public Page</a>
+        </div>
+        <!-- Monthly cap bar -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold">Monthly Scholarships Approved</span>
+            <span id="schol-cap-label" class="text-amber-400 font-bold text-sm">0 / 15</span>
+          </div>
+          <div class="w-full bg-zinc-800 rounded-full h-2.5">
+            <div id="schol-cap-bar" class="h-2.5 rounded-full bg-orange-500 transition-all" style="width:0%"></div>
+          </div>
+          <p class="text-zinc-500 text-xs mt-2">Cap resets the 1st of each month.</p>
+        </div>
+        <!-- Tabs -->
+        <div class="flex gap-2 border-b border-zinc-800 mb-6">
+          <button onclick="switchScholTab('pending')" id="schol-tab-pending" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-amber-400 text-amber-400 transition-colors">Pending</button>
+          <button onclick="switchScholTab('approved')" id="schol-tab-approved" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Approved</button>
+          <button onclick="switchScholTab('completed')" id="schol-tab-completed" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Graduates</button>
+          <button onclick="switchScholTab('rejected')" id="schol-tab-rejected" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Rejected</button>
+        </div>
+        <div id="schol-list" class="space-y-4">
+          <div class="text-zinc-500 text-sm">Loading applications…</div>
         </div>
       </div>
 
@@ -891,17 +925,6 @@ async function impersonateUser(userId, email) {
   } catch (e) { alert('Error: ' + e.message); }
 }
 
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  const navEl = document.getElementById('nav-' + name);
-  const mNavEl = document.getElementById('mnav-' + name);
-  if (navEl) navEl.classList.add('active');
-  if (mNavEl) mNavEl.classList.add('active');
-  if (name === 'siteconfig') loadSiteConfig();
-}
-
 async function doLogout(next = '/login') {
   await fetch('/api/auth/logout', { method: 'POST' });
   localStorage.removeItem('sma-token');
@@ -1059,6 +1082,115 @@ async function deleteUser() {
     allUsers = allUsers.filter(x => x.id !== editingUserId);
     renderUsers(allUsers);
     closeUserModal();
+  } catch (e) { alert('Network error — please try again.'); }
+}
+
+// ── Scholarships ──────────────────────────────────────────────────────────────
+let scholData = [];
+let scholTab = 'pending';
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  const mNavEl = document.getElementById('mnav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (mNavEl) mNavEl.classList.add('active');
+  if (name === 'siteconfig') loadSiteConfig();
+  if (name === 'scholarships') loadScholarships();
+}
+
+async function loadScholarships() {
+  try {
+    const res = await fetch('/api/admin/scholarships', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    scholData = data.applications || [];
+    const used = data.spots_used || 0;
+    const cap = data.cap || 15;
+    document.getElementById('schol-cap-label').textContent = `${used} / ${cap}`;
+    document.getElementById('schol-cap-bar').style.width = Math.min(100, (used / cap) * 100) + '%';
+    renderScholList();
+  } catch (e) {
+    document.getElementById('schol-list').innerHTML = '<div class="text-red-400 text-sm">Failed to load applications.</div>';
+  }
+}
+
+function switchScholTab(tab) {
+  scholTab = tab;
+  ['pending','approved','completed','rejected'].forEach(t => {
+    const btn = document.getElementById('schol-tab-' + t);
+    if (t === tab) { btn.classList.add('border-amber-400','text-amber-400'); btn.classList.remove('border-transparent','text-zinc-400'); }
+    else { btn.classList.remove('border-amber-400','text-amber-400'); btn.classList.add('border-transparent','text-zinc-400'); }
+  });
+  renderScholList();
+}
+
+function renderScholList() {
+  const el = document.getElementById('schol-list');
+  const items = scholData.filter(a => a.status === scholTab);
+  if (!items.length) {
+    el.innerHTML = `<div class="text-zinc-500 text-sm py-6 text-center">${scholTab === 'pending' ? 'No pending applications.' : scholTab === 'approved' ? 'No approved scholarship holders.' : scholTab === 'completed' ? 'No graduates yet.' : 'No rejected applications.'}</div>`;
+    return;
+  }
+  el.innerHTML = items.map(a => {
+    const date = new Date(a.applied_at).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+    const gradDate = a.grad_at ? new Date(a.grad_at).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' }) : null;
+    const approveBtn = scholTab === 'pending' ? `<button onclick="approveSchol(${a.id})" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">Approve</button>` : '';
+    const rejectBtn = scholTab === 'pending' ? `<button onclick="rejectSchol(${a.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-4 py-2 rounded-xl text-sm transition-colors">Reject</button>` : '';
+    const codeDisplay = a.invite_code ? `<div class="mt-2 text-xs text-zinc-400">Code: <span class="font-mono text-amber-400">${escHtml(a.invite_code)}</span></div>` : '';
+    const testimonialDisplay = a.testimonial_preview ? `<div class="mt-2 text-xs text-zinc-400 italic">"${escHtml(a.testimonial_preview)}${a.testimonial_preview.length >= 200 ? '…' : ''}"</div>` : '';
+    const graduateInfo = scholTab === 'completed' ? `
+      <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Graduated:</span> <span class="text-green-400 font-medium">${gradDate || '—'}</span></div>
+        <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Share contact:</span> <span class="${a.share_contact ? 'text-green-400' : 'text-zinc-500'}">${a.share_contact ? 'Yes — visible to managers' : 'No'}</span></div>
+        <div class="bg-zinc-800 rounded-lg p-2 col-span-2"><span class="text-zinc-500">Email:</span> <a href="mailto:${escHtml(a.email)}" class="text-orange-400 hover:text-orange-300">${escHtml(a.email)}</a>${a.phone ? ` · <span class="text-zinc-300">${escHtml(a.phone)}</span>` : ''}</div>
+      </div>` : '';
+    return `<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="font-semibold text-white">${escHtml(a.name)}</span>
+            <span class="text-xs text-zinc-500">${escHtml(a.email)}</span>
+            ${a.phone ? `<span class="text-xs text-zinc-400">${escHtml(a.phone)}</span>` : ''}
+          </div>
+          <div class="text-xs text-zinc-500 mb-2">Applied ${date} · ${escHtml(a.years_experience).replace(/-/g,' ')}</div>
+          <div class="text-sm text-zinc-300 line-clamp-3">${escHtml(a.motivation)}</div>
+          ${codeDisplay}
+          ${testimonialDisplay}
+          ${graduateInfo}
+        </div>
+        <div class="flex flex-col gap-2 flex-shrink-0">
+          ${approveBtn}
+          ${rejectBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+async function approveSchol(id) {
+  if (!confirm('Approve this scholarship? A single-use 60-day premium invite code will be generated and emailed to the applicant.')) return;
+  try {
+    const res = await fetch(`/api/admin/scholarship/${id}/approve`, { method:'POST', headers:{ Authorization:'Bearer '+token } });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to approve scholarship.'); return; }
+    alert(`Approved! Code ${data.code} emailed to the applicant.`);
+    loadScholarships();
+  } catch (e) { alert('Network error — please try again.'); }
+}
+
+async function rejectSchol(id) {
+  if (!confirm('Reject this application? A polite rejection email will be sent.')) return;
+  try {
+    const res = await fetch(`/api/admin/scholarship/${id}/reject`, { method:'POST', headers:{ Authorization:'Bearer '+token } });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to reject application.'); return; }
+    loadScholarships();
   } catch (e) { alert('Network error — please try again.'); }
 }
 

@@ -415,6 +415,7 @@ app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'publ
 app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/verify/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'verify.html')));
+app.get('/scholarship', (req, res) => res.sendFile(path.join(__dirname, 'public', 'scholarship.html')));
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
@@ -2720,6 +2721,23 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_training_plans_restaurant_user ON training_plans(restaurant_id, user_id)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_training_plan_items_plan_pos ON training_plan_items(plan_id, position)`);
+    await db.query(`CREATE TABLE IF NOT EXISTS scholarship_applications (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      motivation TEXT NOT NULL,
+      years_experience TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      applied_at TIMESTAMPTZ DEFAULT NOW(),
+      reviewed_at TIMESTAMPTZ,
+      invite_code TEXT,
+      grad_at TIMESTAMPTZ,
+      testimonial TEXT,
+      share_contact BOOLEAN DEFAULT FALSE
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_scholarship_email ON scholarship_applications(email)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_scholarship_status ON scholarship_applications(status)`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
@@ -3094,6 +3112,259 @@ app.post('/api/admin/trigger-weekly-digest', authMiddleware, async (req, res) =>
   try {
     const sent = await sendWeeklyManagerDigests();
     res.json({ success: true, sent });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Scholarship routes ──────────────────────────────────────────────────────────
+
+const scholarshipLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
+
+const SCHOLARSHIP_MONTHLY_CAP = 15;
+const SCHOLARSHIP_DAYS = 60;
+
+async function getMonthlyApprovedCount() {
+  const res = await db.query(
+    `SELECT COUNT(*) as cnt FROM scholarship_applications
+     WHERE status IN ('approved','completed')
+     AND date_trunc('month', reviewed_at) = date_trunc('month', NOW())`
+  );
+  return parseInt(res.rows[0].cnt);
+}
+
+function genScholarshipCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `SCH-${part()}-${part()}`;
+}
+
+app.get('/api/scholarship/spots', async (req, res) => {
+  try {
+    const used = await getMonthlyApprovedCount();
+    res.json({ remaining: Math.max(0, SCHOLARSHIP_MONTHLY_CAP - used), used, cap: SCHOLARSHIP_MONTHLY_CAP });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/scholarship/apply', scholarshipLimiter, express.json(), async (req, res) => {
+  const { name, email, phone, years_experience, motivation } = req.body || {};
+  if (!name || !email || !years_experience || !motivation) {
+    return res.status(400).json({ error: 'Please fill in all required fields.' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+  if (motivation.trim().length < 30) {
+    return res.status(400).json({ error: 'Please tell us a bit more about why you want to level up (at least 30 characters).' });
+  }
+  try {
+    const dup = await db.query(`SELECT id FROM scholarship_applications WHERE email = $1 AND status != 'rejected'`, [email.toLowerCase().trim()]);
+    if (dup.rows.length) {
+      return res.status(409).json({ error: 'An application from this email address already exists. Check your inbox for updates.' });
+    }
+    const result = await db.query(
+      `INSERT INTO scholarship_applications (name, email, phone, motivation, years_experience)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+      [name.trim(), email.toLowerCase().trim(), phone ? phone.trim() : null, motivation.trim(), years_experience]
+    );
+    const spots = await getMonthlyApprovedCount();
+    const safeName = escapeHtml(name.trim());
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: email.toLowerCase().trim(),
+      subject: 'We received your scholarship application — ServeMaster Academy',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for applying for the Career Launch Scholarship. I received your application and I review every one personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You'll hear back from me within a few business days.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:32px;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+    }).catch(e => console.error('Scholarship confirmation email error:', e.message));
+    resend.emails.send({
+      from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
+      to: ADMIN_EMAIL || 'kirk_adamson@servemasteracademy.ca',
+      subject: `New scholarship application — ${name.trim()}`,
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;"><h2 style="color:#FF5E3A;margin-bottom:16px;">New Scholarship Application</h2><p><strong>Name:</strong> ${safeName}</p><p><strong>Email:</strong> ${escapeHtml(email)}</p><p><strong>Phone:</strong> ${phone ? escapeHtml(phone) : 'Not provided'}</p><p><strong>Experience:</strong> ${escapeHtml(years_experience)}</p><p><strong>Motivation:</strong></p><blockquote style="border-left:3px solid #FF5E3A;padding-left:12px;color:#d4d4d8;margin:8px 0;">${escapeHtml(motivation.trim())}</blockquote><p style="margin-top:20px;font-size:13px;color:#71717a;">Monthly approvals so far: ${spots}/${SCHOLARSHIP_MONTHLY_CAP}</p><p><a href="https://servemasteracademy.ca/admin" style="background:#FF5E3A;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Review in Admin Dashboard</a></p></div>`
+    }).catch(e => console.error('Admin notification email error:', e.message));
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (e) {
+    console.error('Scholarship apply error:', e.message);
+    res.status(500).json({ error: 'Server error. Please try again.' });
+  }
+});
+
+app.get('/api/admin/scholarships', adminMiddleware, async (req, res) => {
+  try {
+    const apps = await db.query(
+      `SELECT id, name, email, phone, motivation, years_experience, status, applied_at, reviewed_at, invite_code, grad_at, share_contact,
+              LEFT(testimonial, 200) as testimonial_preview
+       FROM scholarship_applications
+       ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 WHEN 'completed' THEN 2 ELSE 3 END, applied_at DESC`
+    );
+    const spotsUsed = await getMonthlyApprovedCount();
+    res.json({ applications: apps.rows, spots_used: spotsUsed, cap: SCHOLARSHIP_MONTHLY_CAP });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/admin/scholarship/:id/approve', adminMiddleware, async (req, res) => {
+  const appId = parseInt(req.params.id);
+  if (!appId) return res.status(400).json({ error: 'Invalid application ID' });
+  try {
+    const appRes = await db.query('SELECT * FROM scholarship_applications WHERE id = $1', [appId]);
+    if (!appRes.rows.length) return res.status(404).json({ error: 'Application not found' });
+    const app = appRes.rows[0];
+    if (app.status !== 'pending') return res.status(409).json({ error: `Application is already ${app.status}` });
+    const monthlyCount = await getMonthlyApprovedCount();
+    if (monthlyCount >= SCHOLARSHIP_MONTHLY_CAP) {
+      return res.status(409).json({ error: `Monthly cap of ${SCHOLARSHIP_MONTHLY_CAP} scholarships reached. Wait until next month or increase the cap.` });
+    }
+    const code = genScholarshipCode();
+    await db.query(
+      `INSERT INTO invite_codes (code, plan, max_uses, expires_at, access_days, created_by) VALUES ($1, 'premium', 1, NULL, $2, $3)`,
+      [code, SCHOLARSHIP_DAYS, req.user.id]
+    );
+    await db.query(
+      `UPDATE scholarship_applications SET status = 'approved', invite_code = $1, reviewed_at = NOW() WHERE id = $2`,
+      [code, appId]
+    );
+    const safeName = escapeHtml(app.name);
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: app.email,
+      subject: "You've been selected for the ServeMaster Career Launch Scholarship!",
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Congratulations — I've reviewed your application and I'm pleased to offer you the <strong style="color:#FF5E3A;">Career Launch Scholarship</strong>.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You now have <strong>60 days of full premium access</strong> to ServeMaster Academy — completely free.</p><p style="font-size:16px;line-height:1.7;margin-bottom:8px;"><strong>Here's how to get started:</strong></p><ol style="padding-left:20px;color:#d4d4d8;line-height:2;"><li>Create a free account at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca/signup</a></li><li>Go to your profile and click "Redeem Invite Code"</li><li>Enter your scholarship code:</li></ol><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;text-align:center;margin:24px 0;"><p style="font-size:13px;color:#a3a3a3;margin:0 0 8px;">Your Scholarship Code</p><p style="font-size:28px;font-weight:700;letter-spacing:4px;color:#FF5E3A;margin:0;">${code}</p></div><p style="font-size:14px;color:#71717a;margin-bottom:24px;">This code is single-use and grants 60 days of full access. It does not expire — use it when you're ready to start.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/signup" style="background:#FF5E3A;color:#fff;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Create Account &amp; Start Training</a></p><p style="font-size:14px;line-height:1.7;color:#a3a3a3;margin-bottom:8px;">To complete the scholarship and be added to the Job-Ready Graduate List:</p><ul style="padding-left:20px;color:#a3a3a3;line-height:2;font-size:14px;"><li>Complete all 30 training modules</li><li>Achieve 80%+ average on all quizzes</li><li>Complete at least 15 AI role-play scenarios</li><li>Submit a short testimonial</li></ul><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+    }).catch(e => console.error('Scholarship approval email error:', e.message));
+    res.json({ success: true, code });
+  } catch (e) {
+    console.error('Scholarship approve error:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/admin/scholarship/:id/reject', adminMiddleware, async (req, res) => {
+  const appId = parseInt(req.params.id);
+  if (!appId) return res.status(400).json({ error: 'Invalid application ID' });
+  try {
+    const appRes = await db.query('SELECT * FROM scholarship_applications WHERE id = $1', [appId]);
+    if (!appRes.rows.length) return res.status(404).json({ error: 'Application not found' });
+    const app = appRes.rows[0];
+    if (app.status !== 'pending') return res.status(409).json({ error: `Application is already ${app.status}` });
+    await db.query(`UPDATE scholarship_applications SET status = 'rejected', reviewed_at = NOW() WHERE id = $1`, [appId]);
+    const safeName = escapeHtml(app.name);
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: app.email,
+      subject: 'Your ServeMaster Academy scholarship application',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for taking the time to apply for the Career Launch Scholarship. I reviewed your application personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Unfortunately, we weren't able to offer you a scholarship spot at this time — we receive more applications than we have spaces each month, and it's a difficult selection process.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I encourage you to try again next month or take advantage of our free 14-day trial at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca</a>.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+    }).catch(e => console.error('Scholarship rejection email error:', e.message));
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Scholarship reject error:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/user/scholarship-status', authMiddleware, async (req, res) => {
+  try {
+    const appRes = await db.query(
+      `SELECT sa.id, sa.status, sa.invite_code, sa.grad_at, sa.testimonial, sa.share_contact
+       FROM scholarship_applications sa
+       JOIN invite_code_redemptions icr ON icr.code = sa.invite_code
+       WHERE icr.user_id = $1 AND sa.status IN ('approved','completed')
+       LIMIT 1`,
+      [req.user.id]
+    );
+    if (!appRes.rows.length) return res.json({ scholarship: null });
+    const schol = appRes.rows[0];
+    const progressRes = await db.query(
+      `SELECT COUNT(*) FILTER (WHERE progress >= 100) as modules_done,
+              AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL) as avg_quiz
+       FROM user_progress WHERE user_id = $1`,
+      [req.user.id]
+    );
+    const scenarioRes = await db.query(
+      `SELECT COUNT(*) as cnt FROM scenario_scores WHERE user_id = $1`,
+      [req.user.id]
+    );
+    const modulesDone = parseInt(progressRes.rows[0].modules_done) || 0;
+    const avgQuiz = parseFloat(progressRes.rows[0].avg_quiz) || 0;
+    const scenariosDone = parseInt(scenarioRes.rows[0].cnt) || 0;
+    const requirementsMet = modulesDone >= 30 && avgQuiz >= 80 && scenariosDone >= 15;
+    res.json({
+      scholarship: {
+        id: schol.id,
+        status: schol.status,
+        grad_at: schol.grad_at,
+        testimonial: schol.testimonial,
+        share_contact: schol.share_contact,
+        requirements: {
+          modules_done: modulesDone,
+          modules_target: 30,
+          avg_quiz: Math.round(avgQuiz),
+          quiz_target: 80,
+          scenarios_done: scenariosDone,
+          scenarios_target: 15,
+          testimonial_submitted: !!schol.testimonial,
+          all_met: requirementsMet && !!schol.testimonial
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Scholarship status error:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/scholarship/testimonial', authMiddleware, express.json(), async (req, res) => {
+  const { testimonial, share_contact } = req.body || {};
+  if (!testimonial || testimonial.trim().length < 20) {
+    return res.status(400).json({ error: 'Please write at least 20 characters for your testimonial.' });
+  }
+  try {
+    const appRes = await db.query(
+      `SELECT sa.id, sa.status, sa.email, sa.name
+       FROM scholarship_applications sa
+       JOIN invite_code_redemptions icr ON icr.code = sa.invite_code
+       WHERE icr.user_id = $1 AND sa.status IN ('approved','completed')
+       LIMIT 1`,
+      [req.user.id]
+    );
+    if (!appRes.rows.length) return res.status(404).json({ error: 'No active scholarship found for this account.' });
+    const schol = appRes.rows[0];
+    const progressRes = await db.query(
+      `SELECT COUNT(*) FILTER (WHERE progress >= 100) as modules_done,
+              AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL) as avg_quiz
+       FROM user_progress WHERE user_id = $1`,
+      [req.user.id]
+    );
+    const scenarioRes = await db.query(`SELECT COUNT(*) as cnt FROM scenario_scores WHERE user_id = $1`, [req.user.id]);
+    const modulesDone = parseInt(progressRes.rows[0].modules_done) || 0;
+    const avgQuiz = parseFloat(progressRes.rows[0].avg_quiz) || 0;
+    const scenariosDone = parseInt(scenarioRes.rows[0].cnt) || 0;
+    const requirementsMet = modulesDone >= 30 && avgQuiz >= 80 && scenariosDone >= 15;
+    const newStatus = requirementsMet ? 'completed' : schol.status;
+    await db.query(
+      `UPDATE scholarship_applications SET testimonial = $1, share_contact = $2, status = $3, grad_at = CASE WHEN $3 = 'completed' AND grad_at IS NULL THEN NOW() ELSE grad_at END WHERE id = $4`,
+      [testimonial.trim(), share_contact === true, newStatus, schol.id]
+    );
+    if (newStatus === 'completed' && schol.status !== 'completed') {
+      const safeName = escapeHtml(schol.name);
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: schol.email,
+        subject: "Congratulations — you've completed the Career Launch Scholarship!",
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You've done it. You've completed the <strong style="color:#FF5E3A;">Career Launch Scholarship</strong> — all 30 modules, 80%+ quiz average, 15+ role-play scenarios, and your testimonial.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You are now a <strong>ServeMaster Academy Certified Server</strong>. Your certificate is available in the app, and ${share_contact ? "you've been added to the Job-Ready Graduate List — restaurant managers can now find you." : "you can opt into the Job-Ready Graduate List any time from the app."}</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#FF5E3A;color:#fff;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">View Your Certificate</a></p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+      }).catch(e => console.error('Scholarship graduation email error:', e.message));
+    }
+    res.json({ success: true, completed: newStatus === 'completed' });
+  } catch (e) {
+    console.error('Testimonial submit error:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/manager/graduates', managerMiddleware, async (req, res) => {
+  try {
+    const grads = await db.query(
+      `SELECT sa.id, sa.name, sa.email, sa.phone, sa.testimonial, sa.grad_at, sa.share_contact
+       FROM scholarship_applications sa
+       WHERE sa.status = 'completed' AND sa.share_contact = TRUE
+       ORDER BY sa.grad_at DESC`
+    );
+    res.json({ graduates: grads.rows });
   } catch (e) { res.status(500).json({ error: 'Server error' }); }
 });
 
