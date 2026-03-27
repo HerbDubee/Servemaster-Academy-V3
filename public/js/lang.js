@@ -24,7 +24,7 @@
       home_hero_sub: 'ServeMaster Academy trains hospitality professionals with AI role‑play, voice practice, and 30 expert modules — in English, French, and Spanish.',
       home_free_strip: '14‑day free trial &bull; No credit card required &bull; Cancel any time',
       home_features_h: 'Everything a great server needs',
-      home_ai_h: 'AI Roleplay',
+      home_ai_h: 'AI Role-Play',
       home_voice_h: 'Voice Practice',
       home_gamification_h: 'Gamification',
       home_cert_h: 'Certificate',
