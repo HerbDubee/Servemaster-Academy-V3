@@ -24,8 +24,12 @@
   }
 
   function getVoiceLang() {
-    var htmlLang = (document.documentElement.lang || 'en').split('-')[0];
-    return LANG_MAP[htmlLang] || 'en-CA';
+    var siteLang = getSiteLang();
+    return LANG_MAP[siteLang] || 'en-CA';
+  }
+
+  function getArticleLang() {
+    return (document.documentElement.lang || 'en').split('-')[0];
   }
 
   function getLabels() {
@@ -343,7 +347,8 @@
       if (isPlaceholderText(rawText)) return;
       var text = preprocessForTTS(rawText, getVoiceLang());
 
-      if (siteLang === 'en') {
+      var articleLang = getArticleLang();
+      if (siteLang === 'en' && articleLang === 'en') {
         usingOpenAI = true;
         ttsChunks = splitIntoChunks(text);
         ttsChunkIndex = 0;
