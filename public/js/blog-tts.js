@@ -475,12 +475,20 @@
     };
   }
 
+  function tryInject(attemptsLeft) {
+    if (document.getElementById('tts-listen-btn')) return;
+    injectButton();
+    if (!document.getElementById('tts-listen-btn') && attemptsLeft > 0) {
+      setTimeout(function () { tryInject(attemptsLeft - 1); }, 800);
+    }
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      requestAnimationFrame(injectButton);
+      requestAnimationFrame(function () { tryInject(4); });
     });
   } else {
-    requestAnimationFrame(injectButton);
+    requestAnimationFrame(function () { tryInject(4); });
   }
 
   window.addEventListener('beforeunload', handleStop);
