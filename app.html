@@ -2978,6 +2978,8 @@ function closeModal() {
 }
 
 function navigate(screen) {
+  _stopTtsAudio();
+  if (isRecording) { try { stopVoiceRecording(); } catch {} }
   document.querySelectorAll('#main-content > div').forEach(d => d.classList.add('hidden'));
   const el = document.getElementById(screen + '-screen');
   if (el) el.classList.remove('hidden');
@@ -3971,6 +3973,12 @@ async function sendManagerInvite() {
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReferralModal(); });
+
+// ── Stop audio/recording when navigating away from the page ───────────────────
+window.addEventListener('pagehide', () => {
+  _stopTtsAudio();
+  if (isRecording) { try { stopVoiceRecording(); } catch {} }
+});
 
 // ── PWA Service Worker ────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
