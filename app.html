@@ -3021,7 +3021,7 @@ function getCategoryLabel(cat) {
   return entry[lang] || entry.en;
 }
 
-const TOPIC_QUIZ_PASS = 70;
+const TOPIC_QUIZ_PASS = 75;
 
 function isTopicComplete(mod) {
   const quizPassed = savedQuizScores[mod.id] != null && savedQuizScores[mod.id] >= TOPIC_QUIZ_PASS;
@@ -3667,6 +3667,22 @@ function renderAll() {
     return hasEngagement && !isTopicComplete(m);
   }).slice(0, 3);
 
+  const dashSubEl = document.getElementById('dashboard-sub');
+  if (dashSubEl) {
+    const completedCount = modules.filter(m => isTopicComplete(m)).length;
+    const hasAnyProgress = userProgress.some(p => p.progress > 0) || completedScenarios.length > 0;
+    if (completedCount >= 30) {
+      dashSubEl.textContent = lang==='fr' ? '🎓 Tous les modules complétés — téléchargez votre certificat !' : lang==='es' ? '🎓 ¡Todos los módulos completados — descarga tu certificado!' : '🎓 All 30 modules complete — download your certificate!';
+    } else if (completedCount > 0) {
+      const pct = Math.round((completedCount / 30) * 100);
+      dashSubEl.textContent = lang==='fr' ? `${completedCount}/30 modules complétés (${pct}%) — continuez sur votre lancée !` : lang==='es' ? `${completedCount}/30 módulos completados (${pct}%) — ¡sigue así!` : `${completedCount}/30 modules complete (${pct}%) — keep going!`;
+    } else if (!hasAnyProgress) {
+      dashSubEl.textContent = lang==='fr' ? 'Bienvenue ! Commencez par le Module 1 ci-dessous — environ 10 minutes.' : lang==='es' ? '¡Bienvenido! Empieza por el Módulo 1 — unos 10 minutos.' : 'Welcome! Start with Module 1 below — your first lesson takes about 10 minutes.';
+    } else {
+      dashSubEl.textContent = lang==='fr' ? 'Continuez là où vous vous êtes arrêté.' : lang==='es' ? 'Continúa donde lo dejaste.' : 'Continue where you left off.';
+    }
+  }
+
   if (nextCardEl) {
     if (nextModule) {
       const p = userProgress.find(u => u.id === nextModule.id) || { progress: 0 };
@@ -3727,14 +3743,22 @@ function renderAll() {
   if (allEl) {
     const freeModuleLimit = 3;
     const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
+    const trackFineDining = lang==='fr' ? '🍽️ Piste fine cuisine — Modules 1–24' : lang==='es' ? '🍽️ Pista Fine Dining — Módulos 1–24' : '🍽️ Fine Dining & Restaurant Service Track — Modules 1–24';
+    const trackBar = lang==='fr' ? '🍸 Piste service bar — Modules 25–30' : lang==='es' ? '🍸 Pista Servicio de Bar — Módulos 25–30' : '🍸 Bar Service Track — Modules 25–30';
     allEl.innerHTML = modules.map((m, idx) => {
+      let trackHeader = '';
+      if (idx === 0) {
+        trackHeader = `<div class="col-span-full mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#FF5E3A; background:rgba(255,94,58,0.1);">${trackFineDining}</span></div>`;
+      } else if (m.id === 25) {
+        trackHeader = `<div class="col-span-full mt-4 mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#7dd3fc; background:rgba(125,211,252,0.1);">${trackBar}</span></div>`;
+      }
       const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
       const orderNum = idx + 1;
       const locked = !hasPaidPlan() && idx >= freeModuleLimit;
       if (locked) {
-        return `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
+        return trackHeader + `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
           <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
           <div class="text-3xl mt-0.5 ml-7 grayscale">${m.emoji}</div>
           <div class="flex-1 min-w-0">
@@ -3754,7 +3778,7 @@ function renderAll() {
       const scenDone = getTopicScenariosDoneCount(m);
       const scenBadge = scenDone > 0 ? `<span class="text-xs text-zinc-400">${scenDone}/5 scenarios</span>` : '';
       const topicCompleteBadge = topicComplete ? `<span class="text-xs font-semibold text-emerald-400">✓ Complete</span>` : '';
-      return `<div onclick="openTopicHub(${m.id})" class="bg-zinc-900 border ${topicComplete?'border-emerald-800':done?'border-emerald-800/50':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
+      return trackHeader + `<div onclick="openTopicHub(${m.id})" class="bg-zinc-900 border ${topicComplete?'border-emerald-800':done?'border-emerald-800/50':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
         <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
         <button id="bookmark-${m.id}" onclick="toggleBookmark(${m.id}, event)" title="Bookmark" class="absolute top-3 right-3 text-lg leading-none ${isBookmarked ? 'text-amber-400' : 'text-zinc-700 hover:text-zinc-400'} transition-colors">★</button>
         <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
@@ -3778,7 +3802,8 @@ function renderAll() {
       </div>`;
     }).join('');
     if (proModulesLocked) {
-      allEl.innerHTML += showUpgradePrompt(t('upgradeLabel'));
+      const upgradeContextLabel = lang==='fr' ? '27 modules + Piste service bar' : lang==='es' ? '27 módulos + Pista Servicio de Bar' : '27 More Modules + Full Bar Service Track';
+      allEl.innerHTML += showUpgradePrompt(upgradeContextLabel);
     }
   }
 

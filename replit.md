@@ -147,7 +147,7 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 
 ## Navigation Structure
 
-- Home `/` | Academy `/features` | Knowledge Centre `/blog` | AI Role-Play `/app` | Pricing `/pricing` | About `/about`
+- Home `/` | Academy `/features` | Knowledge Centre `/blog` | AI Role-Play `/app` | Pricing `/pricing` | Scholarship `/scholarship` | About `/about`
 - `lang.js` auto-translates nav links via `NAV_HREF_MAP` — update `nav_features`, `nav_blog`, `nav_roleplay` keys there
 
 ## Analytics & Tracking
@@ -159,7 +159,7 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 
 ## Features
 
-- 30 training modules, 36 AI roleplay scenarios (3 difficulty levels), 51 glossary terms
+- 30 training modules across two tracks: Fine Dining & Restaurant Service (modules 1–24) and Bar Service (modules 25–30); 150+ AI roleplay scenarios (3 difficulty levels), 51 glossary terms
 - Whisper voice transcription for voice roleplay
 - EN/FR/ES trilingual toggle
 - Gamification: streaks, 12 badges, leaderboard
