@@ -24,7 +24,7 @@
   }
 
   function getVoiceLang() {
-    return LANG_MAP[getSiteLang()] || 'en-CA';
+    return 'en-CA';
   }
 
   function getLabels() {
