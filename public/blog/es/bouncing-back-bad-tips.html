@@ -38,22 +38,16 @@
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
       <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Inicio</a>
       <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Academia</a>
-      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Precios</a>
-      <a href="/contact" class="hover:text-white transition-colors" data-i18n="nav_contact">Contacto</a>
-      <a href="/managers" class="hover:text-white transition-colors" data-i18n="nav_managers">Para gerentes</a>
       <a href="/blog" class="text-white" data-i18n="nav_blog">Centro de conocimiento</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Juego de Rol IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Precios</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Beca</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">Acerca de</a>
     </div>
     <div class="flex items-center gap-3">
-      <div class="relative" id="lang-selector">
-        <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">ES</button>
-        <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
-          <button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
-          <button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
-          <button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
-        </div>
-      </div>
-      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Iniciar sesión</a>
-      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Empieza gratis</a>
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">ES</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Iniciar sesión</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Empieza gratis</a>
     </div>
   </div>
 </nav>
@@ -154,7 +148,7 @@
   function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/bouncing-back-bad-tips';if(l==='fr')window.location='/blog/bouncing-back-bad-tips';}
   document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
 </script>
-<script src="/js/blog-tts.js?v=7"></script>
+<script src="/js/blog-tts.js?v=8"></script>
 <script src="/js/chat-widget.js"></script>
 </body>
 </html>
