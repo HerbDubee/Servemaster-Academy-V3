@@ -1868,6 +1868,7 @@
     '/managers': 'nav_managers',
     '/blog': 'nav_blog',
     '/ai-roleplay': 'nav_roleplay',
+    '/scholarship': 'nav_scholarship',
     '/login': 'nav_login',
     '/signup': 'nav_cta',
     '/privacy': 'nav_privacy',
