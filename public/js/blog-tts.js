@@ -24,7 +24,8 @@
   }
 
   function getVoiceLang() {
-    return 'en-CA';
+    var htmlLang = (document.documentElement.lang || 'en').split('-')[0];
+    return LANG_MAP[htmlLang] || 'en-CA';
   }
 
   function getLabels() {
@@ -493,4 +494,29 @@
 
   window.addEventListener('beforeunload', handleStop);
   window.addEventListener('pagehide', handleStop);
+
+  // Spanish language banner — shown on English articles when UI lang = es
+  (function injectLangBanner() {
+    var htmlLang = document.documentElement.lang || 'en';
+    if (htmlLang !== 'en') return;
+    var siteLang = localStorage.getItem('sma-lang') || 'en';
+    if (siteLang !== 'es') return;
+    var slug = window.location.pathname.replace(/^\/blog\//, '').replace(/\/$/, '');
+    if (!slug || slug.indexOf('/') !== -1) return;
+    function doInject() {
+      if (document.getElementById('sma-es-banner')) return;
+      var main = document.querySelector('main');
+      if (!main) return;
+      var banner = document.createElement('div');
+      banner.id = 'sma-es-banner';
+      banner.style.cssText = 'background:#0a4d68;color:#fff;border-radius:12px;padding:12px 18px;margin-bottom:20px;font-size:0.875rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+      banner.innerHTML = '<span>🇲🇽 Este artículo también está disponible en español</span><a href="/blog/es/' + slug + '" style="background:#FF5E3A;color:#fff;font-weight:700;padding:6px 14px;border-radius:8px;text-decoration:none;white-space:nowrap;">Leer en español →</a>';
+      main.insertBefore(banner, main.firstChild);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', doInject);
+    } else {
+      doInject();
+    }
+  })();
 })();

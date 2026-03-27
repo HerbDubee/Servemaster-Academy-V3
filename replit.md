@@ -8,7 +8,8 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `app.html` — Training SPA (auth-gated at `/app`)
 - `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
 - `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
-- `public/blog/` — 100 blog articles (HTML) + index + article template; served via dynamic `/blog/:slug` route
+- `public/blog/` — 106 blog articles (HTML) + index + article template; served via dynamic `/blog/:slug` route
+- `public/blog/es/` — 106 Spanish translations of all articles; served at `/blog/es/:slug`
 - `public/js/content.js` — Central content store (`window.SMAContent`); single source of truth for modules, lessonData, glossaryTerms, practiceScenarios, blogArticles, blogSections. Loaded by `app.html`, `blog/index.html`, and `blog/article.html`.
 - `public/blog/article.html` — Universal blog article template; reads `window.SMAContent.blogArticles` for metadata, then fetches the static HTML body from the slug-specific file.
 - `public/unsubscribe.html` — CASL unsubscribe page
@@ -34,6 +35,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 | `/app` | `app.html` (training SPA) |
 | `/blog` | `public/blog/index.html` (rendered from content.js) |
 | `/blog/:slug` | `public/blog/{slug}.html` or `public/blog/article.html` template |
+| `/blog/es/:slug` | `public/blog/es/{slug}.html` (Spanish translations) |
 | `/admin` | `admin.html` (admin dashboard) |
 | `/unsubscribe` | `public/unsubscribe.html` (CASL) |
 

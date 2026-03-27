@@ -393,6 +393,13 @@ app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'p
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/knowledge-centre', (req, res) => res.redirect(301, '/blog'));
 app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
+app.get('/blog/es/:slug', (req, res, next) => {
+  const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
+  const filePath = path.join(__dirname, 'public', 'blog', 'es', slug + '.html');
+  res.sendFile(filePath, (err) => {
+    if (err) res.redirect('/blog/' + slug);
+  });
+});
 app.get('/blog/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', slug + '.html');
