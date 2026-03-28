@@ -65,7 +65,7 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
 
 const PLAN_TIER_ORDER = ['free', 'premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise'];
-const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise', 'active']);
+const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'individual', 'starter_team', 'pro_team', 'enterprise', 'active']);
 function highestPlan(a, b) {
   const ai = PLAN_TIER_ORDER.indexOf(a || 'free');
   const bi = PLAN_TIER_ORDER.indexOf(b || 'free');

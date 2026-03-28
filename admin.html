@@ -240,8 +240,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label class="text-xs text-zinc-400 block mb-1">Plan</label>
-              <select id="ic-plan" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+              <select id="ic-plan" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white" onchange="onIcPlanChange(this.value)">
                 <option value="premium" selected>Premium (Full Access)</option>
+                <option value="individual">Individual (30-day → paywall)</option>
                 <option value="starter_team">Starter Team</option>
                 <option value="pro_team">Pro Team</option>
                 <option value="enterprise">Enterprise</option>
@@ -529,9 +530,9 @@ async function loadUsers() {
   } catch (e) { console.error(e); }
 }
 
-const PAID_PLANS = ['premium', 'starter_team', 'pro_team', 'enterprise'];
-const PLAN_LABELS = { free: 'Free', premium: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
-const PLAN_COLORS = { premium: 'bg-amber-400/20 text-amber-300', starter_team: 'bg-blue-400/20 text-blue-300', pro_team: 'bg-purple-400/20 text-purple-300', enterprise: 'bg-emerald-400/20 text-emerald-300', free: 'bg-zinc-700 text-zinc-300' };
+const PAID_PLANS = ['premium', 'individual', 'starter_team', 'pro_team', 'enterprise'];
+const PLAN_LABELS = { free: 'Free', premium: 'Premium', individual: 'Individual', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+const PLAN_COLORS = { premium: 'bg-amber-400/20 text-amber-300', individual: 'bg-orange-400/20 text-orange-300', starter_team: 'bg-blue-400/20 text-blue-300', pro_team: 'bg-purple-400/20 text-purple-300', enterprise: 'bg-emerald-400/20 text-emerald-300', free: 'bg-zinc-700 text-zinc-300' };
 
 function renderUsers(users) {
   const tbody = document.getElementById('users-tbody');
@@ -633,6 +634,17 @@ async function loadContacts() {
 
 let lastGeneratedCode = '';
 
+function onIcPlanChange(val) {
+  const accessDaysEl = document.getElementById('ic-access-days');
+  if (!accessDaysEl) return;
+  if (val === 'individual') {
+    accessDaysEl.value = '30';
+    accessDaysEl.disabled = true;
+  } else {
+    accessDaysEl.disabled = false;
+  }
+}
+
 async function generateInviteCode() {
   const plan = document.getElementById('ic-plan').value;
   const maxUses = parseInt(document.getElementById('ic-uses').value) || 1;
@@ -707,6 +719,7 @@ async function loadInvites() {
     }
     const PAID_IC_PLANS = [
       { value: 'premium', label: 'Premium' },
+      { value: 'individual', label: 'Individual' },
       { value: 'starter_team', label: 'Starter' },
       { value: 'pro_team', label: 'Pro' },
       { value: 'enterprise', label: 'Enterprise' },
