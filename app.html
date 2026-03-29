@@ -27,6 +27,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+    html { overflow-x: hidden; }
     body { font-family: 'Inter', system-ui, sans-serif; }
     .heading { font-family: 'Playfair Display', serif; }
     .tray-container { perspective: 600px; }
@@ -247,10 +248,10 @@
     </div>
   </div>
   <div class="flex items-center gap-1 text-sm text-zinc-300">
-    <div onclick="navigate('dashboard')" class="nav-link" id="nav-dashboard">Dashboard</div>
+    <div onclick="navigate('dashboard')" class="nav-link hidden sm:block" id="nav-dashboard">Dashboard</div>
     <div onclick="navigate('learn')" class="nav-link" id="nav-learn">Learn</div>
     <div onclick="navigate('practice')" class="nav-link" id="nav-practice">Practice</div>
-    <div onclick="navigate('achievements')" class="nav-link" id="nav-achievements">Achievements</div>
+    <div onclick="navigate('achievements')" class="nav-link hidden sm:block" id="nav-achievements">Achievements</div>
     <div onclick="navigate('leaderboard')" class="nav-link hidden sm:block" id="nav-leaderboard">Leaderboard</div>
     <div onclick="navigate('manager')" class="nav-link hidden" id="nav-manager">Manager</div>
     <div onclick="openGlossaryPanel()" class="nav-link hidden md:block">Glossary</div>
