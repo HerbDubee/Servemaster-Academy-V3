@@ -1936,9 +1936,9 @@ const scenarios = {
 };
 
 app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang } = req.body;
+  const { scenarioId, messages, lang, sceneContext } = req.body;
   const scenario = scenarios[scenarioId];
-  if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
+  if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
   const thirdPersonWrapper = lang === 'fr'
     ? `STYLE DE NARRATION — IMPORTANT : Narrez toujours le client à la troisième personne. Ne parlez jamais en tant que client à la première personne. Décrivez ce que dit et fait le client comme un narrateur : "Le client fronce les sourcils et dit : '...'". Utilisez "le client", "il", "elle" ou "ils" tout au long.\n\nBRIÈVETÉ — Soyez concis. Chaque réponse : une action brève + une réplique de dialogue. Pas de description d'ambiance, de décor ou de narration atmosphérique. Allez droit au comportement et aux mots du client.\n\n`
     : lang === 'es'
@@ -1949,7 +1949,10 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
     : lang === 'es'
     ? 'IMPORTANTE: Esta conversación ocurre en español. DEBES responder completamente en español.\n\n'
     : '';
-  const systemContent = langInstruction + thirdPersonWrapper + scenario.systemPrompt;
+  const basePrompt = scenario
+    ? scenario.systemPrompt
+    : `You are playing the role of a guest in a hospitality training scenario. The user is playing the server. Stay completely in character as the guest described in this scene. React realistically to how the server handles the situation — positively to skill and professionalism, negatively to mistakes or poor technique. Keep responses concise.\n\nScene: ${sceneContext}`;
+  const systemContent = langInstruction + thirdPersonWrapper + basePrompt;
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
@@ -1964,9 +1967,10 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
 });
 
 app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang } = req.body;
+  const { scenarioId, messages, lang, sceneTitle, sceneContext } = req.body;
   const scenario = scenarios[scenarioId];
-  if (!scenario) return res.status(400).json({ error: 'Invalid scenario' });
+  if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
+  const scenarioTitle = scenario ? scenario.title : (sceneTitle || 'Hospitality Scenario');
   const langInstruction = lang === 'fr'
     ? 'IMPORTANT : Rédige toute ta réponse en français. Tous les champs JSON doivent être en français.\n\n'
     : lang === 'es'
@@ -1974,7 +1978,7 @@ app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) =>
     : '';
   const systemPrompt = langInstruction + `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
 
-Scenario: "${scenario.title}"
+Scenario: "${scenarioTitle}"
 
 You will be given the full conversation between the server (user) and the simulated customer (assistant). Review what the server actually said — their word choices, tone, phrasing, and actions — and provide a structured critique.
 
