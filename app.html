@@ -1465,8 +1465,10 @@ function useBrowserSpeechFallback(indicator, listeningText) {
 
 let _ttsVoiceCache = {};
 let _ttsAudio = null;
+let _ttsGeneration = 0;
 
 function _stopTtsAudio() {
+  _ttsGeneration++;
   if (_ttsAudio) {
     _ttsAudio.pause();
     _ttsAudio.src = '';
@@ -1520,6 +1522,7 @@ function speakTextAsync(text) {
   return new Promise(resolve => {
     const synth = window.speechSynthesis;
     if (!synth) { resolve(); return; }
+    synth.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     const locale = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
     utt.lang = locale;
@@ -1534,27 +1537,31 @@ function speakTextAsync(text) {
 async function speakOpenAI(text) {
   if (!aiSpeechEnabled) return Promise.resolve();
   _stopTtsAudio();
+  const myGen = _ttsGeneration;
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
       body: JSON.stringify({ text, lang })
     });
+    if (_ttsGeneration !== myGen) return;
     if (!res.ok) throw new Error('TTS request failed');
     const blob = await res.blob();
+    if (_ttsGeneration !== myGen) return;
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    if (_ttsGeneration !== myGen) { URL.revokeObjectURL(url); return; }
     _ttsAudio = audio;
     return new Promise(resolve => {
       audio.addEventListener('ended', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
       audio.addEventListener('error', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
       audio.play().catch(() => {
         URL.revokeObjectURL(url); _ttsAudio = null;
-        if (lang === 'en') { speakTextAsync(text).then(resolve); } else { resolve(); }
+        if (lang === 'en' && _ttsGeneration === myGen) { speakTextAsync(text).then(resolve); } else { resolve(); }
       });
     });
   } catch {
-    if (lang === 'en') return speakTextAsync(text);
+    if (lang === 'en' && _ttsGeneration === myGen) return speakTextAsync(text);
     return Promise.resolve();
   }
 }
@@ -3674,7 +3681,8 @@ function renderDailyChallengeCard() {
 function startDailyChallenge() {
   const scenario = getTodaysDailyScenario();
   if (!scenario) return;
-  startChat(scenario.id);
+  navigate('practice');
+  setTimeout(() => startChat(scenario.id), 50);
 }
 
 function renderAll() {
