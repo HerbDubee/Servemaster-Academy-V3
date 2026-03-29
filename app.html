@@ -1696,22 +1696,34 @@ async function sendInitialMessage() {
   const sessionAtStart = chatSessionToken;
   // Start scene TTS in background (runs in parallel with roleplay API call)
   const sceneEndPromise = (scene && aiSpeechEnabled) ? speakOpenAI(scene) : Promise.resolve();
+  const _sceneHtml = scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : '';
+  const _retryBtn  = `<button onclick="startChat(${chatScenarioId})" class="mt-3 block text-amber-400 text-sm hover:underline">${lang==='es'?'Reintentar →':lang==='fr'?'Réessayer →':'Retry →'}</button>`;
   try {
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, messages: [{ role: 'user', content: lang === 'fr' ? "Commencez maintenant. Pas de mise en scène. Ouvrez avec une courte action et la première réplique du client uniquement." : lang === 'es' ? "Comienza ahora. Sin ambientación. Abre con una acción breve y la primera línea de diálogo del cliente únicamente." : 'Begin now. Skip scene-setting. Open with one short action beat and the guest\'s first line of dialogue only.' }], lang })
     });
+    if (!res.ok) {
+      const errMsg = res.status === 401
+        ? (lang==='es'?'Inicia sesión para practicar.':lang==='fr'?'Connectez-vous pour pratiquer.':'Please log in to practice.')
+        : res.status === 429
+        ? (lang==='es'?'Demasiadas solicitudes. Espera un momento.':lang==='fr'?'Trop de requêtes. Attendez un moment.':'Too many requests. Please wait a moment.')
+        : (lang==='es'?'Error del servidor. Inténtalo de nuevo.':lang==='fr'?'Erreur serveur. Réessayez.':'Server error. Please try again.');
+      div.querySelector('div').innerHTML = `${_sceneHtml}<p class="text-red-400">${errMsg}</p>${_retryBtn}`;
+      box.scrollTop = box.scrollHeight;
+      return;
+    }
     const data = await res.json();
+    const guestText = stripMarkdown(data.reply || '').trim();
+    if (!guestText) throw new Error('empty');
     chatHistory.push({ role: 'assistant', content: data.reply });
-    const guestText = stripMarkdown(data.reply).trim();
     const innerDiv = div.querySelector('div');
-    innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p>${escHtml(guestText)}</p>`;
+    innerDiv.innerHTML = `${_sceneHtml}<p>${escHtml(guestText)}</p>`;
     box.scrollTop = box.scrollHeight;
     // Play dialogue after scene finishes — only if still in the same session
     if (aiSpeechEnabled) sceneEndPromise.then(() => { if (chatSessionToken === sessionAtStart) speakOpenAI(guestText); });
   } catch {
-    const innerDiv = div.querySelector('div');
-    innerDiv.innerHTML = `${scene ? `<p class="text-zinc-400 italic mb-3 pb-3 border-b border-zinc-700"><span class="text-zinc-500 text-xs font-semibold uppercase tracking-wider not-italic block mb-1">${sceneLabel}</span>${escHtml(scene)}</p>` : ''}<p class="text-red-400">${lang==='es' ? 'No se pudo conectar al servidor.' : lang==='fr' ? 'Impossible de se connecter au serveur.' : 'Could not connect to server.'}</p>`;
+    div.querySelector('div').innerHTML = `${_sceneHtml}<p class="text-red-400">${lang==='es'?'No se pudo conectar al servidor.':lang==='fr'?'Impossible de se connecter au serveur.':'Could not connect to server.'}</p>${_retryBtn}`;
     box.scrollTop = box.scrollHeight;
   }
 }
@@ -1731,25 +1743,33 @@ async function sendChat() {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory, lang })
     });
-    const data = await res.json();
-    chatHistory.push({ role: 'assistant', content: data.reply });
-    const guestText = stripMarkdown(data.reply).trim();
-    replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
-    speakOpenAI(guestText);
-    const userTurns = chatHistory.filter(m => m.role === 'user').length;
-    if (userTurns === 3) {
-      completedScenarios.push(chatScenarioId);
-      localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
-      const _scenTs = JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
-      _scenTs[chatScenarioId] = new Date().toISOString();
-      localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
-      pushScenarioToServer(chatScenarioId);
-      // Mark daily challenge complete if this is today's daily scenario
-      const _daily = getTodaysDailyScenario();
-      if (_daily && _daily.id === chatScenarioId) completeDailyChallenge();
-      checkBadgesLocal();
-      renderScenarios();
-      showScenarioSummary();
+    if (!res.ok) {
+      const errMsg = res.status === 429
+        ? (lang==='es'?'Demasiadas solicitudes. Espera un momento.':lang==='fr'?'Trop de requêtes. Attendez un moment.':'Too many requests. Please wait a moment.')
+        : (lang==='es'?'Error del servidor. Inténtalo de nuevo.':lang==='fr'?'Erreur serveur. Réessayez.':'Server error. Please try again.');
+      replaceLastHtml(`<p class="text-red-400">${errMsg}</p>`);
+    } else {
+      const data = await res.json();
+      const guestText = stripMarkdown(data.reply || '').trim();
+      if (!guestText) throw new Error('empty');
+      chatHistory.push({ role: 'assistant', content: data.reply });
+      replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
+      speakOpenAI(guestText);
+      const userTurns = chatHistory.filter(m => m.role === 'user').length;
+      if (userTurns === 3) {
+        completedScenarios.push(chatScenarioId);
+        localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
+        const _scenTs = JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
+        _scenTs[chatScenarioId] = new Date().toISOString();
+        localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
+        pushScenarioToServer(chatScenarioId);
+        // Mark daily challenge complete if this is today's daily scenario
+        const _daily = getTodaysDailyScenario();
+        if (_daily && _daily.id === chatScenarioId) completeDailyChallenge();
+        checkBadgesLocal();
+        renderScenarios();
+        showScenarioSummary();
+      }
     }
   } catch {
     replaceLastHtml(`<p class="text-red-400">${lang==='es'?'Error de conexión':lang==='fr'?'Erreur de connexion':'Connection error'}</p>`);
