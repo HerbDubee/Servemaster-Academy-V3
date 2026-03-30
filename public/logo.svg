@@ -1,20 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90">
-
-  <!-- Cocktail glass icon -->
-  <!-- Bowl (filled triangle) -->
-  <polygon points="14,12 66,12 40,50" fill="#f59e0b"/>
-  <!-- Bowl rim highlight -->
-  <line x1="14" y1="12" x2="66" y2="12" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Stem -->
-  <line x1="40" y1="50" x2="40" y2="68" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Base -->
-  <line x1="26" y1="68" x2="54" y2="68" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Olive garnish -->
-  <circle cx="54" cy="20" r="4" fill="#f59e0b" opacity="0.7"/>
-  <line x1="54" y1="12" x2="54" y2="24" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-
-  <!-- ServeMaster text -->
-  <text x="86" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" fill="#fafafa" letter-spacing="0.5">ServeMaster</text>
-  <!-- Academy text -->
-  <text x="88" y="66" font-family="'Arial', 'Helvetica', sans-serif" font-size="16" font-weight="600" fill="#f59e0b" letter-spacing="5">ACADEMY</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 338 80">
+  <!-- Soundwave icon, centred at x=37, y=24 -->
+  <g fill="#9a7d42" stroke="#9a7d42" stroke-linecap="round">
+    <circle cx="2"  cy="24" r="2.2" stroke="none"/>
+    <circle cx="8"  cy="24" r="2.2" stroke="none"/>
+    <line x1="15" y1="21" x2="15" y2="27" stroke-width="2.8"/>
+    <line x1="22" y1="17" x2="22" y2="31" stroke-width="2.8"/>
+    <line x1="29" y1="13" x2="29" y2="35" stroke-width="2.8"/>
+    <line x1="36" y1="9"  x2="36" y2="39" stroke-width="2.8"/>
+    <line x1="43" y1="13" x2="43" y2="35" stroke-width="2.8"/>
+    <line x1="50" y1="17" x2="50" y2="31" stroke-width="2.8"/>
+    <line x1="57" y1="21" x2="57" y2="27" stroke-width="2.8"/>
+    <circle cx="64" cy="24" r="2.2" stroke="none"/>
+    <circle cx="70" cy="24" r="2.2" stroke="none"/>
+  </g>
+  <!-- ServeMaster — white for dark nav backgrounds -->
+  <text x="84" y="36"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="30" font-weight="700"
+    fill="#ffffff" letter-spacing="0.3">ServeMaster</text>
+  <!-- ACADEMY — gold, tracked -->
+  <text x="86" y="60"
+    font-family="'Arial', 'Helvetica', sans-serif"
+    font-size="14" font-weight="600"
+    fill="#9a7d42" letter-spacing="6">ACADEMY</text>
 </svg>
