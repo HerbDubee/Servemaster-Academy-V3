@@ -15,6 +15,11 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `public/unsubscribe.html` — CASL unsubscribe page
 - `public/manifest.json` — PWA manifest
 - `public/sw.js` — Service worker (offline support)
+- `public/logo.svg` — Horizontal nav wordmark: gold soundwave icon + white "ServeMaster" + gold "ACADEMY" (dark-bg optimised)
+- `public/logo-icon.svg` — Soundwave-only icon for app nav (gold, transparent bg)
+- `public/logo.png` — 1200×630 OG/social share image (brand photo on dark navy #071a26)
+- `public/logo-transparent.png` — Full stacked logo, transparent background (for footers, dark sections)
+- `public/favicon.png` (64px), `public/apple-touch-icon.png` (180px), `public/icon-192.png`, `public/icon-512.png` — PWA/browser icons: gold soundwave on dark navy rounded square
 - `stripeClient.js` — Replit Stripe connector helpers
 - `db.js` — PostgreSQL connection pool (Replit built-in)
 
