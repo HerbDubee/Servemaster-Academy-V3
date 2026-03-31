@@ -214,6 +214,52 @@
             <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3">Loading invite code…</div>
             <button onclick="copyInviteCode()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors">Copy Invite Link</button>
           </div>
+
+          <!-- White-Label Branding -->
+          <div id="wl-section" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <div class="flex items-center gap-2 mb-1">
+              <h2 class="font-semibold text-lg">White-Label Branding</h2>
+              <span class="text-xs bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full">Enterprise</span>
+            </div>
+            <p class="text-zinc-400 text-sm mb-5">Customise the training app with your restaurant's brand. Changes apply instantly for all team members.</p>
+            <div class="space-y-4">
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Brand Name</label>
+                <input id="wl-brand-name" type="text" placeholder="Marriott Training" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Logo URL <span class="text-zinc-600">(must start with https://)</span></label>
+                <input id="wl-logo-url" type="url" placeholder="https://your-cdn.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+              </div>
+              <div class="flex gap-4">
+                <div class="flex-1">
+                  <label class="text-xs text-zinc-400 block mb-1">Primary Colour</label>
+                  <div class="flex items-center gap-2">
+                    <input id="wl-primary-color" type="color" value="#FF5E3A" oninput="wlSyncColor('primary')" class="h-9 w-14 rounded cursor-pointer bg-zinc-800 border border-zinc-700 p-0.5">
+                    <input id="wl-primary-hex" type="text" placeholder="#FF5E3A" maxlength="7" oninput="wlSyncColor('primary')" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono">
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <label class="text-xs text-zinc-400 block mb-1">Accent Colour</label>
+                  <div class="flex items-center gap-2">
+                    <input id="wl-accent-color" type="color" value="#0A4D68" oninput="wlSyncColor('accent')" class="h-9 w-14 rounded cursor-pointer bg-zinc-800 border border-zinc-700 p-0.5">
+                    <input id="wl-accent-hex" type="text" placeholder="#0A4D68" maxlength="7" oninput="wlSyncColor('accent')" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono">
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 pt-1">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input id="wl-is-active" type="checkbox" class="sr-only peer" onchange="wlToggleActive()">
+                  <div class="w-10 h-6 bg-zinc-700 peer-checked:bg-amber-400 rounded-full transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                </label>
+                <span class="text-sm text-zinc-300">Enable white-label branding for my team</span>
+              </div>
+              <div class="flex gap-2 pt-1">
+                <button onclick="saveWlConfig()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save Branding</button>
+              </div>
+              <p id="wl-msg" class="text-sm hidden"></p>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -472,6 +518,65 @@
             : 'No invite code found.';
         }
       } catch (e) { console.error(e); }
+      loadWlConfig();
+    }
+
+    async function loadWlConfig() {
+      try {
+        const data = await apiFetch('/api/manager/white-label');
+        if (!data.config) return;
+        document.getElementById('wl-section').classList.remove('hidden');
+        const c = data.config;
+        document.getElementById('wl-brand-name').value  = c.brandName    || '';
+        document.getElementById('wl-logo-url').value    = c.logoUrl       || '';
+        const pc = c.primaryColor || '#FF5E3A';
+        const ac = c.accentColor  || '#0A4D68';
+        document.getElementById('wl-primary-color').value = pc;
+        document.getElementById('wl-primary-hex').value   = pc;
+        document.getElementById('wl-accent-color').value  = ac;
+        document.getElementById('wl-accent-hex').value    = ac;
+        document.getElementById('wl-is-active').checked   = !!c.isActive;
+      } catch (e) { console.error('WL config load error:', e); }
+    }
+
+    function wlSyncColor(type) {
+      const picker = document.getElementById(`wl-${type}-color`);
+      const hex    = document.getElementById(`wl-${type}-hex`);
+      if (event.target === picker) hex.value = picker.value;
+      else { if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) picker.value = hex.value; }
+    }
+
+    function wlToggleActive() {}
+
+    async function saveWlConfig() {
+      const msg = document.getElementById('wl-msg');
+      const primaryHex = document.getElementById('wl-primary-hex').value.trim();
+      const accentHex  = document.getElementById('wl-accent-hex').value.trim();
+      if (primaryHex && !/^#[0-9a-fA-F]{6}$/.test(primaryHex)) {
+        msg.textContent = 'Primary colour must be #rrggbb format.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
+      }
+      if (accentHex && !/^#[0-9a-fA-F]{6}$/.test(accentHex)) {
+        msg.textContent = 'Accent colour must be #rrggbb format.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
+      }
+      try {
+        const res = await apiFetch('/api/manager/white-label', {
+          method: 'POST',
+          body: JSON.stringify({
+            brandName:    document.getElementById('wl-brand-name').value.trim() || null,
+            logoUrl:      document.getElementById('wl-logo-url').value.trim()   || null,
+            primaryColor: primaryHex || null,
+            accentColor:  accentHex  || null,
+            isActive:     document.getElementById('wl-is-active').checked,
+          })
+        });
+        if (res.success) {
+          msg.textContent = 'Branding saved.'; msg.style.color = '#34d399';
+        } else {
+          msg.textContent = res.error || 'Failed to save.'; msg.style.color = '#f87171';
+        }
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3500);
+      } catch { msg.textContent = 'Connection error.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
     }
 
     async function saveDeadline() {

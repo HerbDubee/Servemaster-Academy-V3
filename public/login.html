@@ -221,6 +221,13 @@ async function doLogin(e) {
   }
 }
 </script>
+<script src="/js/wl-branding.js"></script>
+<script>
+(function(){
+  const _wlCode = new URLSearchParams(window.location.search).get('join');
+  if (_wlCode) applyWlBrandingForInvite(_wlCode);
+})();
+</script>
 <script src="/js/lang.js?v=6"></script>
 
 <script>

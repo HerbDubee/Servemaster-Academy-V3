@@ -22,6 +22,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `public/favicon.png` (64px), `public/apple-touch-icon.png` (180px), `public/icon-192.png`, `public/icon-512.png` — PWA/browser icons: gold soundwave on dark navy rounded square
 - `stripeClient.js` — Replit Stripe connector helpers
 - `db.js` — PostgreSQL connection pool (Replit built-in)
+- `public/js/wl-branding.js` — White-label branding injection utility (used on app.html, login.html, signup.html)
 
 ## Pages
 
@@ -96,7 +97,7 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 | `streaks` | Daily login streak tracking |
 | `badges` | Earned badge records |
 | `scenario_scores` | Completed roleplay sessions |
-| `restaurants` | Manager restaurant profiles + `cert_logo_url` |
+| `restaurants` | Manager restaurant profiles + `cert_logo_url` + white-label branding columns (`wl_brand_name`, `wl_logo_url`, `wl_primary_color`, `wl_accent_color`, `wl_is_active`, `wl_is_enterprise`) |
 | `invite_codes` | Admin-generated invite codes |
 | `invite_code_redemptions` | Code redemption log |
 | `email_subscribers` | Newsletter signups |
@@ -120,10 +121,36 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 - **Streak recovery**: email sent inside `updateStreak()` when a streak breaks
 - **CASL compliance**: `emailFooter(unsubUrl)` appended to all outbound Resend emails; `getOrCreateUnsubToken(userId)` generates persistent tokens; `GET /unsubscribe?token=` + `POST /api/resubscribe`
 
+## White-Label System
+
+Allows enterprise restaurant clients to brand the training app with their own name, logo, and colours. All branding is app-only (marketing pages remain ServeMaster Academy).
+
+**How it works:**
+- Admin creates a tenant via `POST /api/admin/tenants` → generates restaurant + invite link
+- Manager saves branding via `POST /api/manager/white-label` (requires `managerMiddleware`)
+- On app load, `applyWlBranding()` (from `public/js/wl-branding.js`) calls `GET /api/tenant/branding` and injects CSS custom properties (`--wl-primary`, `--wl-accent`) and swaps the nav logo
+- On invite pages (login/signup `?join=CODE`), `applyWlBrandingForInvite(code)` calls `GET /api/tenant/branding/invite?code=` for pre-auth branding
+- Nudge emails use `getTenantBrandingForEmail(userId)` to swap from-name, logo, and subject line for white-label tenants
+
+**API endpoints:**
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| `GET /api/manager/white-label` | managerMiddleware | Load own white-label config |
+| `POST /api/manager/white-label` | managerMiddleware | Save branding (brandName, logoUrl, primaryColor, accentColor, isActive) |
+| `GET /api/tenant/branding` | authMiddleware | Active branding for logged-in user's restaurant |
+| `GET /api/tenant/branding/invite?code=` | public | Pre-auth branding lookup by invite code |
+| `GET /api/admin/tenants` | adminMiddleware | List all active/enterprise tenants |
+| `PATCH /api/admin/tenants/:id/toggle` | adminMiddleware | Toggle wl_is_active |
+| `PATCH /api/admin/tenants/:id/enterprise` | adminMiddleware | Toggle wl_is_enterprise |
+| `POST /api/admin/tenants` | adminMiddleware | Create new enterprise tenant |
+
+**Admin panel:** `/admin` → Tenants tab — lists tenants with toggle controls and "New Tenant" modal
+
 ## Manager Dashboard Features
 
 - **Assigned Modules**: Managers select required modules from the full list (Settings tab); stored in `assigned_modules` table; staff see "Required" badge on those modules in app.html
 - **Custom Certificate Logo**: Managers enter a logo URL in Settings; stored in `restaurants.cert_logo_url`; served via `GET /api/manager/cert-logo`; used on generated certificates
+- **White-Label Branding**: Enterprise managers customise brand name, logo, and colours in Settings → White-Label Branding card (only visible if restaurant has white-label configured)
 
 ## App (Training SPA) Features
 

@@ -79,6 +79,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
       <div class="nav-item" onclick="showSection('siteconfig')" id="nav-siteconfig">⚙️ Site Config</div>
       <div class="nav-item" onclick="showSection('scholarships')" id="nav-scholarships">🎓 Scholarships</div>
+      <div class="nav-item" onclick="showSection('tenants')" id="nav-tenants">🏢 Tenants</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -95,6 +96,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
       <button onclick="showSection('siteconfig')" class="nav-item whitespace-nowrap" id="mnav-siteconfig">⚙️</button>
       <button onclick="showSection('scholarships')" class="nav-item whitespace-nowrap" id="mnav-scholarships">🎓</button>
+      <button onclick="showSection('tenants')" class="nav-item whitespace-nowrap" id="mnav-tenants">🏢</button>
     </div>
 
     <!-- Main content -->
@@ -457,7 +459,72 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
       </div>
 
+      <!-- TENANTS -->
+      <div id="section-tenants" class="section">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="heading text-3xl font-bold">Tenants</h1>
+            <p class="text-zinc-400 text-sm mt-1">White-label enterprise restaurant accounts — enable, manage, and create tenants.</p>
+          </div>
+          <button onclick="openNewTenantModal()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Tenant</button>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-5 py-3 text-left">Restaurant / Brand</th>
+                  <th class="px-5 py-3 text-left">Manager</th>
+                  <th class="px-5 py-3 text-left">Team</th>
+                  <th class="px-5 py-3 text-left">Avg Completion</th>
+                  <th class="px-5 py-3 text-left">White-Label</th>
+                  <th class="px-5 py-3 text-left">Enterprise</th>
+                  <th class="px-5 py-3 text-left">Invite Link</th>
+                </tr>
+              </thead>
+              <tbody id="tenants-table" class="divide-y divide-zinc-800">
+                <tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">Loading tenants…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+</div>
+
+<!-- New Tenant Modal -->
+<div id="new-tenant-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md shadow-2xl relative">
+    <button onclick="closeNewTenantModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+    <h2 class="heading text-xl font-bold mb-1">New Enterprise Tenant</h2>
+    <p class="text-zinc-400 text-sm mb-6">Creates a restaurant account with white-label pre-enabled, and sets up the manager user.</p>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-zinc-400 block mb-1">Brand / Restaurant Name</label>
+        <input id="nt-brand" type="text" placeholder="Marriott Training" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+      </div>
+      <div>
+        <label class="text-xs text-zinc-400 block mb-1">Manager Email</label>
+        <input id="nt-email" type="email" placeholder="manager@marriott.com" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+      </div>
+      <div>
+        <label class="text-xs text-zinc-400 block mb-1">Primary Colour <span class="text-zinc-600">(optional, #rrggbb)</span></label>
+        <div class="flex items-center gap-2">
+          <input id="nt-color-picker" type="color" value="#FF5E3A" class="h-9 w-14 rounded cursor-pointer bg-zinc-800 border border-zinc-700 p-0.5" oninput="document.getElementById('nt-color').value=this.value">
+          <input id="nt-color" type="text" placeholder="#FF5E3A" maxlength="7" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-amber-400" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('nt-color-picker').value=this.value">
+        </div>
+      </div>
+      <div id="nt-error" class="hidden text-red-400 text-sm rounded-xl bg-red-900/30 px-3 py-2"></div>
+      <div id="nt-result" class="hidden bg-emerald-900/30 border border-emerald-700 rounded-xl p-3">
+        <p class="text-emerald-300 text-sm font-semibold mb-1">Tenant created!</p>
+        <p class="text-zinc-400 text-xs mb-1">Share this invite link with the manager:</p>
+        <div id="nt-invite-link" class="text-amber-400 font-mono text-xs break-all bg-zinc-900 rounded-lg px-2 py-1.5 mb-2"></div>
+        <button onclick="copyTenantInvite()" class="text-xs text-zinc-300 hover:text-white bg-zinc-800 px-3 py-1 rounded-lg transition-colors">Copy Link</button>
+      </div>
+      <button onclick="createTenant()" id="nt-btn" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Create Tenant</button>
+    </div>
   </div>
 </div>
 
@@ -1112,6 +1179,7 @@ function showSection(name) {
   if (mNavEl) mNavEl.classList.add('active');
   if (name === 'siteconfig') loadSiteConfig();
   if (name === 'scholarships') loadScholarships();
+  if (name === 'tenants') loadTenants();
 }
 
 async function loadScholarships() {
@@ -1270,5 +1338,142 @@ init();
   </div>
 </div>
 
+<script>
+// ── Tenants ────────────────────────────────────────────────────────────────
+
+let tenantsData = [];
+let lastTenantInviteLink = '';
+
+async function loadTenants() {
+  const tbody = document.getElementById('tenants-table');
+  tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">Loading…</td></tr>';
+  try {
+    const res = await fetch('/api/admin/tenants', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    tenantsData = data.tenants || [];
+    renderTenantsTable();
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-red-400">Failed to load tenants.</td></tr>';
+  }
+}
+
+function renderTenantsTable() {
+  const tbody = document.getElementById('tenants-table');
+  if (!tenantsData.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">No white-label tenants yet. Click "+ New Tenant" to create one.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tenantsData.map(t => `
+    <tr class="hover:bg-zinc-800/50 transition-colors">
+      <td class="px-5 py-4">
+        <div class="font-medium">${esc(t.wl_brand_name || t.name)}</div>
+        ${t.wl_brand_name && t.wl_brand_name !== t.name ? `<div class="text-xs text-zinc-500">${esc(t.name)}</div>` : ''}
+        ${t.wl_primary_color ? `<div class="inline-block w-4 h-4 rounded-full mt-1 align-middle" style="background:${esc(t.wl_primary_color)}"></div>` : ''}
+      </td>
+      <td class="px-5 py-4">
+        <div class="text-sm">${esc(t.manager_name || '—')}</div>
+        <div class="text-xs text-zinc-500">${esc(t.manager_email || '—')}</div>
+      </td>
+      <td class="px-5 py-4 text-zinc-300 text-sm">${t.team_size || 0}</td>
+      <td class="px-5 py-4 text-zinc-300 text-sm">${t.avg_completion || 0}%</td>
+      <td class="px-5 py-4">
+        <button onclick="toggleTenantWl(${t.id}, this)" class="px-3 py-1 rounded-full text-xs font-semibold transition-colors ${t.wl_is_active ? 'bg-emerald-400/20 text-emerald-300 hover:bg-emerald-400/30' : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'}">
+          ${t.wl_is_active ? 'Active' : 'Off'}
+        </button>
+      </td>
+      <td class="px-5 py-4">
+        <button onclick="toggleTenantEnterprise(${t.id}, this)" class="px-3 py-1 rounded-full text-xs font-semibold transition-colors ${t.wl_is_enterprise ? 'bg-violet-400/20 text-violet-300 hover:bg-violet-400/30' : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'}">
+          ${t.wl_is_enterprise ? 'Enterprise' : 'Standard'}
+        </button>
+      </td>
+      <td class="px-5 py-4">
+        ${t.invite_code ? `<button onclick="navigator.clipboard.writeText('https://servemasteracademy.ca/app?invite=${esc(t.invite_code)}').then(()=>alert('Copied!'))" class="text-amber-400 font-mono text-xs hover:text-amber-300 transition-colors">${esc(t.invite_code)}</button>` : '—'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function toggleTenantWl(id, btn) {
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/admin/tenants/${id}/toggle`, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.isActive !== undefined) {
+      btn.textContent = data.isActive ? 'Active' : 'Off';
+      btn.className = btn.className.replace(/bg-(emerald|zinc)-[^\s]+/g, '');
+      if (data.isActive) {
+        btn.classList.add('bg-emerald-400/20', 'text-emerald-300', 'hover:bg-emerald-400/30');
+      } else {
+        btn.classList.add('bg-zinc-700', 'text-zinc-400', 'hover:bg-zinc-600');
+      }
+    }
+  } catch { alert('Failed to update.'); }
+  btn.disabled = false;
+}
+
+async function toggleTenantEnterprise(id, btn) {
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/admin/tenants/${id}/enterprise`, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.isEnterprise !== undefined) {
+      btn.textContent = data.isEnterprise ? 'Enterprise' : 'Standard';
+    }
+  } catch { alert('Failed to update.'); }
+  btn.disabled = false;
+}
+
+function openNewTenantModal() {
+  document.getElementById('nt-brand').value = '';
+  document.getElementById('nt-email').value = '';
+  document.getElementById('nt-color').value = '';
+  document.getElementById('nt-color-picker').value = '#FF5E3A';
+  document.getElementById('nt-error').classList.add('hidden');
+  document.getElementById('nt-result').classList.add('hidden');
+  document.getElementById('nt-btn').disabled = false;
+  document.getElementById('nt-btn').textContent = 'Create Tenant';
+  document.getElementById('new-tenant-modal').classList.remove('hidden');
+}
+
+function closeNewTenantModal() {
+  document.getElementById('new-tenant-modal').classList.add('hidden');
+}
+
+async function createTenant() {
+  const btn = document.getElementById('nt-btn');
+  const errEl = document.getElementById('nt-error');
+  errEl.classList.add('hidden');
+  const brandName = document.getElementById('nt-brand').value.trim();
+  const managerEmail = document.getElementById('nt-email').value.trim();
+  const primaryColor = document.getElementById('nt-color').value.trim();
+  if (!brandName) { errEl.textContent = 'Brand name is required.'; errEl.classList.remove('hidden'); return; }
+  if (!managerEmail) { errEl.textContent = 'Manager email is required.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const res = await fetch('/api/admin/tenants', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brandName, managerEmail, primaryColor: primaryColor || undefined })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to create tenant.'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Create Tenant'; return; }
+    lastTenantInviteLink = data.inviteLink || '';
+    document.getElementById('nt-invite-link').textContent = lastTenantInviteLink;
+    document.getElementById('nt-result').classList.remove('hidden');
+    btn.textContent = 'Created!';
+    loadTenants();
+  } catch { errEl.textContent = 'Connection error.'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Create Tenant'; }
+}
+
+function copyTenantInvite() {
+  if (lastTenantInviteLink) navigator.clipboard.writeText(lastTenantInviteLink).then(() => alert('Invite link copied!'));
+}
+</script>
 </body>
 </html>

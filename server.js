@@ -727,6 +727,38 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+/**
+ * Returns white-label branding for transactional email sending.
+ * Falls back to ServeMaster defaults if the user has no active tenant.
+ */
+async function getTenantBrandingForEmail(userId) {
+  const defaults = {
+    brandName: 'ServeMaster Academy',
+    logoUrl: 'https://servemasteracademy.ca/logo.png',
+    fromLine: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+    poweredBy: '',
+  };
+  if (!userId) return defaults;
+  try {
+    const r = await db.query(
+      `SELECT r.wl_brand_name, r.wl_logo_url, r.wl_is_active, r.name
+       FROM restaurants r
+       JOIN users u ON u.restaurant_id = r.id
+       WHERE u.id = $1`,
+      [userId]
+    );
+    const row = r.rows[0];
+    if (!row || !row.wl_is_active) return defaults;
+    const brand = row.wl_brand_name || row.name;
+    return {
+      brandName: brand,
+      logoUrl: row.wl_logo_url || defaults.logoUrl,
+      fromLine: `${brand} Training <kirk_adamson@servemasteracademy.ca>`,
+      poweredBy: `<p style="font-size:11px;color:#555;margin-top:16px;text-align:center;">Powered by <a href="https://servemasteracademy.ca" style="color:#888;text-decoration:none;">ServeMaster Academy</a></p>`,
+    };
+  } catch (_) { return defaults; }
+}
+
 async function sendTrialDripEmails(user) {
   if (!user.trial_ends_at || user.subscription_status === 'active') return;
   const isUnsub = await db.query('SELECT is_unsubscribed FROM users WHERE id = $1', [user.id]).then(r => r.rows[0]?.is_unsubscribed).catch(() => false);
@@ -1249,6 +1281,186 @@ app.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch dashboard' }); }
 });
 
+
+// ── White-label tenant routes ─────────────────────────────────────────────────
+
+/** Validate a hex colour: must be #rrggbb or empty/null */
+function isValidHex(v) { return !v || /^#[0-9a-fA-F]{6}$/.test(v); }
+
+/** Build the standard branding response object from a restaurant row */
+function buildBranding(row) {
+  if (!row || !row.wl_is_active) return null;
+  return {
+    isActive:     true,
+    brandName:    row.wl_brand_name   || row.name,
+    logoUrl:      row.wl_logo_url     || null,
+    primaryColor: row.wl_primary_color || null,
+    accentColor:  row.wl_accent_color  || null,
+  };
+}
+
+// Manager: get own white-label config
+app.get('/api/manager/white-label', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    if (!uRes.rows.length || !uRes.rows[0].restaurant_id) return res.json({ config: null });
+    const rRes = await db.query(
+      'SELECT name, wl_brand_name, wl_logo_url, wl_primary_color, wl_accent_color, wl_is_active FROM restaurants WHERE id = $1',
+      [uRes.rows[0].restaurant_id]
+    );
+    const row = rRes.rows[0] || null;
+    res.json({
+      config: row ? {
+        isActive:     row.wl_is_active,
+        brandName:    row.wl_brand_name   || '',
+        logoUrl:      row.wl_logo_url     || '',
+        primaryColor: row.wl_primary_color || '',
+        accentColor:  row.wl_accent_color  || '',
+        restaurantName: row.name,
+      } : null
+    });
+  } catch (e) { res.status(500).json({ error: 'Failed to load white-label config' }); }
+});
+
+// Manager: save white-label config
+app.post('/api/manager/white-label', managerMiddleware, async (req, res) => {
+  const { brandName, logoUrl, primaryColor, accentColor, isActive } = req.body;
+  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid primary colour — use #rrggbb format' });
+  if (accentColor  && !isValidHex(accentColor))  return res.status(400).json({ error: 'Invalid accent colour — use #rrggbb format' });
+  if (logoUrl && !/^https?:\/\/.+/.test(logoUrl)) return res.status(400).json({ error: 'Logo URL must start with http:// or https://' });
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    if (!uRes.rows.length || !uRes.rows[0].restaurant_id) return res.status(404).json({ error: 'No restaurant found for this account' });
+    const rid = uRes.rows[0].restaurant_id;
+    await db.query(
+      `UPDATE restaurants SET
+        wl_brand_name    = $1,
+        wl_logo_url      = $2,
+        wl_primary_color = $3,
+        wl_accent_color  = $4,
+        wl_is_active     = $5
+       WHERE id = $6`,
+      [brandName || null, logoUrl || null, primaryColor || null, accentColor || null, !!isActive, rid]
+    );
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Failed to save white-label config' }); }
+});
+
+// Public: branding for an invite code (pre-auth signup/login page)
+app.get('/api/tenant/branding/invite', async (req, res) => {
+  const code = (req.query.code || '').toUpperCase();
+  if (!code) return res.json({ branding: null });
+  try {
+    const rRes = await db.query(
+      'SELECT name, wl_brand_name, wl_logo_url, wl_primary_color, wl_accent_color, wl_is_active FROM restaurants WHERE invite_code = $1',
+      [code]
+    );
+    res.json({ branding: rRes.rows.length ? buildBranding(rRes.rows[0]) : null });
+  } catch (e) { res.json({ branding: null }); }
+});
+
+// Auth: branding for the logged-in user's restaurant
+app.get('/api/tenant/branding', authMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    if (!uRes.rows.length || !uRes.rows[0].restaurant_id) return res.json({ branding: null });
+    const rRes = await db.query(
+      'SELECT name, wl_brand_name, wl_logo_url, wl_primary_color, wl_accent_color, wl_is_active FROM restaurants WHERE id = $1',
+      [uRes.rows[0].restaurant_id]
+    );
+    res.json({ branding: rRes.rows.length ? buildBranding(rRes.rows[0]) : null });
+  } catch (e) { res.json({ branding: null }); }
+});
+
+// Admin: list all white-label tenants
+app.get('/api/admin/tenants', adminMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        r.id, r.name, r.invite_code,
+        r.wl_brand_name, r.wl_logo_url, r.wl_primary_color, r.wl_accent_color,
+        r.wl_is_active, r.wl_is_enterprise,
+        u.email AS manager_email, u.name AS manager_name,
+        COUNT(DISTINCT staff.id) AS team_size,
+        COALESCE(ROUND(AVG(comp.pct)::numeric, 1), 0) AS avg_completion
+      FROM restaurants r
+      LEFT JOIN users u ON u.id = r.owner_id
+      LEFT JOIN users staff ON staff.restaurant_id = r.id AND staff.role NOT IN ('manager','admin')
+      LEFT JOIN (
+        SELECT user_id, ROUND(100.0 * COUNT(*) FILTER (WHERE progress >= 100) / 30, 1) AS pct
+        FROM user_progress GROUP BY user_id
+      ) comp ON comp.user_id = staff.id
+      WHERE r.wl_is_active = TRUE OR r.wl_is_enterprise = TRUE
+      GROUP BY r.id, u.email, u.name
+      ORDER BY r.wl_is_enterprise DESC, r.name
+    `);
+    res.json({ tenants: result.rows });
+  } catch (e) { res.status(500).json({ error: 'Failed to load tenants' }); }
+});
+
+// Admin: toggle white-label active state
+app.patch('/api/admin/tenants/:id/toggle', adminMiddleware, async (req, res) => {
+  try {
+    const r = await db.query(
+      'UPDATE restaurants SET wl_is_active = NOT wl_is_active WHERE id = $1 RETURNING wl_is_active',
+      [parseInt(req.params.id)]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Tenant not found' });
+    res.json({ isActive: r.rows[0].wl_is_active });
+  } catch (e) { res.status(500).json({ error: 'Failed to update tenant' }); }
+});
+
+// Admin: toggle enterprise flag
+app.patch('/api/admin/tenants/:id/enterprise', adminMiddleware, async (req, res) => {
+  try {
+    const r = await db.query(
+      'UPDATE restaurants SET wl_is_enterprise = NOT wl_is_enterprise WHERE id = $1 RETURNING wl_is_enterprise',
+      [parseInt(req.params.id)]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Tenant not found' });
+    res.json({ isEnterprise: r.rows[0].wl_is_enterprise });
+  } catch (e) { res.status(500).json({ error: 'Failed to update tenant' }); }
+});
+
+// Admin: create a new tenant (restaurant + white-label pre-enabled)
+app.post('/api/admin/tenants', adminMiddleware, async (req, res) => {
+  const { brandName, managerEmail, primaryColor } = req.body;
+  if (!brandName) return res.status(400).json({ error: 'Brand name is required' });
+  if (!managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerEmail)) return res.status(400).json({ error: 'Valid manager email is required' });
+  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid colour — use #rrggbb format' });
+  try {
+    const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    // Upsert the manager user (create with a placeholder password if not existing)
+    let managerUser = (await db.query('SELECT id, role FROM users WHERE email = $1', [managerEmail.toLowerCase()])).rows[0];
+    if (!managerUser) {
+      const tmpHash = await require('bcrypt').hash(Math.random().toString(36), 10);
+      const trialEnd = new Date(); trialEnd.setFullYear(trialEnd.getFullYear() + 10);
+      const ins = await db.query(
+        `INSERT INTO users (email, password_hash, name, subscription_status, trial_ends_at, is_trial_active, role)
+         VALUES ($1, $2, $3, 'enterprise', $4, false, 'manager') RETURNING id, role`,
+        [managerEmail.toLowerCase(), tmpHash, brandName + ' Admin', trialEnd]
+      );
+      await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [ins.rows[0].id]);
+      managerUser = ins.rows[0];
+    }
+    // Create restaurant
+    const rIns = await db.query(
+      `INSERT INTO restaurants (name, owner_id, invite_code, wl_brand_name, wl_primary_color, wl_is_active, wl_is_enterprise)
+       VALUES ($1, $2, $3, $4, $5, TRUE, TRUE) RETURNING *`,
+      [brandName, managerUser.id, inviteCode, brandName, primaryColor || null]
+    );
+    const restaurant = rIns.rows[0];
+    await db.query("UPDATE users SET role = 'manager', restaurant_id = $1 WHERE id = $2", [restaurant.id, managerUser.id]);
+    res.json({
+      success: true,
+      restaurant,
+      inviteLink: `https://servemasteracademy.ca/signup?invite=${inviteCode}`,
+    });
+  } catch (e) {
+    console.error('Create tenant error:', e.message);
+    res.status(500).json({ error: 'Failed to create tenant' });
+  }
+});
 
 // ── Stripe payment routes ─────────────────────────────────────────────────────
 app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
@@ -2346,16 +2558,18 @@ app.post('/api/manager/nudge', managerMiddleware, async (req, res) => {
     const displayName = name || email.split('@')[0];
     const nudgeUnsubToken = await getOrCreateUnsubToken(userId);
     const nudgeUnsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${nudgeUnsubToken}`;
+    const wb = await getTenantBrandingForEmail(req.user.id);
     await resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      from: wb.fromLine,
       to: email,
-      subject: 'Your team wants you to keep training — you\'re almost there',
+      subject: `Your ${wb.brandName} team wants you to keep training — you're almost there`,
       html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-        <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+        <img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
         <p style="font-size:16px;line-height:1.7;">Hi ${escapeHtml(displayName)},</p>
-        <p style="font-size:16px;line-height:1.7;">Your manager wanted to check in and encourage you to continue your ServeMaster Academy training.</p>
+        <p style="font-size:16px;line-height:1.7;">Your manager wanted to check in and encourage you to continue your ${escapeHtml(wb.brandName)} training.</p>
         <p style="font-size:16px;line-height:1.7;">Your team is making great progress — and every module you complete builds real skills you'll use on the floor every shift.</p>
         <p style="margin:32px 0;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Continue Training →</a></p>
+        ${wb.poweredBy}
         ${emailFooter(nudgeUnsubUrl)}
       </div>`
     });
@@ -2749,6 +2963,13 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_scholarship_email ON scholarship_applications(email)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_scholarship_status ON scholarship_applications(status)`);
+    // ── White-label tenant branding columns ───────────────────────────────────
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_brand_name TEXT`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_logo_url TEXT`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_primary_color VARCHAR(7)`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_accent_color VARCHAR(7)`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_is_active BOOLEAN NOT NULL DEFAULT FALSE`);
+    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS wl_is_enterprise BOOLEAN NOT NULL DEFAULT FALSE`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
