@@ -64,6 +64,7 @@
       <a href="/about" data-i18n="nav_about" class="hover:text-white transition-colors">About</a>
     </div>
     <div class="flex items-center gap-3">
+      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
       <a id="nav-signup-d" href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
       <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
@@ -82,6 +83,7 @@
       <a href="/pricing" data-i18n="nav_pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
       <a href="/scholarship" data-i18n="nav_scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
       <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
     </div>
@@ -313,5 +315,6 @@
     });
   }
 </script>
+  <script src="/js/pwa-nav.js"></script>
 </body>
 </html>

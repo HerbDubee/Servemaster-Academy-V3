@@ -73,6 +73,7 @@
       <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">About</a>
     </div>
     <div class="flex items-center gap-3">
+      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Log in</a>
       <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm" data-i18n="nav_cta">Get Started Free</a>
       <div class="relative" id="lang-selector">
@@ -99,6 +100,7 @@
       <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_pricing">Pricing</a>
       <a href="/scholarship" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_scholarship">🎓 Scholarship</a>
       <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_about">About</a>
+      <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_login">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center" data-i18n="nav_cta">Get Started Free</a>
     </div>
@@ -372,5 +374,6 @@
     });
   }
 </script>
+  <script src="/js/pwa-nav.js"></script>
 </body>
 </html>
