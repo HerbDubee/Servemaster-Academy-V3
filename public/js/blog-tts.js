@@ -28,10 +28,6 @@
     return LANG_MAP[siteLang] || 'en-CA';
   }
 
-  function getArticleLang() {
-    return (document.documentElement.lang || 'en').split('-')[0];
-  }
-
   function getLabels() {
     return UI_LABELS[getSiteLang()] || UI_LABELS.en;
   }
@@ -244,7 +240,7 @@
     fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: ttsChunks[index], lang: 'en' })
+      body: JSON.stringify({ text: ttsChunks[index], lang: getSiteLang() })
     })
     .then(function (res) {
       if (!res.ok) throw new Error('TTS API ' + res.status);
@@ -347,24 +343,18 @@
       if (isPlaceholderText(rawText)) return;
       var text = preprocessForTTS(rawText, getVoiceLang());
 
-      var articleLang = getArticleLang();
-      if (siteLang === 'en' && articleLang === 'en') {
-        usingOpenAI = true;
-        ttsChunks = splitIntoChunks(text);
-        ttsChunkIndex = 0;
+      usingOpenAI = true;
+      ttsChunks = splitIntoChunks(text);
+      ttsChunkIndex = 0;
 
-        // Unlock the AudioContext synchronously within the user gesture.
-        // iOS/DuckDuckGo require this to happen before any async work.
-        var ctx = getAudioCtx();
-        if (ctx && ctx.state === 'suspended') {
-          ctx.resume();
-        }
-
-        playChunk(0);
-      } else {
-        usingOpenAI = false;
-        useBrowserTTS(text);
+      // Unlock the AudioContext synchronously within the user gesture.
+      // iOS/DuckDuckGo require this to happen before any async work.
+      var ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
       }
+
+      playChunk(0);
 
     } else if (state === 'playing') {
       if (usingOpenAI) {

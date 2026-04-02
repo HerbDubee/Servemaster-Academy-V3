@@ -149,7 +149,7 @@
   function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/slow-night-survival';if(l==='fr')window.location='/blog/slow-night-survival';}
   document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
 </script>
-<script src="/js/blog-tts.js?v=9"></script>
+<script src="/js/blog-tts.js?v=10"></script>
 <script src="/js/chat-widget.js"></script>
 </body>
 </html>
