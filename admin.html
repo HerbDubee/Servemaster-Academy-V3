@@ -79,6 +79,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
       <div class="nav-item" onclick="showSection('siteconfig')" id="nav-siteconfig">⚙️ Site Config</div>
       <div class="nav-item" onclick="showSection('scholarships')" id="nav-scholarships">🎓 Scholarships</div>
+      <div class="nav-item" onclick="showSection('affiliates')" id="nav-affiliates">🔗 Affiliates</div>
       <div class="nav-item" onclick="showSection('tenants')" id="nav-tenants">🏢 Tenants</div>
     </aside>
 
@@ -96,6 +97,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
       <button onclick="showSection('siteconfig')" class="nav-item whitespace-nowrap" id="mnav-siteconfig">⚙️</button>
       <button onclick="showSection('scholarships')" class="nav-item whitespace-nowrap" id="mnav-scholarships">🎓</button>
+      <button onclick="showSection('affiliates')" class="nav-item whitespace-nowrap" id="mnav-affiliates">🔗</button>
       <button onclick="showSection('tenants')" class="nav-item whitespace-nowrap" id="mnav-tenants">🏢</button>
     </div>
 
@@ -456,6 +458,48 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
         <div id="schol-list" class="space-y-4">
           <div class="text-zinc-500 text-sm">Loading applications…</div>
+        </div>
+      </div>
+
+      <!-- AFFILIATES -->
+      <div id="section-affiliates" class="section">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="heading text-3xl font-bold">Affiliates</h1>
+            <p class="text-zinc-400 text-sm mt-1">Influencer partner program — approve partners, track commissions, and mark payouts.</p>
+          </div>
+          <a href="/affiliates" target="_blank" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">View Public Page</a>
+        </div>
+
+        <!-- Summary bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div id="aff-stat-pending" class="heading text-2xl font-black text-orange-400">—</div>
+            <div class="text-zinc-500 text-xs mt-1">Pending Applications</div>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div id="aff-stat-approved" class="heading text-2xl font-black text-green-400">—</div>
+            <div class="text-zinc-500 text-xs mt-1">Active Partners</div>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div id="aff-stat-conversions" class="heading text-2xl font-black text-white">—</div>
+            <div class="text-zinc-500 text-xs mt-1">Total Conversions</div>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
+            <div id="aff-stat-payout" class="heading text-2xl font-black text-orange-400">—</div>
+            <div class="text-zinc-500 text-xs mt-1">Pending Payout (CAD)</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 border-b border-zinc-800 mb-6">
+          <button onclick="switchAffTab('pending')" id="aff-tab-pending" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-amber-400 text-amber-400 transition-colors">Pending</button>
+          <button onclick="switchAffTab('approved')" id="aff-tab-approved" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Active Partners</button>
+          <button onclick="switchAffTab('commissions')" id="aff-tab-commissions" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Commissions</button>
+          <button onclick="switchAffTab('rejected')" id="aff-tab-rejected" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Rejected</button>
+        </div>
+        <div id="aff-list" class="space-y-4">
+          <div class="text-zinc-500 text-sm">Loading affiliates…</div>
         </div>
       </div>
 
@@ -1179,6 +1223,7 @@ function showSection(name) {
   if (mNavEl) mNavEl.classList.add('active');
   if (name === 'siteconfig') loadSiteConfig();
   if (name === 'scholarships') loadScholarships();
+  if (name === 'affiliates') loadAffiliates();
   if (name === 'tenants') loadTenants();
 }
 
@@ -1272,6 +1317,163 @@ async function rejectSchol(id) {
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Failed to reject application.'); return; }
     loadScholarships();
+  } catch (e) { alert('Network error — please try again.'); }
+}
+
+// ── Affiliates ────────────────────────────────────────────────────────────────
+let affData = [];
+let affCommissions = [];
+let affTab = 'pending';
+
+async function loadAffiliates() {
+  try {
+    const res = await fetch('/api/admin/affiliates', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    affData = data.affiliates || [];
+    affCommissions = data.commissions || [];
+    const pending = affData.filter(a => a.status === 'pending').length;
+    const approved = affData.filter(a => a.status === 'approved').length;
+    const totalConv = affData.reduce((s, a) => s + parseInt(a.total_conversions || 0), 0);
+    const totalPayout = affData.reduce((s, a) => s + parseFloat(a.pending_payout || 0), 0);
+    document.getElementById('aff-stat-pending').textContent = pending;
+    document.getElementById('aff-stat-approved').textContent = approved;
+    document.getElementById('aff-stat-conversions').textContent = totalConv;
+    document.getElementById('aff-stat-payout').textContent = '$' + totalPayout.toFixed(2);
+    renderAffList();
+  } catch (e) {
+    document.getElementById('aff-list').innerHTML = '<div class="text-red-400 text-sm">Failed to load affiliates.</div>';
+  }
+}
+
+function switchAffTab(tab) {
+  affTab = tab;
+  ['pending','approved','commissions','rejected'].forEach(t => {
+    const btn = document.getElementById('aff-tab-' + t);
+    if (t === tab) { btn.classList.add('border-amber-400','text-amber-400'); btn.classList.remove('border-transparent','text-zinc-400'); }
+    else { btn.classList.remove('border-amber-400','text-amber-400'); btn.classList.add('border-transparent','text-zinc-400'); }
+  });
+  renderAffList();
+}
+
+function renderAffList() {
+  const el = document.getElementById('aff-list');
+  if (affTab === 'commissions') {
+    renderCommissions(el);
+    return;
+  }
+  const items = affData.filter(a => a.status === affTab);
+  if (!items.length) {
+    el.innerHTML = `<div class="text-zinc-500 text-sm py-6 text-center">${affTab === 'pending' ? 'No pending applications.' : affTab === 'approved' ? 'No active partners yet.' : 'No rejected applications.'}</div>`;
+    return;
+  }
+  el.innerHTML = items.map(a => {
+    const date = new Date(a.created_at).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+    const approveBtn = affTab === 'pending' ? `<button onclick="approveAffiliate(${a.id})" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">Approve</button>` : '';
+    const rejectBtn = affTab === 'pending' ? `<button onclick="rejectAffiliate(${a.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-4 py-2 rounded-xl text-sm transition-colors">Reject</button>` : '';
+    const refLink = a.ref_code ? `<div class="mt-2 text-xs text-zinc-400">Link: <span class="font-mono text-orange-400">servemasteracademy.ca/r/${escHtml(a.ref_code)}</span></div>` : '';
+    const stats = affTab === 'approved' ? `
+      <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Conversions:</span> <span class="text-white font-medium">${a.total_conversions || 0}</span></div>
+        <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Pending:</span> <span class="text-orange-400 font-medium">$${parseFloat(a.pending_payout||0).toFixed(2)}</span></div>
+        <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Paid out:</span> <span class="text-green-400 font-medium">$${parseFloat(a.total_paid||0).toFixed(2)}</span></div>
+      </div>` : '';
+    return `<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="font-semibold text-white">${escHtml(a.name)}</span>
+            <span class="text-xs text-zinc-500">${escHtml(a.email)}</span>
+            <span class="text-xs bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full">${escHtml(a.platform)}</span>
+          </div>
+          <div class="text-xs text-zinc-500 mb-2">@${escHtml(a.handle)} · ${a.followers ? Number(a.followers).toLocaleString() + ' followers' : 'followers N/A'} · Applied ${date}</div>
+          ${a.audience_desc ? `<div class="text-sm text-zinc-300 line-clamp-2">${escHtml(a.audience_desc)}</div>` : ''}
+          ${refLink}
+          ${stats}
+        </div>
+        <div class="flex flex-col gap-2 flex-shrink-0">
+          ${approveBtn}
+          ${rejectBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCommissions(el) {
+  if (!affCommissions.length) {
+    el.innerHTML = '<div class="text-zinc-500 text-sm py-6 text-center">No commissions recorded yet.</div>';
+    return;
+  }
+  el.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+          <tr>
+            <th class="px-5 py-3 text-left">Influencer</th>
+            <th class="px-5 py-3 text-left">Plan</th>
+            <th class="px-5 py-3 text-left">Amount</th>
+            <th class="px-5 py-3 text-left">Status</th>
+            <th class="px-5 py-3 text-left">Date</th>
+            <th class="px-5 py-3 text-left">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          ${affCommissions.map(c => {
+            const date = new Date(c.created_at).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+            const statusBadge = c.status === 'paid'
+              ? `<span class="text-green-400 font-semibold">Paid</span>`
+              : `<span class="text-orange-400 font-semibold">Pending</span>`;
+            const action = c.status === 'pending'
+              ? `<button onclick="markPaid(${c.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-3 py-1.5 rounded-xl text-xs transition-colors">Mark Paid</button>`
+              : `<span class="text-xs text-zinc-500 font-mono">${escHtml(c.payment_ref || '')}</span>`;
+            return `<tr class="hover:bg-zinc-800/50">
+              <td class="px-5 py-3 text-white">${escHtml(c.influencer_name)}<br><span class="text-xs text-zinc-500">@${escHtml(c.influencer_handle)}</span></td>
+              <td class="px-5 py-3 text-zinc-300">${escHtml(c.plan_type.replace(/_/g,' '))}</td>
+              <td class="px-5 py-3 text-white font-semibold">$${parseFloat(c.amount_cad).toFixed(2)} CAD</td>
+              <td class="px-5 py-3">${statusBadge}</td>
+              <td class="px-5 py-3 text-zinc-400">${date}</td>
+              <td class="px-5 py-3">${action}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function approveAffiliate(id) {
+  if (!confirm('Approve this affiliate? Their unique tracking link will be generated and emailed to them.')) return;
+  try {
+    const res = await fetch(`/api/admin/affiliates/${id}/approve`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to approve affiliate.'); return; }
+    alert(`Approved! Tracking link: ${data.link}`);
+    loadAffiliates();
+  } catch (e) { alert('Network error — please try again.'); }
+}
+
+async function rejectAffiliate(id) {
+  if (!confirm('Reject this application? A polite rejection email will be sent.')) return;
+  try {
+    const res = await fetch(`/api/admin/affiliates/${id}/reject`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to reject affiliate.'); return; }
+    loadAffiliates();
+  } catch (e) { alert('Network error — please try again.'); }
+}
+
+async function markPaid(id) {
+  const ref = prompt('Enter payment reference (e.g. e-transfer confirmation number, PayPal transaction ID):');
+  if (!ref || !ref.trim()) return;
+  try {
+    const res = await fetch(`/api/admin/affiliates/commissions/${id}/mark-paid`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_ref: ref.trim() }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to mark as paid.'); return; }
+    loadAffiliates();
   } catch (e) { alert('Network error — please try again.'); }
 }
 
