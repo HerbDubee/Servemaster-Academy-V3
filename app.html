@@ -1523,7 +1523,6 @@ function speakTextAsync(text) {
   return new Promise(resolve => {
     const synth = window.speechSynthesis;
     if (!synth) { resolve(); return; }
-    synth.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     const locale = lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
     utt.lang = locale;
@@ -1853,7 +1852,7 @@ async function showScenarioSummary() {
   } catch {
     const fallback = scenarioCoachingNotes.length
       ? '<ol class="list-decimal list-inside space-y-2 text-sm text-zinc-300">' + scenarioCoachingNotes.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ol>'
-      : `<p class="text-zinc-400 text-sm">${lang === 'es' ? 'No se pudo cargar el análisis.' : lang === 'fr' ? 'Impossible de charger l\'analyse.' : 'Could not load detailed analysis.'}</p>`;
+      : `<p class="text-zinc-400 text-sm">${lang === 'es' ? 'No se pudo cargar el análisis.' : lang === 'fr' ? 'Impossible de charger l\'analyze.' : 'Could not load detailed analysis.'}</p>`;
     document.getElementById('summary-body').innerHTML = fallback;
   }
 }
@@ -3342,11 +3341,11 @@ function renderQuizChart() {
   if (noData) noData.classList.add('hidden');
   const labels = scored.map(m => (MODULE_NAMES_SHORT[m.id] || 'Mod ' + m.id));
   const values = scored.map(m => savedQuizScores[m.id]);
-  const colours = values.map(v => v >= 80 ? '#10b981' : v >= 60 ? '#fbbf24' : '#ef4444');
+  const colors = values.map(v => v >= 80 ? '#10b981' : v >= 60 ? '#fbbf24' : '#ef4444');
   if (analyticsChartInst) analyticsChartInst.destroy();
   analyticsChartInst = new Chart(canvas, {
     type: 'bar',
-    data: { labels, datasets: [{ data: values, backgroundColor: colours, borderRadius: 6 }] },
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 6 }] },
     options: {
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } } },
       scales: {

@@ -456,7 +456,7 @@ app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/ai-roleplay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ai-roleplay.html')));
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
-app.get('/knowledge-centre', (req, res) => res.redirect(301, '/blog'));
+app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
 app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
 app.get('/blog/es/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
@@ -547,15 +547,16 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     res.cookie('token', token, COOKIE_OPTS);
     res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
     (async () => { try {
+      const wb = await getTenantBrandingForEmail(user.id);
       const unsubToken = await getOrCreateUnsubToken(user.id);
       const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
       resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        from: wb.fromLine,
         to: user.email,
-        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+        subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-            <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+            <img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
@@ -568,6 +569,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
             <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
             Founder, ServeMaster Academy<br>
             <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+            ${wb.poweredBy}
             ${emailFooter(unsubUrl)}
           </div>
         `
@@ -785,13 +787,14 @@ app.get('/api/auth/google/callback', async (req, res) => {
     res.redirect('/login?token=' + encodeURIComponent(token) + signupFlag);
     if (isNewUser) {
       (async () => { try {
+        const wb = await getTenantBrandingForEmail(user.id);
         const unsubToken = await getOrCreateUnsubToken(user.id);
         const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
         resend.emails.send({
-          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          from: wb.fromLine,
           to: user.email,
-          subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
-          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${emailFooter(unsubUrl)}</div>`
+          subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${wb.poweredBy}${emailFooter(unsubUrl)}</div>`
         }).catch(err => console.error('Google welcome email error:', err.message));
       } catch(e) {} })();
     } else {
@@ -1370,7 +1373,7 @@ app.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
 
 // ── White-label tenant routes ─────────────────────────────────────────────────
 
-/** Validate a hex colour: must be #rrggbb or empty/null */
+/** Validate a hex color: must be #rrggbb or empty/null */
 function isValidHex(v) { return !v || /^#[0-9a-fA-F]{6}$/.test(v); }
 
 /** Build the standard branding response object from a restaurant row */
@@ -1411,8 +1414,8 @@ app.get('/api/manager/white-label', managerMiddleware, async (req, res) => {
 // Manager: save white-label config
 app.post('/api/manager/white-label', managerMiddleware, async (req, res) => {
   const { brandName, logoUrl, primaryColor, accentColor, isActive } = req.body;
-  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid primary colour — use #rrggbb format' });
-  if (accentColor  && !isValidHex(accentColor))  return res.status(400).json({ error: 'Invalid accent colour — use #rrggbb format' });
+  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid primary color — use #rrggbb format' });
+  if (accentColor  && !isValidHex(accentColor))  return res.status(400).json({ error: 'Invalid accent color — use #rrggbb format' });
   if (logoUrl && !/^https?:\/\/.+/.test(logoUrl)) return res.status(400).json({ error: 'Logo URL must start with http:// or https://' });
   try {
     const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
@@ -1513,7 +1516,7 @@ app.post('/api/admin/tenants', adminMiddleware, async (req, res) => {
   const { brandName, managerEmail, primaryColor } = req.body;
   if (!brandName) return res.status(400).json({ error: 'Brand name is required' });
   if (!managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerEmail)) return res.status(400).json({ error: 'Valid manager email is required' });
-  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid colour — use #rrggbb format' });
+  if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid color — use #rrggbb format' });
   try {
     const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
     // Upsert the manager user (create with a placeholder password if not existing)
