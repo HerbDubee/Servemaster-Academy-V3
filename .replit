@@ -41,6 +41,10 @@ externalPort = 80
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 23636
+externalPort = 3000
+
 [agent]
 expertMode = true
 integrations = ["javascript_openai_ai_integrations:2.0.0", "stripe:2.0.0", "resend:1.0.0"]

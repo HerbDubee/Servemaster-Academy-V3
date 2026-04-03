@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const http = require('http');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -45,6 +46,43 @@ app.use(function (req, res, next) {
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Proxy /__mockup/ to the mockup sandbox Vite dev server on port 23636
+app.use('/__mockup', (req, res) => {
+  const options = {
+    hostname: '127.0.0.1',
+    port: 23636,
+    path: '/__mockup' + req.url,
+    method: req.method,
+    headers: { ...req.headers, host: 'localhost:23636' }
+  };
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res, { end: true });
+  });
+  proxyReq.on('error', () => res.status(502).end());
+  req.pipe(proxyReq, { end: true });
+});
+
+// Helper to proxy WebSocket upgrades for /__mockup/ (needed for Vite HMR)
+function attachMockupWsProxy(httpServer) {
+  httpServer.on('upgrade', (req, socket, head) => {
+    if (!req.url || !req.url.startsWith('/__mockup/')) return;
+    const net = require('net');
+    const target = net.createConnection({ host: '127.0.0.1', port: 23636 }, () => {
+      target.write(
+        `${req.method} ${req.url} HTTP/1.1\r\n` +
+        Object.entries(req.headers).map(([k, v]) => `${k}: ${v}`).join('\r\n') +
+        '\r\n\r\n'
+      );
+      target.write(head);
+      socket.pipe(target);
+      target.pipe(socket);
+    });
+    target.on('error', () => socket.destroy());
+    socket.on('error', () => target.destroy());
+  });
+}
 
 if (!process.env.JWT_SECRET) throw new Error('FATAL: JWT_SECRET env var is not set. Server cannot start securely.');
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -2844,6 +2882,7 @@ async function initStripe() {
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, '0.0.0.0', async () => {
+  attachMockupWsProxy(server);
   console.log(`ServeMaster Academy running on port ${PORT}`);
   try {
     const updated = await db.query(
