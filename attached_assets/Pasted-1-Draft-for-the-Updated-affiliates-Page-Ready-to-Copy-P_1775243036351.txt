@@ -1,0 +1,148 @@
+1. Draft for the Updated /affiliates Page (Ready to Copy-Paste)
+Page Title: ServeMaster Partners Program – Earn Recurring Commissions
+Hero Section:
+Join the ServeMaster Partners Program and earn recurring commissions by promoting the leading AI-powered training platform for restaurant servers. Help restaurants reduce turnover and improve service standards while building a passive income stream.
+New Program Highlights
+
+Recurring commissions on every paid subscription
+Higher payouts on valuable Team Plans (Starter & Pro)
+90-day cookie window
+$100 welcome bonus after your first qualified sale
+Multilingual resources in English, Spanish, and French
+Manual payouts handled personally by the founder (no platform fees)
+
+Commission Structure
+Individual Premium ($149 CAD/year)
+
+25% recurring for the first 12 months
+10% lifetime recurring thereafter (while active)
+Example: Refer an annual subscription → Earn ~$37.25 CAD in year 1, then ~$14.90 CAD per year ongoing.
+
+Starter Team ($99 CAD/month or $990 CAD/year – up to 10 staff)
+
+30% recurring for the first 12 months
+15% lifetime recurring thereafter
+
+$75 CAD one-time activation bonus after the first billing cycle
+
+
+Example (monthly billing):
+
+Year 1: ~$29.70 CAD per month
+After year 1: ~$14.85 CAD per month
+Plus $75 activation bonus
+
+Pro Team ($199 CAD/month or $1,990 CAD/year – unlimited staff)
+
+30% recurring for the first 12 months
+15% lifetime recurring thereafter
+
+$75 CAD one-time activation bonus after the first billing cycle
+
+
+Example (monthly billing):
+
+Year 1: ~$59.70 CAD per month
+After year 1: ~$29.85 CAD per month
+Plus $75 activation bonus
+
+Performance Tiers (applied monthly on top of base rates)
+
+Bronze (1–5 sales/month): Base rates
+Silver (6–15 sales/month): +5% uplift on all commissions
+Gold (16+ sales/month): +10% uplift + $300 quarterly bonus (cash or credits)
+
+Additional Incentives
+
+$100 Welcome Bonus – Paid after your first qualified sale (any plan)
+Global Bonus – Extra 5% on first-year commissions for referrals from Spanish- or French-speaking countries
+Double-Sided Referral – Referred user gets 15% off their first month; you get standard commission + $25 extra
+
+How the Program Works
+
+Submit the short application below (2 minutes).
+Kirk reviews and approves partners personally.
+You receive a unique tracking link (e.g., servemasteracademy.ca/r/yourname-abc12).
+Share your link with servers and restaurant owners.
+Anyone who signs up for a paid plan within 90 days is attributed to you.
+You receive a monthly email summary of conversions and earnings.
+Payouts are processed manually on the 1st of each month (net 30), minimum $50, via PayPal, Wise, or bank transfer.
+
+Apply Now
+[Embedded short form: Name, Email, Website/Social links, Audience description (e.g., restaurant owners, servers, hospitality influencers), Preferred language for resources]
+Resources (Downloadable)
+
+Email swipes (English / Spanish / French)
+Social media captions & threads
+Banners and graphics
+Earnings calculator
+Program terms & conditions (PDF)
+
+Important Notes
+
+All commissions are calculated on the first successful billing only for new customers (no self-referrals).
+We reserve the right to adjust or claw back commissions in cases of fraud or chargebacks.
+Full disclosure (#ad or “affiliate link”) is required in all promotions.
+Questions? Contact Kirk directly after approval.
+
+Footer CTA: Ready to start earning recurring income? Apply today and get your unique link within a few business days.
+
+Translation Notes for Spanish & French versions
+
+Keep all monetary examples in CAD with approximate USD in parentheses.
+Spanish: Use “meseros”, “dueños de restaurantes”, “capacitación con IA”, “reducción de rotación”.
+French: Use “serveurs”, “propriétaires de restaurants”, “formation IA”, “service à la française”.
+
+2. Suggested Fields & Workflow for the Affiliate Section in Your Admin Panel
+Main Affiliates Dashboard
+
+Searchable table: Affiliate ID, Name, Email, Unique Code/Link, Status (Pending / Approved / Rejected), Total Referrals, Total Earnings (this month / YTD / Lifetime), Current Tier (Bronze/Silver/Gold), Preferred Payout Method, Language Preference.
+
+Individual Affiliate View
+
+Profile details + notes
+List of all attributed conversions (with subscription type, billing amount, date, commission rate applied, status: Pending / Paid)
+Commission log with automatic calculation (based on plan + month 1–12 vs lifetime)
+Manual payout button: Enter amount, date, method (PayPal/Wise/Bank), reference number, mark as “Paid”
+
+Monthly Payout Workflow (Recommended)
+
+On the 1st of each month, run “Generate Monthly Summaries” button.
+System auto-calculates all pending commissions for the previous month.
+Review & adjust any entries.
+Bulk or individual “Send Summary Email” (template includes: conversions list, total earned, payment status).
+Record payouts as you process them.
+Export report for your records.
+
+Additional Helpful Features
+
+Referral link generator
+Automatic tagging when a new subscription is created (check for referral parameter in URL)
+Filter by language (English/Spanish/French) or country
+Clawback tool (for chargebacks within 60 days)
+Performance tier auto-update based on monthly sales count
+
+This keeps everything inside your existing admin panel with minimal development effort.
+3. Sample OpenClaw Prompts to Announce the Improved Recurring Program
+Prompt 1 – Content Generation Agent (Master Prompt)
+"Create a full launch campaign for the updated ServeMaster Partners Program. Use the new recurring commission structure: 25% year 1 / 10% lifetime on Individual Premium ($149 CAD/year); 30% year 1 / 15% lifetime + $75 activation bonus on Starter Team ($99/mo) and Pro Team ($199/mo). Include $100 welcome bonus and performance tiers.
+Output in three versions: English, Spanish, French.
+For each language create:
+
+LinkedIn professional post (2 versions: one for servers, one for restaurant owners)
+Instagram/TikTok caption with emojis and hashtags
+5-tweet/X thread explaining earnings with examples
+Email newsletter sequence (3 emails: announcement, value story, call-to-action)
+Always link back to https://servemasteracademy.ca/affiliates and use the official tracking link placeholder [YOUR-UNIQUE-LINK]. Emphasize recurring income and Team Plan potential."
+
+Prompt 2 – Social Posting Agent
+"Schedule the following content over the next 7 days across LinkedIn, Instagram, TikTok, and X. Focus on the new recurring commissions for ServeMaster Academy. Use the English version first, then create adapted Spanish and French versions. Include strong CTAs directing to /affiliates. Track engagement and flag any comments asking about earnings for follow-up."
+Prompt 3 – Email Nurture Agent
+"Build a 4-email sequence to promote the new ServeMaster affiliate program to our existing server and restaurant owner lists.
+Email 1: Announcement of improved recurring commissions with earnings examples.
+Email 2: Real ROI story (how one restaurant benefits).
+Email 3: How to apply and what resources are provided.
+Email 4: Limited-time welcome bonus reminder.
+Ensure full CASL/GDPR compliance, language-specific versions, and all links point to https://servemasteracademy.ca/affiliates."
+Prompt 4 – Lead Gen & Affiliate Recruitment Agent
+"Identify and outreach to hospitality influencers, server community leaders, and restaurant consultants in English, Spanish, and French-speaking countries. Highlight the new 30% recurring on Team Plans and easy manual payouts. Generate personalized DM/email templates that direct them to apply at /affiliates."

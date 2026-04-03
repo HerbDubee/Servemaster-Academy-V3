@@ -463,12 +463,16 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- AFFILIATES -->
       <div id="section-affiliates" class="section">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 class="heading text-3xl font-bold">Affiliates</h1>
-            <p class="text-zinc-400 text-sm mt-1">Influencer partner program — approve partners, track commissions, and mark payouts.</p>
+            <h1 class="heading text-3xl font-bold">Partners</h1>
+            <p class="text-zinc-400 text-sm mt-1">ServeMaster Partners Program — approve partners, track recurring commissions, and process payouts.</p>
           </div>
-          <a href="/affiliates" target="_blank" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">View Public Page</a>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="generateMonthlySummaries()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold px-4 py-2 rounded-xl text-sm transition-colors">📊 Monthly Summaries</button>
+            <button onclick="exportAffiliateCSV()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold px-4 py-2 rounded-xl text-sm transition-colors">⬇ Export CSV</button>
+            <a href="/affiliates" target="_blank" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">View Public Page</a>
+          </div>
         </div>
 
         <!-- Summary bar -->
@@ -492,14 +496,64 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
 
         <!-- Tabs -->
-        <div class="flex gap-2 border-b border-zinc-800 mb-6">
-          <button onclick="switchAffTab('pending')" id="aff-tab-pending" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-amber-400 text-amber-400 transition-colors">Pending</button>
-          <button onclick="switchAffTab('approved')" id="aff-tab-approved" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Active Partners</button>
-          <button onclick="switchAffTab('commissions')" id="aff-tab-commissions" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Commissions</button>
-          <button onclick="switchAffTab('rejected')" id="aff-tab-rejected" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">Rejected</button>
+        <div class="flex gap-2 border-b border-zinc-800 mb-6 overflow-x-auto">
+          <button onclick="switchAffTab('pending')" id="aff-tab-pending" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-amber-400 text-amber-400 transition-colors whitespace-nowrap">Pending</button>
+          <button onclick="switchAffTab('approved')" id="aff-tab-approved" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors whitespace-nowrap">Active Partners</button>
+          <button onclick="switchAffTab('commissions')" id="aff-tab-commissions" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors whitespace-nowrap">Commissions</button>
+          <button onclick="switchAffTab('rejected')" id="aff-tab-rejected" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors whitespace-nowrap">Rejected</button>
         </div>
         <div id="aff-list" class="space-y-4">
           <div class="text-zinc-500 text-sm">Loading affiliates…</div>
+        </div>
+      </div>
+
+      <!-- Monthly Summaries Modal -->
+      <div id="aff-summaries-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeSummariesModal()">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-2xl p-7 max-h-[80vh] overflow-y-auto">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <h3 class="heading text-xl font-bold text-white">Monthly Summaries Preview</h3>
+              <p id="aff-summaries-month" class="text-zinc-400 text-sm mt-0.5"></p>
+            </div>
+            <button onclick="closeSummariesModal()" class="text-zinc-500 hover:text-white text-xl leading-none ml-4">&times;</button>
+          </div>
+          <div id="aff-summaries-body" class="space-y-3 text-sm"></div>
+          <p class="text-zinc-500 text-xs mt-4">This is a preview. Monthly summary emails are sent automatically on the 1st of each month.</p>
+        </div>
+      </div>
+
+      <!-- Mark Paid Modal -->
+      <div id="aff-markpaid-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeMarkPaidModal()">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-md p-7">
+          <div class="flex items-start justify-between mb-5">
+            <h3 class="heading text-xl font-bold text-white">Record Payout</h3>
+            <button onclick="closeMarkPaidModal()" class="text-zinc-500 hover:text-white text-xl leading-none ml-4">&times;</button>
+          </div>
+          <input type="hidden" id="mp-commission-id">
+          <div class="space-y-4 mb-5">
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1.5">Payout Method</label>
+              <select id="mp-method" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                <option value="PayPal">PayPal</option>
+                <option value="Wise">Wise</option>
+                <option value="Bank Transfer">Bank Transfer / Interac</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1.5">Amount Paid (CAD)</label>
+              <input type="number" id="mp-amount" step="0.01" min="0" placeholder="e.g. 37.25" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 block mb-1.5">Payment Reference <span class="text-orange-500">*</span></label>
+              <input type="text" id="mp-ref" placeholder="Transaction ID, e-transfer ref, etc." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+            </div>
+          </div>
+          <p id="mp-error" class="hidden text-red-400 text-xs mb-3"></p>
+          <div class="flex gap-3">
+            <button onclick="submitMarkPaid()" class="flex-1 bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">Confirm Payment</button>
+            <button onclick="closeMarkPaidModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-2.5 rounded-xl text-sm transition-colors">Cancel</button>
+          </div>
         </div>
       </div>
 
@@ -1355,6 +1409,19 @@ function switchAffTab(tab) {
   renderAffList();
 }
 
+function tierBadge(tier) {
+  const t = (tier || 'bronze').toLowerCase();
+  if (t === 'gold')   return `<span class="text-xs px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-semibold">🥇 Gold</span>`;
+  if (t === 'silver') return `<span class="text-xs px-2 py-0.5 rounded-full bg-zinc-400/10 text-zinc-300 border border-zinc-400/20 font-semibold">🥈 Silver</span>`;
+  return `<span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/20 text-amber-700 border border-amber-900/30 font-semibold">🥉 Bronze</span>`;
+}
+
+function langBadge(lang) {
+  const map = { en:'EN', fr:'FR', es:'ES' };
+  const l = (lang || 'en').toLowerCase();
+  return `<span class="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">${map[l] || l.toUpperCase()}</span>`;
+}
+
 function renderAffList() {
   const el = document.getElementById('aff-list');
   if (affTab === 'commissions') {
@@ -1371,6 +1438,8 @@ function renderAffList() {
     const approveBtn = affTab === 'pending' ? `<button onclick="approveAffiliate(${a.id})" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">Approve</button>` : '';
     const rejectBtn = affTab === 'pending' ? `<button onclick="rejectAffiliate(${a.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-4 py-2 rounded-xl text-sm transition-colors">Reject</button>` : '';
     const refLink = a.ref_code ? `<div class="mt-2 text-xs text-zinc-400">Link: <span class="font-mono text-orange-400">servemasteracademy.ca/r/${escHtml(a.ref_code)}</span></div>` : '';
+    const payoutInfo = a.pref_payout_method ? `<span class="text-xs text-zinc-500">· Payout: ${escHtml(a.pref_payout_method)}</span>` : '';
+    const websiteLink = a.website ? `<a href="${escHtml(a.website)}" target="_blank" class="text-xs text-orange-400 hover:underline truncate max-w-xs block">${escHtml(a.website)}</a>` : '';
     const stats = affTab === 'approved' ? `
       <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div class="bg-zinc-800 rounded-lg p-2"><span class="text-zinc-500">Conversions:</span> <span class="text-white font-medium">${a.total_conversions || 0}</span></div>
@@ -1384,9 +1453,12 @@ function renderAffList() {
             <span class="font-semibold text-white">${escHtml(a.name)}</span>
             <span class="text-xs text-zinc-500">${escHtml(a.email)}</span>
             <span class="text-xs bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full">${escHtml(a.platform)}</span>
+            ${affTab === 'approved' ? tierBadge(a.tier) : ''}
+            ${langBadge(a.pref_language)}
           </div>
-          <div class="text-xs text-zinc-500 mb-2">@${escHtml(a.handle)} · ${a.followers ? Number(a.followers).toLocaleString() + ' followers' : 'followers N/A'} · Applied ${date}</div>
-          ${a.audience_desc ? `<div class="text-sm text-zinc-300 line-clamp-2">${escHtml(a.audience_desc)}</div>` : ''}
+          <div class="text-xs text-zinc-500 mb-1.5">@${escHtml(a.handle)} · ${a.followers ? Number(a.followers).toLocaleString() + ' followers' : 'followers N/A'} · Applied ${date} ${payoutInfo}</div>
+          ${websiteLink}
+          ${a.audience_desc ? `<div class="text-sm text-zinc-300 line-clamp-2 mt-1">${escHtml(a.audience_desc)}</div>` : ''}
           ${refLink}
           ${stats}
         </div>
@@ -1409,9 +1481,10 @@ function renderCommissions(el) {
       <table class="w-full text-sm">
         <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
           <tr>
-            <th class="px-5 py-3 text-left">Influencer</th>
+            <th class="px-5 py-3 text-left">Partner</th>
             <th class="px-5 py-3 text-left">Plan</th>
-            <th class="px-5 py-3 text-left">Amount</th>
+            <th class="px-5 py-3 text-left">Commission</th>
+            <th class="px-5 py-3 text-left">Bonus</th>
             <th class="px-5 py-3 text-left">Status</th>
             <th class="px-5 py-3 text-left">Date</th>
             <th class="px-5 py-3 text-left">Action</th>
@@ -1420,16 +1493,20 @@ function renderCommissions(el) {
         <tbody class="divide-y divide-zinc-800">
           ${affCommissions.map(c => {
             const date = new Date(c.created_at).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+            const rate = c.commission_rate ? `<span class="text-xs text-zinc-500">(${Math.round(c.commission_rate * 100)}%)</span>` : '';
             const statusBadge = c.status === 'paid'
               ? `<span class="text-green-400 font-semibold">Paid</span>`
               : `<span class="text-orange-400 font-semibold">Pending</span>`;
+            const bonus = parseFloat(c.activation_bonus || 0);
+            const bonusCell = bonus > 0 ? `<span class="text-orange-400 font-semibold">+$${bonus.toFixed(2)}</span>` : '<span class="text-zinc-600">—</span>';
             const action = c.status === 'pending'
-              ? `<button onclick="markPaid(${c.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-3 py-1.5 rounded-xl text-xs transition-colors">Mark Paid</button>`
+              ? `<button onclick="openMarkPaidModal(${c.id})" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-medium px-3 py-1.5 rounded-xl text-xs transition-colors">Mark Paid</button>`
               : `<span class="text-xs text-zinc-500 font-mono">${escHtml(c.payment_ref || '')}</span>`;
             return `<tr class="hover:bg-zinc-800/50">
               <td class="px-5 py-3 text-white">${escHtml(c.influencer_name)}<br><span class="text-xs text-zinc-500">@${escHtml(c.influencer_handle)}</span></td>
-              <td class="px-5 py-3 text-zinc-300">${escHtml(c.plan_type.replace(/_/g,' '))}</td>
+              <td class="px-5 py-3 text-zinc-300">${escHtml(c.plan_type.replace(/_/g,' '))} ${rate}</td>
               <td class="px-5 py-3 text-white font-semibold">$${parseFloat(c.amount_cad).toFixed(2)} CAD</td>
+              <td class="px-5 py-3">${bonusCell}</td>
               <td class="px-5 py-3">${statusBadge}</td>
               <td class="px-5 py-3 text-zinc-400">${date}</td>
               <td class="px-5 py-3">${action}</td>
@@ -1439,6 +1516,101 @@ function renderCommissions(el) {
       </table>
     </div>
   </div>`;
+}
+
+function openMarkPaidModal(commissionId) {
+  document.getElementById('mp-commission-id').value = commissionId;
+  document.getElementById('mp-ref').value = '';
+  document.getElementById('mp-amount').value = '';
+  document.getElementById('mp-error').classList.add('hidden');
+  document.getElementById('aff-markpaid-modal').classList.remove('hidden');
+}
+
+function closeMarkPaidModal() {
+  document.getElementById('aff-markpaid-modal').classList.add('hidden');
+}
+
+async function submitMarkPaid() {
+  const commId = document.getElementById('mp-commission-id').value;
+  const ref = document.getElementById('mp-ref').value.trim();
+  const method = document.getElementById('mp-method').value;
+  const amount = document.getElementById('mp-amount').value;
+  const errEl = document.getElementById('mp-error');
+  if (!ref) { errEl.textContent = 'Payment reference is required.'; errEl.classList.remove('hidden'); return; }
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch(`/api/admin/affiliates/commissions/${commId}/mark-paid`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_ref: ref, payout_method: method, payout_amount: amount }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to mark as paid.'; errEl.classList.remove('hidden'); return; }
+    closeMarkPaidModal();
+    loadAffiliates();
+  } catch (e) { errEl.textContent = 'Network error — please try again.'; errEl.classList.remove('hidden'); }
+}
+
+async function generateMonthlySummaries() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try {
+    const res = await fetch('/api/admin/affiliates/generate-monthly-summaries', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.textContent = '📊 Monthly Summaries';
+    if (!res.ok) { alert(data.error || 'Failed to generate summaries.'); return; }
+    document.getElementById('aff-summaries-month').textContent = data.month;
+    const body = document.getElementById('aff-summaries-body');
+    if (!data.summaries.length) {
+      body.innerHTML = '<div class="text-zinc-500 text-sm text-center py-4">No partners with commissions last month.</div>';
+    } else {
+      body.innerHTML = data.summaries.map(s => `
+        <div class="bg-zinc-800 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="font-semibold text-white">${escHtml(s.name)}</span>
+              <span class="text-zinc-500 text-xs ml-2">${escHtml(s.email)}</span>
+              ${tierBadge(s.tier)}
+            </div>
+            <span class="${parseFloat(s.pending) >= 50 ? 'text-orange-400' : 'text-zinc-400'} font-semibold text-sm">$${s.pending} pending</span>
+          </div>
+          <div class="grid grid-cols-4 gap-2 text-xs text-center">
+            <div class="bg-zinc-900 rounded-lg p-2"><div class="text-zinc-500">Conversions</div><div class="text-white font-medium">${s.conversions}</div></div>
+            <div class="bg-zinc-900 rounded-lg p-2"><div class="text-zinc-500">Earned</div><div class="text-orange-400 font-medium">$${s.earned}</div></div>
+            <div class="bg-zinc-900 rounded-lg p-2"><div class="text-zinc-500">Bonuses</div><div class="text-orange-400 font-medium">$${s.bonuses}</div></div>
+            <div class="bg-zinc-900 rounded-lg p-2"><div class="text-zinc-500">All-time</div><div class="text-zinc-300 font-medium">$${s.allTime}</div></div>
+          </div>
+        </div>`).join('');
+    }
+    document.getElementById('aff-summaries-modal').classList.remove('hidden');
+  } catch (e) { btn.disabled = false; btn.textContent = '📊 Monthly Summaries'; alert('Network error — please try again.'); }
+}
+
+function closeSummariesModal() {
+  document.getElementById('aff-summaries-modal').classList.add('hidden');
+}
+
+function exportAffiliateCSV() {
+  const month = prompt('Export commissions for which month? (YYYY-MM, or leave blank for all)');
+  if (month === null) return;
+  const url = `/api/admin/affiliates/export-csv${month.trim() ? '?month=' + encodeURIComponent(month.trim()) : ''}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.setAttribute('download', '');
+  a.setAttribute('data-auth', 'true');
+  fetch(url, { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => r.blob())
+    .then(blob => {
+      const u = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = u;
+      link.download = `affiliates-${month || 'all'}.csv`;
+      link.click();
+      URL.revokeObjectURL(u);
+    })
+    .catch(() => alert('Export failed — please try again.'));
 }
 
 async function approveAffiliate(id) {
@@ -1462,20 +1634,6 @@ async function rejectAffiliate(id) {
   } catch (e) { alert('Network error — please try again.'); }
 }
 
-async function markPaid(id) {
-  const ref = prompt('Enter payment reference (e.g. e-transfer confirmation number, PayPal transaction ID):');
-  if (!ref || !ref.trim()) return;
-  try {
-    const res = await fetch(`/api/admin/affiliates/commissions/${id}/mark-paid`, {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payment_ref: ref.trim() }),
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Failed to mark as paid.'); return; }
-    loadAffiliates();
-  } catch (e) { alert('Network error — please try again.'); }
-}
 
 init();
 </script>

@@ -219,30 +219,49 @@ async function processReferralCredit(payingUserEmail, payingUserId) {
   }
 }
 
+const AFFILIATE_PLAN_PRICES_CAD = {
+  premium: 19, premium_monthly: 19, premium_annual: 149,
+  starter_team: 99, starter_team_annual: 990,
+  pro_team: 199, pro_team_annual: 1990,
+};
+const AFFILIATE_RATES = {
+  premium: 0.25, premium_monthly: 0.25, premium_annual: 0.25,
+  starter_team: 0.30, starter_team_annual: 0.30,
+  pro_team: 0.30, pro_team_annual: 0.30,
+};
+const AFFILIATE_TEAM_PLANS = new Set(['starter_team','starter_team_annual','pro_team','pro_team_annual']);
+const AFFILIATE_ACTIVATION_BONUS = 75;
+
 async function processInfluencerCommission(user, plan) {
   if (!user.influencer_ref_code) return;
-  const isTeam = plan === 'starter_team' || plan === 'pro_team';
-  const isPremium = plan === 'premium' || plan === 'premium_monthly' || plan === 'premium_annual';
-  if (!isTeam && !isPremium) return;
-  const amount = isTeam ? 30 : 4;
-  const inf = await db.query(`SELECT id FROM influencers WHERE ref_code = $1 AND status = 'approved'`, [user.influencer_ref_code]);
+  const price = AFFILIATE_PLAN_PRICES_CAD[plan];
+  const rate = AFFILIATE_RATES[plan];
+  if (!price || !rate) return;
+  const inf = await db.query(`SELECT id, name, email FROM influencers WHERE ref_code = $1 AND status = 'approved'`, [user.influencer_ref_code]);
   if (!inf.rows.length) return;
-  const influencerId = inf.rows[0].id;
+  const influencer = inf.rows[0];
   const existing = await db.query(`SELECT id FROM influencer_commissions WHERE user_id = $1`, [user.id]);
   if (existing.rows.length) return;
+  const amount = parseFloat((price * rate).toFixed(2));
+  const isTeam = AFFILIATE_TEAM_PLANS.has(plan);
+  const prevTeam = isTeam
+    ? await db.query(`SELECT id FROM influencer_commissions WHERE influencer_id = $1 AND plan_type = ANY($2)`, [influencer.id, Array.from(AFFILIATE_TEAM_PLANS)])
+    : { rows: [1] };
+  const activationBonus = isTeam && !prevTeam.rows.length ? AFFILIATE_ACTIVATION_BONUS : 0;
   await db.query(
-    `INSERT INTO influencer_commissions (influencer_id, user_id, plan_type, amount_cad) VALUES ($1, $2, $3, $4)`,
-    [influencerId, user.id, plan, amount]
+    `INSERT INTO influencer_commissions (influencer_id, user_id, plan_type, amount_cad, commission_rate, months_applied, activation_bonus) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
+    [influencer.id, user.id, plan, amount, rate, activationBonus]
   );
-  const infData = await db.query(`SELECT name, email FROM influencers WHERE id = $1`, [influencerId]);
-  if (infData.rows.length) {
-    resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: infData.rows[0].email,
-      subject: `New conversion — $${amount} CAD commission earned`,
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(infData.rows[0].name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Great news — someone who clicked your ServeMaster Academy link just subscribed to the <strong style="color:#FF5E3A;">${escapeHtml(plan.replace(/_/g,' '))}</strong> plan.</p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;text-align:center;margin:24px 0;"><p style="font-size:13px;color:#a3a3a3;margin:0 0 8px;">Commission Earned</p><p style="font-size:32px;font-weight:700;color:#FF5E3A;margin:0;">$${amount} CAD</p></div><p style="font-size:15px;color:#a3a3a3;line-height:1.7;">This will be included in your next monthly payout summary. Payouts are processed on the 1st of each month.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
-    }).catch(e => console.error('Influencer commission email error:', e.message));
-  }
+  const totalEarned = amount + activationBonus;
+  const bonusLine = activationBonus > 0
+    ? `<div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:12px 16px;margin-top:8px;font-size:13px;color:#a3a3a3;">+<strong style="color:#f5f5f5;">$${activationBonus} CAD</strong> one-time Team Plan activation bonus included</div>`
+    : '';
+  resend.emails.send({
+    from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+    to: influencer.email,
+    subject: `New conversion — $${totalEarned} CAD commission earned`,
+    html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(influencer.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Great news — someone who clicked your ServeMaster Academy link just subscribed to the <strong style="color:#FF5E3A;">${escapeHtml(plan.replace(/_/g,' '))}</strong> plan.</p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;text-align:center;margin:24px 0;"><p style="font-size:13px;color:#a3a3a3;margin:0 0 8px;">Commission Earned (${Math.round(rate * 100)}% of $${price})</p><p style="font-size:32px;font-weight:700;color:#FF5E3A;margin:0;">$${amount} CAD</p></div>${bonusLine}<p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-top:16px;">This will be included in your next monthly payout summary. Payouts are processed on the 1st of each month (minimum $50, via PayPal, Wise, or bank transfer).</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
+  }).catch(e => console.error('Influencer commission email error:', e.message));
 }
 
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
@@ -495,7 +514,7 @@ app.get('/r/:code', async (req, res) => {
     const code = (req.params.code || '').toLowerCase().trim();
     const inf = await db.query(`SELECT id FROM influencers WHERE ref_code = $1 AND status = 'approved'`, [code]);
     if (inf.rows.length) {
-      res.cookie('sma_ref', code, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: false, sameSite: 'lax', secure: IS_PROD });
+      res.cookie('sma_ref', code, { maxAge: 90 * 24 * 60 * 60 * 1000, httpOnly: false, sameSite: 'lax', secure: IS_PROD });
     }
   } catch (e) { console.error('Referral redirect error:', e.message); }
   res.redirect('/pricing');
@@ -3090,6 +3109,13 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_inf_commissions_influencer ON influencer_commissions(influencer_id)`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_inf_commissions_user ON influencer_commissions(user_id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS influencer_ref_code TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS website TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS pref_language TEXT DEFAULT 'en'`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS pref_payout_method TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS tier TEXT DEFAULT 'bronze'`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5,4)`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS months_applied INT DEFAULT 1`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS activation_bonus NUMERIC(8,2) DEFAULT 0`);
     // ── Monthly affiliate summary email tracker ────────────────────────────────
     await db.query(`CREATE TABLE IF NOT EXISTS influencer_monthly_email_log (
       influencer_id INT NOT NULL REFERENCES influencers(id) ON DELETE CASCADE,
@@ -3731,28 +3757,29 @@ app.get('/api/manager/graduates', managerMiddleware, async (req, res) => {
 const affiliateLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
 
 app.post('/api/affiliate/apply', affiliateLimiter, express.json(), async (req, res) => {
-  const { name, email, platform, handle, followers, audience_desc } = req.body;
+  const { name, email, platform, handle, followers, audience_desc, website, pref_language, pref_payout_method } = req.body;
   if (!name || !email || !platform || !handle) return res.status(400).json({ error: 'Missing required fields' });
   const safeName = escapeHtml(name.trim());
   const safeEmail = email.toLowerCase().trim();
+  const safeLang = ['en','fr','es'].includes(pref_language) ? pref_language : 'en';
   try {
     const dup = await db.query(`SELECT id FROM influencers WHERE email = $1`, [safeEmail]);
     if (dup.rows.length) return res.status(409).json({ error: 'An application with this email already exists.' });
     await db.query(
-      `INSERT INTO influencers (name, email, platform, handle, followers, audience_desc) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [safeName, safeEmail, platform.trim(), handle.trim(), parseInt(followers) || null, (audience_desc || '').trim() || null]
+      `INSERT INTO influencers (name, email, platform, handle, followers, audience_desc, website, pref_language, pref_payout_method) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [safeName, safeEmail, platform.trim(), handle.trim(), parseInt(followers) || null, (audience_desc || '').trim() || null, (website || '').trim() || null, safeLang, (pref_payout_method || '').trim() || null]
     );
     resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: safeEmail,
-      subject: 'We received your affiliate application — ServeMaster Academy',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for applying to the ServeMaster Academy Affiliate Program. I review every application personally and will get back to you within a few business days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If approved, you'll receive your unique tracking link and full program details by email.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
+      subject: 'We received your partner application — ServeMaster Academy',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for applying to the <strong style="color:#FF5E3A;">ServeMaster Partners Program</strong>. I review every application personally and will get back to you within a few business days.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">If approved, you'll receive your unique tracking link, your $100 welcome bonus details, and full program resources by email.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
     }).catch(e => console.error('Affiliate apply email error:', e.message));
     resend.emails.send({
       from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
       to: ADMIN_EMAIL,
-      subject: `New affiliate application — ${safeName} (${handle} on ${platform})`,
-      html: `<div style="font-family:monospace;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;"><h2 style="color:#FF5E3A;margin-top:0;">New Affiliate Application</h2><table style="width:100%;border-collapse:collapse;font-size:14px;"><tr><td style="padding:6px 0;color:#a3a3a3;width:140px;">Name</td><td style="padding:6px 0;color:#f5f5f5;">${safeName}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Email</td><td style="padding:6px 0;color:#f5f5f5;">${safeEmail}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Platform</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(platform)}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Handle</td><td style="padding:6px 0;color:#f5f5f5;">@${escapeHtml(handle)}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Followers</td><td style="padding:6px 0;color:#f5f5f5;">${followers ? Number(followers).toLocaleString() : '—'}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;vertical-align:top;">Audience</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(audience_desc || '—')}</td></tr></table><p style="margin-top:24px;"><a href="https://servemasteracademy.ca/admin" style="background:#FF5E3A;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Review in Admin Dashboard</a></p></div>`
+      subject: `New partner application — ${safeName} (${handle} on ${platform})`,
+      html: `<div style="font-family:monospace;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;"><h2 style="color:#FF5E3A;margin-top:0;">New Partner Application</h2><table style="width:100%;border-collapse:collapse;font-size:14px;"><tr><td style="padding:6px 0;color:#a3a3a3;width:160px;">Name</td><td style="padding:6px 0;color:#f5f5f5;">${safeName}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Email</td><td style="padding:6px 0;color:#f5f5f5;">${safeEmail}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Platform</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(platform)}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Handle</td><td style="padding:6px 0;color:#f5f5f5;">@${escapeHtml(handle)}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Website</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(website || '—')}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Followers</td><td style="padding:6px 0;color:#f5f5f5;">${followers ? Number(followers).toLocaleString() : '—'}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Preferred Language</td><td style="padding:6px 0;color:#f5f5f5;">${safeLang.toUpperCase()}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;">Payout Method</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(pref_payout_method || '—')}</td></tr><tr><td style="padding:6px 0;color:#a3a3a3;vertical-align:top;">Audience</td><td style="padding:6px 0;color:#f5f5f5;">${escapeHtml(audience_desc || '—')}</td></tr></table><p style="margin-top:24px;"><a href="https://servemasteracademy.ca/admin" style="background:#FF5E3A;color:#fff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Review in Admin Dashboard</a></p></div>`
     }).catch(e => console.error('Admin affiliate notify error:', e.message));
     res.json({ success: true });
   } catch (e) {
@@ -3801,8 +3828,8 @@ app.post('/api/admin/affiliates/:id/approve', adminMiddleware, async (req, res) 
     resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: aff.email,
-      subject: 'Welcome to the ServeMaster Academy Affiliate Program!',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I've reviewed your application and I'm pleased to welcome you to the <strong style="color:#FF5E3A;">ServeMaster Academy Affiliate Program</strong>.</p><p style="font-size:16px;line-height:1.7;margin-bottom:8px;"><strong>Your unique tracking link:</strong></p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;margin:16px 0;word-break:break-all;"><p style="font-size:14px;color:#FF5E3A;margin:0;font-family:monospace;">${link}</p></div><p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-bottom:8px;"><strong style="color:#f5f5f5;">Commission structure:</strong></p><ul style="color:#a3a3a3;font-size:14px;line-height:2;padding-left:20px;"><li>Individual Premium subscription — <strong style="color:#f5f5f5;">$4 CAD</strong></li><li>Starter Team or Pro Team subscription — <strong style="color:#f5f5f5;">$30 CAD</strong></li></ul><p style="font-size:14px;color:#a3a3a3;line-height:1.7;margin-bottom:8px;">Your tracking link sets a 30-day cookie. Anyone who clicks it and subscribes within 30 days earns you a commission. You'll receive an email notification for each conversion and a monthly summary on the 1st of each month. Payouts are processed manually — I'll contact you via email with payment details each month.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
+      subject: 'Welcome to the ServeMaster Partners Program!',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I've reviewed your application and I'm pleased to welcome you to the <strong style="color:#FF5E3A;">ServeMaster Partners Program</strong>.</p><p style="font-size:16px;line-height:1.7;margin-bottom:8px;"><strong>Your unique tracking link:</strong></p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;margin:16px 0;word-break:break-all;"><p style="font-size:14px;color:#FF5E3A;margin:0;font-family:monospace;">${link}</p></div><p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-bottom:8px;"><strong style="color:#f5f5f5;">Your commission structure:</strong></p><ul style="color:#a3a3a3;font-size:14px;line-height:2;padding-left:20px;"><li>Individual Premium Monthly ($19/mo) — <strong style="color:#f5f5f5;">25% = ~$4.75 CAD</strong></li><li>Individual Premium Annual ($149/yr) — <strong style="color:#f5f5f5;">25% = ~$37.25 CAD</strong></li><li>Starter Team ($99/mo) — <strong style="color:#f5f5f5;">30% = ~$29.70 CAD + $75 activation bonus</strong></li><li>Pro Team ($199/mo) — <strong style="color:#f5f5f5;">30% = ~$59.70 CAD + $75 activation bonus</strong></li></ul><div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:20px 0;"><p style="font-size:14px;color:#f5f5f5;font-weight:700;margin:0 0 6px;">$100 Welcome Bonus</p><p style="font-size:13px;color:#a3a3a3;margin:0;">You'll receive a $100 CAD welcome bonus after your first qualified sale on any plan.</p></div><p style="font-size:14px;color:#a3a3a3;line-height:1.7;margin-bottom:8px;">Your tracking link sets a <strong style="color:#f5f5f5;">90-day cookie</strong>. Anyone who clicks it and subscribes within 90 days earns you a commission. You'll receive an email for each conversion and a monthly summary on the 1st. Payouts are processed manually on the 1st of each month (minimum $50 CAD, via PayPal, Wise, or bank transfer).</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
     }).catch(e => console.error('Affiliate approve email error:', e.message));
     res.json({ success: true, ref_code: refCode, link });
   } catch (e) { console.error('Affiliate approve error:', e.message); res.status(500).json({ error: 'Server error' }); }
@@ -3828,7 +3855,7 @@ app.post('/api/admin/affiliates/:id/reject', adminMiddleware, async (req, res) =
 
 app.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), async (req, res) => {
   const commId = parseInt(req.params.id);
-  const { payment_ref } = req.body;
+  const { payment_ref, payout_method, payout_amount } = req.body;
   if (!commId || !payment_ref) return res.status(400).json({ error: 'Commission ID and payment reference required' });
   try {
     const commRes = await db.query(
@@ -3850,6 +3877,81 @@ app.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, exp
   } catch (e) { console.error('Mark paid error:', e.message); res.status(500).json({ error: 'Server error' }); }
 });
 
+app.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res) => {
+  const affId = parseInt(req.params.id);
+  const { pref_payout_method } = req.body;
+  if (!affId) return res.status(400).json({ error: 'Invalid id' });
+  try {
+    await db.query(`UPDATE influencers SET pref_payout_method = $1 WHERE id = $2`, [(pref_payout_method || '').trim() || null, affId]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.get('/api/admin/affiliates/export-csv', adminMiddleware, async (req, res) => {
+  try {
+    const { month } = req.query;
+    let whereClause = '';
+    const params = [];
+    if (month) {
+      const [yr, mo] = month.split('-').map(Number);
+      if (yr && mo) {
+        const start = new Date(yr, mo - 1, 1);
+        const end = new Date(yr, mo, 1);
+        whereClause = `WHERE ic.created_at >= $1 AND ic.created_at < $2`;
+        params.push(start, end);
+      }
+    }
+    const rows = await db.query(`
+      SELECT ic.id, i.name AS partner_name, i.email AS partner_email, i.handle, i.tier,
+             ic.plan_type, ic.amount_cad, ic.commission_rate, ic.activation_bonus,
+             ic.status, ic.payment_ref, ic.paid_at, ic.created_at
+      FROM influencer_commissions ic
+      JOIN influencers i ON i.id = ic.influencer_id
+      ${whereClause}
+      ORDER BY ic.created_at DESC
+    `, params);
+    const cols = ['id','partner_name','partner_email','handle','tier','plan_type','amount_cad','commission_rate','activation_bonus','status','payment_ref','paid_at','created_at'];
+    const csv = [cols.join(','), ...rows.rows.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="affiliates-${month || 'all'}.csv"`);
+    res.send(csv);
+  } catch (e) { console.error('Affiliate export error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, async (req, res) => {
+  try {
+    const now = new Date();
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonthStart = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), 1);
+    const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+    const approved = await db.query(`SELECT id, name, email, ref_code, tier FROM influencers WHERE status = 'approved'`);
+    const summaries = [];
+    for (const inf of approved.rows) {
+      const allTime = await db.query(
+        `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as total FROM influencer_commissions WHERE influencer_id = $1`, [inf.id]
+      );
+      if (parseInt(allTime.rows[0].cnt) === 0) continue;
+      const thisMonth = await db.query(
+        `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as earned, COALESCE(SUM(activation_bonus),0) as bonuses FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
+        [inf.id, prevMonthStart, prevMonthEnd]
+      );
+      const pending = await db.query(
+        `SELECT COALESCE(SUM(amount_cad + activation_bonus),0) as total FROM influencer_commissions WHERE influencer_id = $1 AND status = 'pending'`, [inf.id]
+      );
+      summaries.push({
+        id: inf.id, name: inf.name, email: inf.email, tier: inf.tier,
+        link: `https://servemasteracademy.ca/r/${inf.ref_code}`,
+        conversions: parseInt(thisMonth.rows[0].cnt),
+        earned: parseFloat(thisMonth.rows[0].earned).toFixed(2),
+        bonuses: parseFloat(thisMonth.rows[0].bonuses).toFixed(2),
+        pending: parseFloat(pending.rows[0].total).toFixed(2),
+        allTime: parseFloat(allTime.rows[0].total).toFixed(2),
+      });
+    }
+    res.json({ month: prevMonth.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }), summaries });
+  } catch (e) { console.error('Generate summaries error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
 // ── Monthly affiliate summary emails (runs daily check, sends on 1st of month) ─
 (function scheduleMonthlyAffiliateEmails() {
   async function runMonthlyAffiliateEmails() {
@@ -3861,6 +3963,20 @@ app.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, exp
     const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
     try {
       const approved = await db.query(`SELECT * FROM influencers WHERE status = 'approved'`);
+      // Auto-update tiers based on prior month conversion count
+      for (const inf of approved.rows) {
+        try {
+          const cnt = await db.query(
+            `SELECT COUNT(*) as cnt FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
+            [inf.id, prevMonthStart, prevMonthEnd]
+          );
+          const sales = parseInt(cnt.rows[0].cnt);
+          const newTier = sales >= 16 ? 'gold' : sales >= 6 ? 'silver' : 'bronze';
+          if (newTier !== inf.tier) {
+            await db.query(`UPDATE influencers SET tier = $1 WHERE id = $2`, [newTier, inf.id]);
+          }
+        } catch (e) { console.error('Tier update error for', inf.email, e.message); }
+      }
       for (const inf of approved.rows) {
         try {
           const alreadySent = await db.query(

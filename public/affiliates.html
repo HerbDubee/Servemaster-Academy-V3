@@ -15,8 +15,8 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#FF5E3A">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Affiliate Program — ServeMaster Academy</title>
-<meta name="description" content="Partner with ServeMaster Academy. Earn $4–$30 CAD per conversion promoting professional restaurant server training to your audience.">
+<title>ServeMaster Partners Program — Earn Recurring Commissions</title>
+<meta name="description" content="Join the ServeMaster Partners Program. Earn recurring commissions promoting the leading AI-powered training platform for restaurant servers. 25–30% recurring, 90-day cookie, $100 welcome bonus.">
 <link rel="stylesheet" href="/tailwind.css">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="canonical" href="https://servemasteracademy.ca/affiliates">
@@ -41,8 +41,13 @@
   input:focus, textarea:focus, select:focus { border-color: #FF5E3A; }
   input::placeholder, textarea::placeholder { color: #71717a; }
   label { display: block; font-size: 0.875rem; font-weight: 500; color: #a1a1aa; margin-bottom: 0.4rem; }
+  .plan-card { background: linear-gradient(135deg, #1a0a05 0%, #18181b 100%); border: 1px solid #FF5E3A30; border-radius: 1.25rem; padding: 1.75rem; }
+  .plan-card.featured { border-color: #FF5E3A70; }
   .stat-card { background: #18181b; border: 1px solid #27272a; border-radius: 1rem; padding: 1.5rem; }
-  .commission-card { background: linear-gradient(135deg, #1a0a05 0%, #18181b 100%); border: 1px solid #FF5E3A30; border-radius: 1rem; padding: 1.5rem; }
+  .tier-bronze { color: #cd7f32; }
+  .tier-silver { color: #a8a9ad; }
+  .tier-gold   { color: #ffd700; }
+  .bonus-pill { display: inline-flex; align-items: center; gap: 0.4rem; background: #FF5E3A15; border: 1px solid #FF5E3A30; border-radius: 9999px; padding: 0.35rem 0.85rem; font-size: 0.78rem; font-weight: 600; color: #FF5E3A; }
 </style>
 </head>
 <body>
@@ -57,78 +62,206 @@
     </a>
     <div class="flex items-center gap-3">
       <a href="/pricing" class="text-zinc-400 hover:text-white text-sm transition-colors">Pricing</a>
-      <a href="/signup" class="btn-primary px-4 py-1.5 rounded-full text-sm">Get Started Free</a>
+      <a href="#apply" class="btn-primary px-4 py-1.5 rounded-full text-sm">Apply Now</a>
     </div>
   </div>
 </nav>
 
-<!-- Hero -->
 <main id="main-content">
-<section class="max-w-4xl mx-auto px-4 pt-16 pb-12 text-center">
+
+<!-- Hero -->
+<section class="max-w-4xl mx-auto px-4 pt-16 pb-10 text-center">
   <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 text-sm text-orange-400 font-semibold mb-6">
-    Partner Program
+    ServeMaster Partners Program
   </div>
   <h1 class="heading text-4xl sm:text-5xl md:text-6xl font-black mb-5 leading-tight">
-    Earn by promoting<br><span class="accent">ServeMaster Academy</span>
+    Earn recurring income<br><span class="accent">promoting real skills</span>
   </h1>
-  <p class="text-zinc-400 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed mb-8">
-    Share your unique link with your audience. Earn a commission every time someone subscribes. Monthly payouts, no platform fees, approved partners only.
+  <p class="text-zinc-400 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
+    Join the ServeMaster Partners Program and earn recurring commissions by promoting the leading AI-powered training platform for restaurant servers. Help restaurants reduce turnover and improve service standards while building passive income.
   </p>
+  <div class="flex flex-wrap justify-center gap-3 mb-8">
+    <span class="bonus-pill">✦ Recurring commissions</span>
+    <span class="bonus-pill">✦ 90-day cookie window</span>
+    <span class="bonus-pill">✦ $100 welcome bonus</span>
+    <span class="bonus-pill">✦ No platform fees</span>
+    <span class="bonus-pill">✦ EN / FR / ES resources</span>
+  </div>
   <a href="#apply" class="btn-primary inline-block px-8 py-3.5 rounded-full text-base font-bold">Apply to Partner →</a>
 </section>
 
-<!-- Commission Cards -->
-<section class="max-w-4xl mx-auto px-4 pb-16">
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-    <div class="commission-card text-center">
-      <div class="text-4xl font-black text-orange-500 heading mb-1">$4 CAD</div>
-      <div class="text-white font-semibold mb-1">Individual Premium</div>
-      <div class="text-zinc-400 text-sm">Per server who subscribes to the Individual Premium plan (monthly or annual)</div>
+<!-- Commission Structure -->
+<section class="max-w-5xl mx-auto px-4 pb-16">
+  <h2 class="heading text-2xl font-bold text-center mb-2">Commission Structure</h2>
+  <p class="text-zinc-400 text-sm text-center mb-8">Recurring commissions on every paid subscription you refer</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+
+    <!-- Individual Premium -->
+    <div class="plan-card">
+      <div class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">Individual Premium</div>
+      <div class="text-2xl font-black text-white heading mb-1">$149 CAD/yr</div>
+      <div class="text-zinc-500 text-xs mb-5">or $19/mo</div>
+      <div class="space-y-3 text-sm mb-5">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Year 1 rate</span>
+          <span class="text-white font-bold">25% recurring</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">After year 1</span>
+          <span class="text-white font-semibold">10% lifetime</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Annual example (yr 1)</span>
+          <span class="text-orange-400 font-semibold">~$37.25 CAD</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">Ongoing per year</span>
+          <span class="text-zinc-300 font-semibold">~$14.90 CAD</span>
+        </div>
+      </div>
     </div>
-    <div class="commission-card text-center">
-      <div class="text-4xl font-black text-orange-500 heading mb-1">$30 CAD</div>
-      <div class="text-white font-semibold mb-1">Team Plans</div>
-      <div class="text-zinc-400 text-sm">Per restaurant manager who subscribes to Starter Team or Pro Team</div>
+
+    <!-- Starter Team -->
+    <div class="plan-card featured">
+      <div class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">Starter Team</div>
+      <div class="text-2xl font-black text-white heading mb-1">$99 CAD/mo</div>
+      <div class="text-zinc-500 text-xs mb-5">up to 10 staff · or $990/yr</div>
+      <div class="space-y-3 text-sm mb-5">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Year 1 rate</span>
+          <span class="text-white font-bold">30% recurring</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">After year 1</span>
+          <span class="text-white font-semibold">15% lifetime</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Monthly example (yr 1)</span>
+          <span class="text-orange-400 font-semibold">~$29.70 CAD/mo</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">After year 1</span>
+          <span class="text-zinc-300 font-semibold">~$14.85 CAD/mo</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-xl px-3 py-2 text-xs font-semibold text-orange-400">
+        <span>🎯</span> +$75 one-time activation bonus
+      </div>
+    </div>
+
+    <!-- Pro Team -->
+    <div class="plan-card featured">
+      <div class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">Pro Team</div>
+      <div class="text-2xl font-black text-white heading mb-1">$199 CAD/mo</div>
+      <div class="text-zinc-500 text-xs mb-5">unlimited staff · or $1,990/yr</div>
+      <div class="space-y-3 text-sm mb-5">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Year 1 rate</span>
+          <span class="text-white font-bold">30% recurring</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">After year 1</span>
+          <span class="text-white font-semibold">15% lifetime</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+          <span class="text-zinc-400">Monthly example (yr 1)</span>
+          <span class="text-orange-400 font-semibold">~$59.70 CAD/mo</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400">After year 1</span>
+          <span class="text-zinc-300 font-semibold">~$29.85 CAD/mo</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-xl px-3 py-2 text-xs font-semibold text-orange-400">
+        <span>🎯</span> +$75 one-time activation bonus
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Performance Tiers -->
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-7 mb-8">
+    <h3 class="heading text-xl font-bold mb-1">Performance Tiers</h3>
+    <p class="text-zinc-400 text-sm mb-5">Applied monthly on top of your base commission rates</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-zinc-800/60 rounded-xl p-4 text-center border border-zinc-700">
+        <div class="text-2xl mb-1">🥉</div>
+        <div class="font-bold text-white mb-0.5 tier-bronze">Bronze</div>
+        <div class="text-xs text-zinc-400 mb-2">1–5 sales / month</div>
+        <div class="text-sm font-semibold text-zinc-300">Base rates</div>
+      </div>
+      <div class="bg-zinc-800/60 rounded-xl p-4 text-center border border-zinc-600">
+        <div class="text-2xl mb-1">🥈</div>
+        <div class="font-bold text-white mb-0.5 tier-silver">Silver</div>
+        <div class="text-xs text-zinc-400 mb-2">6–15 sales / month</div>
+        <div class="text-sm font-semibold text-orange-400">+5% uplift on all commissions</div>
+      </div>
+      <div class="bg-gradient-to-b from-yellow-900/20 to-zinc-800/60 rounded-xl p-4 text-center border border-yellow-700/40">
+        <div class="text-2xl mb-1">🥇</div>
+        <div class="font-bold text-white mb-0.5 tier-gold">Gold</div>
+        <div class="text-xs text-zinc-400 mb-2">16+ sales / month</div>
+        <div class="text-sm font-semibold text-yellow-400">+10% uplift + $300 quarterly bonus</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bonus Incentives -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-center">
+      <div class="text-3xl mb-2">🎁</div>
+      <div class="font-bold text-white mb-1">$100 Welcome Bonus</div>
+      <div class="text-zinc-400 text-sm">Paid after your first qualified sale on any plan</div>
+    </div>
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-center">
+      <div class="text-3xl mb-2">🌎</div>
+      <div class="font-bold text-white mb-1">Global Language Bonus</div>
+      <div class="text-zinc-400 text-sm">+5% on first-year commissions for referrals from Spanish- or French-speaking countries</div>
+    </div>
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-center">
+      <div class="text-3xl mb-2">🤝</div>
+      <div class="font-bold text-white mb-1">Double-Sided Referral</div>
+      <div class="text-zinc-400 text-sm">Your referral gets 15% off their first month — you earn standard commission + $25 extra</div>
     </div>
   </div>
 
   <!-- How it works -->
-  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-12">
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-8">
     <h2 class="heading text-2xl font-bold mb-6">How it works</h2>
     <div class="space-y-5">
       <div class="flex gap-4 items-start">
         <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-0.5">1</div>
         <div>
-          <div class="font-semibold text-white mb-0.5">Apply below</div>
-          <div class="text-zinc-400 text-sm">Fill out the short application form. Kirk reviews every application personally — you'll hear back within a few business days.</div>
+          <div class="font-semibold text-white mb-0.5">Submit the short application below</div>
+          <div class="text-zinc-400 text-sm">Takes 2 minutes. Kirk reviews and approves partners personally — you'll hear back within a few business days.</div>
         </div>
       </div>
       <div class="flex gap-4 items-start">
         <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-0.5">2</div>
         <div>
-          <div class="font-semibold text-white mb-0.5">Get your unique link</div>
-          <div class="text-zinc-400 text-sm">If approved, you'll receive a personal email with your tracking link — something like <span class="text-orange-400 font-mono text-xs">servemasteracademy.ca/r/yourname-abc12</span>. Share it anywhere.</div>
+          <div class="font-semibold text-white mb-0.5">Get your unique tracking link</div>
+          <div class="text-zinc-400 text-sm">If approved, you'll receive a personal email with your link — something like <span class="text-orange-400 font-mono text-xs">servemasteracademy.ca/r/yourname-abc12</span>. Share it anywhere.</div>
         </div>
       </div>
       <div class="flex gap-4 items-start">
         <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-0.5">3</div>
         <div>
-          <div class="font-semibold text-white mb-0.5">Earn on every conversion</div>
-          <div class="text-zinc-400 text-sm">Your link sets a 30-day cookie. Anyone who clicks it and subscribes within 30 days earns you a commission. You get an email notification for every conversion.</div>
+          <div class="font-semibold text-white mb-0.5">Earn recurring commissions for 90 days</div>
+          <div class="text-zinc-400 text-sm">Your link sets a <strong class="text-white">90-day cookie</strong>. Anyone who clicks it and subscribes within 90 days is attributed to you — and you keep earning as long as they stay subscribed.</div>
         </div>
       </div>
       <div class="flex gap-4 items-start">
         <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-0.5">4</div>
         <div>
-          <div class="font-semibold text-white mb-0.5">Monthly payout + summary</div>
-          <div class="text-zinc-400 text-sm">On the 1st of each month, you receive an email summary: conversions, amount earned, and your pending payout. Kirk pays manually — no platform fees, no delays.</div>
+          <div class="font-semibold text-white mb-0.5">Monthly email summary + payout</div>
+          <div class="text-zinc-400 text-sm">On the 1st of each month, you receive a summary: conversions, amount earned, and payment status. Payouts are processed manually by Kirk — no platform fees, minimum $50 CAD, via PayPal, Wise, or bank transfer.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Stats grid -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
+  <!-- Stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
     <div class="stat-card text-center">
       <div class="heading text-2xl font-black text-white mb-0.5">3,200+</div>
       <div class="text-zinc-500 text-xs">Servers trained</div>
@@ -138,7 +271,7 @@
       <div class="text-zinc-500 text-xs">Restaurants active</div>
     </div>
     <div class="stat-card text-center">
-      <div class="heading text-2xl font-black text-white mb-0.5">30-day</div>
+      <div class="heading text-2xl font-black text-orange-400 mb-0.5">90-day</div>
       <div class="text-zinc-500 text-xs">Cookie window</div>
     </div>
     <div class="stat-card text-center">
@@ -147,49 +280,65 @@
     </div>
   </div>
 
-  <!-- Program terms -->
-  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-12 text-sm">
-    <h3 class="font-bold text-white mb-4">Program terms at a glance</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Individual Premium commission</span>
-        <span class="text-white font-semibold">$4 CAD</span>
+  <!-- Resources -->
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-7 mb-8">
+    <h3 class="heading text-xl font-bold mb-1">Partner Resources</h3>
+    <p class="text-zinc-400 text-sm mb-5">Everything you need to promote ServeMaster Academy effectively. Available in English, Spanish, and French after approval.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex items-center gap-3 bg-zinc-800/60 rounded-xl px-4 py-3">
+        <span class="text-xl">✉️</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Email swipes</div>
+          <div class="text-xs text-zinc-400">Ready-to-send copy — English, Spanish, French</div>
+        </div>
       </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Team plan commission</span>
-        <span class="text-white font-semibold">$30 CAD</span>
+      <div class="flex items-center gap-3 bg-zinc-800/60 rounded-xl px-4 py-3">
+        <span class="text-xl">📱</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Social captions & threads</div>
+          <div class="text-xs text-zinc-400">Instagram, TikTok, LinkedIn, X/Twitter</div>
+        </div>
       </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Cookie window</span>
-        <span class="text-white font-semibold">30 days</span>
+      <div class="flex items-center gap-3 bg-zinc-800/60 rounded-xl px-4 py-3">
+        <span class="text-xl">🖼️</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Banners & graphics</div>
+          <div class="text-xs text-zinc-400">On-brand assets for any platform</div>
+        </div>
       </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Payout schedule</span>
-        <span class="text-white font-semibold">1st of each month</span>
+      <div class="flex items-center gap-3 bg-zinc-800/60 rounded-xl px-4 py-3">
+        <span class="text-xl">📊</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Earnings calculator</div>
+          <div class="text-xs text-zinc-400">Project your income by plan and volume</div>
+        </div>
       </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Recurring commissions</span>
-        <span class="text-white font-semibold">First conversion only</span>
-      </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Approval required</span>
-        <span class="text-white font-semibold">Yes — Kirk reviews each</span>
-      </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Self-serve dashboard</span>
-        <span class="text-white font-semibold">Monthly email summaries</span>
-      </div>
-      <div class="flex justify-between border-b border-zinc-800 pb-2">
-        <span class="text-zinc-400">Minimum payout</span>
-        <span class="text-white font-semibold">None</span>
+      <div class="flex items-center gap-3 bg-zinc-800/60 rounded-xl px-4 py-3">
+        <span class="text-xl">📄</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Program terms (PDF)</div>
+          <div class="text-xs text-zinc-400">Full conditions, clawback policy, disclosure requirements</div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Important notes -->
+  <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 mb-10 text-sm text-zinc-400 space-y-2">
+    <p><strong class="text-zinc-200">Important notes:</strong></p>
+    <ul class="list-disc list-inside space-y-1.5">
+      <li>All commissions are calculated on the first successful billing only for new customers (no self-referrals).</li>
+      <li>We reserve the right to adjust or claw back commissions in cases of fraud or chargebacks within 60 days.</li>
+      <li>Full disclosure (<span class="text-orange-400">#ad</span> or "affiliate link") is required in all promotions.</li>
+      <li>Payouts processed on the 1st of each month, net 30, minimum $50 CAD.</li>
+      <li>Questions? Contact Kirk directly after approval.</li>
+    </ul>
+  </div>
+
   <!-- Application form -->
   <div id="apply" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
-    <h2 class="heading text-2xl font-bold mb-2">Apply to partner</h2>
-    <p class="text-zinc-400 text-sm mb-8">Takes 2 minutes. Kirk reviews every application and responds within a few business days.</p>
+    <h2 class="heading text-2xl font-bold mb-2">Apply Now</h2>
+    <p class="text-zinc-400 text-sm mb-8">Takes 2 minutes. Kirk reviews every application and responds personally within a few business days.</p>
 
     <div id="form-wrap">
       <form id="affiliate-form" class="space-y-5">
@@ -202,6 +351,10 @@
             <label for="aff-email">Email address <span class="text-orange-500">*</span></label>
             <input type="email" id="aff-email" name="email" placeholder="you@example.com" required autocomplete="email">
           </div>
+        </div>
+        <div>
+          <label for="aff-website">Website or social profile URL</label>
+          <input type="url" id="aff-website" name="website" placeholder="https://yourwebsite.com or instagram.com/yourhandle">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
@@ -224,16 +377,36 @@
             <input type="text" id="aff-handle" name="handle" placeholder="@yourhandle or channel name" required>
           </div>
         </div>
-        <div>
-          <label for="aff-followers">Approximate follower / subscriber count</label>
-          <input type="number" id="aff-followers" name="followers" placeholder="e.g. 15000" min="0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label for="aff-followers">Approximate follower / subscriber count</label>
+            <input type="number" id="aff-followers" name="followers" placeholder="e.g. 15000" min="0">
+          </div>
+          <div>
+            <label for="aff-lang">Preferred language for resources</label>
+            <select id="aff-lang" name="pref_language">
+              <option value="en">English</option>
+              <option value="fr">French / Français</option>
+              <option value="es">Spanish / Español</option>
+            </select>
+          </div>
         </div>
         <div>
-          <label for="aff-audience">Tell us about your audience</label>
-          <textarea id="aff-audience" name="audience_desc" rows="4" placeholder="Who follows you? What do they care about? Why would ServeMaster Academy be a good fit for them?"></textarea>
+          <label for="aff-payout">Preferred payout method</label>
+          <select id="aff-payout" name="pref_payout_method">
+            <option value="">Select payout method…</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Wise">Wise (TransferWise)</option>
+            <option value="Bank Transfer">Bank Transfer / Interac e-Transfer</option>
+          </select>
+        </div>
+        <div>
+          <label for="aff-audience">Tell us about your audience <span class="text-orange-500">*</span></label>
+          <textarea id="aff-audience" name="audience_desc" rows="4" placeholder="Who follows you? Restaurant owners, servers, hospitality professionals? Why would ServeMaster Academy be a good fit?" required></textarea>
         </div>
         <div id="aff-error" class="text-red-400 text-sm hidden"></div>
         <button type="submit" id="aff-submit" class="btn-primary w-full py-3.5 rounded-full text-base">Submit Application →</button>
+        <p class="text-xs text-zinc-500 text-center">By submitting, you agree to our <a href="/terms" class="text-zinc-400 hover:text-white underline">terms</a> and confirm you will follow FTC/ASA disclosure requirements in all promotions.</p>
       </form>
     </div>
 
@@ -242,7 +415,7 @@
         <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
       </div>
       <h3 class="heading text-xl font-bold text-white mb-2">Application received!</h3>
-      <p class="text-zinc-400 text-sm max-w-sm mx-auto">Kirk will review your application personally and email you within a few business days. Check your inbox for a confirmation.</p>
+      <p class="text-zinc-400 text-sm max-w-sm mx-auto">Kirk will review your application personally and email you within a few business days. Check your inbox for a confirmation email.</p>
     </div>
   </div>
 
@@ -251,7 +424,8 @@
 
 <!-- Footer -->
 <footer class="border-t border-zinc-800 py-8 text-center text-zinc-500 text-sm">
-  <p>&copy; 2025 ServeMaster Academy · <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a> · <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a> · <a href="mailto:kirk_adamson@servemasteracademy.ca" class="hover:text-zinc-300 transition-colors">Contact</a></p>
+  <p class="mb-1">Ready to start earning recurring income? <a href="#apply" class="text-orange-400 hover:text-orange-300 font-semibold">Apply today</a> and get your unique link within a few business days.</p>
+  <p class="mt-3">&copy; 2025 ServeMaster Academy · <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a> · <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a> · <a href="mailto:kirk_adamson@servemasteracademy.ca" class="hover:text-zinc-300 transition-colors">Contact</a></p>
 </footer>
 
 <script>
@@ -269,6 +443,9 @@ document.getElementById('affiliate-form').addEventListener('submit', async funct
     handle: document.getElementById('aff-handle').value.trim(),
     followers: document.getElementById('aff-followers').value || null,
     audience_desc: document.getElementById('aff-audience').value.trim() || null,
+    website: document.getElementById('aff-website').value.trim() || null,
+    pref_language: document.getElementById('aff-lang').value,
+    pref_payout_method: document.getElementById('aff-payout').value || null,
   };
   try {
     const res = await fetch('/api/affiliate/apply', {
