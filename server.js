@@ -3146,6 +3146,21 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
+// ── Roleplays API ────────────────────────────────────────────────────────────────
+app.get('/api/roleplays', async (req, res) => {
+  try {
+    const { category } = req.query;
+    if (category) {
+      const result = await db.query('SELECT * FROM roleplays WHERE category = $1 ORDER BY id', [category]);
+      return res.json(result.rows);
+    }
+    const result = await db.query('SELECT * FROM roleplays ORDER BY id');
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Curriculum Check Route ───────────────────────────────────────────────────────
 app.get('/check-curriculum', async (req, res) => {
   try {
