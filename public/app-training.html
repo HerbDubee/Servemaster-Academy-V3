@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train - ServeMaster Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; }
+    .modal.show { display: flex; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div class="max-w-6xl mx-auto p-8">
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-4xl font-bold text-gray-900">Train</h1>
+      <a href="/app/knowledge-center" class="text-blue-600 hover:underline font-medium">Knowledge Center →</a>
+    </div>
+
+    <p class="text-gray-600 mb-12 max-w-2xl">Practice real restaurant service situations in a safe environment. Build confidence. Track your progress.</p>
+
+    <!-- Role-Plays -->
+    <h2 class="text-2xl font-semibold mb-6">Role-Play Practice</h2>
+    <div id="roleplays-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
+
+    <!-- Quizzes -->
+    <h2 class="text-2xl font-semibold mb-6">Knowledge Checks</h2>
+    <div id="quizzes-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  </div>
+
+  <!-- Role-Play Modal -->
+  <div id="roleplay-modal" class="modal">
+    <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 p-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between mb-6">
+        <h3 id="modal-title" class="text-2xl font-bold"></h3>
+        <button onclick="closeModal()" class="text-4xl text-gray-400 hover:text-gray-600">×</button>
+      </div>
+      <div id="modal-content" class="prose text-gray-700"></div>
+      <div class="mt-10 flex gap-4">
+        <button onclick="closeModal()" class="flex-1 py-4 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">Close</button>
+        <button onclick="markAsComplete()" class="flex-1 py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-medium">Mark as Completed</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cachedRoleplays = [];
+
+    async function loadRoleplays() {
+      const res = await fetch('/api/roleplays?category=difficult-guests');
+      cachedRoleplays = await res.json();
+      const container = document.getElementById('roleplays-container');
+      container.innerHTML = cachedRoleplays.map(rp => `
+        <div class="bg-white rounded-3xl p-8 shadow-sm hover:shadow transition">
+          <h3 class="font-semibold text-xl mb-4">${rp.title}</h3>
+          <p class="text-gray-600 mb-6 line-clamp-3">${rp.setup}</p>
+          <button onclick="openRoleplay(${rp.id})" 
+                  class="w-full py-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700">
+            Start Role-Play
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function loadQuizzes() {
+      const res = await fetch('/api/quizzes?module=wine-service');
+      const data = await res.json();
+      const container = document.getElementById('quizzes-container');
+      container.innerHTML = data.map(q => `
+        <div class="bg-white rounded-3xl p-8 shadow-sm">
+          <h3 class="font-semibold text-xl mb-4">${q.title}</h3>
+          <button onclick="startQuiz(${q.id})" 
+                  class="mt-4 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">
+            Take Quiz
+          </button>
+        </div>
+      `).join('');
+    }
+
+    let currentRoleplay = null;
+
+    function openRoleplay(id) {
+      currentRoleplay = cachedRoleplays.find(r => r.id === id);
+      if (!currentRoleplay) return;
+
+      document.getElementById('modal-title').textContent = currentRoleplay.title;
+      document.getElementById('modal-content').innerHTML = `
+        <p class="mb-6"><strong>Setup:</strong> ${currentRoleplay.setup}</p>
+        <div class="bg-gray-50 p-6 rounded-2xl mb-8 whitespace-pre-line">${currentRoleplay.dialogue}</div>
+        <p><strong>Debrief:</strong> ${currentRoleplay.debrief}</p>
+      `;
+      document.getElementById('roleplay-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('roleplay-modal').classList.remove('show');
+    }
+
+    function markAsComplete() {
+      alert("Progress saved! (Connect to your progress API here)");
+      closeModal();
+      loadRoleplays();
+    }
+
+    function startQuiz(id) {
+      alert(`Starting quiz ${id} — expand this later with full quiz UI`);
+    }
+
+    // Load content when page opens
+    window.onload = () => {
+      loadRoleplays();
+      loadQuizzes();
+    };
+  </script>
+</body>
+</html>
