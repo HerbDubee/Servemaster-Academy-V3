@@ -413,6 +413,32 @@ async function adminMiddleware(req, res, next) {
   }
 }
 
+const requirePaidAccess = async (req, res, next) => {
+  const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.redirect('/login');
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+  } catch {
+    return res.redirect('/login');
+  }
+  try {
+    const { rows } = await db.query(
+      'SELECT subscription_status, trial_ends_at, invite_access_expires_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    if (!rows.length) return res.redirect('/login');
+    const user = rows[0];
+    const now = new Date();
+    if (user.invite_access_expires_at && now <= new Date(user.invite_access_expires_at)) return next();
+    if (PAID_PLAN_STATUSES.has(user.subscription_status)) return next();
+    if (user.trial_ends_at && now <= new Date(user.trial_ends_at)) return next();
+    return res.redirect('/app/upgrade');
+  } catch (e) {
+    console.error('requirePaidAccess error:', e.message);
+    return res.redirect('/app/upgrade');
+  }
+};
+
 async function checkTrial(req, res, next) {
   try {
     const { rows } = await db.query(
@@ -474,7 +500,7 @@ app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'p
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
 app.get('/ai-roleplay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ai-roleplay.html')));
 app.get('/training', (req, res) => res.sendFile(path.join(__dirname, 'public', 'training.html')));
-app.get('/app/training', authMiddleware, checkTrial, (req, res) => res.sendFile(path.join(__dirname, 'public', 'app-training.html')));
+app.get('/app/training', requirePaidAccess, (req, res) => res.sendFile(path.join(__dirname, 'public', 'app-training.html')));
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
