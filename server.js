@@ -3150,14 +3150,28 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
 app.get('/api/roleplays', async (req, res) => {
   try {
     const { category } = req.query;
-    if (category) {
-      const result = await db.query('SELECT * FROM roleplays WHERE category = $1 ORDER BY id', [category]);
-      return res.json(result.rows);
-    }
-    const result = await db.query('SELECT * FROM roleplays ORDER BY id');
+    const result = await db.query(
+      'SELECT * FROM roleplays WHERE category = $1 ORDER BY id ASC',
+      [category || 'difficult-guests']
+    );
     res.json(result.rows);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load roleplays' });
+  }
+});
+
+app.get('/api/quizzes', async (req, res) => {
+  try {
+    const { module } = req.query;
+    const result = await db.query(
+      'SELECT * FROM quizzes WHERE module_name = $1',
+      [module || 'wine-service']
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load quiz' });
   }
 });
 

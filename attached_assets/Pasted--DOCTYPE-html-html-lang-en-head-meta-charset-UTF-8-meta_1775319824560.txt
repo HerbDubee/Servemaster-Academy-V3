@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training - ServeMaster Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); align-items: center; justify-content: center; z-index: 50; }
+    .modal.show { display: flex; }
+    .card-hover:hover { transform: translateY(-4px); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div class="max-w-6xl mx-auto p-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Training Hub</h1>
+    <p class="text-gray-600 mb-10">Practice real restaurant situations and build your confidence</p>
+
+    <!-- Role-Plays Section -->
+    <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+      Difficult Guest Role-Plays
+      <span class="text-sm font-normal text-gray-500">(New)</span>
+    </h2>
+    <div id="roleplays-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
+
+    <!-- Wine Service Quiz -->
+    <h2 class="text-2xl font-semibold mb-6">Wine Service Quiz</h2>
+    <div id="quiz-container" class="bg-white rounded-3xl shadow p-10"></div>
+  </div>
+
+  <!-- Role-Play Modal -->
+  <div id="roleplay-modal" class="modal">
+    <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 p-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between mb-6">
+        <h3 id="modal-title" class="text-2xl font-bold"></h3>
+        <button onclick="closeModal()" class="text-4xl text-gray-400 hover:text-gray-600">×</button>
+      </div>
+      <div id="modal-content" class="prose text-gray-700"></div>
+      
+      <div class="mt-10 flex gap-4">
+        <button onclick="closeModal()" 
+                class="flex-1 py-4 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium text-lg">
+          Close
+        </button>
+        <button onclick="restartRoleplay()" 
+                class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium text-lg">
+          Practice Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRoleplay = null;
+
+    // Load Role-Plays
+    async function loadRoleplays() {
+      try {
+        const response = await fetch('/api/roleplays?category=difficult-guests');
+        const roleplays = await response.json();
+        const container = document.getElementById('roleplays-container');
+        container.innerHTML = '';
+
+        roleplays.forEach(rp => {
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-3xl shadow-sm p-8 hover:shadow-md transition card-hover cursor-pointer';
+          card.innerHTML = `
+            <h3 class="font-semibold text-xl mb-4">${rp.title}</h3>
+            <p class="text-gray-600 line-clamp-3 mb-8">${rp.setup}</p>
+            <button onclick="openRoleplay(${rp.id}); event.stopImmediatePropagation();" 
+                    class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl transition">
+              Start This Role-Play
+            </button>
+          `;
+          container.appendChild(card);
+        });
+      } catch (e) {
+        console.error("Failed to load roleplays", e);
+      }
+    }
+
+    // Open Role-Play in Modal
+    async function openRoleplay(id) {
+      const response = await fetch('/api/roleplays?category=difficult-guests');
+      const roleplays = await response.json();
+      currentRoleplay = roleplays.find(r => r.id === id);
+      if (!currentRoleplay) return;
+
+      document.getElementById('modal-title').textContent = currentRoleplay.title;
+      document.getElementById('modal-content').innerHTML = `
+        <div class="mb-8">
+          <h4 class="font-medium text-gray-500 mb-2">Setup</h4>
+          <p class="text-gray-700">${currentRoleplay.setup}</p>
+        </div>
+        <div class="mb-10">
+          <h4 class="font-medium text-gray-500 mb-3">Dialogue</h4>
+          <div class="bg-gray-50 p-6 rounded-2xl whitespace-pre-line text-[15px] leading-relaxed">${currentRoleplay.dialogue}</div>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-500 mb-2">Debrief & Key Takeaways</h4>
+          <p class="text-gray-700">${currentRoleplay.debrief}</p>
+        </div>
+      `;
+      document.getElementById('roleplay-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('roleplay-modal').classList.remove('show');
+    }
+
+    function restartRoleplay() {
+      if (currentRoleplay) openRoleplay(currentRoleplay.id);
+    }
+
+    // Load Wine Service Quiz with Basic Scoring
+    async function loadQuiz() {
+      try {
+        const res = await fetch('/api/quizzes?module=wine-service');
+        const data = await res.json();
+        const quiz = data[0];
+        if (!quiz) return;
+
+        let html = `<div class="space-y-10">`;
+        quiz.questions.forEach((q, i) => {
+          html += `
+            <div class="border border-gray-200 rounded-2xl p-8">
+              <p class="font-medium text-lg mb-5">${i+1}. ${q.question}</p>
+              <div class="grid gap-3" id="q${i}">
+                ${q.options.map((opt, idx) => `
+                  <label class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200">
+                    <input type="radio" name="q${i}" value="${idx}" class="w-5 h-5 text-blue-600">
+                    <span class="text-gray-700">${opt}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>`;
+        });
+        html += `</div>
+          <button onclick="submitQuiz()" 
+                  class="mt-12 w-full py-5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-3xl text-lg">
+            Submit Quiz & See Results
+          </button>`;
+        document.getElementById('quiz-container').innerHTML = html;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function submitQuiz() {
+      alert("Quiz submitted! (Scoring logic can be expanded later — great start!)");
+      // Future: calculate score and show explanations
+    }
+
+    // Initialize everything
+    window.onload = () => {
+      loadRoleplays();
+      loadQuiz();
+    };
+  </script>
+</body>
+</html>
