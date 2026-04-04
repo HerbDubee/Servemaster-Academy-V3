@@ -34,6 +34,12 @@ const compression = require('compression');
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+// Prevent crawlers from indexing API routes — stops OAuth redirect chains
+// and API endpoints from being flagged as exposed secrets by scanners
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
 app.use(compression());
 app.use(cookieParser());
 // Force JS files to revalidate on every load so browser updates are never missed
@@ -797,6 +803,9 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
 
 app.get('/api/auth/google', authLimiter, (req, res) => {
   if (!GOOGLE_CLIENT_ID) return res.redirect('/login?error=google_not_configured');
+  // Explicitly block crawlers from following this redirect chain
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('Referrer-Policy', 'no-referrer');
   const BASE_URL = process.env.APP_URL || `https://${req.get('host')}`;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
