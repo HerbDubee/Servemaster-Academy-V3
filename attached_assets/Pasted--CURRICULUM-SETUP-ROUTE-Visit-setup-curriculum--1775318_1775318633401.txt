@@ -1,0 +1,77 @@
+// ====================== CURRICULUM SETUP ROUTE ======================
+// Visit /setup-curriculum once to insert the new content
+app.get('/setup-curriculum', async (req, res) => {
+  try {
+    console.log("Starting curriculum insertion...");
+
+    // 1. Insert 3 New Difficult Guest Role-Plays
+    await pool.query(`
+      INSERT INTO roleplays (category, title, setup, dialogue, debrief, voice_style_server, voice_style_guest)
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7),
+        ($8, $9, $10, $11, $12, $13, $14),
+        ($15, $16, $17, $18, $19, $20, $21)
+      ON CONFLICT DO NOTHING
+    `, [
+      // Scenario 1: Wine Complaint
+      'difficult-guests', 
+      'The guest who says the wine is wrong',
+      'A couple is celebrating their anniversary. The guest orders a Pinot Noir, takes one sip, and immediately declares it “bad” and “not what they asked for.”',
+      'Guest: This isn’t right. I asked for a Pinot Noir and this tastes completely off.\nServer: I’m sorry it’s not meeting your expectations. May I ask what seems off about it to you?\nGuest: It tastes sharp… almost sour. I don’t like it at all.\nServer: Thank you for letting me know. I did serve the Pinot Noir you selected, but I understand it may not be the style you were hoping for. Would you like me to suggest a couple of softer, more fruit-forward options?',
+      'Never argue with the guest’s perception. Gather information calmly, offer solutions, and protect the celebratory mood.',
+      'calm, polished, reassuring',
+      'disappointed but not aggressive',
+
+      // Scenario 2: Feeling Ignored
+      'difficult-guests', 
+      'The guest who feels ignored and turns hostile',
+      'A four-top has waited 12 minutes for service during a busy shift. One guest is visibly frustrated when the server finally approaches.',
+      'Guest: Finally! Does anyone actually work this section?\nServer: I’m truly sorry for the wait — you’re right to expect a faster welcome. I’m here now and ready to take excellent care of you.\nGuest: We’ve been sitting here forever. This is not a great start.\nServer: I completely understand. Let me get your drink order in right away and help turn this around.',
+      'Acknowledge the poor experience immediately. Stay solution-focused and never blame other staff.',
+      'steady, apologetic but confident',
+      'irritated and sarcastic',
+
+      // Scenario 3: Special Occasion Exception
+      'difficult-guests', 
+      'The guest who wants rules broken for a special occasion',
+      'A birthday table wants to open a bottle they brought in, but corkage is not allowed that evening.',
+      'Guest: It’s my sister’s birthday. We brought a special bottle — can you open it for us?\nServer: Happy birthday to your sister! Thank you for celebrating with us. Unfortunately, we’re not able to open outside bottles this evening due to policy.\nGuest: That’s ridiculous. Can’t you make one exception?\nServer: I understand this is disappointing, especially on a special night. While I can’t override the policy, I’d love to help make the celebration memorable.',
+      'Show genuine empathy. State the policy clearly and kindly. Always offer alternatives.',
+      'gracious, composed, warm',
+      'emotionally invested and insistent'
+    ]);
+
+    // 2. Insert Wine Service Quiz
+    await pool.query(`
+      INSERT INTO quizzes (module_name, title, questions)
+      VALUES ($1, $2, $3)
+      ON CONFLICT DO NOTHING
+    `, [
+      'wine-service',
+      'Wine Service Quiz',
+      JSON.stringify([
+        {
+          id: 1,
+          type: "multiple-choice",
+          question: "When presenting a bottle of wine to the host, what is the main purpose?",
+          options: ["To confirm the bottle’s price", "To confirm the producer, varietal, and vintage before opening", "To let the host smell the cork first", "To begin pouring immediately"],
+          correct: 1,
+          explanation: "The presentation confirms the correct bottle before opening and helps avoid service mistakes."
+        },
+        // ... (the other 9 questions - I can expand fully if needed)
+        // For brevity here, I'll include placeholders. Let me know if you want the full 10.
+      ])
+    ]);
+
+    console.log("✅ Curriculum content inserted successfully!");
+    res.send(`
+      <h1>Curriculum Setup Complete!</h1>
+      <p>3 new difficult-guest role-plays and Wine Service quiz have been added to your PostgreSQL database.</p>
+      <p>You can now query 'roleplays' and 'quizzes' tables.</p>
+    `);
+
+  } catch (err) {
+    console.error("Error inserting curriculum:", err);
+    res.status(500).send("Error inserting curriculum: " + err.message);
+  }
+});

@@ -3001,6 +3001,26 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       completed_at TIMESTAMPTZ DEFAULT NOW()
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_scenario_transcripts_user ON scenario_transcripts(user_id)`);
+    await db.query(`CREATE TABLE IF NOT EXISTS roleplays (
+      id SERIAL PRIMARY KEY,
+      category VARCHAR(100) NOT NULL,
+      title TEXT NOT NULL,
+      setup TEXT,
+      dialogue TEXT,
+      debrief TEXT,
+      voice_style_server TEXT,
+      voice_style_guest TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(title)
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS quizzes (
+      id SERIAL PRIMARY KEY,
+      module_name VARCHAR(100) NOT NULL,
+      title TEXT NOT NULL,
+      questions JSONB NOT NULL DEFAULT '[]',
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(module_name, title)
+    )`);
     await db.query(`CREATE TABLE IF NOT EXISTS module_bookmarks (
       user_id INT REFERENCES users(id) ON DELETE CASCADE,
       module_id INT NOT NULL,
@@ -3126,6 +3146,199 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
+// ── Curriculum Setup Route ───────────────────────────────────────────────────────
+app.get('/setup-curriculum', adminMiddleware, async (req, res) => {
+  try {
+    console.log('Starting curriculum insertion...');
+
+    // 1. Insert 3 Difficult Guest Role-Plays
+    await db.query(`
+      INSERT INTO roleplays (category, title, setup, dialogue, debrief, voice_style_server, voice_style_guest)
+      VALUES
+        ($1,$2,$3,$4,$5,$6,$7),
+        ($8,$9,$10,$11,$12,$13,$14),
+        ($15,$16,$17,$18,$19,$20,$21)
+      ON CONFLICT (title) DO NOTHING
+    `, [
+      'difficult-guests',
+      'The guest who says the wine is wrong',
+      'A couple is celebrating their anniversary. The guest orders a Pinot Noir, takes one sip, and immediately declares it "bad" and "not what they asked for."',
+      'Guest: This isn\'t right. I asked for a Pinot Noir and this tastes completely off.\nServer: I\'m sorry it\'s not meeting your expectations. May I ask what seems off about it to you?\nGuest: It tastes sharp… almost sour. I don\'t like it at all.\nServer: Thank you for letting me know. I did serve the Pinot Noir you selected, but I understand it may not be the style you were hoping for. Would you like me to suggest a couple of softer, more fruit-forward options?',
+      'Never argue with the guest\'s perception. Gather information calmly, offer solutions, and protect the celebratory mood.',
+      'calm, polished, reassuring',
+      'disappointed but not aggressive',
+
+      'difficult-guests',
+      'The guest who feels ignored and turns hostile',
+      'A four-top has waited 12 minutes for service during a busy shift. One guest is visibly frustrated when the server finally approaches.',
+      'Guest: Finally! Does anyone actually work this section?\nServer: I\'m truly sorry for the wait — you\'re right to expect a faster welcome. I\'m here now and ready to take excellent care of you.\nGuest: We\'ve been sitting here forever. This is not a great start.\nServer: I completely understand. Let me get your drink order in right away and help turn this around.',
+      'Acknowledge the poor experience immediately. Stay solution-focused and never blame other staff.',
+      'steady, apologetic but confident',
+      'irritated and sarcastic',
+
+      'difficult-guests',
+      'The guest who wants rules broken for a special occasion',
+      'A birthday table wants to open a bottle they brought in, but corkage is not allowed that evening.',
+      'Guest: It\'s my sister\'s birthday. We brought a special bottle — can you open it for us?\nServer: Happy birthday to your sister! Thank you for celebrating with us. Unfortunately, we\'re not able to open outside bottles this evening due to policy.\nGuest: That\'s ridiculous. Can\'t you make one exception?\nServer: I understand this is disappointing, especially on a special night. While I can\'t override the policy, I\'d love to help make the celebration memorable.',
+      'Show genuine empathy. State the policy clearly and kindly. Always offer alternatives.',
+      'gracious, composed, warm',
+      'emotionally invested and insistent'
+    ]);
+
+    // 2. Insert Wine Service Quiz (10 questions)
+    const wineQuestions = [
+      {
+        id: 1,
+        type: 'multiple-choice',
+        question: 'When presenting a bottle of wine to the host, what is the main purpose?',
+        options: [
+          'To confirm the bottle\'s price',
+          'To confirm the producer, varietal, and vintage before opening',
+          'To let the host smell the cork first',
+          'To begin pouring immediately'
+        ],
+        correct: 1,
+        explanation: 'The presentation confirms the correct bottle before opening and helps avoid service mistakes.'
+      },
+      {
+        id: 2,
+        type: 'multiple-choice',
+        question: 'What does it mean when a guest says a wine is "corked"?',
+        options: [
+          'The cork broke during opening',
+          'The wine is too young and needs more time',
+          'The wine has a musty, wet cardboard smell from TCA contamination',
+          'The wine was over-chilled'
+        ],
+        correct: 2,
+        explanation: 'A "corked" wine is contaminated with TCA (trichloroanisole), which produces a musty or wet cardboard smell. It is a wine fault, not a preference issue.'
+      },
+      {
+        id: 3,
+        type: 'multiple-choice',
+        question: 'After the host approves the wine, who should be served first?',
+        options: [
+          'The host, since they ordered and approved it',
+          'The eldest guest at the table',
+          'Guests clockwise from the host\'s right, with the host poured last',
+          'Whoever asks first'
+        ],
+        correct: 2,
+        explanation: 'Proper wine service protocol is to pour guests first — typically ladies before gentlemen, then the host last to ensure quality control throughout.'
+      },
+      {
+        id: 4,
+        type: 'multiple-choice',
+        question: 'When should a red wine typically be decanted?',
+        options: [
+          'Every red wine should be decanted regardless of age',
+          'Only wines over 30 years old',
+          'Young tannic wines that benefit from aeration, or older wines with sediment',
+          'Only when requested by the sommelier'
+        ],
+        correct: 2,
+        explanation: 'Decanting serves two purposes: aerating young, tannic reds to soften them, and separating sediment from older wines.'
+      },
+      {
+        id: 5,
+        type: 'multiple-choice',
+        question: 'At what temperature should most white wines be served?',
+        options: [
+          'Ice cold — straight from the freezer (28–32°F / -2–0°C)',
+          'Cellar temperature (55–65°F / 13–18°C)',
+          'Chilled (45–55°F / 7–13°C)',
+          'Room temperature (68–72°F / 20–22°C)'
+        ],
+        correct: 2,
+        explanation: 'White wines are best served chilled at 45–55°F (7–13°C) to preserve their freshness and aromatics without masking them.'
+      },
+      {
+        id: 6,
+        type: 'multiple-choice',
+        question: 'What is the correct fill level for a standard 5 oz red wine pour?',
+        options: [
+          'Fill to the brim to show generosity',
+          'Fill to three-quarters of the glass',
+          'Fill to approximately one-third of the glass',
+          'Fill to the halfway point'
+        ],
+        correct: 2,
+        explanation: 'Pouring to one-third allows room for the wine to breathe and for the guest to swirl, releasing aromas without risking spills.'
+      },
+      {
+        id: 7,
+        type: 'multiple-choice',
+        question: 'A guest tastes the wine and says it tastes "flat" and "boring" — but the wine has no faults. You should:',
+        options: [
+          'Agree with them and replace the bottle immediately',
+          'Argue that the wine is correct and they are wrong',
+          'Calmly describe the wine\'s characteristics and offer an alternative style',
+          'Get the manager right away without attempting resolution'
+        ],
+        correct: 2,
+        explanation: '"Flat" is a preference, not a fault. Listen, acknowledge, then offer an alternative that better matches their taste profile — this protects the experience and the house.'
+      },
+      {
+        id: 8,
+        type: 'multiple-choice',
+        question: 'When opening a bottle of Champagne or sparkling wine, you should:',
+        options: [
+          'Twist the cork vigorously until it pops loudly',
+          'Hold the cork still and twist the bottle slowly, releasing with a soft sigh',
+          'Shake the bottle gently to build pressure first',
+          'Use a regular corkscrew like any still wine'
+        ],
+        correct: 1,
+        explanation: 'Twist the bottle — not the cork — and aim for a soft sigh rather than a loud pop. Loud pops waste wine and can be dangerous.'
+      },
+      {
+        id: 9,
+        type: 'multiple-choice',
+        question: 'Why do servers wipe the bottle neck after each pour?',
+        options: [
+          'To cool the wine faster',
+          'To prevent drips and maintain a polished, professional presentation',
+          'To check the wine\'s colour',
+          'To remove dust from storage'
+        ],
+        correct: 1,
+        explanation: 'Wiping the bottle prevents drips on the tablecloth, linen, or guest — a small detail that communicates professionalism and care.'
+      },
+      {
+        id: 10,
+        type: 'multiple-choice',
+        question: 'A guest at a table of four asks for "a glass of red." What is the best response?',
+        options: [
+          'Bring whatever red is cheapest by the glass',
+          'Ask if they prefer something light, medium, or full-bodied and offer two or three options',
+          'Bring the house red without further discussion',
+          'Tell them to look at the wine list themselves'
+        ],
+        correct: 1,
+        explanation: 'Asking about preference before suggesting options demonstrates expertise and drives upsell. Guests appreciate guidance — it feels like service, not selling.'
+      }
+    ];
+
+    await db.query(`
+      INSERT INTO quizzes (module_name, title, questions)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (module_name, title) DO UPDATE SET questions = EXCLUDED.questions
+    `, ['wine-service', 'Wine Service Quiz', JSON.stringify(wineQuestions)]);
+
+    console.log('Curriculum content inserted successfully.');
+    res.send(`<!DOCTYPE html><html><head><title>Curriculum Setup</title><style>body{font-family:sans-serif;max-width:600px;margin:60px auto;padding:0 20px;background:#09090b;color:#fafafa;} h1{color:#FF5E3A;} .ok{color:#4ade80;} .item{margin:8px 0;}</style></head><body>
+      <h1>Curriculum Setup Complete</h1>
+      <div class="ok">✓ 3 difficult-guest role-plays inserted</div>
+      <div class="ok">✓ Wine Service Quiz (10 questions) inserted</div>
+      <p style="color:#a1a1aa;margin-top:24px;">You can now query the <code>roleplays</code> and <code>quizzes</code> tables. This route is admin-protected and can only be run once per content set (ON CONFLICT DO NOTHING).</p>
+      <p><a href="/admin" style="color:#FF5E3A;">← Back to Admin</a></p>
+    </body></html>`);
+  } catch (e) {
+    console.error('Curriculum setup error:', e.message);
+    res.status(500).send('Error inserting curriculum: ' + e.message);
+  }
+});
+
 // ── Site settings routes ────────────────────────────────────────────────────────
 app.get('/api/chat-config', async (req, res) => {
   try {
