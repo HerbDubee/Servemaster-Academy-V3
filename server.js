@@ -3146,6 +3146,17 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
+// ── Curriculum Check Route ───────────────────────────────────────────────────────
+app.get('/check-curriculum', async (req, res) => {
+  try {
+    const roleplays = await db.query('SELECT * FROM roleplays WHERE category = $1', ['difficult-guests']);
+    const quizzes = await db.query('SELECT * FROM quizzes WHERE module_name = $1', ['wine-service']);
+    res.json({ roleplays: roleplays.rows, quizzes: quizzes.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Curriculum Setup Route ───────────────────────────────────────────────────────
 app.get('/setup-curriculum', adminMiddleware, async (req, res) => {
   try {
