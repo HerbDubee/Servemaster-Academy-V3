@@ -495,6 +495,38 @@ function optionalAuth(req, res, next) {
 // ── Page routes ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
+app.get('/sitemap.xml', (req, res) => {
+  const base = 'https://servemasteracademy.ca';
+  const today = new Date().toISOString().split('T')[0];
+  const staticPages = [
+    ['/', '1.0', 'weekly'],
+    ['/features', '0.9', 'monthly'],
+    ['/pricing', '0.9', 'monthly'],
+    ['/about', '0.7', 'monthly'],
+    ['/contact', '0.6', 'monthly'],
+    ['/ai-roleplay', '0.8', 'monthly'],
+    ['/managers', '0.8', 'monthly'],
+    ['/scholarship', '0.8', 'monthly'],
+    ['/blog/', '0.8', 'weekly'],
+    ['/training', '0.7', 'monthly'],
+  ];
+  let blogUrls = '';
+  try {
+    const fs = require('fs');
+    const blogDir = path.join(__dirname, 'public', 'blog');
+    const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.html') && f !== 'index.html' && f !== 'article.html');
+    blogUrls = files.map(f => {
+      const slug = f.replace('.html', '');
+      return `  <url><loc>${base}/blog/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`;
+    }).join('\n');
+  } catch (e) { /* skip */ }
+  const staticUrls = staticPages.map(([p, pri, freq]) =>
+    `  <url><loc>${base}${p}</loc><lastmod>${today}</lastmod><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
+  ).join('\n');
+  res.setHeader('Content-Type', 'application/xml');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticUrls}\n${blogUrls}\n</urlset>`);
+});
+
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
