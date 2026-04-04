@@ -3187,6 +3187,66 @@ app.get('/check-curriculum', async (req, res) => {
   }
 });
 
+// ── Expanded Curriculum Setup Route ─────────────────────────────────────────────
+app.get('/setup-curriculum-expanded', adminMiddleware, async (req, res) => {
+  try {
+    const roleplays = [
+      {
+        category: 'difficult-guests',
+        title: 'The guest who says the wine is wrong',
+        setup: 'A couple is celebrating their anniversary. The guest orders a Pinot Noir, takes one sip, and immediately declares it "bad" and "not what they asked for."',
+        dialogue: "Guest: This isn't right. I asked for a Pinot Noir and this tastes completely off.\nServer: I'm sorry it's not meeting your expectations. May I ask what seems off about it to you?\nGuest: It tastes sharp… almost sour. I don't like it at all.\nServer: Thank you for letting me know. I did serve the Pinot Noir you selected, but I understand it may not be the style you were hoping for. Would you like me to suggest a couple of softer, more fruit-forward options?",
+        debrief: "Primary objective: Never argue with the guest's perception of taste — taste is subjective, and the guest's experience is always valid.\n\nWhy this matters in fine dining: Guests expect the server to be a knowledgeable guide, not a defender of the wine list. When a guest says a wine is wrong, they are communicating discomfort. Your job is to resolve that discomfort quickly and gracefully — especially on a celebratory occasion where the emotional stakes are high.\n\nCommon mistakes to avoid:\n• Saying \"This is the wine you ordered\" — factually true but dismissive\n• Arguing about the wine's quality or style\n• Leaving the guest with a glass they dislike\n• Failing to offer an alternative quickly\n\nPro tip: Always offer to remove the glass immediately, even before proposing an alternative. This signals empathy and decisiveness. Then ask one clarifying question — \"too sharp,\" \"too dry,\" \"too heavy?\" — to guide your recommendation. Keep the guest's focus on the celebration, not the complaint.",
+        voice_style_server: 'calm, polished, reassuring',
+        voice_style_guest: 'disappointed but not aggressive'
+      },
+      {
+        category: 'difficult-guests',
+        title: 'The guest who feels ignored and turns hostile',
+        setup: 'A four-top has waited 12 minutes for service during a busy shift. One guest is visibly frustrated when the server finally approaches.',
+        dialogue: "Guest: Finally! Does anyone actually work this section?\nServer: I'm truly sorry for the wait — you're right to expect a faster welcome. I'm here now and ready to take excellent care of you.\nGuest: We've been sitting here forever. This is not a great start.\nServer: I completely understand. Let me get your drink order in right away and help turn this around.",
+        debrief: "Primary objective: Acknowledge the delay immediately and without defensiveness — then move swiftly to action.\n\nWhy this matters: Guests in upscale restaurants pay for a seamless experience from the moment they sit down. A 12-minute wait with no acknowledgment feels like indifference. When a guest finally vents that frustration, the instinct is to defend yourself or explain the situation — resist this entirely. Your explanation is irrelevant to the guest's experience in that moment.\n\nCommon mistakes to avoid:\n• Blaming the host, the kitchen, or a coworker — it reflects poorly on the whole team\n• Over-explaining why the wait happened\n• Matching the guest's energy or becoming defensive\n• Offering a hollow \"sorry for the wait\" without immediate action\n\nPro tip: Use the phrase \"I'm here now and ready to take excellent care of you\" — it resets the interaction by shifting focus from the past (the wait) to the present (attentive service). Follow it immediately with action: take the drink order, bring water, or offer something tangible. Recovery speed is everything.",
+        voice_style_server: 'steady, apologetic but confident',
+        voice_style_guest: 'irritated and sarcastic'
+      },
+      {
+        category: 'difficult-guests',
+        title: 'The guest who wants rules broken for a special occasion',
+        setup: 'A birthday table wants to open a bottle they brought in, but corkage is not allowed that evening.',
+        dialogue: "Guest: It's my sister's birthday. We brought a special bottle — can you open it for us?\nServer: Happy birthday to your sister! Thank you for celebrating with us. Unfortunately, we're not able to open outside bottles this evening due to policy.\nGuest: That's ridiculous. Can't you make one exception?\nServer: I understand this is disappointing, especially on a special night. While I can't override the policy, I'd love to help make the celebration memorable — may I suggest a bottle from our list that might feel equally special?",
+        debrief: "Primary objective: Validate the special occasion first, then state the policy clearly — and always redirect toward a positive alternative.\n\nWhy this matters: Special occasions are emotionally charged. When a guest has planned to bring a meaningful bottle for a birthday or anniversary, being told no feels like a personal rejection. The way you deliver the policy determines whether they leave frustrated or impressed.\n\nCommon mistakes to avoid:\n• A cold \"Sorry, it's our policy\" with no warmth or alternative\n• Pretending you'll \"check\" and returning with the same answer — this wastes time and erodes trust\n• Apologizing so much that you seem uncertain about the policy\n• Failing to offer a compelling alternative from the wine list\n\nPro tip: Acknowledge the occasion before the policy — always. \"Happy birthday to your sister\" before \"unfortunately\" changes the entire tone of the conversation. Then offer a specific alternative, not a vague gesture. \"We have a lovely Champagne we reserve for special celebrations\" is far more effective than \"we have some nice wines.\" Make the alternative feel like an upgrade, not a consolation.",
+        voice_style_server: 'gracious, composed, warm',
+        voice_style_guest: 'emotionally invested and insistent'
+      }
+    ];
+
+    for (const rp of roleplays) {
+      await db.query(
+        `INSERT INTO roleplays (category, title, setup, dialogue, debrief, voice_style_server, voice_style_guest)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)
+         ON CONFLICT (title) DO UPDATE SET
+           setup = EXCLUDED.setup,
+           dialogue = EXCLUDED.dialogue,
+           debrief = EXCLUDED.debrief,
+           voice_style_server = EXCLUDED.voice_style_server,
+           voice_style_guest = EXCLUDED.voice_style_guest`,
+        [rp.category, rp.title, rp.setup, rp.dialogue, rp.debrief, rp.voice_style_server, rp.voice_style_guest]
+      );
+    }
+
+    res.send(`<!DOCTYPE html><html><head><style>body{font-family:sans-serif;max-width:600px;margin:60px auto;padding:0 20px;background:#09090b;color:#fafafa;}h1{color:#4ade80;}</style></head><body>
+      <h1>✅ Expanded Curriculum Updated!</h1>
+      <p>The 3 difficult-guest role-plays now have full expanded debriefs including objectives, why it matters, common mistakes, and pro tips.</p>
+      <p><a href="/api/roleplays?category=difficult-guests" style="color:#FF5E3A;">View updated role-plays →</a></p>
+      <p><a href="/training" style="color:#FF5E3A;">View Training Hub →</a></p>
+      <p><a href="/admin" style="color:#a1a1aa;">← Back to Admin</a></p>
+    </body></html>`);
+  } catch (e) {
+    console.error('Expanded curriculum error:', e.message);
+    res.status(500).send('Error: ' + e.message);
+  }
+});
+
 // ── Curriculum Setup Route ───────────────────────────────────────────────────────
 app.get('/setup-curriculum', adminMiddleware, async (req, res) => {
   try {

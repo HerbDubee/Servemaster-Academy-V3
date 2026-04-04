@@ -1,0 +1,42 @@
+// UPDATED CURRICULUM INSERTION WITH EXPANDED DEBRIEFS
+app.get('/setup-curriculum-expanded', async (req, res) => {
+  try {
+    await pool.query(`
+      INSERT INTO roleplays (category, title, setup, dialogue, debrief, voice_style_server, voice_style_guest)
+      VALUES 
+        ($1,$2,$3,$4,$5,$6,$7),
+        ($8,$9,$10,$11,$12,$13,$14),
+        ($15,$16,$17,$18,$19,$20,$21)
+      ON CONFLICT DO NOTHING
+    `, [
+      // 1. Wine Complaint
+      'difficult-guests', 'The guest who says the wine is wrong',
+      'A couple is celebrating their anniversary. The guest orders a Pinot Noir, takes one sip, and immediately declares it “bad” and “not what they asked for.”',
+      'Guest: This isn’t right. I asked for a Pinot Noir and this tastes completely off.\nServer: I’m sorry it’s not meeting your expectations. May I ask what seems off about it to you?\n... [full dialogue]',
+      'Primary objective: Never argue with the guest’s perception of taste...\nWhy this matters in fine dining: Guests expect the server to be a guide...\nCommon mistakes to avoid: Saying “This is the wine you ordered”...\nPro tip: Always offer to remove the glass immediately...',
+      'calm, polished, reassuring', 'disappointed but not aggressive',
+
+      // 2. Feeling Ignored
+      'difficult-guests', 'The guest who feels ignored and turns hostile',
+      'A four-top has waited 12 minutes for service during a busy shift...',
+      'Guest: Finally! Does anyone actually work this section?...',
+      'Primary objective: Acknowledge the delay immediately...\nWhy this matters: Guests in upscale restaurants pay for a seamless experience...\nCommon mistakes to avoid: Blaming the host or kitchen...\nPro tip: Use “I’m here now and ready to take excellent care of you.”...',
+      'steady, apologetic but confident', 'irritated and sarcastic',
+
+      // 3. Special Occasion
+      'difficult-guests', 'The guest who wants rules broken for a special occasion',
+      'A birthday table wants to open a bottle they brought in...',
+      'Guest: It’s my sister’s birthday...',
+      'Primary objective: Validate the special occasion while firmly upholding policy...\nWhy this matters: Special occasions are emotionally charged...\nCommon mistakes to avoid: Cold “Sorry, it’s our policy” responses...\nPro tip: Acknowledge the occasion first...',
+      'gracious, composed, warm', 'emotionally invested and insistent'
+    ]);
+
+    res.send(`
+      <h1 style="color:#10b981">✅ Updated Curriculum Inserted Successfully!</h1>
+      <p>The 3 difficult-guest role-plays now have expanded, high-quality debriefs.</p>
+      <p>You can now view them at /api/roleplays?category=difficult-guests</p>
+    `);
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
+  }
+});
