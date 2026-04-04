@@ -44,6 +44,8 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 | `/blog/es/:slug` | `public/blog/es/{slug}.html` (Spanish translations) |
 | `/admin` | `admin.html` (admin dashboard) |
 | `/unsubscribe` | `public/unsubscribe.html` (CASL) |
+| `/training` | `public/training.html` (public curriculum preview) |
+| `/app/training` | `public/app-training.html` (protected — `requirePaidAccess`) |
 
 ## Subscription Model
 
@@ -106,6 +108,11 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 | `email_drip_log` | Tracks which drip emails have been sent per user (Day 1/3/7/14) |
 | `unsubscribe_tokens` | CASL unsubscribe tokens for one-click unsubscribe links |
 | `assigned_modules` | Manager-assigned required modules per restaurant |
+| `affiliates` | Affiliate accounts — tier, language, payout info, website, commission_rate, activation_bonus |
+| `commissions` | Per-sale commission records linked to affiliates |
+| `affiliate_payouts` | Payout history with status tracking |
+| `roleplays` | Curriculum role-play scenarios — category, title, setup, dialogue, debrief, voice_styles; UNIQUE on title |
+| `quizzes` | Curriculum knowledge checks — module_name, title, questions (JSONB); UNIQUE on module+title |
 
 ### Referral Status State Machine
 - **pending**: invite sent, awaiting referred manager signup + checkout
@@ -146,6 +153,51 @@ Allows enterprise restaurant clients to brand the training app with their own na
 
 **Admin panel:** `/admin` → Tenants tab — lists tenants with toggle controls and "New Tenant" modal
 
+## Affiliate Program
+
+Managed entirely from the admin panel (`/admin` → Affiliates tab).
+
+**Commission structure:**
+| Plan type | Year 1 rate | Lifetime rate | Activation bonus |
+|-----------|------------|---------------|-----------------|
+| Individual (premium) | 25% | 10% | — |
+| Team (starter/pro) | 30% | 15% | $75 CAD |
+| First sale bonus | — | — | $100 CAD welcome bonus |
+
+**DB tables:** `affiliates`, `commissions`, `affiliate_payouts`
+
+**Admin panel features:**
+- `renderAffList()` — shows tier badge, language, payout details, website per affiliate
+- `renderCommissions()` — shows commission_rate % and activation_bonus column
+- `openMarkPaidModal()` / `submitMarkPaid()` — full mark-paid modal flow
+- `generateMonthlySummaries()` — monthly affiliate payout summary generation
+- `exportAffiliateCSV()` — exports full affiliate list as CSV
+- `closeSummariesModal()` — closes the summaries modal
+
+## Curriculum (Role-Plays & Quizzes)
+
+Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB tables (not `content.js`).
+
+**API endpoints:**
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/roleplays?category=` | Returns role-plays by category (default: `difficult-guests`) |
+| `GET /api/quizzes?module=` | Returns quizzes by module (default: `wine-service`) |
+| `GET /check-curriculum` | Unprotected debug — confirms tables exist and row counts |
+| `GET /setup-curriculum` | Admin-protected — seeds initial role-plays and quiz |
+| `GET /setup-curriculum-expanded` | Admin-protected — updates debriefs with full structured content |
+
+**Seeded content:**
+- 3 difficult-guest role-plays: wine complaint, ignored/hostile guest, policy exception request
+- Each debrief includes: primary objective, why it matters, common mistakes, pro tip
+- 1 wine service quiz — 10 questions with per-question explanations (JSONB)
+
+**Protected training pages:**
+| Route | File | Auth |
+|-------|------|------|
+| `/training` | `public/training.html` | Public (marketing preview) |
+| `/app/training` | `public/app-training.html` | `requirePaidAccess` |
+
 ## Manager Dashboard Features
 
 - **Assigned Modules**: Managers select required modules from the full list (Settings tab); stored in `assigned_modules` table; staff see "Required" badge on those modules in app.html
@@ -162,7 +214,9 @@ Allows enterprise restaurant clients to brand the training app with their own na
 ## Security
 
 - JWT_SECRET: set as shared env var (48-byte hex)
-- adminMiddleware: DB role lookup on every admin request
+- `adminMiddleware`: DB role lookup on every admin request
+- `authMiddleware` + `checkTrial`: used on API routes — returns JSON 401/402 on failure
+- `requirePaidAccess`: used on HTML page routes — does its own JWT verification + DB lookup and **redirects** (to `/login` or `/app/upgrade`) instead of returning JSON errors; checks invite window → paid plan → active trial in that order
 - Security headers: helmet middleware
 - Bootstrap endpoint disabled (returns 410)
 - Trial expiry check: validates `trial_end` is non-null before comparison
