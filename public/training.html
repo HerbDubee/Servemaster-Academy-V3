@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training - ServeMaster Academy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); align-items: center; justify-content: center; z-index: 50; }
+    .modal.show { display: flex; }
+    .card-hover:hover { transform: translateY(-4px); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div class="max-w-6xl mx-auto p-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Training Hub</h1>
+    <p class="text-gray-600 mb-10">Practice real restaurant situations and build your confidence</p>
+
+    <!-- Role-Plays Section -->
+    <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+      Difficult Guest Role-Plays
+      <span class="text-sm font-normal text-gray-500">(New)</span>
+    </h2>
+    <div id="roleplays-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
+
+    <!-- Wine Service Quiz -->
+    <h2 class="text-2xl font-semibold mb-6">Wine Service Quiz</h2>
+    <div id="quiz-container" class="bg-white rounded-3xl shadow p-10"></div>
+  </div>
+
+  <!-- Role-Play Modal -->
+  <div id="roleplay-modal" class="modal">
+    <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 p-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between mb-6">
+        <h3 id="modal-title" class="text-2xl font-bold"></h3>
+        <button onclick="closeModal()" class="text-4xl text-gray-400 hover:text-gray-600">×</button>
+      </div>
+      <div id="modal-content" class="prose text-gray-700"></div>
+      
+      <div class="mt-10 flex gap-4">
+        <button onclick="closeModal()" 
+                class="flex-1 py-4 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium text-lg">
+          Close
+        </button>
+        <button onclick="restartRoleplay()" 
+                class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium text-lg">
+          Practice Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRoleplay = null;
+    let cachedRoleplays = [];
+
+    // Load Role-Plays
+    async function loadRoleplays() {
+      try {
+        const response = await fetch('/api/roleplays?category=difficult-guests');
+        cachedRoleplays = await response.json();
+        const container = document.getElementById('roleplays-container');
+        container.innerHTML = '';
+
+        cachedRoleplays.forEach(rp => {
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-3xl shadow-sm p-8 hover:shadow-md transition card-hover cursor-pointer';
+          card.innerHTML = `
+            <h3 class="font-semibold text-xl mb-4">${rp.title}</h3>
+            <p class="text-gray-600 line-clamp-3 mb-8">${rp.setup}</p>
+            <button onclick="openRoleplay(${rp.id}); event.stopImmediatePropagation();" 
+                    class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl transition">
+              Start This Role-Play
+            </button>
+          `;
+          container.appendChild(card);
+        });
+      } catch (e) {
+        console.error('Failed to load roleplays', e);
+        document.getElementById('roleplays-container').innerHTML =
+          '<p class="text-gray-500 col-span-3">Failed to load role-plays. Please try refreshing.</p>';
+      }
+    }
+
+    // Open Role-Play in Modal — uses cached data, no extra fetch
+    function openRoleplay(id) {
+      currentRoleplay = cachedRoleplays.find(r => r.id === id);
+      if (!currentRoleplay) return;
+
+      document.getElementById('modal-title').textContent = currentRoleplay.title;
+      document.getElementById('modal-content').innerHTML = `
+        <div class="mb-8">
+          <h4 class="font-medium text-gray-500 mb-2">Setup</h4>
+          <p class="text-gray-700">${currentRoleplay.setup}</p>
+        </div>
+        <div class="mb-10">
+          <h4 class="font-medium text-gray-500 mb-3">Dialogue</h4>
+          <div class="bg-gray-50 p-6 rounded-2xl whitespace-pre-line text-[15px] leading-relaxed">${currentRoleplay.dialogue}</div>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-500 mb-2">Debrief &amp; Key Takeaways</h4>
+          <p class="text-gray-700">${currentRoleplay.debrief}</p>
+        </div>
+      `;
+      document.getElementById('roleplay-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('roleplay-modal').classList.remove('show');
+    }
+
+    function restartRoleplay() {
+      if (currentRoleplay) openRoleplay(currentRoleplay.id);
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('roleplay-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // Load Wine Service Quiz with scoring
+    async function loadQuiz() {
+      try {
+        const res = await fetch('/api/quizzes?module=wine-service');
+        const data = await res.json();
+        const quiz = data[0];
+        if (!quiz) {
+          document.getElementById('quiz-container').innerHTML = '<p class="text-gray-500">Quiz not found.</p>';
+          return;
+        }
+
+        let html = `<div class="space-y-10" id="quiz-questions">`;
+        quiz.questions.forEach((q, i) => {
+          html += `
+            <div class="border border-gray-200 rounded-2xl p-8" id="question-${i}">
+              <p class="font-medium text-lg mb-5">${i + 1}. ${q.question}</p>
+              <div class="grid gap-3">
+                ${q.options.map((opt, idx) => `
+                  <label class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition" id="label-${i}-${idx}">
+                    <input type="radio" name="q${i}" value="${idx}" class="w-5 h-5 text-blue-600">
+                    <span class="text-gray-700">${opt}</span>
+                  </label>
+                `).join('')}
+              </div>
+              <div id="explanation-${i}" class="hidden mt-4 p-4 rounded-xl text-sm"></div>
+            </div>`;
+        });
+        html += `</div>
+          <button onclick="submitQuiz()" id="submit-btn"
+                  class="mt-12 w-full py-5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-3xl text-lg transition">
+            Submit Quiz &amp; See Results
+          </button>
+          <div id="quiz-score" class="hidden mt-8 p-8 bg-gray-50 rounded-3xl text-center"></div>`;
+        document.getElementById('quiz-container').innerHTML = html;
+
+        // Store questions for scoring
+        document.getElementById('quiz-container').dataset.questions = JSON.stringify(quiz.questions);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('quiz-container').innerHTML = '<p class="text-gray-500">Failed to load quiz. Please try refreshing.</p>';
+      }
+    }
+
+    function submitQuiz() {
+      const questions = JSON.parse(document.getElementById('quiz-container').dataset.questions);
+      let score = 0;
+      let allAnswered = true;
+
+      questions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (!selected) { allAnswered = false; return; }
+
+        const chosen = parseInt(selected.value);
+        const correct = q.correct;
+        const expEl = document.getElementById(`explanation-${i}`);
+        expEl.classList.remove('hidden');
+
+        if (chosen === correct) {
+          score++;
+          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-green-50 text-green-800 border border-green-200';
+          expEl.innerHTML = `<strong>Correct!</strong> ${q.explanation}`;
+          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-green-50', 'border-green-300');
+        } else {
+          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-red-50 text-red-800 border border-red-200';
+          expEl.innerHTML = `<strong>Not quite.</strong> ${q.explanation}`;
+          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-red-50', 'border-red-300');
+          document.getElementById(`label-${i}-${correct}`).classList.add('bg-green-50', 'border-green-300');
+        }
+
+        // Disable all options for this question
+        document.querySelectorAll(`input[name="q${i}"]`).forEach(inp => inp.disabled = true);
+      });
+
+      if (!allAnswered) {
+        alert('Please answer all questions before submitting.');
+        return;
+      }
+
+      const pct = Math.round((score / questions.length) * 100);
+      const scoreEl = document.getElementById('quiz-score');
+      scoreEl.classList.remove('hidden');
+      scoreEl.innerHTML = `
+        <div class="text-5xl font-black mb-3 ${pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600'}">${pct}%</div>
+        <div class="text-xl font-semibold text-gray-800 mb-2">${score} / ${questions.length} correct</div>
+        <div class="text-gray-500">${pct >= 80 ? 'Excellent work — you know your wine service!' : pct >= 60 ? 'Good effort. Review the explanations above to sharpen up.' : 'Keep studying — review each explanation and try again.'}</div>
+      `;
+      document.getElementById('submit-btn').textContent = 'Submitted ✓';
+      document.getElementById('submit-btn').disabled = true;
+      document.getElementById('submit-btn').classList.replace('bg-green-600', 'bg-gray-400');
+      document.getElementById('submit-btn').classList.replace('hover:bg-green-700', 'cursor-not-allowed');
+      scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    window.onload = () => {
+      loadRoleplays();
+      loadQuiz();
+    };
+  </script>
+</body>
+</html>
