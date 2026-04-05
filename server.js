@@ -104,6 +104,11 @@ const STRIPE_PRO_TEAM_ANNUAL_ID = process.env.STRIPE_PRO_TEAM_ANNUAL_ID || '';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || '';
+const APP_URL = (process.env.APP_URL || 'http://localhost:5000').replace(/\/$/, '');
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'kirk_adamson@servemasteracademy.ca';
+const BRAND_NAME = process.env.BRAND_NAME || 'ServeMaster Academy';
+const BRAND_LOGO_URL = process.env.BRAND_LOGO_URL || `${APP_URL}/logo.png`;
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
