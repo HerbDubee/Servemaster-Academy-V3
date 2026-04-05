@@ -1547,24 +1547,20 @@ async function speakOpenAI(text) {
   _stopTtsAudio();
   const myGen = _ttsGeneration;
   try {
-    const res = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ text, lang })
-    });
-    if (_ttsGeneration !== myGen) return;
-    if (!res.ok) throw new Error('TTS request failed');
-    const blob = await res.blob();
-    if (_ttsGeneration !== myGen) return;
-    const url = URL.createObjectURL(blob);
+    // Use GET + audio.src so the browser starts playing as soon as the
+    // first MP3 frames arrive — no need to wait for the full download.
+    const url = '/api/tts?text=' + encodeURIComponent(text) + '&lang=' + encodeURIComponent(lang);
     const audio = new Audio(url);
-    if (_ttsGeneration !== myGen) { URL.revokeObjectURL(url); return; }
+    if (_ttsGeneration !== myGen) return;
     _ttsAudio = audio;
     return new Promise(resolve => {
-      audio.addEventListener('ended', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
-      audio.addEventListener('error', () => { URL.revokeObjectURL(url); _ttsAudio = null; resolve(); }, { once: true });
+      audio.addEventListener('ended', () => { _ttsAudio = null; resolve(); }, { once: true });
+      audio.addEventListener('error', () => {
+        _ttsAudio = null;
+        if (lang === 'en' && _ttsGeneration === myGen) { speakTextAsync(text).then(resolve); } else { resolve(); }
+      }, { once: true });
       audio.play().catch(() => {
-        URL.revokeObjectURL(url); _ttsAudio = null;
+        _ttsAudio = null;
         if (lang === 'en' && _ttsGeneration === myGen) { speakTextAsync(text).then(resolve); } else { resolve(); }
       });
     });

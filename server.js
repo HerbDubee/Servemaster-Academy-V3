@@ -2234,8 +2234,9 @@ app.post('/api/invite/redeem', authMiddleware, async (req, res) => {
 });
 
 // ── AI routes ─────────────────────────────────────────────────────────────────
-app.post('/api/tts', aiLimiter, async (req, res) => {
-  const { text, lang } = req.body;
+// Shared TTS handler — streams OpenAI audio directly to the client
+// without buffering, so the browser can start playing on first bytes received.
+async function handleTTS(text, lang, res) {
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'Missing text' });
   const SUPPORTED_TTS_LANGS = new Set(['en', 'fr', 'es']);
   const reqLang = (lang && SUPPORTED_TTS_LANGS.has(lang)) ? lang : 'en';
@@ -2243,9 +2244,6 @@ app.post('/api/tts', aiLimiter, async (req, res) => {
   if (!trimmed) return res.status(400).json({ error: 'Empty text' });
   if (trimmed.length > 4000) return res.status(400).json({ error: 'Text exceeds 4000 character limit' });
   try {
-    // Map each supported language to its preferred OpenAI voice.
-    // tts-1 infers the spoken language from the input text; the voice selection
-    // allows per-language tuning without relying on browser Speech Synthesis.
     const TTS_VOICE_MAP = { en: 'nova', fr: 'nova', es: 'nova' };
     const voice = TTS_VOICE_MAP[reqLang] || 'nova';
     const response = await getTTS().audio.speech.create({
@@ -2254,15 +2252,32 @@ app.post('/api/tts', aiLimiter, async (req, res) => {
       input: trimmed,
       response_format: 'mp3'
     });
-    const buffer = Buffer.from(await response.arrayBuffer());
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'private, max-age=300');
-    res.send(buffer);
+    // Pipe OpenAI's stream directly — client starts playing on first chunk
+    const reader = response.body.getReader();
+    const pump = async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || res.writableEnded) break;
+          res.write(Buffer.from(value));
+        }
+        if (!res.writableEnded) res.end();
+      } catch { if (!res.writableEnded) res.end(); }
+    };
+    pump();
   } catch (err) {
     console.error('TTS error:', err.message);
-    res.status(500).json({ error: 'TTS failed' });
+    if (!res.headersSent) res.status(500).json({ error: 'TTS failed' });
   }
-});
+}
+
+// GET — used by the client via <Audio src> for zero-buffer streaming playback
+app.get('/api/tts', authMiddleware, aiLimiter, (req, res) => handleTTS(req.query.text, req.query.lang, res));
+
+// POST — kept for backward compatibility
+app.post('/api/tts', authMiddleware, aiLimiter, (req, res) => handleTTS(req.body.text, req.body.lang, res));
 
 app.post('/api/transcribe', authMiddleware, aiLimiter, upload.single('audio'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
