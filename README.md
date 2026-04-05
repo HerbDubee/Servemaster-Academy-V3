@@ -1,43 +1,108 @@
-# grok-voice-sred-2026
+# ServeMaster Academy
 
-SR&ED evidence repository for the Grok/xAI real-time voice agent R&D project (March 2026).
+Professional hospitality training platform for restaurant servers, bartenders, and managers — live at [servemasteracademy.ca](https://servemasteracademy.ca).
 
-## Project Summary
+## What it is
 
-This repository captures approximately 200 hours of systematic experimental work conducted between January and March 2026, integrating xAI's Grok realtime WebSocket API (`wss://api.x.ai/v1/realtime`) into a browser-hosted AI training environment (ServeMaster Academy). The work focused on achieving sub-500ms bidirectional voice latency with reliable Voice Activity Detection (VAD) and audio delta handling — enabling realistic, conversational AI roleplay for restaurant server training.
+ServeMaster Academy is a SaaS training platform purpose-built for the Canadian restaurant industry. It combines structured curriculum (30 modules, 150+ scenarios) with AI-powered role-play and voice practice to help front-of-house staff earn more in tips, handle difficult guests, and build lasting careers.
 
-The project was conducted entirely within Replit's cloud-hosted environment and constitutes eligible SR&ED work under the CRA's definition of technological uncertainty and systematic investigation.
+**Brand:** #FF5E3A orange · #0A4D68 teal · Montserrat/Inter · Dark navy backgrounds
 
-## Contents
+---
 
-| File | Description |
-|---|---|
-| `SR_ED_Documentation.md` | Full SR&ED claim documentation in CRA format |
-| Source code files | Captured from the Replit workspace at time of SR&ED evidence commits |
+## Key Features
 
-## Key Technical Areas
+- **AI Role-Play** — GPT-4o powered guest simulations with structured debriefs (objective, common mistakes, pro tip)
+- **Voice Practice** — TTS playback of scenario dialogue; browser-based mic recording
+- **30 Curriculum Modules** — Greeting to farewell; upselling, allergens, difficult guests, bar service, and more
+- **150+ Practice Scenarios** — Served from PostgreSQL; content managed in `public/js/content.js`
+- **Manager Dashboard** — Team progress tracking, module assignment, white-label branding, referral program
+- **White-Label** — Enterprise clients brand the training app with their logo, name, and colours
+- **Affiliate Program** — 25 % year-1 / 10 % lifetime (individual); 30 % / 15 % + $75 activation bonus (team)
+- **Stripe Live** — Individual and team subscription tiers; annual discounts; webhook-verified payments
+- **Google OAuth + Email Auth** — JWT sessions (30-day); trial period gating; invite-code access
+- **i18n** — English, French, Spanish (106 blog articles translated to ES; UI strings via `lang.js`)
+- **PWA** — Service worker + manifest; offline-capable
+- **Career Launch Scholarship** — `/scholarship` page + application flow
+- **CASL-compliant Email** — Resend transactional + drip sequences; one-click unsubscribe tokens
 
-- **WebSocket session management** — `session.update`, VAD configuration, reconnect logic
-- **Audio buffer handling** — `input_audio_buffer.append`, chunk size optimization
-- **Transcription and response delta processing** — `response.audio.delta`, `response.text.delta` timing
-- **Voice persona evaluation** — Eve vs. Ara across structured training scenarios
-- **Latency benchmarking** — End-to-end round-trip timing across 50+ test interactions
-- **Browser audio compatibility** — Web Audio API, AudioWorklet, PCM16 format across Chrome, Safari, Firefox
+---
 
-## SR&ED Evidence Commits
+## Stack
 
-| Hash | Description |
-|---|---|
-| `607ef8e` | Final project state after ~200 hours |
-| `546a059` | Initial full capture of the ~200-hour project |
-| `5f77806` | Initial full push of voice transcription & response testing |
-| `c6643fb` | Full project capture with additional core code files |
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Node.js + Express (port 5000) |
+| Database | PostgreSQL (Replit built-in, accessed via `db.js`) |
+| AI | OpenAI GPT-4o (chat) + TTS (audio) via Replit integration |
+| Payments | Stripe (Live mode) via `stripeClient.js` |
+| Email | Resend via Replit integration |
+| Auth | JWT (cookie) + Google OAuth 2.0 |
+| Frontend | Vanilla JS, HTML, CSS — no build step |
+| PWA | `public/sw.js` + `public/manifest.json` |
 
-## Eligible Hours
+---
 
-**~200 hours** — January through March 2026
+## File Structure
 
-## Claimant
+```
+server.js              — Express backend: all routes, auth, AI, Stripe, admin, webhooks
+app.html               — Training SPA (served at /app, auth-gated)
+admin.html             — Owner/admin dashboard (served at /admin, role-gated)
+db.js                  — PostgreSQL pool
+stripeClient.js        — Stripe connector helpers
+public/
+  home.html            — Marketing homepage
+  pricing.html         — Pricing + plan toggle
+  features.html        — Features page
+  about.html           — About page
+  blog/                — 106 EN articles + index + article template
+  blog/es/             — 106 ES translations
+  js/
+    content.js         — Central content store (modules, scenarios, blog metadata)
+    nav-auth.js        — Auth-aware navigation state
+    lang.js            — EN/FR/ES UI strings
+    pwa-nav.js         — PWA install prompt + navigation
+    wl-branding.js     — White-label branding injector
+    chat-widget.js     — Support chat widget
+  manifest.json        — PWA manifest
+  sw.js                — Service worker
+  robots.txt           — Disallows /api/ from crawlers
+```
 
-HerbDubee / ServeMaster Academy
-kirk_adamson@servemasteracademy.ca
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values. The following are required at minimum:
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `JWT_SECRET` | Yes | Server won't start without it |
+| `DATABASE_URL` | Yes | Auto-injected on Replit |
+| `APP_URL` | Yes | `https://servemasteracademy.ca` in prod |
+| `ADMIN_EMAIL` | Yes | Gets admin role on startup |
+| `OPENAI_API_KEY` | Yes | For AI role-play + TTS |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth |
+| `STRIPE_SECRET_KEY` + Price IDs | Yes | Live mode |
+| `STRIPE_WEBHOOK_SECRET` | Yes | Webhook verification |
+| `RESEND_API_KEY` | Yes | Transactional email |
+
+See `.env.example` for the full list.
+
+---
+
+## Subscription Tiers (CAD)
+
+| Plan | Monthly | Annual |
+|------|---------|--------|
+| Individual | $19/mo | $149/yr |
+| Team Starter | $99/mo | $990/yr |
+| Team Pro | $199/mo | $1,990/yr |
+| Enterprise | Custom | Custom |
+
+---
+
+## Admin Access
+
+Visit `/admin` — if your account email matches `ADMIN_EMAIL`, you are auto-granted admin role on server startup. The admin dashboard is role-checked against the database on every request (not just JWT).
