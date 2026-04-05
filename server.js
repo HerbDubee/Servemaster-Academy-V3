@@ -104,6 +104,11 @@ const STRIPE_PRO_TEAM_ANNUAL_ID = process.env.STRIPE_PRO_TEAM_ANNUAL_ID || '';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 const HELLO_EMAIL = process.env.HELLO_EMAIL || '';
+const APP_URL = (process.env.APP_URL || 'http://localhost:5000').replace(/\/$/, '');
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@servemasteracademy.ca';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'kirk_adamson@servemasteracademy.ca';
+const BRAND_NAME = process.env.BRAND_NAME || 'ServeMaster Academy';
+const BRAND_LOGO_URL = process.env.BRAND_LOGO_URL || `${APP_URL}/logo.png`;
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
@@ -502,7 +507,7 @@ function optionalAuth(req, res, next) {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
 app.get('/sitemap.xml', (req, res) => {
-  const base = 'https://servemasteracademy.ca';
+  const base = APP_URL;
   const today = new Date().toISOString().split('T')[0];
   const staticPages = [
     ['/', '1.0', 'weekly'],
@@ -634,7 +639,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     (async () => { try {
       const wb = await getTenantBrandingForEmail(user.id);
       const unsubToken = await getOrCreateUnsubToken(user.id);
-      const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
+      const unsubUrl = `${APP_URL}/unsubscribe?token=${unsubToken}`;
       resend.emails.send({
         from: wb.fromLine,
         to: user.email,
@@ -647,13 +652,13 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
             <p style="margin-bottom:32px;">
-              <a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
+              <a href="${APP_URL}/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
             </p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p>
             <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br>
             <strong style="color:#f5f5f5;">Kirk Adamson</strong><br>
             Founder, ServeMaster Academy<br>
-            <a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+            <a href="mailto:${FROM_EMAIL}" style="color:#d4af37;text-decoration:none;">${FROM_EMAIL}</a></p>
             ${wb.poweredBy}
             ${emailFooter(unsubUrl)}
           </div>
@@ -725,9 +730,9 @@ app.post('/api/forgot-password', authLimiter, async (req, res) => {
       const token = crypto.randomBytes(32).toString('hex');
       const expires = new Date(Date.now() + 60 * 60 * 1000);
       await db.query('INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)', [user.id, token, expires]);
-      const resetLink = `https://servemasteracademy.ca/reset-password?token=${token}`;
+      const resetLink = `${APP_URL}/reset-password?token=${token}`;
       await resend.emails.send({
-        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        from: `Kirk Adamson <${FROM_EMAIL}>`,
         to: user.email,
         subject: 'Reset your ServeMaster Academy password',
         html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
