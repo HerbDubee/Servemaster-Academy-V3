@@ -398,6 +398,20 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         }
         break;
       }
+      case 'account.updated': {
+        const acct = event.data.object;
+        if (acct.id) {
+          const payoutsEnabled = acct.payouts_enabled === true;
+          const onboardStatus = acct.details_submitted
+            ? (acct.payouts_enabled ? 'complete' : 'restricted')
+            : 'link_sent';
+          await db.query(
+            `UPDATE influencers SET stripe_payouts_enabled = $1, stripe_onboard_status = $2 WHERE stripe_connect_id = $3`,
+            [payoutsEnabled, onboardStatus, acct.id]
+          ).catch(e => console.error('account.updated sync error:', e.message));
+        }
+        break;
+      }
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         console.warn('Payment failed for customer:', invoice.customer);
@@ -3262,6 +3276,9 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS eligible_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS blocked_reason TEXT`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS country_code TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_connect_id TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_onboard_status TEXT DEFAULT 'not_started'`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_payouts_enabled BOOLEAN DEFAULT FALSE`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_inf_commissions_eligible ON influencer_commissions(eligible_at) WHERE status = 'pending'`);
     promoteEligibleCommissions();
     // ── Monthly affiliate summary email tracker ────────────────────────────────
@@ -4362,6 +4379,7 @@ app.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res
   try {
     const rows = await db.query(`
       SELECT i.id, i.name, i.email, i.handle, i.tier, i.pref_payout_method, i.country_code, i.ref_code,
+             i.stripe_connect_id, i.stripe_onboard_status, i.stripe_payouts_enabled,
         COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) AS payout_ready_total,
         COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready') AS payout_ready_count,
         MIN(ic.eligible_at) FILTER (WHERE ic.status = 'payout_ready') AS earliest_eligible,
@@ -4377,10 +4395,212 @@ app.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res
       ...r,
       payout_ready_total: parseFloat(r.payout_ready_total),
       lifetime_paid: parseFloat(r.lifetime_paid),
-      meets_threshold: parseFloat(r.payout_ready_total) >= PAYOUT_THRESHOLD_CAD
+      meets_threshold: parseFloat(r.payout_ready_total) >= PAYOUT_THRESHOLD_CAD,
+      payout_action: !r.stripe_connect_id ? 'initiate_onboarding'
+        : r.stripe_onboard_status !== 'complete' ? 'await_onboarding'
+        : !r.stripe_payouts_enabled ? 'sync_status'
+        : parseFloat(r.payout_ready_total) < PAYOUT_THRESHOLD_CAD ? 'below_threshold'
+        : 'ready_to_pay'
     }));
     res.json({ threshold_cad: PAYOUT_THRESHOLD_CAD, affiliates: summary, generated_at: new Date().toISOString() });
   } catch (e) { console.error('Payout summary error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Stripe Connect: public refresh URL (Stripe hits this when onboarding link expires) ──
+app.get('/api/affiliate/onboarding-refresh/:ref_code', async (req, res) => {
+  const { ref_code } = req.params;
+  if (!ref_code) return res.status(400).send('Missing ref_code');
+  try {
+    const aff = await db.query(
+      `SELECT id, stripe_connect_id FROM influencers WHERE ref_code = $1 AND status = 'approved' AND stripe_connect_id IS NOT NULL`,
+      [ref_code.trim()]
+    );
+    if (!aff.rows.length) return res.status(404).send('Affiliate not found');
+    const stripe = await getUncachableStripeClient();
+    const APP_URL = process.env.APP_URL || 'https://servemasteracademy.ca';
+    const link = await stripe.accountLinks.create({
+      account: aff.rows[0].stripe_connect_id,
+      refresh_url: `${APP_URL}/api/affiliate/onboarding-refresh/${ref_code}`,
+      return_url: `${APP_URL}/partner-onboarding-complete`,
+      type: 'account_onboarding'
+    });
+    return res.redirect(link.url);
+  } catch (e) {
+    console.error('Onboarding refresh error:', e.message);
+    return res.status(500).send('Unable to refresh onboarding link. Please contact support.');
+  }
+});
+
+// ── Stripe Connect: initiate Express account onboarding for an affiliate ──────
+app.post('/api/admin/affiliates/:id/stripe-connect/initiate', adminMiddleware, async (req, res) => {
+  const affId = parseInt(req.params.id);
+  if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
+  try {
+    const affRes = await db.query('SELECT * FROM influencers WHERE id = $1', [affId]);
+    if (!affRes.rows.length) return res.status(404).json({ error: 'Affiliate not found' });
+    const aff = affRes.rows[0];
+    if (aff.status !== 'approved') return res.status(422).json({ error: 'Affiliate must be approved before initiating payout onboarding' });
+
+    const stripe = await getUncachableStripeClient();
+    const APP_URL = process.env.APP_URL || 'https://servemasteracademy.ca';
+    const country = (aff.country_code || 'CA').toUpperCase();
+
+    let connectId = aff.stripe_connect_id;
+    if (!connectId) {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country,
+        email: aff.email,
+        capabilities: { transfers: { requested: true } },
+        business_type: 'individual',
+        metadata: { influencer_id: String(affId), ref_code: aff.ref_code || '' }
+      });
+      connectId = account.id;
+      await db.query(
+        `UPDATE influencers SET stripe_connect_id = $1, stripe_onboard_status = 'not_started', stripe_payouts_enabled = FALSE WHERE id = $2`,
+        [connectId, affId]
+      );
+    }
+
+    const link = await stripe.accountLinks.create({
+      account: connectId,
+      refresh_url: `${APP_URL}/api/affiliate/onboarding-refresh/${aff.ref_code}`,
+      return_url: `${APP_URL}/partner-onboarding-complete`,
+      type: 'account_onboarding'
+    });
+
+    await db.query(`UPDATE influencers SET stripe_onboard_status = 'link_sent' WHERE id = $1`, [affId]);
+
+    const safeName = escapeHtml(aff.name);
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: aff.email,
+      subject: 'Action required: Set up your payout account — ServeMaster Academy',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+        <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+        <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p>
+        <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">You have commissions ready for payout. To receive your payment, please complete a quick one-time setup to add your bank details securely.</p>
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${link.url}" style="background:#FF5E3A;color:#fff;font-weight:700;font-size:16px;padding:16px 32px;border-radius:50px;text-decoration:none;display:inline-block;">Set Up Payout Account →</a>
+        </div>
+        <p style="font-size:13px;color:#a3a3a3;line-height:1.7;">This link expires in 24 hours. If it expires, reply to this email and I'll send a new one.</p>
+        <p style="font-size:13px;color:#6b7280;margin-top:8px;">Your commission earnings and tracking link are not affected by this setup.</p>
+        <p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+      </div>`
+    }).catch(e => console.error('Connect initiate email error:', e.message));
+
+    res.json({ success: true, stripe_connect_id: connectId, onboard_url: link.url, expires_at: new Date(link.expires_at * 1000).toISOString() });
+  } catch (e) { console.error('Stripe Connect initiate error:', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// ── Stripe Connect: generate fresh onboarding link (admin use) ─────────────────
+app.get('/api/admin/affiliates/:id/stripe-connect/link', adminMiddleware, async (req, res) => {
+  const affId = parseInt(req.params.id);
+  if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
+  try {
+    const affRes = await db.query('SELECT stripe_connect_id, ref_code FROM influencers WHERE id = $1', [affId]);
+    if (!affRes.rows.length) return res.status(404).json({ error: 'Affiliate not found' });
+    const { stripe_connect_id, ref_code } = affRes.rows[0];
+    if (!stripe_connect_id) return res.status(422).json({ error: 'No Stripe Connect account yet — run initiate first' });
+    const stripe = await getUncachableStripeClient();
+    const APP_URL = process.env.APP_URL || 'https://servemasteracademy.ca';
+    const link = await stripe.accountLinks.create({
+      account: stripe_connect_id,
+      refresh_url: `${APP_URL}/api/affiliate/onboarding-refresh/${ref_code}`,
+      return_url: `${APP_URL}/partner-onboarding-complete`,
+      type: 'account_onboarding'
+    });
+    res.json({ onboard_url: link.url, expires_at: new Date(link.expires_at * 1000).toISOString() });
+  } catch (e) { console.error('Connect link error:', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// ── Stripe Connect: sync account status from Stripe ───────────────────────────
+app.post('/api/admin/affiliates/:id/stripe-connect/sync', adminMiddleware, async (req, res) => {
+  const affId = parseInt(req.params.id);
+  if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
+  try {
+    const affRes = await db.query('SELECT stripe_connect_id FROM influencers WHERE id = $1', [affId]);
+    if (!affRes.rows.length) return res.status(404).json({ error: 'Affiliate not found' });
+    const { stripe_connect_id } = affRes.rows[0];
+    if (!stripe_connect_id) return res.status(422).json({ error: 'No Stripe Connect account yet' });
+    const stripe = await getUncachableStripeClient();
+    const acct = await stripe.accounts.retrieve(stripe_connect_id);
+    const payoutsEnabled = acct.payouts_enabled === true;
+    const onboardStatus = acct.details_submitted ? (payoutsEnabled ? 'complete' : 'restricted') : 'link_sent';
+    await db.query(
+      `UPDATE influencers SET stripe_payouts_enabled = $1, stripe_onboard_status = $2 WHERE id = $3`,
+      [payoutsEnabled, onboardStatus, affId]
+    );
+    res.json({ success: true, stripe_connect_id, payouts_enabled: payoutsEnabled, onboard_status: onboardStatus, details_submitted: acct.details_submitted });
+  } catch (e) { console.error('Connect sync error:', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// ── Stripe Connect: issue payout transfer for all payout_ready commissions ────
+app.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), async (req, res) => {
+  const PAYOUT_THRESHOLD_CAD = 50;
+  const affId = parseInt(req.params.id);
+  if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
+  try {
+    const affRes = await db.query(
+      'SELECT id, name, email, stripe_connect_id, stripe_payouts_enabled, stripe_onboard_status FROM influencers WHERE id = $1',
+      [affId]
+    );
+    if (!affRes.rows.length) return res.status(404).json({ error: 'Affiliate not found' });
+    const aff = affRes.rows[0];
+    if (!aff.stripe_connect_id) return res.status(422).json({ error: 'Affiliate has no Stripe Connect account — run initiate first' });
+    if (!aff.stripe_payouts_enabled) return res.status(422).json({ error: `Affiliate onboarding is not complete (status: ${aff.stripe_onboard_status})` });
+
+    const commRes = await db.query(
+      `SELECT id, amount_cad, activation_bonus FROM influencer_commissions WHERE influencer_id = $1 AND status = 'payout_ready'`,
+      [affId]
+    );
+    if (!commRes.rows.length) return res.status(422).json({ error: 'No payout_ready commissions for this affiliate' });
+
+    const totalCad = commRes.rows.reduce((sum, r) => sum + parseFloat(r.amount_cad) + parseFloat(r.activation_bonus || 0), 0);
+    if (totalCad < PAYOUT_THRESHOLD_CAD) {
+      return res.status(422).json({ error: `Below $${PAYOUT_THRESHOLD_CAD} CAD minimum threshold (current: $${totalCad.toFixed(2)} CAD)` });
+    }
+
+    const amountCents = Math.round(totalCad * 100);
+    const now = new Date();
+    const transferGroup = `payout-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const commissionIds = commRes.rows.map(r => r.id);
+
+    const stripe = await getUncachableStripeClient();
+    const transfer = await stripe.transfers.create({
+      amount: amountCents,
+      currency: 'cad',
+      destination: aff.stripe_connect_id,
+      transfer_group: transferGroup,
+      description: `ServeMaster Academy partner payout — ${commissionIds.length} commission(s) — ${transferGroup}`,
+      metadata: { influencer_id: String(affId), commission_ids: commissionIds.join(','), commission_count: String(commissionIds.length) }
+    });
+
+    await db.query(
+      `UPDATE influencer_commissions SET status = 'paid', payment_ref = $1, paid_at = NOW() WHERE id = ANY($2)`,
+      [transfer.id, commissionIds]
+    );
+
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: aff.email,
+      subject: `Payout sent — $${totalCad.toFixed(2)} CAD`,
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+        <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+        <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(aff.name)},</p>
+        <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your partner payout of <strong style="color:#FF5E3A;">$${totalCad.toFixed(2)} CAD</strong> has been sent to your account.</p>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;color:#a3a3a3;">
+          <p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Transfer reference:</strong> ${transfer.id}</p>
+          <p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Commissions included:</strong> ${commissionIds.length}</p>
+          <p style="margin:0;"><strong style="color:#f5f5f5;">Period:</strong> ${transferGroup}</p>
+        </div>
+        <p style="font-size:14px;color:#a3a3a3;line-height:1.7;">Funds typically arrive in your account within 1–3 business days depending on your bank. Thank you for promoting ServeMaster Academy.</p>
+        <p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+      </div>`
+    }).catch(e => console.error('Payout email error:', e.message));
+
+    res.json({ success: true, transfer_id: transfer.id, amount_cad: totalCad.toFixed(2), commissions_paid: commissionIds.length, transfer_group: transferGroup });
+  } catch (e) { console.error('Payout transfer error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res) => {
