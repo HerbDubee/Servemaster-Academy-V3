@@ -683,7 +683,16 @@
     <!-- Article header (shown when reading an article) -->
     <div id="kp-article-header" class="hidden items-center justify-between mb-6">
       <button onclick="backToKnowledgeIndex()" class="flex items-center gap-2 text-amber-400 hover:text-amber-300 text-sm font-semibold transition-colors">← Back to articles</button>
-      <button onclick="closeKnowledgePanel()" class="text-4xl leading-none hover:text-amber-400">×</button>
+      <div class="flex items-center gap-3">
+        <button id="kp-tts-btn" onclick="kpTtsPlay()" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-700 text-zinc-400 hover:border-amber-400 hover:text-amber-400 text-xs font-semibold transition-colors uppercase tracking-wide" style="letter-spacing:0.05em">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span id="kp-tts-label">Listen</span>
+        </button>
+        <button id="kp-tts-stop-btn" onclick="kpTtsStop()" class="hidden items-center justify-center w-6 h-6 rounded-full border border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-500 transition-colors" title="Stop">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        </button>
+        <button onclick="closeKnowledgePanel()" class="text-4xl leading-none hover:text-amber-400">×</button>
+      </div>
     </div>
     <!-- Index view -->
     <div id="kp-index" class="flex flex-col flex-1 min-h-0">
@@ -2045,6 +2054,7 @@ function openKnowledgePanel() {
 }
 
 function closeKnowledgePanel() {
+  kpTtsStop();
   document.getElementById('knowledge-panel').classList.add('hidden');
   const modalStillOpen = !document.getElementById('module-modal').classList.contains('hidden');
   if (!modalStillOpen) document.body.style.overflow = '';
@@ -2060,8 +2070,137 @@ function showKnowledgeIndex() {
 }
 
 function backToKnowledgeIndex() {
+  kpTtsStop();
   showKnowledgeIndex();
 }
+
+// ── Knowledge Panel TTS ───────────────────────────────────────────────────────
+let kpTtsState = 'idle';
+let kpTtsChunks = [];
+let kpTtsChunkIdx = 0;
+let kpTtsAudioCtx = null;
+let kpTtsActiveSource = null;
+
+function kpTtsGetAudioCtx() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!kpTtsAudioCtx || kpTtsAudioCtx.state === 'closed') kpTtsAudioCtx = new AC();
+  return kpTtsAudioCtx;
+}
+
+function kpTtsSetState(s) {
+  kpTtsState = s;
+  const btn = document.getElementById('kp-tts-btn');
+  const lbl = document.getElementById('kp-tts-label');
+  const stopBtn = document.getElementById('kp-tts-stop-btn');
+  if (!btn) return;
+  const active = s !== 'idle';
+  btn.style.borderColor = active ? '#f59e0b' : '';
+  btn.style.color = active ? '#f59e0b' : '';
+  if (stopBtn) stopBtn.style.display = active ? 'inline-flex' : 'none';
+  if (!lbl) return;
+  if (s === 'loading') lbl.textContent = 'Loading…';
+  else if (s === 'playing') lbl.textContent = 'Pause';
+  else if (s === 'paused') lbl.textContent = 'Resume';
+  else lbl.textContent = 'Listen';
+}
+
+function kpTtsSplit(text, max) {
+  max = max || 3900;
+  if (text.length <= max) return [text];
+  const chunks = [];
+  let rem = text;
+  while (rem.length > max) {
+    let sl = rem.substring(0, max);
+    let cut = Math.max(sl.lastIndexOf('. '), sl.lastIndexOf('! '), sl.lastIndexOf('? '));
+    if (cut < max / 2) cut = sl.lastIndexOf(', ');
+    if (cut < 100) cut = max - 1;
+    chunks.push(rem.substring(0, cut + 1).trim());
+    rem = rem.substring(cut + 1).trim();
+  }
+  if (rem) chunks.push(rem);
+  return chunks;
+}
+
+function kpTtsPlayChunk(idx) {
+  if (idx >= kpTtsChunks.length) { kpTtsSetState('idle'); return; }
+  kpTtsSetState('loading');
+  const siteLang = typeof lang !== 'undefined' ? lang : 'en';
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: kpTtsChunks[idx], lang: siteLang })
+  })
+  .then(function(r) { return r.ok ? r.arrayBuffer() : Promise.reject('err'); })
+  .then(function(buf) {
+    if (kpTtsState === 'idle') return;
+    const ctx = kpTtsGetAudioCtx();
+    if (!ctx) throw new Error('no ctx');
+    const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+    return resume.then(function() {
+      return new Promise(function(res, rej) { ctx.decodeAudioData(buf, res, rej); });
+    });
+  })
+  .then(function(decoded) {
+    if (kpTtsState === 'idle') return;
+    const ctx = kpTtsGetAudioCtx();
+    if (!ctx) return;
+    if (kpTtsActiveSource) { try { kpTtsActiveSource.stop(); } catch(e) {} }
+    kpTtsActiveSource = ctx.createBufferSource();
+    kpTtsActiveSource.buffer = decoded;
+    kpTtsActiveSource.connect(ctx.destination);
+    kpTtsActiveSource.onended = function() {
+      if (kpTtsState !== 'idle') { kpTtsChunkIdx++; kpTtsPlayChunk(kpTtsChunkIdx); }
+    };
+    kpTtsActiveSource.start(0);
+    kpTtsSetState('playing');
+  })
+  .catch(function() {
+    kpTtsStop();
+    if (!window.speechSynthesis) return;
+    const utt = new SpeechSynthesisUtterance(kpTtsChunks.join(' '));
+    const lmap = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
+    const sl2 = typeof lang !== 'undefined' ? lang : 'en';
+    utt.lang = lmap[sl2] || 'en-CA';
+    utt.rate = 0.92;
+    utt.onend = function() { kpTtsSetState('idle'); };
+    window.speechSynthesis.speak(utt);
+    kpTtsSetState('playing');
+  });
+}
+
+function kpTtsStop() {
+  if (kpTtsActiveSource) { try { kpTtsActiveSource.stop(); } catch(e) {} kpTtsActiveSource = null; }
+  if (kpTtsAudioCtx && kpTtsAudioCtx.state !== 'closed') { try { kpTtsAudioCtx.close(); } catch(e) {} }
+  kpTtsAudioCtx = null;
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  kpTtsChunks = [];
+  kpTtsChunkIdx = 0;
+  kpTtsSetState('idle');
+}
+
+function kpTtsPlay() {
+  if (kpTtsState === 'loading') return;
+  const ctx0 = kpTtsGetAudioCtx();
+  if (ctx0 && ctx0.state === 'suspended') ctx0.resume();
+  if (kpTtsState === 'idle') {
+    const contentEl = document.getElementById('kp-article-content');
+    const text = ((contentEl && (contentEl.innerText || contentEl.textContent)) || '').replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 50) return;
+    kpTtsChunks = kpTtsSplit(text);
+    kpTtsChunkIdx = 0;
+    kpTtsPlayChunk(0);
+  } else if (kpTtsState === 'playing') {
+    const ctx = kpTtsGetAudioCtx();
+    if (ctx) ctx.suspend().then(function() { kpTtsSetState('paused'); });
+    else if (window.speechSynthesis) { window.speechSynthesis.pause(); kpTtsSetState('paused'); }
+  } else if (kpTtsState === 'paused') {
+    const ctx = kpTtsGetAudioCtx();
+    if (ctx) ctx.resume().then(function() { kpTtsSetState('playing'); });
+    else if (window.speechSynthesis) { window.speechSynthesis.resume(); kpTtsSetState('playing'); }
+  }
+}
+// ── End Knowledge Panel TTS ───────────────────────────────────────────────────
 
 function renderKnowledgePanel() {
   const el = document.getElementById('kp-articles');
@@ -2091,6 +2230,12 @@ function renderKnowledgePanel() {
 }
 
 async function openArticleInPanel(slug, title) {
+  kpTtsStop();
+  const ttsBtn = document.getElementById('kp-tts-btn');
+  const ttsStopBtn = document.getElementById('kp-tts-stop-btn');
+  if (ttsBtn) { ttsBtn.style.display = 'none'; ttsBtn.style.borderColor = ''; ttsBtn.style.color = ''; }
+  if (ttsStopBtn) ttsStopBtn.style.display = 'none';
+
   const indexEl      = document.getElementById('kp-index');
   const articleEl    = document.getElementById('kp-article');
   const indexHeader  = document.getElementById('kp-index-header');
@@ -2120,6 +2265,8 @@ async function openArticleInPanel(slug, title) {
         `<h1 class="heading text-2xl font-bold mb-2 leading-tight">${title}</h1>` +
         `<hr class="border-zinc-700 mb-6">` +
         prose.innerHTML;
+      // Show TTS button now that content is ready
+      if (ttsBtn) ttsBtn.style.display = 'inline-flex';
     } else {
       throw new Error('no prose content');
     }
