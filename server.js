@@ -243,26 +243,77 @@ const AFFILIATE_RATES = {
 const AFFILIATE_TEAM_PLANS = new Set(['starter_team','starter_team_annual','pro_team','pro_team_annual']);
 const AFFILIATE_ACTIVATION_BONUS = 75;
 
+const WELCOME_BONUS_CAD = 100;
+
+async function maybeGrantWelcomeBonus(influencer, triggeringUserId) {
+  // Primary dedup guard — set atomically when the bonus is first created
+  if (influencer.welcome_bonus_granted_at) return;
+  // Confirm this is exactly the first qualified (non-blocked/reversed) sale commission
+  const saleCount = await db.query(
+    `SELECT COUNT(*) AS cnt FROM influencer_commissions
+     WHERE influencer_id = $1 AND commission_type = 'sale' AND status NOT IN ('blocked','reversed')`,
+    [influencer.id]
+  );
+  if (parseInt(saleCount.rows[0].cnt) !== 1) return;
+  try {
+    await db.query(
+      `INSERT INTO influencer_commissions
+         (influencer_id, user_id, commission_type, plan_type, amount_cad, commission_rate, months_applied, activation_bonus, eligible_at)
+       VALUES ($1, $2, 'welcome_bonus', 'welcome_bonus', $3, 0, 1, 0, NOW() + INTERVAL '14 days')`,
+      [influencer.id, triggeringUserId, WELCOME_BONUS_CAD]
+    );
+    await db.query(`UPDATE influencers SET welcome_bonus_granted_at = NOW() WHERE id = $1`, [influencer.id]);
+    console.log(`Welcome bonus ($${WELCOME_BONUS_CAD} CAD) granted for influencer ${influencer.id} (triggered by user ${triggeringUserId})`);
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: influencer.email,
+      subject: `🎉 You've earned your $${WELCOME_BONUS_CAD} first-sale welcome bonus — ServeMaster Academy`,
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(influencer.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Congratulations on your <strong>first qualified sale</strong>! You've unlocked a one-time welcome bonus:</p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;text-align:center;margin:24px 0;"><p style="font-size:13px;color:#a3a3a3;margin:0 0 8px;">First-Sale Welcome Bonus</p><p style="font-size:40px;font-weight:700;color:#FF5E3A;margin:0;">$${WELCOME_BONUS_CAD} CAD</p></div><p style="font-size:15px;color:#a3a3a3;line-height:1.7;">This bonus is subject to the standard 14-day hold and will appear in your next eligible payout alongside your commission earnings. It won't be awarded again — it's a one-time reward for making your first sale.</p><p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-top:12px;">Keep sharing — every new subscriber earns you more.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
+    }).catch(e => console.error('Welcome bonus email error:', e.message));
+  } catch (e) {
+    if (e.code === '23505') {
+      // Unique index violation — bonus already exists; safe to ignore
+      console.warn(`Welcome bonus already exists for influencer ${influencer.id}, skipping.`);
+    } else {
+      console.error('maybeGrantWelcomeBonus error:', e.message);
+    }
+  }
+}
+
 async function processInfluencerCommission(user, plan) {
   if (!user.influencer_ref_code) return;
   const price = AFFILIATE_PLAN_PRICES_CAD[plan];
   const rate = AFFILIATE_RATES[plan];
   if (!price || !rate) return;
-  const inf = await db.query(`SELECT id, name, email FROM influencers WHERE ref_code = $1 AND status = 'approved'`, [user.influencer_ref_code]);
+  const inf = await db.query(
+    `SELECT id, name, email, welcome_bonus_granted_at FROM influencers WHERE ref_code = $1 AND status = 'approved'`,
+    [user.influencer_ref_code]
+  );
   if (!inf.rows.length) return;
   const influencer = inf.rows[0];
-  const existing = await db.query(`SELECT id FROM influencer_commissions WHERE user_id = $1`, [user.id]);
+  // Deduplicate: only one sale commission per user
+  const existing = await db.query(
+    `SELECT id FROM influencer_commissions WHERE user_id = $1 AND commission_type = 'sale'`,
+    [user.id]
+  );
   if (existing.rows.length) return;
   const amount = parseFloat((price * rate).toFixed(2));
   const isTeam = AFFILIATE_TEAM_PLANS.has(plan);
   const prevTeam = isTeam
-    ? await db.query(`SELECT id FROM influencer_commissions WHERE influencer_id = $1 AND plan_type = ANY($2)`, [influencer.id, Array.from(AFFILIATE_TEAM_PLANS)])
+    ? await db.query(
+        `SELECT id FROM influencer_commissions WHERE influencer_id = $1 AND plan_type = ANY($2) AND commission_type = 'sale'`,
+        [influencer.id, Array.from(AFFILIATE_TEAM_PLANS)]
+      )
     : { rows: [1] };
   const activationBonus = isTeam && !prevTeam.rows.length ? AFFILIATE_ACTIVATION_BONUS : 0;
   await db.query(
-    `INSERT INTO influencer_commissions (influencer_id, user_id, plan_type, amount_cad, commission_rate, months_applied, activation_bonus, eligible_at) VALUES ($1, $2, $3, $4, $5, 1, $6, NOW() + INTERVAL '14 days')`,
+    `INSERT INTO influencer_commissions
+       (influencer_id, user_id, commission_type, plan_type, amount_cad, commission_rate, months_applied, activation_bonus, eligible_at)
+     VALUES ($1, $2, 'sale', $3, $4, $5, 1, $6, NOW() + INTERVAL '14 days')`,
     [influencer.id, user.id, plan, amount, rate, activationBonus]
   );
+  // Check and grant the one-time $100 welcome bonus after first qualifying sale
+  await maybeGrantWelcomeBonus(influencer, user.id);
   const totalEarned = amount + activationBonus;
   const bonusLine = activationBonus > 0
     ? `<div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:12px 16px;margin-top:8px;font-size:13px;color:#a3a3a3;">+<strong style="color:#f5f5f5;">$${activationBonus} CAD</strong> one-time Team Plan activation bonus included</div>`
@@ -3276,6 +3327,13 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS eligible_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS blocked_reason TEXT`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS country_code TEXT`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS commission_type TEXT DEFAULT 'sale'`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS welcome_bonus_granted_at TIMESTAMPTZ`);
+    // Replace the unconditional user_id unique index with a sale-only partial index so welcome_bonus
+    // rows can share the same user_id as their triggering sale commission.
+    await db.query(`DROP INDEX IF EXISTS idx_inf_commissions_user`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_inf_commissions_user_sale ON influencer_commissions(user_id) WHERE commission_type = 'sale'`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_inf_welcome_bonus ON influencer_commissions(influencer_id) WHERE commission_type = 'welcome_bonus'`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_connect_id TEXT`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_onboard_status TEXT DEFAULT 'not_started'`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS stripe_payouts_enabled BOOLEAN DEFAULT FALSE`);
@@ -4256,7 +4314,9 @@ app.get('/api/admin/affiliates', adminMiddleware, async (req, res) => {
         COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) AS payout_ready_amount,
         COUNT(ic.id) FILTER (WHERE ic.status = 'blocked') AS blocked_count,
         COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'paid'), 0) AS total_paid,
-        COUNT(ic.id) AS total_conversions
+        COUNT(ic.id) FILTER (WHERE ic.commission_type = 'sale') AS total_conversions,
+        COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.commission_type = 'welcome_bonus' AND ic.status NOT IN ('blocked','reversed')), 0) AS welcome_bonus_total,
+        (i.welcome_bonus_granted_at IS NOT NULL) AS welcome_bonus_granted
       FROM influencers i
       LEFT JOIN influencer_commissions ic ON ic.influencer_id = i.id
       GROUP BY i.id
@@ -4380,8 +4440,13 @@ app.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res
     const rows = await db.query(`
       SELECT i.id, i.name, i.email, i.handle, i.tier, i.pref_payout_method, i.country_code, i.ref_code,
              i.stripe_connect_id, i.stripe_onboard_status, i.stripe_payouts_enabled,
+             i.welcome_bonus_granted_at,
         COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) AS payout_ready_total,
-        COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready') AS payout_ready_count,
+        COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'payout_ready' AND ic.commission_type = 'sale'), 0) AS sale_ready_total,
+        COALESCE(SUM(ic.activation_bonus) FILTER (WHERE ic.status = 'payout_ready' AND ic.commission_type = 'sale'), 0) AS activation_bonus_ready,
+        COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'payout_ready' AND ic.commission_type = 'welcome_bonus'), 0) AS welcome_bonus_ready,
+        COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready' AND ic.commission_type = 'sale') AS sale_ready_count,
+        COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready' AND ic.commission_type = 'welcome_bonus') AS welcome_bonus_ready_count,
         MIN(ic.eligible_at) FILTER (WHERE ic.status = 'payout_ready') AS earliest_eligible,
         COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'paid'), 0) AS lifetime_paid
       FROM influencers i
@@ -4394,6 +4459,9 @@ app.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res
     const summary = rows.rows.map(r => ({
       ...r,
       payout_ready_total: parseFloat(r.payout_ready_total),
+      sale_ready_total: parseFloat(r.sale_ready_total),
+      activation_bonus_ready: parseFloat(r.activation_bonus_ready),
+      welcome_bonus_ready: parseFloat(r.welcome_bonus_ready),
       lifetime_paid: parseFloat(r.lifetime_paid),
       meets_threshold: parseFloat(r.payout_ready_total) >= PAYOUT_THRESHOLD_CAD,
       payout_action: !r.stripe_connect_id ? 'initiate_onboarding'
@@ -4551,12 +4619,16 @@ app.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), as
     if (!aff.stripe_payouts_enabled) return res.status(422).json({ error: `Affiliate onboarding is not complete (status: ${aff.stripe_onboard_status})` });
 
     const commRes = await db.query(
-      `SELECT id, amount_cad, activation_bonus FROM influencer_commissions WHERE influencer_id = $1 AND status = 'payout_ready'`,
+      `SELECT id, commission_type, plan_type, amount_cad, activation_bonus FROM influencer_commissions WHERE influencer_id = $1 AND status = 'payout_ready'`,
       [affId]
     );
     if (!commRes.rows.length) return res.status(422).json({ error: 'No payout_ready commissions for this affiliate' });
 
-    const totalCad = commRes.rows.reduce((sum, r) => sum + parseFloat(r.amount_cad) + parseFloat(r.activation_bonus || 0), 0);
+    const saleRows = commRes.rows.filter(r => r.commission_type === 'sale');
+    const welcomeRows = commRes.rows.filter(r => r.commission_type === 'welcome_bonus');
+    const saleTotal = saleRows.reduce((s, r) => s + parseFloat(r.amount_cad) + parseFloat(r.activation_bonus || 0), 0);
+    const welcomeTotal = welcomeRows.reduce((s, r) => s + parseFloat(r.amount_cad), 0);
+    const totalCad = saleTotal + welcomeTotal;
     if (totalCad < PAYOUT_THRESHOLD_CAD) {
       return res.status(422).json({ error: `Below $${PAYOUT_THRESHOLD_CAD} CAD minimum threshold (current: $${totalCad.toFixed(2)} CAD)` });
     }
@@ -4572,14 +4644,33 @@ app.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), as
       currency: 'cad',
       destination: aff.stripe_connect_id,
       transfer_group: transferGroup,
-      description: `ServeMaster Academy partner payout — ${commissionIds.length} commission(s) — ${transferGroup}`,
-      metadata: { influencer_id: String(affId), commission_ids: commissionIds.join(','), commission_count: String(commissionIds.length) }
+      description: `ServeMaster Academy partner payout — ${saleRows.length} sale(s)${welcomeRows.length ? ` + $${WELCOME_BONUS_CAD} welcome bonus` : ''} — ${transferGroup}`,
+      metadata: {
+        influencer_id: String(affId),
+        sale_count: String(saleRows.length),
+        welcome_bonus_count: String(welcomeRows.length),
+        commission_ids: commissionIds.join(',')
+      }
     });
 
     await db.query(
       `UPDATE influencer_commissions SET status = 'paid', payment_ref = $1, paid_at = NOW() WHERE id = ANY($2)`,
       [transfer.id, commissionIds]
     );
+
+    const activationBonusTotal = saleRows.reduce((s, r) => s + parseFloat(r.activation_bonus || 0), 0);
+    const saleCommissionOnly = saleRows.reduce((s, r) => s + parseFloat(r.amount_cad), 0);
+    const breakdownLines = [
+      saleRows.length > 0
+        ? `<tr><td style="padding:6px 0;color:#a3a3a3;">Sale commissions (${saleRows.length})</td><td style="padding:6px 0;color:#f5f5f5;text-align:right;">$${saleCommissionOnly.toFixed(2)} CAD</td></tr>`
+        : '',
+      activationBonusTotal > 0
+        ? `<tr><td style="padding:6px 0;color:#a3a3a3;">Team activation bonuses</td><td style="padding:6px 0;color:#f5f5f5;text-align:right;">$${activationBonusTotal.toFixed(2)} CAD</td></tr>`
+        : '',
+      welcomeRows.length > 0
+        ? `<tr><td style="padding:6px 0;color:#a3a3a3;">First-sale welcome bonus</td><td style="padding:6px 0;color:#FF5E3A;text-align:right;font-weight:700;">$${welcomeTotal.toFixed(2)} CAD</td></tr>`
+        : '',
+    ].filter(Boolean).join('');
 
     resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
@@ -4589,9 +4680,14 @@ app.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), as
         <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
         <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(aff.name)},</p>
         <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your partner payout of <strong style="color:#FF5E3A;">$${totalCad.toFixed(2)} CAD</strong> has been sent to your account.</p>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;">
+          <table style="width:100%;border-collapse:collapse;">
+            ${breakdownLines}
+            <tr style="border-top:1px solid #333;"><td style="padding:10px 0 0;color:#f5f5f5;font-weight:700;">Total</td><td style="padding:10px 0 0;color:#FF5E3A;font-weight:700;text-align:right;font-size:15px;">$${totalCad.toFixed(2)} CAD</td></tr>
+          </table>
+        </div>
         <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;color:#a3a3a3;">
           <p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Transfer reference:</strong> ${transfer.id}</p>
-          <p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Commissions included:</strong> ${commissionIds.length}</p>
           <p style="margin:0;"><strong style="color:#f5f5f5;">Period:</strong> ${transferGroup}</p>
         </div>
         <p style="font-size:14px;color:#a3a3a3;line-height:1.7;">Funds typically arrive in your account within 1–3 business days depending on your bank. Thank you for promoting ServeMaster Academy.</p>
@@ -4599,7 +4695,20 @@ app.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), as
       </div>`
     }).catch(e => console.error('Payout email error:', e.message));
 
-    res.json({ success: true, transfer_id: transfer.id, amount_cad: totalCad.toFixed(2), commissions_paid: commissionIds.length, transfer_group: transferGroup });
+    res.json({
+      success: true,
+      transfer_id: transfer.id,
+      transfer_group: transferGroup,
+      breakdown: {
+        sale_commissions: saleCommissionOnly.toFixed(2),
+        activation_bonuses: activationBonusTotal.toFixed(2),
+        welcome_bonus: welcomeTotal.toFixed(2),
+        total: totalCad.toFixed(2)
+      },
+      commissions_paid: commissionIds.length,
+      sale_count: saleRows.length,
+      welcome_bonus_included: welcomeRows.length > 0
+    });
   } catch (e) { console.error('Payout transfer error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
@@ -4629,14 +4738,14 @@ app.get('/api/admin/affiliates/export-csv', adminMiddleware, async (req, res) =>
     }
     const rows = await db.query(`
       SELECT ic.id, i.name AS partner_name, i.email AS partner_email, i.handle, i.tier,
-             ic.plan_type, ic.amount_cad, ic.commission_rate, ic.activation_bonus,
+             ic.commission_type, ic.plan_type, ic.amount_cad, ic.commission_rate, ic.activation_bonus,
              ic.status, ic.payment_ref, ic.paid_at, ic.created_at
       FROM influencer_commissions ic
       JOIN influencers i ON i.id = ic.influencer_id
       ${whereClause}
       ORDER BY ic.created_at DESC
     `, params);
-    const cols = ['id','partner_name','partner_email','handle','tier','plan_type','amount_cad','commission_rate','activation_bonus','status','payment_ref','paid_at','created_at'];
+    const cols = ['id','partner_name','partner_email','handle','tier','commission_type','plan_type','amount_cad','commission_rate','activation_bonus','status','payment_ref','paid_at','created_at'];
     const csv = [cols.join(','), ...rows.rows.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="affiliates-${month || 'all'}.csv"`);
@@ -4654,11 +4763,18 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
     const summaries = [];
     for (const inf of approved.rows) {
       const allTime = await db.query(
-        `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as total FROM influencer_commissions WHERE influencer_id = $1`, [inf.id]
+        `SELECT COUNT(*) FILTER (WHERE commission_type = 'sale') as cnt,
+                COALESCE(SUM(amount_cad),0) as total,
+                COALESCE(SUM(amount_cad) FILTER (WHERE commission_type = 'welcome_bonus' AND status NOT IN ('blocked','reversed')),0) as welcome_bonus_total
+         FROM influencer_commissions WHERE influencer_id = $1`, [inf.id]
       );
       if (parseInt(allTime.rows[0].cnt) === 0) continue;
       const thisMonth = await db.query(
-        `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as earned, COALESCE(SUM(activation_bonus),0) as bonuses FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
+        `SELECT COUNT(*) FILTER (WHERE commission_type = 'sale') as cnt,
+                COALESCE(SUM(amount_cad) FILTER (WHERE commission_type = 'sale'),0) as earned,
+                COALESCE(SUM(activation_bonus),0) as bonuses,
+                COALESCE(SUM(amount_cad) FILTER (WHERE commission_type = 'welcome_bonus'),0) as welcome_bonus
+         FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
         [inf.id, prevMonthStart, prevMonthEnd]
       );
       const pending = await db.query(
@@ -4670,8 +4786,10 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
         conversions: parseInt(thisMonth.rows[0].cnt),
         earned: parseFloat(thisMonth.rows[0].earned).toFixed(2),
         bonuses: parseFloat(thisMonth.rows[0].bonuses).toFixed(2),
+        welcome_bonus: parseFloat(thisMonth.rows[0].welcome_bonus).toFixed(2),
         pending: parseFloat(pending.rows[0].total).toFixed(2),
         allTime: parseFloat(allTime.rows[0].total).toFixed(2),
+        allTimeWelcomeBonus: parseFloat(allTime.rows[0].welcome_bonus_total).toFixed(2),
       });
     }
     res.json({ month: prevMonth.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }), summaries });
@@ -4693,7 +4811,7 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
       for (const inf of approved.rows) {
         try {
           const cnt = await db.query(
-            `SELECT COUNT(*) as cnt FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
+            `SELECT COUNT(*) as cnt FROM influencer_commissions WHERE influencer_id = $1 AND commission_type = 'sale' AND created_at >= $2 AND created_at < $3`,
             [inf.id, prevMonthStart, prevMonthEnd]
           );
           const sales = parseInt(cnt.rows[0].cnt);
@@ -4710,15 +4828,20 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
           );
           if (alreadySent.rows.length) continue;
           const allTime = await db.query(
-            `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as total FROM influencer_commissions WHERE influencer_id = $1`, [inf.id]
+            `SELECT COUNT(*) FILTER (WHERE commission_type = 'sale') as cnt,
+                    COALESCE(SUM(amount_cad),0) as total
+             FROM influencer_commissions WHERE influencer_id = $1`, [inf.id]
           );
           if (parseInt(allTime.rows[0].cnt) === 0) continue;
           const thisMonth = await db.query(
-            `SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cad),0) as earned FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
+            `SELECT COUNT(*) FILTER (WHERE commission_type = 'sale') as cnt,
+                    COALESCE(SUM(amount_cad) FILTER (WHERE commission_type = 'sale'),0) as earned,
+                    COALESCE(SUM(amount_cad) FILTER (WHERE commission_type = 'welcome_bonus'),0) as welcome_bonus
+             FROM influencer_commissions WHERE influencer_id = $1 AND created_at >= $2 AND created_at < $3`,
             [inf.id, prevMonthStart, prevMonthEnd]
           );
           const pending = await db.query(
-            `SELECT COALESCE(SUM(amount_cad),0) as total FROM influencer_commissions WHERE influencer_id = $1 AND status = 'pending'`, [inf.id]
+            `SELECT COALESCE(SUM(amount_cad + activation_bonus),0) as total FROM influencer_commissions WHERE influencer_id = $1 AND status IN ('pending','payout_ready')`, [inf.id]
           );
           const safeName = escapeHtml(inf.name);
           const link = `https://servemasteracademy.ca/r/${inf.ref_code}`;
