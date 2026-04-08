@@ -395,14 +395,18 @@
 
     var container = null;
 
-    var minReadEl = document.querySelector('[data-i18n="blog_min_read"]');
-    if (minReadEl) container = minReadEl.closest('.flex');
+    container = document.getElementById('article-meta');
+
+    if (!container) {
+      var minReadEl = document.querySelector('[data-i18n="blog_min_read"]');
+      if (minReadEl) container = minReadEl.closest('#article-meta') || minReadEl.closest('.flex') || minReadEl.parentElement;
+    }
 
     if (!container) {
       var flexDivs = document.querySelectorAll('.flex.items-center');
       for (var i = 0; i < flexDivs.length; i++) {
         var t = flexDivs[i].textContent || '';
-        if (t.indexOf('ServeMaster') !== -1 && t.indexOf('min') !== -1) {
+        if (t.indexOf('ServeMaster') !== -1 && /\d+\s*min/.test(t)) {
           container = flexDivs[i]; break;
         }
       }
@@ -481,10 +485,10 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      requestAnimationFrame(function () { tryInject(4); });
+      requestAnimationFrame(function () { tryInject(8); });
     });
   } else {
-    requestAnimationFrame(function () { tryInject(4); });
+    requestAnimationFrame(function () { tryInject(8); });
   }
 
   window.addEventListener('beforeunload', handleStop);
