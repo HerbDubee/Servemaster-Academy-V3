@@ -112,8 +112,6 @@ details[open] summary::after { content: '−'; }
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
     <div class="text-sm text-zinc-300"><span class="font-semibold text-white">48</span> <span data-i18n="pricing_social_restaurants" class="text-zinc-500">restaurants active</span></div>
     <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
-    <div class="text-sm text-zinc-300"><span class="font-semibold text-white">92%</span> <span data-i18n="pricing_social_trial" class="text-zinc-500">trial-to-paid rate</span></div>
-    <div class="w-px h-4 bg-zinc-700 hidden sm:block"></div>
     <div class="text-sm text-zinc-300"><span data-i18n="pricing_social_made" class="text-zinc-500">🇨🇦 Made in Canada · CASL compliant</span></div>
   </div>
 
@@ -228,7 +226,7 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_starter_h" class="text-2xl font-semibold">Starter Team</h3>
       <p data-i18n="pricing_starter_sub" class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_starter_promo_trial" class="text-sm text-zinc-400 mt-1">Up to 10 staff · Per location · 14-day trial</p>
+      <p data-i18n="pricing_starter_promo_trial" class="text-sm text-zinc-400 mt-1">Up to 10 staff · Per location · 30-day trial</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat1">Up to 10 staff accounts</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat2">Full module &amp; scenario access</span></li>
@@ -236,8 +234,8 @@ details[open] summary::after { content: '−'; }
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat4">Assign required modules</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat5">Weekly team digest</span></li>
       </ul>
-      <button onclick="checkout('starter_team')" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start 14-Day Team Trial
+      <button onclick="openPricingTrialModal()" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Request 30-Day Team Trial
       </button>
     </div>
 
@@ -247,7 +245,7 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_pro_h" class="text-2xl font-semibold">Pro Team</h3>
       <p data-i18n="pricing_pro_sub" class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_pro_trial" class="text-sm text-zinc-400 mt-1">Unlimited staff · Custom scenarios · 14-day trial</p>
+      <p data-i18n="pricing_pro_trial" class="text-sm text-zinc-400 mt-1">Unlimited staff · Custom scenarios · 30-day trial</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat1">Unlimited staff accounts</span></li>
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat2">Everything in Starter</span></li>
@@ -255,8 +253,8 @@ details[open] summary::after { content: '−'; }
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat4">Advanced analytics</span></li>
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat5">Priority support</span></li>
       </ul>
-      <button onclick="checkout('pro_team')" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start 14-Day Team Trial
+      <button onclick="openPricingTrialModal()" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Request 30-Day Team Trial
       </button>
     </div>
 
@@ -439,6 +437,31 @@ details[open] summary::after { content: '−'; }
   </div>
 
 </main>
+
+<!-- Team Trial Request Modal -->
+<div id="pricing-trial-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" style="background:rgba(0,0,0,0.75);">
+  <div class="relative w-full max-w-md rounded-3xl p-8 text-white" style="background:#0f1117; border:1px solid rgba(255,255,255,0.08);">
+    <button onclick="closePricingTrialModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+    <div id="pricing-trial-form-wrap">
+      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Starter &amp; Pro Team Trial</p>
+      <h2 class="heading text-2xl font-bold text-white mb-1">Request Your 30-Day Trial</h2>
+      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">Kirk will review your request and send your access code within 1 business day — no credit card required.</p>
+      <form id="pricing-trial-form" onsubmit="submitPricingTrialRequest(event)" class="space-y-4">
+        <input type="text" name="name" placeholder="Your name" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="email" name="email" placeholder="Work email" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="text" name="restaurant" placeholder="Restaurant name" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="number" name="staff" placeholder="Number of staff" min="1" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <button type="submit" id="pricing-trial-submit" class="w-full font-bold py-3.5 rounded-3xl text-black transition-colors hover:opacity-90" style="background:#7dd3fc;">Send Request →</button>
+      </form>
+    </div>
+    <div id="pricing-trial-success" class="text-center hidden">
+      <div class="text-5xl mb-4">🎉</div>
+      <h3 class="heading text-2xl text-white mb-2">Request Sent!</h3>
+      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and send your 30-day access code within 1 business day.</p>
+      <button onclick="closePricingTrialModal()" class="font-semibold text-sm py-2.5 px-6 rounded-2xl border border-zinc-600 hover:border-zinc-400 text-white transition-colors">Close</button>
+    </div>
+  </div>
+</div>
 
 <footer class="border-t border-zinc-800 py-12">
   <div class="max-w-6xl mx-auto px-4">
@@ -641,6 +664,46 @@ function setCurrency(cur) {
     if (firstNode) firstNode.textContent = '$' + converted + ' ';
     if (sym) sym.textContent = suffix;
   });
+}
+
+function openPricingTrialModal() {
+  document.getElementById('pricing-trial-modal').classList.remove('hidden');
+}
+function closePricingTrialModal() {
+  document.getElementById('pricing-trial-modal').classList.add('hidden');
+  document.getElementById('pricing-trial-form-wrap').classList.remove('hidden');
+  document.getElementById('pricing-trial-success').classList.add('hidden');
+  document.getElementById('pricing-trial-form').reset();
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('pricing-trial-modal').addEventListener('click', function(e) {
+    if (e.target === this) closePricingTrialModal();
+  });
+});
+async function submitPricingTrialRequest(e) {
+  e.preventDefault();
+  const btn = document.getElementById('pricing-trial-submit');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const form = e.target;
+  const body = {
+    name: form.name.value,
+    email: form.email.value,
+    restaurant: form.restaurant.value,
+    staffCount: form.staff.value || ''
+  };
+  try {
+    const res = await fetch('/api/request-team-trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error('Request failed');
+    document.getElementById('pricing-trial-form-wrap').classList.add('hidden');
+    document.getElementById('pricing-trial-success').classList.remove('hidden');
+  } catch {
+    btn.disabled = false; btn.textContent = 'Send Request →';
+    alert('Something went wrong. Please try again or email kirk_adamson@servemasteracademy.ca');
+  }
 }
 </script>
 
