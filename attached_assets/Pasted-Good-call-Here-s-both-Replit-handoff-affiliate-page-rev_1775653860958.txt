@@ -1,0 +1,119 @@
+Good call.
+
+Here’s both:
+
+---
+
+## Replit handoff: affiliate-page revision guidance
+
+```bash
+Please revise the ServeMaster affiliate/public partner messaging using the attached internal guidance.
+
+Use these files as the source of truth:
+- shared-memory/partner-faq-draft-v1.md
+- shared-memory/affiliate-payout-policy-recommended-v1.md
+- shared-memory/replit-brief-stripe-affiliate-payout-upgrade.md
+
+Public-facing goals:
+1. Keep the partner message simple and credible
+2. Avoid overpromising payout mechanics before Stripe payout flow is live
+3. Keep top-of-funnel partner messaging aligned with approved safe wording
+
+Please update/review:
+- affiliates page
+- any partner application copy
+- any affiliate approval/onboarding email templates that are safe to align now
+
+Public/core partner message should stay centered on:
+- recurring commissions on qualified referrals
+- 90-day cookie
+- $100 welcome bonus after first qualified sale
+- $75 activation bonus on qualifying team-plan referrals
+
+Please avoid or remove from broad public marketing unless explicitly approved:
+- passive income framing
+- easy money wording
+- guaranteed earnings language
+- public Stripe payout claims before live launch
+- unapproved 92% trial-to-paid claim
+- trial-length claims while 14-day vs 30-day conflict exists
+- in-feed team pricing claims while pricing/frame conflict exists
+- detailed extra tier/bonus mechanics unless confirmed
+
+Please report back with:
+- exact wording changes made
+- pages/templates updated
+- any conflicts still blocking alignment
+```
+
+---
+
+## Replit handoff: payout implementation checklist
+
+```bash
+Please use the existing affiliate/referral/commission system and upgrade it toward a Stripe-backed payout workflow rather than rebuilding from scratch.
+
+Use these files:
+- shared-memory/replit-brief-stripe-affiliate-payout-upgrade.md
+- shared-memory/stripe-affiliate-codepath-map.md
+- shared-memory/affiliate-payout-policy-recommended-v1.md
+- shared-memory/affiliate-payout-operator-workflow-v1.md
+
+Recommended v1 policy to implement against:
+- payout cadence: monthly on the 1st
+- minimum payout threshold: $50 CAD
+- qualification rule: first successful paid invoice + 14-day hold
+- refunded/failed payments do not count
+- payout geography: Stripe-supported countries only
+- do not mention Stripe publicly until live/tested end-to-end
+
+Implementation direction:
+1. keep current affiliate application + approval + tracking flow
+2. keep current commission ledger
+3. add payout readiness / eligibility logic
+4. prepare or implement Stripe payout onboarding state
+5. upgrade admin payout flow to support payout-ready vs paid vs blocked/reversed states
+6. preserve monthly affiliate summary/reporting flow
+
+Please report back with:
+- schema changes made
+- endpoints changed/added
+- admin workflow changes
+- Stripe onboarding/payout approach chosen
+- blockers/questions requiring operator input
+- whether public Stripe wording is still premature
+```
+
+---
+
+## What I need here from you
+For now, very little.
+
+### I can keep moving without you on:
+- refining the partner messaging system
+- tightening internal docs
+- drafting operator workflows
+- preparing more Replit-ready handoffs
+- keeping the affiliate/content cadence running
+
+### I’ll need you only when one of these becomes necessary:
+1. **business-rule confirmation**
+   - if you want to override the recommended defaults
+
+2. **public-positioning approval**
+   - if we need to formally bless new partner-page wording
+
+3. **Stripe-account/operator action**
+   - anything only you can do in Stripe or the live business account
+
+4. **final go/no-go calls**
+   - when it’s time to expose payout mechanics publicly
+
+## Short version
+### Replit needs:
+- the two blocks above
+
+### I need from you:
+- only decision-level input when something truly needs your call
+
+If you want, I can next turn this into a **single paste-ready master message to Replit** combining both tracks.

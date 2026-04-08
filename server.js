@@ -260,7 +260,7 @@ async function processInfluencerCommission(user, plan) {
     : { rows: [1] };
   const activationBonus = isTeam && !prevTeam.rows.length ? AFFILIATE_ACTIVATION_BONUS : 0;
   await db.query(
-    `INSERT INTO influencer_commissions (influencer_id, user_id, plan_type, amount_cad, commission_rate, months_applied, activation_bonus) VALUES ($1, $2, $3, $4, $5, 1, $6)`,
+    `INSERT INTO influencer_commissions (influencer_id, user_id, plan_type, amount_cad, commission_rate, months_applied, activation_bonus, eligible_at) VALUES ($1, $2, $3, $4, $5, 1, $6, NOW() + INTERVAL '14 days')`,
     [influencer.id, user.id, plan, amount, rate, activationBonus]
   );
   const totalEarned = amount + activationBonus;
@@ -274,6 +274,23 @@ async function processInfluencerCommission(user, plan) {
     html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(influencer.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Great news — someone who clicked your ServeMaster Academy link just subscribed to the <strong style="color:#FF5E3A;">${escapeHtml(plan.replace(/_/g,' '))}</strong> plan.</p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;text-align:center;margin:24px 0;"><p style="font-size:13px;color:#a3a3a3;margin:0 0 8px;">Commission Earned (${Math.round(rate * 100)}% of $${price})</p><p style="font-size:32px;font-weight:700;color:#FF5E3A;margin:0;">$${amount} CAD</p></div>${bonusLine}<p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-top:16px;">This will be included in your next monthly payout summary. Payouts are processed on the 1st of each month (minimum $50, via PayPal, Wise, or bank transfer).</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
   }).catch(e => console.error('Influencer commission email error:', e.message));
 }
+
+// ── Payout eligibility promotion ─────────────────────────────────────────────
+async function promoteEligibleCommissions() {
+  try {
+    const result = await db.query(
+      `UPDATE influencer_commissions
+       SET status = 'payout_ready'
+       WHERE status = 'pending' AND eligible_at IS NOT NULL AND eligible_at <= NOW()
+       RETURNING id, influencer_id, amount_cad, activation_bonus`
+    );
+    if (result.rows.length > 0) {
+      console.log(`Payout eligibility: promoted ${result.rows.length} commission(s) to payout_ready`);
+    }
+  } catch (e) { console.error('promoteEligibleCommissions error:', e.message); }
+}
+// Scheduled every 6 hours; initial run triggered after schema additions complete
+setInterval(promoteEligibleCommissions, 6 * 60 * 60 * 1000);
 
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -362,6 +379,23 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         const sub = event.data.object;
         await db.query('UPDATE users SET subscription_status = $1, stripe_subscription_id = NULL WHERE stripe_subscription_id = $2', ['free', sub.id]);
         await db.query("UPDATE restaurants SET plan = 'free' WHERE (SELECT stripe_subscription_id FROM users WHERE users.restaurant_id = restaurants.id LIMIT 1) = $1", [sub.id]);
+        break;
+      }
+      case 'charge.refunded': {
+        const charge = event.data.object;
+        if (charge.customer) {
+          const refundedUser = await db.query('SELECT id FROM users WHERE stripe_customer_id = $1', [charge.customer]);
+          if (refundedUser.rows.length) {
+            const userId = refundedUser.rows[0].id;
+            await db.query(
+              `UPDATE influencer_commissions
+               SET status = 'blocked', blocked_reason = 'refund_detected'
+               WHERE user_id = $1 AND status IN ('pending', 'payout_ready')`,
+              [userId]
+            ).catch(e => console.error('Commission block on refund error:', e.message));
+            console.log(`Commission blocked for user ${userId} due to charge refund (${charge.id})`);
+          }
+        }
         break;
       }
       case 'invoice.payment_failed': {
@@ -3225,6 +3259,11 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5,4)`);
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS months_applied INT DEFAULT 1`);
     await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS activation_bonus NUMERIC(8,2) DEFAULT 0`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS eligible_at TIMESTAMPTZ`);
+    await db.query(`ALTER TABLE influencer_commissions ADD COLUMN IF NOT EXISTS blocked_reason TEXT`);
+    await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS country_code TEXT`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_inf_commissions_eligible ON influencer_commissions(eligible_at) WHERE status = 'pending'`);
+    promoteEligibleCommissions();
     // ── Monthly affiliate summary email tracker ────────────────────────────────
     await db.query(`CREATE TABLE IF NOT EXISTS influencer_monthly_email_log (
       influencer_id INT NOT NULL REFERENCES influencers(id) ON DELETE CASCADE,
@@ -4195,7 +4234,10 @@ app.get('/api/admin/affiliates', adminMiddleware, async (req, res) => {
     const affiliates = await db.query(`
       SELECT i.*,
         COUNT(ic.id) FILTER (WHERE ic.status = 'pending') AS pending_count,
-        COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'pending'), 0) AS pending_payout,
+        COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'pending'), 0) AS pending_payout,
+        COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready') AS payout_ready_count,
+        COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) AS payout_ready_amount,
+        COUNT(ic.id) FILTER (WHERE ic.status = 'blocked') AS blocked_count,
         COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'paid'), 0) AS total_paid,
         COUNT(ic.id) AS total_conversions
       FROM influencers i
@@ -4257,26 +4299,88 @@ app.post('/api/admin/affiliates/:id/reject', adminMiddleware, async (req, res) =
 
 app.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), async (req, res) => {
   const commId = parseInt(req.params.id);
-  const { payment_ref, payout_method, payout_amount } = req.body;
+  const { payment_ref, payout_method, payout_amount, override_pending } = req.body;
   if (!commId || !payment_ref) return res.status(400).json({ error: 'Commission ID and payment reference required' });
   try {
+    const check = await db.query('SELECT status FROM influencer_commissions WHERE id = $1', [commId]);
+    if (!check.rows.length) return res.status(404).json({ error: 'Commission not found' });
+    const currentStatus = check.rows[0].status;
+    if (currentStatus === 'paid') return res.status(409).json({ error: 'Already paid' });
+    if (currentStatus === 'blocked') return res.status(409).json({ error: 'Commission is blocked — unblock before paying' });
+    if (currentStatus === 'pending' && !override_pending) {
+      return res.status(422).json({ error: '14-day hold not cleared. Pass override_pending:true to force.', status: currentStatus });
+    }
     const commRes = await db.query(
       `UPDATE influencer_commissions SET status = 'paid', payment_ref = $1, paid_at = NOW() WHERE id = $2 RETURNING *`,
       [payment_ref.trim(), commId]
     );
-    if (!commRes.rows.length) return res.status(404).json({ error: 'Commission not found' });
     const comm = commRes.rows[0];
     const infData = await db.query(`SELECT name, email FROM influencers WHERE id = $1`, [comm.influencer_id]);
     if (infData.rows.length) {
+      const totalPayout = parseFloat(comm.amount_cad) + parseFloat(comm.activation_bonus || 0);
       resend.emails.send({
         from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
         to: infData.rows[0].email,
-        subject: `Payment confirmed — $${comm.amount_cad} CAD`,
-        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(infData.rows[0].name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your commission payment of <strong style="color:#FF5E3A;">$${comm.amount_cad} CAD</strong> has been processed.</p><div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;color:#a3a3a3;"><p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Payment reference:</strong> ${escapeHtml(payment_ref)}</p><p style="margin:0;"><strong style="color:#f5f5f5;">Plan converted:</strong> ${escapeHtml(comm.plan_type.replace(/_/g,' '))}</p></div><p style="font-size:15px;color:#a3a3a3;line-height:1.7;">Thank you for promoting ServeMaster Academy. Your next monthly summary will arrive on the 1st of next month.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
+        subject: `Payment confirmed — $${totalPayout.toFixed(2)} CAD`,
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(infData.rows[0].name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your commission payment of <strong style="color:#FF5E3A;">$${totalPayout.toFixed(2)} CAD</strong> has been processed.</p><div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;color:#a3a3a3;"><p style="margin:0 0 6px;"><strong style="color:#f5f5f5;">Payment reference:</strong> ${escapeHtml(payment_ref)}</p><p style="margin:0;"><strong style="color:#f5f5f5;">Plan converted:</strong> ${escapeHtml(comm.plan_type.replace(/_/g,' '))}</p></div><p style="font-size:15px;color:#a3a3a3;line-height:1.7;">Thank you for promoting ServeMaster Academy. Your next monthly summary will arrive on the 1st of next month.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
       }).catch(e => console.error('Mark paid email error:', e.message));
     }
     res.json({ success: true });
   } catch (e) { console.error('Mark paid error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/admin/affiliates/commissions/:id/block', adminMiddleware, express.json(), async (req, res) => {
+  const commId = parseInt(req.params.id);
+  const { reason } = req.body;
+  if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
+  try {
+    const result = await db.query(
+      `UPDATE influencer_commissions SET status = 'blocked', blocked_reason = $1 WHERE id = $2 AND status NOT IN ('paid','reversed') RETURNING id`,
+      [(reason || 'admin_blocked').trim(), commId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Commission not found or already paid/reversed' });
+    res.json({ success: true });
+  } catch (e) { console.error('Block commission error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/admin/affiliates/commissions/:id/reverse', adminMiddleware, express.json(), async (req, res) => {
+  const commId = parseInt(req.params.id);
+  const { reason } = req.body;
+  if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
+  try {
+    const result = await db.query(
+      `UPDATE influencer_commissions SET status = 'reversed', blocked_reason = $1 WHERE id = $2 AND status = 'paid' RETURNING id`,
+      [(reason || 'admin_reversed').trim(), commId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Commission not found or not in paid state' });
+    res.json({ success: true });
+  } catch (e) { console.error('Reverse commission error:', e.message); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res) => {
+  const PAYOUT_THRESHOLD_CAD = 50;
+  try {
+    const rows = await db.query(`
+      SELECT i.id, i.name, i.email, i.handle, i.tier, i.pref_payout_method, i.country_code, i.ref_code,
+        COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) AS payout_ready_total,
+        COUNT(ic.id) FILTER (WHERE ic.status = 'payout_ready') AS payout_ready_count,
+        MIN(ic.eligible_at) FILTER (WHERE ic.status = 'payout_ready') AS earliest_eligible,
+        COALESCE(SUM(ic.amount_cad) FILTER (WHERE ic.status = 'paid'), 0) AS lifetime_paid
+      FROM influencers i
+      JOIN influencer_commissions ic ON ic.influencer_id = i.id
+      WHERE i.status = 'approved'
+      GROUP BY i.id
+      HAVING COALESCE(SUM(ic.amount_cad + COALESCE(ic.activation_bonus,0)) FILTER (WHERE ic.status = 'payout_ready'), 0) > 0
+      ORDER BY payout_ready_total DESC
+    `);
+    const summary = rows.rows.map(r => ({
+      ...r,
+      payout_ready_total: parseFloat(r.payout_ready_total),
+      lifetime_paid: parseFloat(r.lifetime_paid),
+      meets_threshold: parseFloat(r.payout_ready_total) >= PAYOUT_THRESHOLD_CAD
+    }));
+    res.json({ threshold_cad: PAYOUT_THRESHOLD_CAD, affiliates: summary, generated_at: new Date().toISOString() });
+  } catch (e) { console.error('Payout summary error:', e.message); res.status(500).json({ error: 'Server error' }); }
 });
 
 app.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res) => {
@@ -4338,7 +4442,7 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
         [inf.id, prevMonthStart, prevMonthEnd]
       );
       const pending = await db.query(
-        `SELECT COALESCE(SUM(amount_cad + activation_bonus),0) as total FROM influencer_commissions WHERE influencer_id = $1 AND status = 'pending'`, [inf.id]
+        `SELECT COALESCE(SUM(amount_cad + activation_bonus),0) as total FROM influencer_commissions WHERE influencer_id = $1 AND status IN ('pending','payout_ready')`, [inf.id]
       );
       summaries.push({
         id: inf.id, name: inf.name, email: inf.email, tier: inf.tier,
