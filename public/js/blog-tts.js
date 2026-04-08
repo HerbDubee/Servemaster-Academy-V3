@@ -176,7 +176,7 @@
   // ── Chunking ──────────────────────────────────────────────────────────────────
 
   function splitIntoChunks(text, maxLen) {
-    maxLen = maxLen || 3900;
+    maxLen = maxLen || 1500;
     if (text.length <= maxLen) return [text];
 
     var chunks = [];

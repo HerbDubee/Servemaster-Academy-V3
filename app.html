@@ -2075,18 +2075,12 @@ function backToKnowledgeIndex() {
 }
 
 // ── Knowledge Panel TTS ───────────────────────────────────────────────────────
+// Uses <Audio> element + GET endpoint so the browser streams MP3 as bytes
+// arrive from OpenAI — playback starts within 1-2 s of clicking Listen.
 let kpTtsState = 'idle';
 let kpTtsChunks = [];
 let kpTtsChunkIdx = 0;
-let kpTtsAudioCtx = null;
-let kpTtsActiveSource = null;
-
-function kpTtsGetAudioCtx() {
-  const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return null;
-  if (!kpTtsAudioCtx || kpTtsAudioCtx.state === 'closed') kpTtsAudioCtx = new AC();
-  return kpTtsAudioCtx;
-}
+let kpAudio = null;
 
 function kpTtsSetState(s) {
   kpTtsState = s;
@@ -2106,7 +2100,7 @@ function kpTtsSetState(s) {
 }
 
 function kpTtsSplit(text, max) {
-  max = max || 3900;
+  max = max || 1500;
   if (text.length <= max) return [text];
   const chunks = [];
   let rem = text;
@@ -2122,57 +2116,61 @@ function kpTtsSplit(text, max) {
   return chunks;
 }
 
+function kpTtsClearAudio() {
+  if (kpAudio) {
+    kpAudio.pause();
+    kpAudio.oncanplay = null;
+    kpAudio.onended = null;
+    kpAudio.onerror = null;
+    kpAudio.src = '';
+    kpAudio = null;
+  }
+}
+
+function kpTtsBrowserFallback() {
+  if (!window.speechSynthesis) return;
+  const allText = kpTtsChunks.join(' ');
+  const utt = new SpeechSynthesisUtterance(allText);
+  const lmap = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
+  const sl = typeof lang !== 'undefined' ? lang : 'en';
+  utt.lang = lmap[sl] || 'en-CA';
+  utt.rate = 0.92;
+  utt.onend = function() { kpTtsSetState('idle'); };
+  window.speechSynthesis.speak(utt);
+  kpTtsSetState('playing');
+}
+
 function kpTtsPlayChunk(idx) {
   if (idx >= kpTtsChunks.length) { kpTtsSetState('idle'); return; }
   kpTtsSetState('loading');
+  kpTtsClearAudio();
+
   const siteLang = typeof lang !== 'undefined' ? lang : 'en';
-  fetch('/api/tts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: kpTtsChunks[idx], lang: siteLang })
-  })
-  .then(function(r) { return r.ok ? r.arrayBuffer() : Promise.reject('err'); })
-  .then(function(buf) {
-    if (kpTtsState === 'idle') return;
-    const ctx = kpTtsGetAudioCtx();
-    if (!ctx) throw new Error('no ctx');
-    const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
-    return resume.then(function() {
-      return new Promise(function(res, rej) { ctx.decodeAudioData(buf, res, rej); });
-    });
-  })
-  .then(function(decoded) {
-    if (kpTtsState === 'idle') return;
-    const ctx = kpTtsGetAudioCtx();
-    if (!ctx) return;
-    if (kpTtsActiveSource) { try { kpTtsActiveSource.stop(); } catch(e) {} }
-    kpTtsActiveSource = ctx.createBufferSource();
-    kpTtsActiveSource.buffer = decoded;
-    kpTtsActiveSource.connect(ctx.destination);
-    kpTtsActiveSource.onended = function() {
-      if (kpTtsState !== 'idle') { kpTtsChunkIdx++; kpTtsPlayChunk(kpTtsChunkIdx); }
-    };
-    kpTtsActiveSource.start(0);
-    kpTtsSetState('playing');
-  })
-  .catch(function() {
+  const params = new URLSearchParams({ text: kpTtsChunks[idx], lang: siteLang });
+
+  kpAudio = new Audio();
+  kpAudio.src = '/api/tts?' + params.toString();
+  kpAudio.preload = 'auto';
+
+  kpAudio.oncanplay = function() {
+    if (kpTtsState === 'loading') kpTtsSetState('playing');
+  };
+  kpAudio.onended = function() {
+    if (kpTtsState !== 'idle') { kpTtsChunkIdx++; kpTtsPlayChunk(kpTtsChunkIdx); }
+  };
+  kpAudio.onerror = function() {
     kpTtsStop();
-    if (!window.speechSynthesis) return;
-    const utt = new SpeechSynthesisUtterance(kpTtsChunks.join(' '));
-    const lmap = { en: 'en-CA', fr: 'fr-FR', es: 'es-ES' };
-    const sl2 = typeof lang !== 'undefined' ? lang : 'en';
-    utt.lang = lmap[sl2] || 'en-CA';
-    utt.rate = 0.92;
-    utt.onend = function() { kpTtsSetState('idle'); };
-    window.speechSynthesis.speak(utt);
-    kpTtsSetState('playing');
+    kpTtsBrowserFallback();
+  };
+
+  kpAudio.play().catch(function() {
+    kpTtsStop();
+    kpTtsBrowserFallback();
   });
 }
 
 function kpTtsStop() {
-  if (kpTtsActiveSource) { try { kpTtsActiveSource.stop(); } catch(e) {} kpTtsActiveSource = null; }
-  if (kpTtsAudioCtx && kpTtsAudioCtx.state !== 'closed') { try { kpTtsAudioCtx.close(); } catch(e) {} }
-  kpTtsAudioCtx = null;
+  kpTtsClearAudio();
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   kpTtsChunks = [];
   kpTtsChunkIdx = 0;
@@ -2181,8 +2179,6 @@ function kpTtsStop() {
 
 function kpTtsPlay() {
   if (kpTtsState === 'loading') return;
-  const ctx0 = kpTtsGetAudioCtx();
-  if (ctx0 && ctx0.state === 'suspended') ctx0.resume();
   if (kpTtsState === 'idle') {
     const contentEl = document.getElementById('kp-article-content');
     const text = ((contentEl && (contentEl.innerText || contentEl.textContent)) || '').replace(/\s+/g, ' ').trim();
@@ -2191,12 +2187,10 @@ function kpTtsPlay() {
     kpTtsChunkIdx = 0;
     kpTtsPlayChunk(0);
   } else if (kpTtsState === 'playing') {
-    const ctx = kpTtsGetAudioCtx();
-    if (ctx) ctx.suspend().then(function() { kpTtsSetState('paused'); });
+    if (kpAudio) { kpAudio.pause(); kpTtsSetState('paused'); }
     else if (window.speechSynthesis) { window.speechSynthesis.pause(); kpTtsSetState('paused'); }
   } else if (kpTtsState === 'paused') {
-    const ctx = kpTtsGetAudioCtx();
-    if (ctx) ctx.resume().then(function() { kpTtsSetState('playing'); });
+    if (kpAudio) { kpAudio.play().catch(function(){}); kpTtsSetState('playing'); }
     else if (window.speechSynthesis) { window.speechSynthesis.resume(); kpTtsSetState('playing'); }
   }
 }
