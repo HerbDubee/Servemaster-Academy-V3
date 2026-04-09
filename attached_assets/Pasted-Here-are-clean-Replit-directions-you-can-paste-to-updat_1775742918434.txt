@@ -1,0 +1,172 @@
+Here are clean Replit directions you can paste to update the website copy and pricing structure.
+
+ServeMaster website update directions for Replit
+
+Objective
+Make the public website consistent with the current team-plan structure:
+
+Starter Team: $99/month, 10 staff, 1 location
+Pro Team: $199/month, unlimited staff, 1 location
+Keep team-trial messaging consistent everywhere if 30-day trial is the final answer.
+
+Pages to update
+
+Homepage
+Pricing page
+Affiliates / Partners page
+Any managers/team-plan page, FAQ, checkout, or plan-summary component that references team pricing or trial length
+Required changes
+
+Homepage: replace the current owner/team summary block
+Find the homepage section that currently says something like:
+
+For Restaurant Owners
+Unlimited staff. Manager dashboard. Custom AI scenarios. $199/mo per location.
+30-day free trial
+Replace it with a two-plan summary that matches the pricing page.
+
+Recommended homepage replacement copy:
+
+Section label:
+For Restaurant Owners
+
+Headline:
+Train your whole team with one flat monthly plan
+
+Body:
+Choose the team plan that fits your location. Every paid team plan includes the Manager Dashboard, full module access, AI role-play scenarios, progress tracking, and structured hospitality training your staff can actually use on the floor.
+
+Plan bullets:
+
+Starter Team — $99/month — up to 10 staff — 1 location
+Pro Team — $199/month — unlimited staff — 1 location
+Support line:
+30-day free trial. Cancel anytime.
+
+CTA:
+See full team pricing
+
+Homepage cleanup notes:
+
+Remove any homepage wording that implies there is only one restaurant-owner plan at $199/month
+Keep the owner/team section aligned with the pricing page wording
+If there is a “custom AI scenarios” mention, keep it attached to Pro Team, not both plans, unless both truly include it
+Pricing page: tighten team-plan wording
+Update the team plan cards so both clearly show 1 location.
+
+Starter Team should read:
+
+$99 CAD / mo
+Up to 10 staff · 1 location · 30-day trial
+Pro Team should read:
+
+$199 CAD / mo
+Unlimited staff · 1 location · 30-day trial
+Also review surrounding copy so it does not imply unlimited locations under Pro.
+If there is any wording that suggests “one subscription covers everyone” without clarifying location scope, revise it to make the per-location billing clear.
+
+Recommended supporting line:
+Team plans are billed per location. Choose Starter Team for up to 10 staff at one location, or Pro Team for unlimited staff at one location.
+
+Pricing page: keep trial language consistent everywhere
+Search the pricing page and related FAQs/components for:
+
+14-day trial
+30-day trial
+free trial
+trial length references
+If the final policy is 30-day trial for team plans, make every team-plan reference say 30-day trial.
+Do not leave mixed trial lengths anywhere in the public flow.
+
+Homepage and pricing metrics: standardize restaurant-count wording
+Currently there is variation like:
+
+48 restaurants onboarded
+48 restaurants active
+Standardize this to:
+
+48 restaurants
+Use the same wording across homepage, pricing, and other marketing sections unless there is a strong reason to differentiate.
+
+Affiliates page: align partner-facing pricing references
+On the affiliates/partners page, keep:
+
+Starter Team: $99 CAD/mo
+Pro Team: $199 CAD/mo
+But update the descriptors to match the public pricing structure exactly:
+
+Starter Team:
+
+$99 CAD/mo
+up to 10 staff · 1 location
+or $990/yr if annual billing is active
+Pro Team:
+
+$199 CAD/mo
+unlimited staff · 1 location
+or $1,990/yr if annual billing is active
+If annual pricing is shown, confirm it matches live checkout/billing before publishing.
+
+Affiliates page: optional tone cleanup
+If desired, soften overly aggressive earnings language while keeping the offer intact.
+Prefer:
+
+recurring commissions on qualified referrals
+over hype-style claims.
+This is optional, not a blocker, unless you want a cleaner brand tone.
+
+Global search-and-fix pass
+Run a full project search for these terms and verify every public reference:
+
+Pricing / plan terms:
+
+$99
+$199
+Starter Team
+Pro Team
+unlimited staff
+up to 10 staff
+per location
+1 location
+Trial terms:
+
+14-day trial
+30-day trial
+free trial
+Potentially outdated owner-plan wording:
+
+Unlimited staff. Manager dashboard. Custom AI scenarios. $199/mo per location.
+Metrics wording:
+
+48 restaurants onboarded
+48 restaurants active
+Implementation rule
+Do not change product logic or billing behavior unless explicitly intended.
+This is primarily a public-copy and plan-description consistency update.
+If any displayed pricing/trial text differs from actual Stripe or checkout behavior, the live billing logic must win and the site copy must be updated to match reality.
+
+Definition of done
+
+The update is complete when:
+
+homepage shows Starter + Pro correctly
+pricing page shows both plans with 1 location
+affiliates page mirrors the same structure
+no public page mixes 14-day and 30-day team-trial language
+restaurant-count wording is consistent
+no public page implies Pro includes multiple locations unless that is truly the product
+Suggested QA after edits
+
+Check these pages live after publishing:
+
+/
+/pricing
+/affiliates
+/managers if applicable
+any checkout or plan modal
+Confirm:
+
+Starter Team = $99/month, 10 staff, 1 location
+Pro Team = $199/month, unlimited staff, 1 location
+team trial wording is consistent everywhere
+no stale homepage owner-plan copy remains
