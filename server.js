@@ -3106,6 +3106,58 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch user progress' }); }
 });
 
+// ── Admin Books / Manuscript API ─────────────────────────────────────────────
+app.get('/api/admin/books', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT id, book_title, chapter_number, chapter_title, is_published, created_at, updated_at FROM book_chapters ORDER BY book_title ASC, chapter_number ASC'
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: 'Failed to load books' }); }
+});
+
+app.get('/api/admin/books/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM book_chapters WHERE id = $1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Chapter not found' });
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Failed to load chapter' }); }
+});
+
+app.post('/api/admin/books', adminMiddleware, async (req, res) => {
+  try {
+    const { book_title, chapter_number, chapter_title, content, notes, is_published } = req.body;
+    if (!book_title || !book_title.trim()) return res.status(400).json({ error: 'book_title is required' });
+    const { rows } = await db.query(
+      `INSERT INTO book_chapters (book_title, chapter_number, chapter_title, content, notes, is_published)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [book_title.trim(), chapter_number || 1, chapter_title || '', content || '', notes || '', !!is_published]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Failed to create chapter' }); }
+});
+
+app.put('/api/admin/books/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { book_title, chapter_number, chapter_title, content, notes, is_published } = req.body;
+    const { rows } = await db.query(
+      `UPDATE book_chapters SET book_title=$1, chapter_number=$2, chapter_title=$3, content=$4, notes=$5, is_published=$6, updated_at=NOW()
+       WHERE id=$7 RETURNING *`,
+      [book_title, chapter_number, chapter_title, content, notes, !!is_published, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Chapter not found' });
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Failed to update chapter' }); }
+});
+
+app.delete('/api/admin/books/:id', adminMiddleware, async (req, res) => {
+  try {
+    const { rowCount } = await db.query('DELETE FROM book_chapters WHERE id = $1', [req.params.id]);
+    if (!rowCount) return res.status(404).json({ error: 'Chapter not found' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Failed to delete chapter' }); }
+});
+
 // ── Catch-all: /app/* ─────────────────────────────────────────────────────────
 app.get('/app/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 
@@ -3346,6 +3398,19 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       sent_at TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (influencer_id, month_key)
     )`);
+    // ── Books / Manuscript storage ────────────────────────────────────────────
+    await db.query(`CREATE TABLE IF NOT EXISTS book_chapters (
+      id SERIAL PRIMARY KEY,
+      book_title TEXT NOT NULL,
+      chapter_number INT NOT NULL DEFAULT 1,
+      chapter_title TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      is_published BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_book_chapters_book ON book_chapters(book_title, chapter_number)`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });

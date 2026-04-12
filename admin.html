@@ -81,6 +81,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('scholarships')" id="nav-scholarships">🎓 Scholarships</div>
       <div class="nav-item" onclick="showSection('affiliates')" id="nav-affiliates">🔗 Affiliates</div>
       <div class="nav-item" onclick="showSection('tenants')" id="nav-tenants">🏢 Tenants</div>
+      <div class="nav-item" onclick="showSection('books')" id="nav-books">📖 Books</div>
     </aside>
 
     <!-- Mobile nav -->
@@ -99,6 +100,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('scholarships')" class="nav-item whitespace-nowrap" id="mnav-scholarships">🎓</button>
       <button onclick="showSection('affiliates')" class="nav-item whitespace-nowrap" id="mnav-affiliates">🔗</button>
       <button onclick="showSection('tenants')" class="nav-item whitespace-nowrap" id="mnav-tenants">🏢</button>
+      <button onclick="showSection('books')" class="nav-item whitespace-nowrap" id="mnav-books">📖</button>
     </div>
 
     <!-- Main content -->
@@ -588,7 +590,84 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
       </div>
 
+      <!-- BOOKS -->
+      <div id="section-books" class="section">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="heading text-3xl font-bold">Books & Manuscripts</h1>
+            <p class="text-zinc-400 text-sm mt-1">Private repository for novels, textbooks, and workbooks. Only visible to admin.</p>
+          </div>
+          <button onclick="openBookEditor(null)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Chapter</button>
+        </div>
+
+        <!-- Book filter bar -->
+        <div class="flex flex-wrap gap-2 mb-5" id="book-filters"></div>
+
+        <!-- Chapter list -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden mb-6">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-800 text-zinc-400 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="px-5 py-3 text-left">Book</th>
+                  <th class="px-5 py-3 text-left">Ch.</th>
+                  <th class="px-5 py-3 text-left">Chapter Title</th>
+                  <th class="px-5 py-3 text-left">Words</th>
+                  <th class="px-5 py-3 text-left">Status</th>
+                  <th class="px-5 py-3 text-left">Updated</th>
+                  <th class="px-5 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="books-table" class="divide-y divide-zinc-800">
+                <tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+</div>
+
+<!-- Book Chapter Editor Modal -->
+<div id="book-editor-modal" class="hidden fixed inset-0 bg-black/90 z-[200] flex items-start justify-center p-4 overflow-y-auto">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-4xl shadow-2xl relative my-8">
+    <button onclick="closeBookEditor()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+    <h2 id="book-editor-title" class="heading text-xl font-bold mb-6">New Chapter</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="md:col-span-2">
+        <label class="text-xs text-zinc-400 block mb-1">Book Title <span class="text-red-400">*</span></label>
+        <input id="bk-book-title" type="text" placeholder="Tables of Ambition" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400" list="bk-book-list">
+        <datalist id="bk-book-list"></datalist>
+      </div>
+      <div>
+        <label class="text-xs text-zinc-400 block mb-1">Chapter #</label>
+        <input id="bk-chapter-num" type="number" min="1" value="1" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="text-xs text-zinc-400 block mb-1">Chapter Title</label>
+      <input id="bk-chapter-title" type="text" placeholder="The Last Table" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+    </div>
+    <div class="mb-4">
+      <label class="text-xs text-zinc-400 block mb-1">Content (prose, manuscript text)</label>
+      <textarea id="bk-content" rows="18" placeholder="Paste or write your chapter here…" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono leading-relaxed resize-y"></textarea>
+      <div class="text-right text-xs text-zinc-500 mt-1"><span id="bk-wordcount">0</span> words</div>
+    </div>
+    <div class="mb-5">
+      <label class="text-xs text-zinc-400 block mb-1">Private Notes (not included in exports)</label>
+      <textarea id="bk-notes" rows="3" placeholder="Plot notes, revision ideas, TODOs…" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 resize-y"></textarea>
+    </div>
+    <div class="flex items-center gap-3 mb-6">
+      <input type="checkbox" id="bk-published" class="w-4 h-4 accent-amber-400">
+      <label for="bk-published" class="text-sm text-zinc-300">Mark as published / finalized</label>
+    </div>
+    <div id="bk-error" class="hidden text-red-400 text-sm rounded-xl bg-red-900/30 px-3 py-2 mb-4"></div>
+    <div class="flex gap-3">
+      <button onclick="saveBookChapter()" id="bk-save-btn" class="flex-1 bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Save Chapter</button>
+      <button onclick="closeBookEditor()" class="px-5 py-2.5 rounded-xl text-sm bg-zinc-800 hover:bg-zinc-700 text-white transition-colors">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -1279,6 +1358,7 @@ function showSection(name) {
   if (name === 'scholarships') loadScholarships();
   if (name === 'affiliates') loadAffiliates();
   if (name === 'tenants') loadTenants();
+  if (name === 'books') loadBooks();
 }
 
 async function loadScholarships() {
@@ -1833,6 +1913,181 @@ async function createTenant() {
 
 function copyTenantInvite() {
   if (lastTenantInviteLink) navigator.clipboard.writeText(lastTenantInviteLink).then(() => alert('Invite link copied!'));
+}
+
+// ── Books / Manuscripts ──────────────────────────────────────────────────────
+let allChapters = [];
+let editingChapterId = null;
+let bookFilter = '';
+
+async function loadBooks() {
+  try {
+    const res = await fetch('/api/admin/books', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) throw new Error('Failed');
+    allChapters = await res.json();
+    renderBookFilters();
+    renderBooksTable();
+  } catch (e) {
+    document.getElementById('books-table').innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-red-400">Failed to load chapters.</td></tr>';
+  }
+}
+
+function renderBookFilters() {
+  const books = [...new Set(allChapters.map(c => c.book_title))].sort();
+  const container = document.getElementById('book-filters');
+  container.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All';
+  allBtn.className = 'px-3 py-1 rounded-full text-xs font-semibold transition-colors ' + (!bookFilter ? 'bg-amber-400 text-black' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700');
+  allBtn.onclick = () => { bookFilter = ''; renderBookFilters(); renderBooksTable(); };
+  container.appendChild(allBtn);
+  for (const b of books) {
+    const btn = document.createElement('button');
+    btn.textContent = b;
+    btn.className = 'px-3 py-1 rounded-full text-xs font-semibold transition-colors ' + (bookFilter === b ? 'bg-amber-400 text-black' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700');
+    btn.onclick = () => { bookFilter = b; renderBookFilters(); renderBooksTable(); };
+    container.appendChild(btn);
+  }
+}
+
+function renderBooksTable() {
+  const tbody = document.getElementById('books-table');
+  const chapters = bookFilter ? allChapters.filter(c => c.book_title === bookFilter) : allChapters;
+  if (!chapters.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">No chapters yet. Click "+ New Chapter" to add one.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = chapters.map(c => {
+    const updated = new Date(c.updated_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusBadge = c.is_published
+      ? '<span class="bg-emerald-900/50 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full">Published</span>'
+      : '<span class="bg-zinc-800 text-zinc-400 text-xs font-semibold px-2 py-0.5 rounded-full">Draft</span>';
+    return `<tr class="hover:bg-zinc-800/40 transition-colors">
+      <td class="px-5 py-3 font-medium text-white">${escHtml(c.book_title)}</td>
+      <td class="px-5 py-3 text-zinc-400">${c.chapter_number}</td>
+      <td class="px-5 py-3 text-zinc-300">${escHtml(c.chapter_title || '—')}</td>
+      <td class="px-5 py-3 text-zinc-400" id="wc-${c.id}">—</td>
+      <td class="px-5 py-3">${statusBadge}</td>
+      <td class="px-5 py-3 text-zinc-500">${updated}</td>
+      <td class="px-5 py-3 flex gap-2">
+        <button onclick="openBookEditor(${c.id})" class="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg text-white transition-colors">Edit</button>
+        <button onclick="deleteChapter(${c.id})" class="text-xs bg-red-900/50 hover:bg-red-800 px-3 py-1 rounded-lg text-red-300 transition-colors">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+  chapters.forEach(c => loadWordCount(c.id));
+}
+
+async function loadWordCount(id) {
+  const chapter = allChapters.find(c => c.id === id);
+  if (!chapter) return;
+  const el = document.getElementById('wc-' + id);
+  if (!el) return;
+  try {
+    const res = await fetch('/api/admin/books/' + id, { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const words = (data.content || '').trim().split(/\s+/).filter(Boolean).length;
+    el.textContent = words.toLocaleString();
+  } catch {}
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openBookEditor(id) {
+  editingChapterId = id;
+  const modal = document.getElementById('book-editor-modal');
+  document.getElementById('bk-error').classList.add('hidden');
+  document.getElementById('bk-save-btn').disabled = false;
+  document.getElementById('bk-save-btn').textContent = 'Save Chapter';
+  const books = [...new Set(allChapters.map(c => c.book_title))].sort();
+  const dl = document.getElementById('bk-book-list');
+  dl.innerHTML = books.map(b => `<option value="${escHtml(b)}">`).join('');
+  if (id) {
+    document.getElementById('book-editor-title').textContent = 'Edit Chapter';
+    const chapter = allChapters.find(c => c.id === id);
+    if (chapter) {
+      document.getElementById('bk-book-title').value = chapter.book_title || '';
+      document.getElementById('bk-chapter-num').value = chapter.chapter_number || 1;
+      document.getElementById('bk-chapter-title').value = chapter.chapter_title || '';
+      document.getElementById('bk-published').checked = !!chapter.is_published;
+      document.getElementById('bk-content').value = '';
+      document.getElementById('bk-notes').value = '';
+      fetch('/api/admin/books/' + id, { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('bk-content').value = data.content || '';
+          document.getElementById('bk-notes').value = data.notes || '';
+          updateBookWordCount();
+        });
+    }
+  } else {
+    document.getElementById('book-editor-title').textContent = 'New Chapter';
+    document.getElementById('bk-book-title').value = '';
+    document.getElementById('bk-chapter-num').value = 1;
+    document.getElementById('bk-chapter-title').value = '';
+    document.getElementById('bk-content').value = '';
+    document.getElementById('bk-notes').value = '';
+    document.getElementById('bk-published').checked = false;
+    document.getElementById('bk-wordcount').textContent = '0';
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeBookEditor() {
+  document.getElementById('book-editor-modal').classList.add('hidden');
+  editingChapterId = null;
+}
+
+function updateBookWordCount() {
+  const words = (document.getElementById('bk-content').value || '').trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('bk-wordcount').textContent = words.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const contentEl = document.getElementById('bk-content');
+  if (contentEl) contentEl.addEventListener('input', updateBookWordCount);
+});
+
+async function saveBookChapter() {
+  const btn = document.getElementById('bk-save-btn');
+  const errEl = document.getElementById('bk-error');
+  errEl.classList.add('hidden');
+  const book_title = document.getElementById('bk-book-title').value.trim();
+  if (!book_title) { errEl.textContent = 'Book title is required.'; errEl.classList.remove('hidden'); return; }
+  const payload = {
+    book_title,
+    chapter_number: parseInt(document.getElementById('bk-chapter-num').value) || 1,
+    chapter_title: document.getElementById('bk-chapter-title').value.trim(),
+    content: document.getElementById('bk-content').value,
+    notes: document.getElementById('bk-notes').value,
+    is_published: document.getElementById('bk-published').checked
+  };
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const url = editingChapterId ? '/api/admin/books/' + editingChapterId : '/api/admin/books';
+    const method = editingChapterId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to save.'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Save Chapter'; return; }
+    closeBookEditor();
+    loadBooks();
+  } catch { errEl.textContent = 'Connection error.'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Save Chapter'; }
+}
+
+async function deleteChapter(id) {
+  if (!confirm('Permanently delete this chapter? This cannot be undone.')) return;
+  try {
+    const res = await fetch('/api/admin/books/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) { alert('Failed to delete.'); return; }
+    loadBooks();
+  } catch { alert('Connection error.'); }
 }
 </script>
 </body>
