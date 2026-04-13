@@ -1,15 +1,46 @@
 #!/usr/bin/env node
 /**
  * sync-books.js
- * Reads all .md files from /books and upserts them into the book_chapters table.
- * Run after git pull: node scripts/sync-books.js
+ * Reads .md files from origin/books branch (no checkout needed) and upserts
+ * them into the book_chapters table.
+ *
+ * Usage:
+ *   node scripts/sync-books.js              ← fetches + syncs
+ *   node scripts/sync-books.js --no-fetch   ← skips git fetch (already done)
  */
 
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('child_process');
 const db = require('../db');
 
-const BOOKS_DIR = path.join(__dirname, '..', 'books');
+const NO_FETCH = process.argv.includes('--no-fetch');
+const BRANCH = 'origin/books';
+
+function gitFetch() {
+  try {
+    execSync('git fetch origin', { stdio: 'pipe' });
+  } catch (e) {
+    console.warn('git fetch warning:', e.stderr?.toString().trim());
+  }
+}
+
+function listMdFiles() {
+  try {
+    const out = execSync(`git ls-tree --name-only ${BRANCH}`, { stdio: 'pipe' }).toString();
+    return out.split('\n')
+      .map(f => f.trim())
+      .filter(f => f.endsWith('.md') && f !== 'README.md' && f !== 'books/README.md');
+  } catch {
+    return [];
+  }
+}
+
+function readFile(file) {
+  try {
+    return execSync(`git show ${BRANCH}:${file}`, { stdio: 'pipe' }).toString();
+  } catch {
+    return null;
+  }
+}
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -22,79 +53,101 @@ function parseFrontmatter(raw) {
       frontmatter[key.trim()] = val.replace(/^['"]|['"]$/g, '');
     }
   });
-  const content = match[2].trim();
-  return { frontmatter, content };
+  return { frontmatter, content: match[2].trim() };
+}
+
+function parseFilename(file) {
+  const base = file.replace(/\.md$/, '').replace(/^books\//, '');
+  const chMatch = base.match(/[-_]ch?(\d+)$/i);
+  const novelMatch = base.match(/[-_]novel(\d+)$/i);
+  const numMatch = base.match(/(\d+)$/);
+  const chapter_number = chMatch ? parseInt(chMatch[1]) : novelMatch ? parseInt(novelMatch[1]) : numMatch ? parseInt(numMatch[1]) : 1;
+  const slug = base
+    .replace(/[-_]ch?\d+$/i, '')
+    .replace(/[-_]novel\d+$/i, '')
+    .replace(/\d+$/, '')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+  const book_title = slug
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+  return { book_title: book_title || base, chapter_number, chapter_title: `Chapter ${chapter_number}` };
+}
+
+async function upsertChapter({ book_title, chapter_number, chapter_title, content, is_published }) {
+  const existing = await db.query(
+    'SELECT id FROM book_chapters WHERE book_title = $1 AND chapter_number = $2',
+    [book_title, chapter_number]
+  );
+  if (existing.rows.length) {
+    await db.query(
+      `UPDATE book_chapters SET chapter_title=$1, content=$2, is_published=$3, updated_at=NOW()
+       WHERE book_title=$4 AND chapter_number=$5`,
+      [chapter_title, content, is_published, book_title, chapter_number]
+    );
+    return 'updated';
+  } else {
+    await db.query(
+      `INSERT INTO book_chapters (book_title, chapter_number, chapter_title, content, is_published)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [book_title, chapter_number, chapter_title, content, is_published]
+    );
+    return 'inserted';
+  }
 }
 
 async function syncBooks() {
-  if (!fs.existsSync(BOOKS_DIR)) {
-    console.error(`books/ directory not found at ${BOOKS_DIR}`);
-    process.exit(1);
-  }
+  if (!NO_FETCH) gitFetch();
 
-  const files = fs.readdirSync(BOOKS_DIR).filter(f => f.endsWith('.md') && f !== 'README.md');
-
+  const files = listMdFiles();
   if (!files.length) {
-    console.log('No .md chapter files found in books/. Nothing to sync.');
-    process.exit(0);
+    console.log('No .md files found on origin/books. Nothing to sync.');
+    return { inserted: 0, updated: 0, skipped: 0 };
   }
 
-  let inserted = 0;
-  let updated = 0;
-  let skipped = 0;
+  let inserted = 0, updated = 0, skipped = 0;
 
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(BOOKS_DIR, file), 'utf8');
+    const raw = readFile(file);
+    if (!raw || !raw.trim()) { console.warn(`  SKIP ${file} — could not read`); skipped++; continue; }
+
+    let book_title, chapter_number, chapter_title, content, is_published;
+
     const parsed = parseFrontmatter(raw);
-
-    if (!parsed) {
-      console.warn(`  SKIP ${file} — missing or invalid frontmatter`);
-      skipped++;
-      continue;
-    }
-
-    const { frontmatter, content } = parsed;
-    const book_title = (frontmatter.book || '').trim();
-    const chapter_number = parseInt(frontmatter.chapter, 10) || 1;
-    const chapter_title = (frontmatter.title || '').trim();
-    const is_published = String(frontmatter.published).toLowerCase() === 'true';
-
-    if (!book_title) {
-      console.warn(`  SKIP ${file} — "book" field is missing from frontmatter`);
-      skipped++;
-      continue;
-    }
-
-    const existing = await db.query(
-      'SELECT id FROM book_chapters WHERE book_title = $1 AND chapter_number = $2',
-      [book_title, chapter_number]
-    );
-
-    if (existing.rows.length) {
-      await db.query(
-        `UPDATE book_chapters
-         SET chapter_title=$1, content=$2, is_published=$3, updated_at=NOW()
-         WHERE book_title=$4 AND chapter_number=$5`,
-        [chapter_title, content, is_published, book_title, chapter_number]
-      );
-      console.log(`  UPDATE "${book_title}" Ch.${chapter_number} — ${chapter_title}`);
-      updated++;
+    if (parsed) {
+      const { frontmatter } = parsed;
+      book_title = (frontmatter.book || '').trim();
+      chapter_number = parseInt(frontmatter.chapter, 10) || 1;
+      chapter_title = (frontmatter.title || `Chapter ${chapter_number}`).trim();
+      content = parsed.content;
+      is_published = String(frontmatter.published).toLowerCase() === 'true';
     } else {
-      await db.query(
-        `INSERT INTO book_chapters (book_title, chapter_number, chapter_title, content, is_published)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [book_title, chapter_number, chapter_title, content, is_published]
-      );
-      console.log(`  INSERT "${book_title}" Ch.${chapter_number} — ${chapter_title}`);
-      inserted++;
+      const fromFile = parseFilename(file);
+      book_title = fromFile.book_title;
+      chapter_number = fromFile.chapter_number;
+      chapter_title = fromFile.chapter_title;
+      content = raw.trim();
+      is_published = false;
     }
+
+    if (!book_title || content === '[paste full Chapter 1 prose from chat here — copy from earlier response]') {
+      console.warn(`  SKIP ${file} — placeholder or missing book title`);
+      skipped++;
+      continue;
+    }
+
+    const action = await upsertChapter({ book_title, chapter_number, chapter_title, content, is_published });
+    console.log(`  ${action.toUpperCase()} "${book_title}" Ch.${chapter_number} — ${chapter_title} (${content.trim().split(/\s+/).length.toLocaleString()} words)`);
+    if (action === 'inserted') inserted++; else updated++;
   }
 
   console.log(`\nDone. ${inserted} inserted, ${updated} updated, ${skipped} skipped.`);
-  process.exit(0);
+  return { inserted, updated, skipped };
 }
 
-syncBooks().catch(err => {
-  console.error('Fatal error:', err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  syncBooks().then(() => process.exit(0)).catch(err => { console.error('Fatal:', err.message); process.exit(1); });
+}
+
+module.exports = { syncBooks };

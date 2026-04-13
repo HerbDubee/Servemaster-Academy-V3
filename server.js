@@ -343,6 +343,16 @@ async function promoteEligibleCommissions() {
 // Scheduled every 6 hours; initial run triggered after schema additions complete
 setInterval(promoteEligibleCommissions, 6 * 60 * 60 * 1000);
 
+// ── Hourly books-branch sync ───────────────────────────────────────────────────
+async function runBooksSyncCron() {
+  try {
+    const { syncBooks } = require('./scripts/sync-books');
+    const result = await syncBooks();
+    if (result.inserted || result.updated) console.log(`Books cron sync: ${result.inserted} inserted, ${result.updated} updated`);
+  } catch (e) { console.error('Books cron error:', e.message); }
+}
+setInterval(runBooksSyncCron, 60 * 60 * 1000);
+
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const signature = req.headers['stripe-signature'];
@@ -3104,6 +3114,26 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
       badges: badgeRes.rows,
     });
   } catch (err) { res.status(500).json({ error: 'Failed to fetch user progress' }); }
+});
+
+// ── GitHub Webhook: auto-sync books branch → DB ───────────────────────────────
+app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, res) => {
+  const secret = process.env.BOOKS_WEBHOOK_SECRET;
+  if (secret) {
+    const sig = req.headers['x-hub-signature-256'] || '';
+    const hmac = require('crypto').createHmac('sha256', secret);
+    hmac.update(JSON.stringify(req.body));
+    const expected = 'sha256=' + hmac.digest('hex');
+    if (sig !== expected) return res.status(401).json({ error: 'Invalid signature' });
+  }
+  const branch = req.body?.ref || '';
+  if (branch && !branch.includes('books')) return res.json({ skipped: true, reason: 'not books branch' });
+  res.json({ ok: true, message: 'Sync queued' });
+  try {
+    const { syncBooks } = require('./scripts/sync-books');
+    const result = await syncBooks();
+    console.log('Books webhook sync:', result);
+  } catch (e) { console.error('Books webhook sync error:', e.message); }
 });
 
 // ── Admin Books / Manuscript API ─────────────────────────────────────────────
