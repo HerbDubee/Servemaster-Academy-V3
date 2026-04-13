@@ -291,6 +291,17 @@ async function processInfluencerCommission(user, plan) {
   );
   if (!inf.rows.length) return;
   const influencer = inf.rows[0];
+  // Scholarship restriction: if the influencer is a current scholarship recipient,
+  // skip commission until their 60-day scholarship period has ended
+  const schCheck = await db.query(
+    `SELECT invite_access_expires_at FROM users WHERE email = $1 AND invite_access_expires_at > NOW()`,
+    [influencer.email]
+  );
+  if (schCheck.rows.length) {
+    const expiresAt = schCheck.rows[0].invite_access_expires_at;
+    console.log(`Commission skipped: affiliate ${influencer.id} (${influencer.email}) has active scholarship until ${expiresAt}`);
+    return;
+  }
   // Deduplicate: only one sale commission per user
   const existing = await db.query(
     `SELECT id FROM influencer_commissions WHERE user_id = $1 AND commission_type = 'sale'`,
