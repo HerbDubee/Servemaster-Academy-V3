@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#FF5E3A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ServeMaster">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Training Plans for Restaurants – ServeMaster Academy</title>
+  <meta name="description" content="Train your entire front-of-house team on autopilot. 30 modules, AI role-play, manager dashboard. Starting at $99/month for up to 10 servers.">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="canonical" href="https://servemasteracademy.ca/teams">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <meta property="og:url" content="https://servemasteracademy.ca/teams">
+  <meta property="og:title" content="Train Your Entire Restaurant Team — ServeMaster Academy">
+  <meta property="og:description" content="30 modules. AI role-play. Manager dashboard. One flat monthly price. Cut onboarding time in half.">
+  <meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+    .gradient-text { background: linear-gradient(135deg, #FF5E3A, #FFAA44); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .stat-card { background: linear-gradient(135deg, rgba(255,94,58,0.08), rgba(10,77,104,0.08)); }
+    .plan-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+    .plan-featured { outline: 2px solid #FF5E3A; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white">
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-amber-400 focus:text-black focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/scholarship" class="hover:text-white transition-colors">🎓 Scholarship</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a id="nav-signup-d" href="/signup?plan=starter_team" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Start Team Free Trial</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">For Managers</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
+      <a href="/signup?plan=starter_team" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Start Team Free Trial</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
+<script src="/js/nav-auth.js"></script>
+
+<main id="main-content">
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-zinc-950 via-zinc-950 to-[#0A4D68]/20 pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-4 py-24 md:py-36 text-center relative">
+      <div class="inline-flex items-center gap-2 bg-[#FF5E3A]/10 border border-[#FF5E3A]/20 text-[#FF5E3A] text-xs font-bold uppercase tracking-widest rounded-full px-4 py-2 mb-8">
+        Restaurant Team Training
+      </div>
+      <h1 class="heading text-5xl md:text-7xl leading-none mb-6">
+        Your whole team.<br><span class="gradient-text">One flat price.</span>
+      </h1>
+      <p class="text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        Stop losing 50+ hours a year to ad-hoc server training. Give your team 30 structured modules, AI role-play, and a manager dashboard — starting at $99/month.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+        <a href="/signup?plan=starter_team" class="inline-block font-bold text-lg py-5 px-12 rounded-3xl transition-all hover:scale-105" style="background-color:#FF5E3A;color:#fff;">
+          Start Your Free Team Trial
+        </a>
+        <a href="#plans" class="inline-block text-zinc-400 hover:text-white text-sm font-medium py-5 px-8 border border-zinc-800 rounded-3xl transition-colors">
+          See Team Plans
+        </a>
+      </div>
+      <p class="text-zinc-600 text-sm">No credit card required &nbsp;·&nbsp; 14-day free trial &nbsp;·&nbsp; Cancel anytime</p>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <section class="border-y border-zinc-800 bg-zinc-900/50">
+    <div class="max-w-5xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <div>
+        <div class="heading text-4xl text-white mb-1">$5,800</div>
+        <div class="text-zinc-500 text-sm">avg. cost to replace a server in Canada</div>
+      </div>
+      <div>
+        <div class="heading text-4xl text-white mb-1">30</div>
+        <div class="text-zinc-500 text-sm">structured training modules</div>
+      </div>
+      <div>
+        <div class="heading text-4xl text-white mb-1">150+</div>
+        <div class="text-zinc-500 text-sm">AI role-play scenarios</div>
+      </div>
+      <div>
+        <div class="heading text-4xl text-white mb-1">< 14 days</div>
+        <div class="text-zinc-500 text-sm">avg. team onboarding time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="max-w-5xl mx-auto px-4 py-20">
+    <div class="text-center mb-14">
+      <h2 class="heading text-4xl md:text-5xl mb-4">Training shouldn't cost you a shift</h2>
+      <p class="text-zinc-400 text-lg max-w-2xl mx-auto">Every restaurant manager knows the pain. You're already stretched thin — spending hours training each new hire the same way you trained the last one.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-4">⏰</div>
+        <h3 class="font-semibold text-lg mb-2">Hours lost per hire</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">Shadow shifts, handbook walkthrough, repeat Q&A sessions. Managers average 8–12 hours per new server — before they even touch a table confidently.</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-4">📉</div>
+        <h3 class="font-semibold text-lg mb-2">Inconsistent service quality</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">When every server learns differently, every guest experience is different. One outstanding shift and one mediocre one from the same team hurts your reviews.</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl mb-4">🔄</div>
+        <h3 class="font-semibold text-lg mb-2">High turnover eats profit</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">The hospitality industry averages 73% annual staff turnover. Every departure costs you time, training, and months of below-par service while the replacement ramps up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="bg-zinc-900/50 border-y border-zinc-800">
+    <div class="max-w-5xl mx-auto px-4 py-20">
+      <div class="text-center mb-14">
+        <h2 class="heading text-4xl md:text-5xl mb-4">Set it up in an afternoon</h2>
+        <p class="text-zinc-400 text-lg">No IT required. No lengthy onboarding. Just invite your team and let the platform do the work.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-black text-white" style="background-color:#FF5E3A;">1</div>
+          <h3 class="font-semibold text-lg mb-2">Create your team</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Sign up as a manager and generate an invite code. Your servers join in seconds — no separate account needed.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-black text-white" style="background-color:#0A4D68;">2</div>
+          <h3 class="font-semibold text-lg mb-2">Assign training paths</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Choose from 30 modules or let the platform assign a structured path. Servers learn on any device, at their own pace.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-black text-white" style="background:#22c55e;">3</div>
+          <h3 class="font-semibold text-lg mb-2">Track and certify</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Monitor quiz scores, AI scenario performance, and completion rates from your manager dashboard. Export reports for reviews.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE HIGHLIGHTS -->
+  <section class="max-w-5xl mx-auto px-4 py-20">
+    <div class="text-center mb-14">
+      <h2 class="heading text-4xl md:text-5xl mb-4">Everything your team needs to level up</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">🧠</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">30 Expert Modules</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">From foundational service etiquette to advanced upselling and fine dining protocols — built by industry professionals, not content farms.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">🤖</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">AI Role-Play (150+ Scenarios)</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Servers practice handling difficult guests, upselling specials, and real-world situations — safely, before they hit the floor.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">📊</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">Manager Dashboard</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">See every team member's progress, quiz averages, and scenario scores at a glance. Spot knowledge gaps before they reach guests.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">🎓</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">Certificates of Completion</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Automatically generated professional certificates your servers can share on LinkedIn — and you can use as proof of compliance and training.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">🌐</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">English, French & Spanish</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Full i18n support for diverse teams — every module, quiz, and AI scenario is available in all three languages.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 items-start bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="text-3xl flex-shrink-0">📱</div>
+        <div>
+          <h3 class="font-semibold text-lg mb-1">Works on Any Device</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed">Installable as a PWA on iPhone or Android. Servers can train between shifts, on the bus, or at home — no laptop required.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANS -->
+  <section id="plans" class="bg-zinc-900/50 border-y border-zinc-800">
+    <div class="max-w-5xl mx-auto px-4 py-20">
+      <div class="text-center mb-14">
+        <h2 class="heading text-4xl md:text-5xl mb-4">Simple team pricing</h2>
+        <p class="text-zinc-400 text-lg">Flat monthly rate. No per-seat fees. No surprise bills.</p>
+        <div class="flex items-center justify-center gap-3 mt-6">
+          <span id="toggle-monthly-label" class="text-white text-sm font-semibold">Monthly</span>
+          <button id="billing-toggle" onclick="toggleBilling()" class="relative w-12 h-6 bg-zinc-700 rounded-full transition-colors focus:outline-none" aria-label="Toggle billing period">
+            <span id="billing-knob" class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform"></span>
+          </button>
+          <span id="toggle-annual-label" class="text-zinc-500 text-sm font-semibold">Annual <span class="text-emerald-400 text-xs font-bold">Save 17%</span></span>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <!-- Starter Team -->
+        <div class="plan-card bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+          <div class="text-zinc-400 text-sm font-semibold uppercase tracking-wide mb-2">Starter Team</div>
+          <div class="flex items-end gap-2 mb-1">
+            <div class="heading text-5xl text-white" id="starter-price">$99</div>
+            <div class="text-zinc-500 text-sm mb-2">/month</div>
+          </div>
+          <div class="text-zinc-600 text-xs mb-6" id="starter-annual-note">billed monthly · up to 10 team members</div>
+          <a href="/signup?plan=starter_team" id="starter-cta" class="block text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-colors">
+            Start 14-Day Free Trial
+          </a>
+          <ul class="space-y-3 text-sm text-zinc-300">
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Up to 10 team members</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> All 30 training modules</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> AI role-play (150+ scenarios)</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Manager progress dashboard</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Certificates of completion</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> EN / FR / ES language support</li>
+            <li class="flex gap-3"><span class="text-zinc-600 flex-shrink-0">–</span> <span class="text-zinc-500">Custom module builder</span></li>
+            <li class="flex gap-3"><span class="text-zinc-600 flex-shrink-0">–</span> <span class="text-zinc-500">Priority support</span></li>
+          </ul>
+        </div>
+
+        <!-- Pro Team -->
+        <div class="plan-card plan-featured bg-zinc-900 border-2 rounded-3xl p-8 relative" style="border-color:#FF5E3A;">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="text-xs font-bold uppercase tracking-wide rounded-full px-4 py-1 text-white" style="background-color:#FF5E3A;">Most Popular</span>
+          </div>
+          <div class="text-zinc-400 text-sm font-semibold uppercase tracking-wide mb-2">Pro Team</div>
+          <div class="flex items-end gap-2 mb-1">
+            <div class="heading text-5xl text-white" id="pro-price">$199</div>
+            <div class="text-zinc-500 text-sm mb-2">/month</div>
+          </div>
+          <div class="text-zinc-600 text-xs mb-6" id="pro-annual-note">billed monthly · up to 30 team members</div>
+          <a href="/signup?plan=pro_team" id="pro-cta" class="block text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white transition-all hover:scale-105" style="background-color:#FF5E3A;">
+            Start 14-Day Free Trial
+          </a>
+          <ul class="space-y-3 text-sm text-zinc-300">
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Up to 30 team members</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> All 30 training modules</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> AI role-play (150+ scenarios)</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Manager progress dashboard</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Certificates of completion</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> EN / FR / ES language support</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Custom module builder</li>
+            <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Priority support + CSV reports</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="text-center mt-10">
+        <p class="text-zinc-500 text-sm mb-2">More than 30 team members?</p>
+        <a href="/contact" class="text-[#FF5E3A] hover:underline text-sm font-medium">Contact us for enterprise pricing →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI CALCULATOR -->
+  <section class="max-w-4xl mx-auto px-4 py-20">
+    <div class="bg-gradient-to-br from-zinc-900 to-zinc-900 border border-zinc-800 rounded-3xl p-8 md:p-12">
+      <h2 class="heading text-4xl font-bold text-center mb-3">What's bad service costing you?</h2>
+      <p class="text-zinc-400 text-center mb-10">Adjust the numbers to your restaurant and see the math.</p>
+      <div class="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto mb-8">
+        <div>
+          <label class="block text-sm font-medium text-zinc-300 mb-2">Servers on your team</label>
+          <input id="roi-servers" type="number" value="10" min="1" max="200" oninput="calcRoi()"
+            class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-center text-xl font-bold focus:outline-none focus:border-[#FF5E3A]">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-zinc-300 mb-2">Your avg. annual server turnover %</label>
+          <input id="roi-turnover" type="number" value="60" min="0" max="200" oninput="calcRoi()"
+            class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-center text-xl font-bold focus:outline-none focus:border-[#FF5E3A]">
+        </div>
+      </div>
+      <div id="roi-result" class="bg-zinc-800/60 rounded-2xl p-6 text-center">
+        <p class="text-zinc-400 text-sm mb-1">Estimated annual turnover cost</p>
+        <div id="roi-turnover-cost" class="heading text-5xl text-white mb-4"></div>
+        <div class="w-full max-w-xs mx-auto h-px bg-zinc-700 mb-4"></div>
+        <p class="text-zinc-400 text-sm mb-1">ServeMaster Pro Team annual cost</p>
+        <div class="heading text-3xl mb-1" style="color:#FF5E3A;">$2,388/year</div>
+        <p class="text-zinc-500 text-xs">Even a 10% reduction in turnover pays for this 20×</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VS. TRADITIONAL TRAINING -->
+  <section class="bg-zinc-900/50 border-y border-zinc-800">
+    <div class="max-w-4xl mx-auto px-4 py-20">
+      <h2 class="heading text-4xl md:text-5xl text-center mb-14">ServeMaster vs. Traditional Training</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-zinc-800">
+              <th class="text-left py-4 pr-6 text-zinc-400 font-medium w-1/2"></th>
+              <th class="py-4 px-4 text-center text-zinc-400 font-medium">Traditional</th>
+              <th class="py-4 px-4 text-center font-semibold" style="color:#FF5E3A;">ServeMaster</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-900">
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">Setup time</td>
+              <td class="py-4 px-4 text-center text-zinc-500">Days to weeks</td>
+              <td class="py-4 px-4 text-center text-white font-medium">1 afternoon</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">Manager time per new hire</td>
+              <td class="py-4 px-4 text-center text-zinc-500">8–12 hours</td>
+              <td class="py-4 px-4 text-center text-white font-medium">&lt; 30 min</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">Consistency across hires</td>
+              <td class="py-4 px-4 text-center text-zinc-500">Varies by trainer</td>
+              <td class="py-4 px-4 text-center text-white font-medium">Identical every time</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">AI scenario practice</td>
+              <td class="py-4 px-4 text-center text-zinc-500">None</td>
+              <td class="py-4 px-4 text-center text-emerald-400 font-medium">150+ scenarios</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">Progress tracking</td>
+              <td class="py-4 px-4 text-center text-zinc-500">Manual or none</td>
+              <td class="py-4 px-4 text-center text-emerald-400 font-medium">Real-time dashboard</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-6 text-zinc-300">Cost (10-person team)</td>
+              <td class="py-4 px-4 text-center text-zinc-500">$3,000–$8,000/year</td>
+              <td class="py-4 px-4 text-center font-bold" style="color:#FF5E3A;">$1,188/year</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="max-w-3xl mx-auto px-4 py-20">
+    <h2 class="heading text-4xl text-center mb-12">Common questions</h2>
+    <div class="space-y-4" id="faq-list">
+      <div class="faq-item border border-zinc-800 rounded-2xl overflow-hidden">
+        <button class="faq-q w-full text-left px-6 py-5 font-medium flex justify-between items-center hover:bg-zinc-900 transition-colors" onclick="toggleFaq(this)">
+          Do I need to be tech-savvy to set this up?
+          <span class="text-zinc-500 text-xl transition-transform">+</span>
+        </button>
+        <div class="faq-a hidden px-6 pb-5 text-zinc-400 text-sm leading-relaxed">
+          Not at all. You create a team, generate an invite code, and share it with your servers. They sign up in under 2 minutes. There's no software to install and no IT configuration required.
+        </div>
+      </div>
+      <div class="faq-item border border-zinc-800 rounded-2xl overflow-hidden">
+        <button class="faq-q w-full text-left px-6 py-5 font-medium flex justify-between items-center hover:bg-zinc-900 transition-colors" onclick="toggleFaq(this)">
+          What happens if my team grows beyond the seat limit?
+          <span class="text-zinc-500 text-xl transition-transform">+</span>
+        </button>
+        <div class="faq-a hidden px-6 pb-5 text-zinc-400 text-sm leading-relaxed">
+          You can upgrade to the Pro Team plan at any time to expand to 30 members. For teams larger than 30, contact us for custom enterprise pricing.
+        </div>
+      </div>
+      <div class="faq-item border border-zinc-800 rounded-2xl overflow-hidden">
+        <button class="faq-q w-full text-left px-6 py-5 font-medium flex justify-between items-center hover:bg-zinc-900 transition-colors" onclick="toggleFaq(this)">
+          Can my servers train on their phones?
+          <span class="text-zinc-500 text-xl transition-transform">+</span>
+        </button>
+        <div class="faq-a hidden px-6 pb-5 text-zinc-400 text-sm leading-relaxed">
+          Yes — the app is fully responsive and installable as a PWA on iPhone and Android. Servers can train between shifts or at home with no laptop required.
+        </div>
+      </div>
+      <div class="faq-item border border-zinc-800 rounded-2xl overflow-hidden">
+        <button class="faq-q w-full text-left px-6 py-5 font-medium flex justify-between items-center hover:bg-zinc-900 transition-colors" onclick="toggleFaq(this)">
+          Is the content specific to Canadian restaurants?
+          <span class="text-zinc-500 text-xl transition-transform">+</span>
+        </button>
+        <div class="faq-a hidden px-6 pb-5 text-zinc-400 text-sm leading-relaxed">
+          The core service principles are universal, but the examples, pricing context, and tone are designed with Canadian hospitality in mind. All content is available in English, French, and Spanish.
+        </div>
+      </div>
+      <div class="faq-item border border-zinc-800 rounded-2xl overflow-hidden">
+        <button class="faq-q w-full text-left px-6 py-5 font-medium flex justify-between items-center hover:bg-zinc-900 transition-colors" onclick="toggleFaq(this)">
+          Can I cancel anytime?
+          <span class="text-zinc-500 text-xl transition-transform">+</span>
+        </button>
+        <div class="faq-a hidden px-6 pb-5 text-zinc-400 text-sm leading-relaxed">
+          Yes. There are no long-term contracts. Cancel from your billing page and your team retains access until the end of the current billing period.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="max-w-3xl mx-auto px-4 pb-24 text-center">
+    <div class="bg-gradient-to-br from-[#FF5E3A]/10 to-[#0A4D68]/10 border border-zinc-800 rounded-3xl p-10 md:p-16">
+      <h2 class="heading text-4xl md:text-5xl mb-5">Ready to train your team?</h2>
+      <p class="text-zinc-400 text-lg mb-8 max-w-xl mx-auto">Start a 14-day free trial today. No credit card required. Your whole team can be onboarded before your next busy weekend.</p>
+      <a href="/signup?plan=starter_team" class="inline-block font-bold text-lg py-5 px-14 rounded-3xl transition-all hover:scale-105 mb-4" style="background-color:#FF5E3A;color:#fff;">
+        Start Your Free Team Trial
+      </a>
+      <p class="text-zinc-600 text-sm mt-4">Questions? <a href="/contact" class="text-zinc-400 hover:text-white transition-colors">Get in touch →</a></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="border-t border-zinc-800 py-12">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-zinc-500 mb-8">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/scholarship" class="hover:text-white transition-colors">🎓 Scholarship</a>
+      <a href="/affiliates" class="hover:text-white transition-colors">Affiliates</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/contact" class="hover:text-white transition-colors">Contact</a>
+      <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+    </div>
+    <div class="text-center mb-6">
+      <p class="text-zinc-500 text-sm">Questions? <a href="mailto:info@servemasteracademy.ca" class="text-zinc-400 hover:text-white transition-colors">info@servemasteracademy.ca</a></p>
+    </div>
+    <p class="text-center text-zinc-600 text-xs">© 2025 ServeMaster Academy. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="/js/lang.js?v=6"></script>
+<script src="/js/chat-widget.js"></script>
+
+<script>
+  let isAnnual = false;
+
+  function toggleBilling() {
+    isAnnual = !isAnnual;
+    const knob = document.getElementById('billing-knob');
+    const toggle = document.getElementById('billing-toggle');
+    const mLabel = document.getElementById('toggle-monthly-label');
+    const aLabel = document.getElementById('toggle-annual-label');
+
+    if (isAnnual) {
+      knob.style.transform = 'translateX(24px)';
+      toggle.classList.replace('bg-zinc-700', 'bg-[#FF5E3A]');
+      mLabel.classList.replace('text-white', 'text-zinc-500');
+      aLabel.classList.replace('text-zinc-500', 'text-white');
+      document.getElementById('starter-price').textContent = '$82';
+      document.getElementById('starter-annual-note').textContent = '$990/year billed annually · up to 10 members · save $198';
+      document.getElementById('starter-cta').href = '/signup?plan=starter_team_annual';
+      document.getElementById('pro-price').textContent = '$166';
+      document.getElementById('pro-annual-note').textContent = '$1,990/year billed annually · up to 30 members · save $398';
+      document.getElementById('pro-cta').href = '/signup?plan=pro_team_annual';
+    } else {
+      knob.style.transform = 'translateX(0)';
+      toggle.classList.replace('bg-[#FF5E3A]', 'bg-zinc-700');
+      mLabel.classList.replace('text-zinc-500', 'text-white');
+      aLabel.classList.replace('text-white', 'text-zinc-500');
+      document.getElementById('starter-price').textContent = '$99';
+      document.getElementById('starter-annual-note').textContent = 'billed monthly · up to 10 team members';
+      document.getElementById('starter-cta').href = '/signup?plan=starter_team';
+      document.getElementById('pro-price').textContent = '$199';
+      document.getElementById('pro-annual-note').textContent = 'billed monthly · up to 30 team members';
+      document.getElementById('pro-cta').href = '/signup?plan=pro_team';
+    }
+  }
+
+  function calcRoi() {
+    const servers = parseFloat(document.getElementById('roi-servers').value) || 0;
+    const turnover = parseFloat(document.getElementById('roi-turnover').value) || 0;
+    const replacements = servers * (turnover / 100);
+    const cost = Math.round(replacements * 5800);
+    document.getElementById('roi-turnover-cost').textContent = '$' + cost.toLocaleString('en-CA');
+  }
+
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const icon = btn.querySelector('span');
+    const isOpen = !answer.classList.contains('hidden');
+    document.querySelectorAll('.faq-a').forEach(a => a.classList.add('hidden'));
+    document.querySelectorAll('.faq-q span').forEach(s => { s.textContent = '+'; s.style.transform = ''; });
+    if (!isOpen) {
+      answer.classList.remove('hidden');
+      icon.textContent = '×';
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+
+  calcRoi();
+</script>
+<script src="/js/pwa-nav.js"></script>
+</body>
+</html>

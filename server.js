@@ -364,6 +364,28 @@ async function runBooksSyncCron() {
 }
 setInterval(runBooksSyncCron, 60 * 60 * 1000);
 
+// ── Daily trial drip email cron ───────────────────────────────────────────────
+async function runDailyDripCron() {
+  try {
+    const users = await db.query(`
+      SELECT id, email, name FROM users
+      WHERE is_trial_active = TRUE
+        AND trial_ends_at > NOW()
+        AND (subscription_status IS NULL OR subscription_status = 'free')
+        AND (is_unsubscribed IS NULL OR is_unsubscribed = FALSE)
+        AND created_at > NOW() - INTERVAL '20 days'
+    `);
+    let sent = 0;
+    for (const user of users.rows) {
+      await sendDripEmailIfDue(user.id, user.email, user.name).catch(e => console.error(`Daily drip error for ${user.email}:`, e.message));
+      sent++;
+    }
+    if (sent > 0) console.log(`Daily drip cron: checked ${sent} active trial users`);
+  } catch (e) { console.error('Daily drip cron error:', e.message); }
+}
+setInterval(runDailyDripCron, 24 * 60 * 60 * 1000);
+setTimeout(runDailyDripCron, 10 * 1000);
+
 // ── Stripe webhook (must be BEFORE express.json) ──────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const signature = req.headers['stripe-signature'];
@@ -637,6 +659,7 @@ app.get('/sitemap.xml', (req, res) => {
     ['/contact', '0.6', 'monthly'],
     ['/ai-roleplay', '0.8', 'monthly'],
     ['/managers', '0.8', 'monthly'],
+    ['/teams', '0.8', 'monthly'],
     ['/scholarship', '0.8', 'monthly'],
     ['/blog/', '0.8', 'weekly'],
     ['/training', '0.7', 'monthly'],
@@ -661,6 +684,7 @@ app.get('/sitemap.xml', (req, res) => {
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
+app.get('/teams', (req, res) => res.sendFile(path.join(__dirname, 'public', 'teams.html')));
 app.get('/ai-roleplay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ai-roleplay.html')));
 app.get('/training', (req, res) => res.sendFile(path.join(__dirname, 'public', 'training.html')));
 app.get('/app/training', requirePaidAccess, (req, res) => res.sendFile(path.join(__dirname, 'public', 'app-training.html')));

@@ -333,6 +333,20 @@
       </div>
       <div id="review-recommended" class="hidden"></div>
       <div id="daily-challenge-card"></div>
+      <!-- Quick Wins Checklist — shown to new users until all 3 tasks are done -->
+      <div id="quick-wins-card" class="hidden bg-gradient-to-br from-zinc-900 to-zinc-950 border border-amber-900/40 rounded-3xl p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <div class="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-1">Getting Started</div>
+            <h2 class="font-semibold text-white text-lg">Your first 3 wins</h2>
+          </div>
+          <button onclick="dismissQuickWins()" class="text-zinc-600 hover:text-zinc-400 text-xl leading-none mt-1">×</button>
+        </div>
+        <div class="space-y-3" id="quick-wins-items"></div>
+        <div id="quick-wins-complete" class="hidden mt-4 bg-emerald-900/30 border border-emerald-700/40 rounded-2xl px-4 py-3 text-emerald-300 text-sm">
+          You're off to a great start! Keep going — 27 more modules to your certificate.
+        </div>
+      </div>
       <div id="my-training-plan-section" class="hidden bg-zinc-900 border border-blue-900/40 rounded-3xl p-6">
         <div class="flex items-center gap-3 mb-4">
           <div class="text-2xl">📋</div>
@@ -1015,6 +1029,7 @@ async function syncProgressFromServer() {
       completedScenarios = data.scenarios.map(s => s.scenario_id);
     }
     renderAll();
+    renderQuickWins();
   } catch {}
 }
 
@@ -3296,6 +3311,54 @@ function navigate(screen) {
   if (screen === 'leaderboard') loadLeaderboard();
   if (screen === 'achievements') renderAchievements();
   if (screen === 'manager') loadManagerDashboard();
+  if (screen === 'dashboard') renderQuickWins();
+}
+
+function renderQuickWins() {
+  const card = document.getElementById('quick-wins-card');
+  if (!card) return;
+  if (localStorage.getItem('sma-qw-dismissed')) { card.classList.add('hidden'); return; }
+  const mod1Done = (userProgress.find(p => p.id === 1) || {}).progress >= 100;
+  const scenarioDone = completedScenarios.length > 0;
+  const quizDone = Object.keys(savedQuizScores || {}).length > 0;
+  const allDone = mod1Done && scenarioDone && quizDone;
+  if (allDone && localStorage.getItem('sma-qw-all-done')) { card.classList.add('hidden'); return; }
+  if (allDone) localStorage.setItem('sma-qw-all-done', '1');
+  card.classList.remove('hidden');
+  const wins = [
+    { done: mod1Done, label: 'Complete Module 1', sub: 'Foundations of Exceptional Service — 12 minutes', cta: () => { const m = modules.find(m => m.id === 1); if (m) openTopicHub(1, 'dashboard'); } },
+    { done: scenarioDone, label: 'Try your first AI Role-Play', sub: 'Pick any scenario in the Practice tab — takes under 3 minutes', cta: () => navigate('practice') },
+    { done: quizDone, label: 'Complete a module quiz', sub: 'Finish any module to unlock its quiz and see how you score', cta: () => navigate('learn') },
+  ];
+  document.getElementById('quick-wins-items').innerHTML = wins.map((w, i) => `
+    <div class="flex items-start gap-3 ${w.done ? 'opacity-60' : ''}" onclick="${w.done ? '' : 'quickWinClick(' + i + ')'}">
+      <div class="mt-0.5 w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${w.done ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600 cursor-pointer hover:border-amber-400 transition-colors'}">
+        ${w.done ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+      </div>
+      <div class="flex-1 min-w-0 ${!w.done ? 'cursor-pointer' : ''}">
+        <div class="font-medium text-sm ${w.done ? 'line-through text-zinc-500' : 'text-white'}">${w.label}</div>
+        <div class="text-zinc-500 text-xs mt-0.5">${w.sub}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('quick-wins-complete').classList.toggle('hidden', !allDone);
+}
+window._quickWinActions = [];
+function quickWinClick(i) {
+  const mod1Done = (userProgress.find(p => p.id === 1) || {}).progress >= 100;
+  const scenarioDone = completedScenarios.length > 0;
+  const quizDone = Object.keys(savedQuizScores || {}).length > 0;
+  const wins = [
+    { cta: () => openTopicHub(1, 'dashboard') },
+    { cta: () => navigate('practice') },
+    { cta: () => navigate('learn') },
+  ];
+  if (wins[i]) wins[i].cta();
+}
+function dismissQuickWins() {
+  localStorage.setItem('sma-qw-dismissed', '1');
+  const card = document.getElementById('quick-wins-card');
+  if (card) card.classList.add('hidden');
 }
 
 // =========================================================
