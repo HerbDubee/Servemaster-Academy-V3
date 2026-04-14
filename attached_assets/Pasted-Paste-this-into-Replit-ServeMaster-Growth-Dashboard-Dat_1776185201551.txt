@@ -1,0 +1,741 @@
+Paste this into Replit:
+
+---
+
+# ServeMaster Growth Dashboard - Data Schema and Backend Endpoints Brief
+
+Build the **backend/data layer** for the internal ServeMaster Growth Dashboard.
+
+This brief is only for:
+- data schema
+- ingestion/storage structure
+- backend endpoints
+- sync/import contracts
+
+This is an **internal analytics backend**, not customer-facing.
+
+---
+
+## Goal
+
+Create a backend that can combine:
+- **GA4 attribution + conversion data**
+- **Contentsquare behavior + friction data**
+- **campaign metadata from ServeMaster lanes**
+
+The backend should support:
+- dashboard views
+- weekly reporting
+- filtering by source/lane/campaign/platform/language/country
+- future automation and recommendation logic
+
+---
+
+# 1) Core Design Principle
+
+Use a **normalized internal analytics schema** with three layers:
+
+1. **Campaign metadata**
+2. **Traffic/conversion metrics**
+3. **Behavior/friction metrics**
+
+GA4 and Contentsquare should remain external source systems.
+The dashboard backend should normalize them into a ServeMaster-friendly internal structure.
+
+---
+
+# 2) Recommended Data Model
+
+## A. campaigns
+One row per campaign family.
+
+Fields:
+- `id`
+- `campaign_key`
+- `campaign_name`
+- `campaign_type`
+  - examples: `social`, `email`, `article`, `partner`, `affiliate`, `lead_magnet`
+- `theme`
+- `lane`
+- `default_language`
+- `start_date`
+- `end_date`
+- `status`
+- `notes`
+- `created_at`
+- `updated_at`
+
+Example:
+- `manager_coaching_2026_04`
+- `special_occasion_service_2026_04`
+
+---
+
+## B. campaign_assets
+One row per specific asset/post/email/article.
+
+Fields:
+- `id`
+- `campaign_id`
+- `asset_key`
+- `asset_name`
+- `asset_type`
+  - examples:
+    - `linkedin_post`
+    - `linkedin_article`
+    - `instagram_post`
+    - `facebook_post`
+    - `tiktok_post`
+    - `email`
+    - `youtube_video`
+    - `partner_link`
+- `platform`
+- `lane`
+- `language`
+- `country_target`
+- `audience_segment`
+- `cta_type`
+- `publish_date`
+- `status`
+  - examples:
+    - `drafted`
+    - `approved`
+    - `scheduled`
+    - `published`
+    - `sent`
+    - `blocked`
+    - `error`
+- `utm_source`
+- `utm_medium`
+- `utm_campaign`
+- `utm_content`
+- `utm_term`
+- `notes`
+- `created_at`
+- `updated_at`
+
+---
+
+## C. traffic_metrics_daily
+Daily aggregated traffic metrics by source/campaign/asset.
+
+Fields:
+- `id`
+- `date`
+- `campaign_id`
+- `asset_id` nullable
+- `source`
+- `medium`
+- `platform`
+- `lane`
+- `language`
+- `country`
+- `sessions`
+- `engaged_sessions`
+- `engagement_rate`
+- `avg_engagement_time_seconds`
+- `landing_page_views`
+- `pricing_views`
+- `team_plan_views`
+- `created_at`
+- `updated_at`
+
+Source:
+- GA4
+
+---
+
+## D. conversion_metrics_daily
+Daily aggregated conversion metrics by source/campaign/asset.
+
+Fields:
+- `id`
+- `date`
+- `campaign_id`
+- `asset_id` nullable
+- `source`
+- `medium`
+- `platform`
+- `lane`
+- `language`
+- `country`
+- `sign_up_starts`
+- `sign_up_completions`
+- `trial_intent_count`
+- `lead_form_submits`
+- `cta_clicks`
+- `conversion_rate`
+- `created_at`
+- `updated_at`
+
+Source:
+- GA4
+
+---
+
+## E. page_behavior_daily
+Daily Contentsquare page behavior summaries.
+
+Fields:
+- `id`
+- `date`
+- `page_path`
+- `page_type`
+  - examples:
+    - `homepage`
+    - `pricing`
+    - `signup`
+    - `team_plan`
+    - `lead_magnet`
+    - `affiliate`
+- `source`
+- `medium`
+- `campaign_key` nullable
+- `language`
+- `country`
+- `scroll_depth_avg`
+- `attention_score` nullable
+- `cta_visibility_rate` nullable
+- `cta_interaction_rate` nullable
+- `dead_click_count`
+- `rage_click_count`
+- `form_abandonment_rate` nullable
+- `field_error_count` nullable
+- `notes`
+- `created_at`
+- `updated_at`
+
+Source:
+- Contentsquare
+
+---
+
+## F. friction_findings
+Human-readable friction issues derived from Contentsquare or analyst review.
+
+Fields:
+- `id`
+- `date`
+- `page_path`
+- `page_type`
+- `severity`
+  - `low`, `medium`, `high`, `critical`
+- `friction_type`
+  - examples:
+    - `dead_clicks`
+    - `rage_clicks`
+    - `low_scroll_depth`
+    - `cta_blindness`
+    - `form_abandonment`
+    - `field_errors`
+- `source_segment` nullable
+- `language` nullable
+- `country` nullable
+- `summary`
+- `recommended_fix`
+- `status`
+  - `open`, `reviewing`, `resolved`
+- `created_at`
+- `updated_at`
+
+---
+
+## G. weekly_snapshots
+Precomputed weekly rollups for reporting.
+
+Fields:
+- `id`
+- `week_start`
+- `week_end`
+- `source`
+- `platform`
+- `lane`
+- `language`
+- `country`
+- `campaign_id` nullable
+- `sessions`
+- `engaged_sessions`
+- `sign_up_starts`
+- `sign_up_completions`
+- `pricing_views`
+- `team_plan_views`
+- `trial_intent_count`
+- `top_asset_key` nullable
+- `top_page_path` nullable
+- `biggest_friction_type` nullable
+- `created_at`
+- `updated_at`
+
+---
+
+## H. import_runs
+Track sync/import jobs for traceability.
+
+Fields:
+- `id`
+- `source_system`
+  - `ga4`, `contentsquare`, `manual_campaign_import`
+- `run_type`
+  - `api_sync`, `csv_import`, `json_import`
+- `status`
+  - `started`, `completed`, `failed`
+- `started_at`
+- `completed_at`
+- `records_processed`
+- `error_message`
+- `metadata_json`
+
+---
+
+# 3) Recommended Enums / Controlled Values
+
+## lane
+Allowed examples:
+- `social`
+- `email`
+- `linkedin_articles`
+- `partner`
+- `affiliate`
+- `lead_magnet`
+- `youtube`
+- `books`
+- `training_audio`
+
+## platform
+Allowed examples:
+- `linkedin`
+- `instagram`
+- `facebook`
+- `tiktok`
+- `youtube`
+- `email`
+- `partner`
+- `affiliate`
+- `website`
+
+## cta_type
+Allowed examples:
+- `free_signup`
+- `team_pricing`
+- `dm_30_day_trial`
+- `affiliate_cta`
+- `partner_cta`
+- `lead_magnet`
+- `article_cta`
+
+## language
+Allowed examples:
+- `en`
+- `fr`
+- `es`
+
+---
+
+# 4) UTM Parsing Rules
+
+Backend should parse and store:
+- `utm_source`
+- `utm_medium`
+- `utm_campaign`
+- `utm_content`
+- `utm_term`
+
+Map these into:
+- source
+- medium
+- campaign
+- asset
+- audience/language segment when possible
+
+Important:
+- LinkedIn posts and LinkedIn articles must be separated
+- email lane assets should support `email_{lane}_{01_to_05}` naming
+- campaign families should remain stable across platforms
+
+---
+
+# 5) Backend Endpoint Requirements
+
+## A. Summary endpoints
+
+### GET `/api/dashboard/summary`
+Return executive summary for selected date range.
+
+Query params:
+- `startDate`
+- `endDate`
+- optional filters:
+  - `lane`
+  - `platform`
+  - `language`
+  - `country`
+  - `campaign`
+
+Response fields:
+- total_sessions
+- engaged_sessions
+- sign_up_starts
+- sign_up_completions
+- pricing_views
+- team_plan_views
+- trial_intent_count
+- top_source
+- top_campaign
+- top_asset
+- biggest_friction_page
+
+---
+
+### GET `/api/dashboard/traffic-by-source`
+Return grouped traffic metrics.
+
+Filters:
+- date range
+- platform
+- lane
+- language
+- country
+- campaign
+
+Response rows:
+- source
+- medium
+- sessions
+- engaged_sessions
+- engagement_rate
+- landing_page_views
+
+---
+
+### GET `/api/dashboard/conversion-by-source`
+Return grouped conversion metrics.
+
+Response rows:
+- source
+- medium
+- sign_up_starts
+- sign_up_completions
+- pricing_views
+- team_plan_views
+- trial_intent_count
+- conversion_rate
+
+---
+
+### GET `/api/dashboard/campaign-performance`
+Return campaign/asset performance table.
+
+Filters:
+- campaign
+- lane
+- platform
+- language
+- date range
+
+Response rows:
+- campaign_name
+- asset_key
+- asset_type
+- platform
+- lane
+- language
+- sessions
+- sign_up_starts
+- sign_up_completions
+- pricing_views
+- team_plan_views
+- conversion_rate
+
+---
+
+### GET `/api/dashboard/lane-performance`
+Return summarized lane performance.
+
+Response rows:
+- lane
+- asset_count
+- sessions
+- sign_up_starts
+- sign_up_completions
+- conversion_rate
+- top_campaign
+- top_asset
+
+---
+
+### GET `/api/dashboard/language-performance`
+Return language/country breakdown.
+
+Response rows:
+- language
+- country
+- sessions
+- sign_up_starts
+- sign_up_completions
+- conversion_rate
+
+---
+
+### GET `/api/dashboard/cta-performance`
+Return CTA performance summary.
+
+Response rows:
+- cta_type
+- source
+- campaign
+- cta_clicks
+- downstream_sign_up_starts
+- downstream_sign_up_completions
+
+---
+
+### GET `/api/dashboard/friction`
+Return friction panel data.
+
+Filters:
+- page_type
+- date range
+- source
+- language
+- country
+
+Response rows:
+- page_path
+- page_type
+- severity
+- friction_type
+- summary
+- recommended_fix
+- status
+
+---
+
+## B. Metadata endpoints
+
+### GET `/api/campaigns`
+List campaigns.
+
+### GET `/api/campaigns/:id`
+Return campaign detail with linked assets.
+
+### GET `/api/assets`
+List campaign assets with filtering.
+
+---
+
+## C. Import / sync endpoints
+
+### POST `/api/import/ga4`
+Ingest GA4 aggregated export or API-normalized payload.
+
+Accepted input:
+- JSON preferred
+- CSV optional
+
+Should write to:
+- `traffic_metrics_daily`
+- `conversion_metrics_daily`
+
+---
+
+### POST `/api/import/contentsquare`
+Ingest Contentsquare summary export or API-normalized payload.
+
+Should write to:
+- `page_behavior_daily`
+- `friction_findings`
+
+---
+
+### POST `/api/import/campaign-assets`
+Ingest campaign metadata from shared-memory, manual ops logs, or operator upload.
+
+Should write to:
+- `campaigns`
+- `campaign_assets`
+
+---
+
+### POST `/api/import/weekly-snapshot/rebuild`
+Recompute weekly snapshot tables.
+
+---
+
+# 6) Recommended MVP Import Strategy
+
+If live APIs are hard in MVP, support:
+- manual JSON upload
+- CSV upload
+- scheduled export file ingestion
+
+Recommended order:
+1. campaign metadata import
+2. GA4 import
+3. Contentsquare import
+4. weekly snapshot rebuild
+
+Design the schema so manual imports can later be replaced with direct API sync.
+
+---
+
+# 7) Suggested Payload Shapes
+
+## Example GA4 import payload
+```json
+{
+  "sourceSystem": "ga4",
+  "dateRange": {
+    "start": "2026-04-01",
+    "end": "2026-04-07"
+  },
+  "rows": [
+    {
+      "date": "2026-04-07",
+      "source": "linkedin",
+      "medium": "organic-social",
+      "campaign": "manager_coaching_2026_04",
+      "content": "linkedin_post_01",
+      "language": "en",
+      "country": "CA",
+      "sessions": 120,
+      "engagedSessions": 95,
+      "engagementRate": 0.79,
+      "landingPageViews": 103,
+      "pricingViews": 28,
+      "teamPlanViews": 12,
+      "signUpStarts": 9,
+      "signUpCompletions": 4,
+      "trialIntentCount": 3,
+      "leadFormSubmits": 1,
+      "ctaClicks": 17
+    }
+  ]
+}
+```
+
+## Example Contentsquare import payload
+```json
+{
+  "sourceSystem": "contentsquare",
+  "dateRange": {
+    "start": "2026-04-01",
+    "end": "2026-04-07"
+  },
+  "rows": [
+    {
+      "date": "2026-04-07",
+      "pagePath": "/pricing",
+      "pageType": "pricing",
+      "source": "linkedin",
+      "campaign": "manager_coaching_2026_04",
+      "language": "en",
+      "country": "CA",
+      "scrollDepthAvg": 0.52,
+      "deadClickCount": 18,
+      "rageClickCount": 5,
+      "ctaVisibilityRate": 0.63,
+      "ctaInteractionRate": 0.08,
+      "formAbandonmentRate": null,
+      "notes": "Users drop before lower pricing explanation block"
+    }
+  ],
+  "findings": [
+    {
+      "date": "2026-04-07",
+      "pagePath": "/pricing",
+      "pageType": "pricing",
+      "severity": "high",
+      "frictionType": "low_scroll_depth",
+      "summary": "Visitors from LinkedIn are not consistently reaching lower pricing explanation sections.",
+      "recommendedFix": "Move team-plan CTA and comparison higher on page.",
+      "status": "open"
+    }
+  ]
+}
+```
+
+---
+
+# 8) Weekly Dashboard Output Contract
+Backend should support a weekly rollup response for reporting/export.
+
+### GET `/api/reports/weekly`
+Return:
+- executive summary
+- source breakdown
+- lane breakdown
+- language breakdown
+- top campaigns
+- friction findings
+- recommendation placeholders
+
+Optional export formats:
+- JSON
+- CSV
+- markdown
+
+---
+
+# 9) Recommendation Engine Hooks
+Do not build full AI logic yet, but prepare support for simple rules later.
+
+Suggested future rule inputs:
+- best converting source
+- highest friction page
+- highest traffic / low conversion campaign
+- strongest language-market pairing
+- strongest LinkedIn article vs LinkedIn post performance
+
+Possible future table:
+- `recommendation_runs`
+- `recommendations`
+
+Not required for MVP.
+
+---
+
+# 10) Business Rules to Preserve
+- GA4 is source of truth for attribution and conversion
+- Contentsquare is source of truth for behavior and friction
+- LinkedIn posts and LinkedIn articles must be reported separately
+- social cadence target is 2 posts per platform per day
+- email target is 5 emails per lane
+- LinkedIn articles are an active lane
+- email may run in English, French, or Spanish depending on market/language fit
+- do not fabricate missing metrics
+- clearly label imported/manual sections where needed
+
+---
+
+# 11) Suggested MVP Backend Stack Behavior
+Build:
+- normalized DB schema
+- import handlers
+- summary query endpoints
+- weekly rollup generator
+- filter support
+
+Prefer:
+- reusable aggregation service layer
+- no hardcoded campaign names
+- support for future new lanes/platforms without schema breakage
+
+---
+
+# 12) Nice-to-Have Later
+- scheduled nightly sync jobs
+- anomaly detection
+- recommendation generation
+- weekly markdown auto-report
+- source-to-landing-path cohort view
+- page-level CTA performance heat summaries
+
+---
+
+If needed, assume internal project name:
+
+**ServeMaster Growth Dashboard Backend**
+
+---
+
+If you want, I can also produce a **third paste-ready brief for frontend components and chart/table UX only**.
