@@ -2968,6 +2968,99 @@ app.get('/api/admin/funnel', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch funnel data' }); }
 });
 
+// ── Admin: unified dashboard summary ────────────────────────────────────────
+app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
+  try {
+    const [
+      usersRes, new7dRes, new30dRes, active7dRes, tierCountsRes,
+      trialStartedRes, mod1Res, mod5Res, mod10Res, paidRes,
+      scholarshipRes, affiliateRes, recentRes, newsletterRes
+    ] = await Promise.all([
+      db.query('SELECT COUNT(*) as cnt FROM users'),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '7 days'"),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '30 days'"),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE last_login > NOW() - INTERVAL '7 days'"),
+      db.query("SELECT subscription_status, COUNT(*) as cnt FROM users GROUP BY subscription_status"),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE trial_ends_at IS NOT NULL OR subscription_status != 'free' OR is_trial_active = true"),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 1 AND progress >= 50'),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 5 AND progress >= 100'),
+      db.query('SELECT COUNT(DISTINCT user_id) as cnt FROM user_progress WHERE module_id = 10 AND progress >= 100'),
+      db.query("SELECT COUNT(*) as cnt FROM users WHERE subscription_status NOT IN ('free') AND subscription_status IS NOT NULL"),
+      db.query('SELECT status, COUNT(*) as cnt FROM scholarship_applications GROUP BY status'),
+      db.query(`SELECT
+        COUNT(DISTINCT influencer_id) FILTER (WHERE status = 'payout_ready') AS affiliates_with_pending,
+        COALESCE(SUM(amount_cad + COALESCE(activation_bonus,0)) FILTER (WHERE status = 'payout_ready'), 0) AS total_pending_cad,
+        COALESCE(SUM(amount_cad) FILTER (WHERE status = 'pending'), 0) AS total_holding_cad
+        FROM influencer_commissions`),
+      db.query('SELECT id, name, email, subscription_status, created_at FROM users ORDER BY created_at DESC LIMIT 6'),
+      db.query('SELECT COUNT(*) as cnt FROM email_subscribers WHERE active = TRUE'),
+    ]);
+
+    const byTier = {};
+    tierCountsRes.rows.forEach(r => { byTier[r.subscription_status || 'free'] = parseInt(r.cnt); });
+    const schByStatus = {};
+    scholarshipRes.rows.forEach(r => { schByStatus[r.status] = parseInt(r.cnt); });
+    const total = parseInt(usersRes.rows[0].cnt) || 1;
+
+    let stripeData = { mrr: 0, active_subscriptions: 0, revenue_30d: 0, failed_payments: 0 };
+    try {
+      const stripe = await getUncachableStripeClient();
+      const [activeSubs, invoices30d, openInvoices] = await Promise.all([
+        stripe.subscriptions.list({ status: 'active', limit: 100 }),
+        stripe.invoices.list({ status: 'paid', limit: 100, created: { gte: Math.floor(Date.now() / 1000) - 30 * 86400 } }),
+        stripe.invoices.list({ status: 'open', limit: 50 }),
+      ]);
+      const mrr = activeSubs.data.reduce((sum, sub) => {
+        const item = sub.items?.data?.[0];
+        if (!item) return sum;
+        const amount = item.price?.unit_amount || 0;
+        const interval = item.price?.recurring?.interval;
+        return interval === 'year' ? sum + amount / 12 : sum + amount;
+      }, 0);
+      stripeData = {
+        mrr: Math.round(mrr / 100),
+        active_subscriptions: activeSubs.data.length,
+        revenue_30d: Math.round(invoices30d.data.reduce((s, inv) => s + (inv.amount_paid || 0), 0) / 100),
+        failed_payments: openInvoices.data.filter(inv => inv.attempt_count > 0).length,
+      };
+    } catch (stripeErr) { console.warn('Dashboard Stripe unavailable:', stripeErr.message); }
+
+    res.json({
+      generated_at: new Date().toISOString(),
+      total_users: total,
+      new_users_7d: parseInt(new7dRes.rows[0].cnt),
+      new_users_30d: parseInt(new30dRes.rows[0].cnt),
+      active_users_7d: parseInt(active7dRes.rows[0].cnt),
+      newsletter_subs: parseInt(newsletterRes.rows[0].cnt),
+      plans: byTier,
+      ...stripeData,
+      scholarship: {
+        pending: schByStatus['pending'] || 0,
+        approved: schByStatus['approved'] || 0,
+        completed: schByStatus['completed'] || 0,
+        rejected: schByStatus['rejected'] || 0,
+      },
+      affiliate: {
+        affiliates_with_pending: parseInt(affiliateRes.rows[0].affiliates_with_pending) || 0,
+        total_pending_cad: parseFloat(affiliateRes.rows[0].total_pending_cad) || 0,
+        total_holding_cad: parseFloat(affiliateRes.rows[0].total_holding_cad) || 0,
+      },
+      funnel: [
+        { label: 'Signed Up', count: total, pct: 100 },
+        { label: 'Started Trial', count: parseInt(trialStartedRes.rows[0].cnt), pct: Math.round(parseInt(trialStartedRes.rows[0].cnt) / total * 100) },
+        { label: 'Completed Mod 1', count: parseInt(mod1Res.rows[0].cnt), pct: Math.round(parseInt(mod1Res.rows[0].cnt) / total * 100) },
+        { label: 'Completed Mod 5', count: parseInt(mod5Res.rows[0].cnt), pct: Math.round(parseInt(mod5Res.rows[0].cnt) / total * 100) },
+        { label: 'Completed Mod 10', count: parseInt(mod10Res.rows[0].cnt), pct: Math.round(parseInt(mod10Res.rows[0].cnt) / total * 100) },
+        { label: 'Converted to Paid', count: parseInt(paidRes.rows[0].cnt), pct: Math.round(parseInt(paidRes.rows[0].cnt) / total * 100) },
+      ],
+      recent_signups: recentRes.rows,
+    });
+  } catch (err) {
+    console.error('Dashboard summary error:', err.message);
+    res.status(500).json({ error: 'Failed to load dashboard' });
+  }
+});
+
 // ── Admin: module analytics (drop-off) ──────────────────────────────────────
 app.get('/api/admin/analytics', adminMiddleware, async (req, res) => {
   try {

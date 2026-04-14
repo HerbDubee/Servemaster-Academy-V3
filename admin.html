@@ -108,24 +108,64 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- OVERVIEW -->
       <div id="section-overview" class="section active">
-        <h1 class="heading text-3xl font-bold mb-8">Overview</h1>
-        <div id="overview-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
-          <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="heading text-3xl font-bold">Operator Dashboard</h1>
+            <div id="dash-updated" class="text-zinc-500 text-xs mt-1">Loading…</div>
+          </div>
+          <button onclick="loadDashboard()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-xs font-medium px-4 py-2 rounded-xl transition-colors">↻ Refresh</button>
         </div>
-        <!-- Activation Funnel -->
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
-          <h2 class="font-semibold text-lg mb-4">Activation Funnel</h2>
-          <div id="funnel-chart" class="space-y-3">
-            <div class="text-zinc-500 text-sm">Loading funnel data…</div>
+
+        <!-- KPI Cards -->
+        <div id="kpi-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+          <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
+        </div>
+
+        <!-- Plan Breakdown | Scholarship | Affiliates -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div id="plan-breakdown" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Plan Distribution</div>
+            <div class="text-zinc-500 text-sm">Loading…</div>
+          </div>
+          <div id="scholarship-block" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Scholarships</div>
+            <div class="text-zinc-500 text-sm">Loading…</div>
+          </div>
+          <div id="affiliate-block" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Affiliates</div>
+            <div class="text-zinc-500 text-sm">Loading…</div>
           </div>
         </div>
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-4">
-          <h2 class="font-semibold text-lg mb-1">Demo Leaderboard Users</h2>
+
+        <!-- Funnel + Failed Payments -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div class="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-4">Activation Funnel</div>
+            <div id="funnel-chart" class="space-y-3">
+              <div class="text-zinc-500 text-sm">Loading…</div>
+            </div>
+          </div>
+          <div id="failed-payments-block" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Failed Payments</div>
+            <div class="text-zinc-500 text-sm">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Recent Signups -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+          <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-4">Recent Signups</div>
+          <div id="recent-signups-block" class="text-zinc-500 text-sm">Loading…</div>
+        </div>
+
+        <!-- Demo Seeder -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <h2 class="font-semibold text-base mb-1">Demo Leaderboard Users</h2>
           <p class="text-zinc-400 text-sm mb-4">Seed 25 realistic demo accounts (Sophie Tremblay, Liam Chen, etc.) with varied progress to populate the leaderboard. Safe to run multiple times — skips existing accounts.</p>
           <button onclick="seedFakeUsers()" id="seed-btn" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2 rounded-xl text-sm transition-colors">Seed Demo Users</button>
           <span id="seed-result" class="text-sm text-zinc-400 ml-4"></span>
@@ -736,7 +776,7 @@ async function apiFetch(path) {
 }
 
 async function loadAll() {
-  loadOverview();
+  loadDashboard();
   loadUsers();
   loadModules();
   loadNewsletter();
@@ -746,24 +786,169 @@ async function loadAll() {
   loadRevenue();
   loadAnalytics();
   loadFailedPayments();
-  loadFunnel();
 }
 
-async function loadOverview() {
+async function loadDashboard() {
   try {
-    const data = await apiFetch('/api/admin/overview');
-    document.getElementById('overview-cards').innerHTML = `
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Total Users</div><div class="text-3xl font-bold">${data.total_users}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Pro Subscribers</div><div class="text-3xl font-bold text-amber-400">${data.pro_subscribers}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">New Users (7d)</div><div class="text-3xl font-bold text-emerald-400">${data.new_users_7d}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Active (7d)</div><div class="text-3xl font-bold">${data.active_users_7d}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Newsletter Subs</div><div class="text-3xl font-bold">${data.newsletter_subs}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Scenarios Done</div><div class="text-3xl font-bold">${data.scenarios_completed}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Modules Completed</div><div class="text-3xl font-bold">${data.modules_completed}</div></div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Contact Messages</div><div class="text-3xl font-bold">${data.contact_messages}</div></div>
-      <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5"><div class="text-zinc-400 text-xs mb-1">Est. MRR (Pro)</div><div class="text-3xl font-bold text-amber-400">$${(data.pro_subscribers * 19).toLocaleString()}</div></div>
+    const d = await apiFetch('/api/admin/dashboard-summary');
+
+    // Timestamp
+    const updated = new Date(d.generated_at);
+    document.getElementById('dash-updated').textContent = 'Last updated ' + updated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // KPI Cards
+    const plans = d.plans || {};
+    const paidCount = (plans.premium || 0) + (plans.premium_monthly || 0) + (plans.individual || 0) + (plans.starter_team || 0) + (plans.pro_team || 0) + (plans.enterprise || 0);
+    document.getElementById('kpi-cards').innerHTML = `
+      <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">MRR (CAD)</div>
+        <div class="text-3xl font-bold text-amber-400">$${(d.mrr || 0).toLocaleString()}</div>
+        <div class="text-zinc-500 text-xs mt-1">From active Stripe subs</div>
+      </div>
+      <div class="bg-zinc-900 border border-emerald-900/40 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Revenue — Last 30d</div>
+        <div class="text-3xl font-bold text-emerald-400">$${(d.revenue_30d || 0).toLocaleString()}</div>
+        <div class="text-zinc-500 text-xs mt-1">Stripe paid invoices</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Active Subscriptions</div>
+        <div class="text-3xl font-bold">${(d.active_subscriptions || 0).toLocaleString()}</div>
+        <div class="text-zinc-500 text-xs mt-1">${paidCount} paid accounts in DB</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Total Users</div>
+        <div class="text-3xl font-bold">${(d.total_users || 0).toLocaleString()}</div>
+        <div class="text-zinc-500 text-xs mt-1">${(d.newsletter_subs || 0).toLocaleString()} newsletter subs</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">New Users — 7d</div>
+        <div class="text-3xl font-bold text-sky-400">${d.new_users_7d || 0}</div>
+        <div class="text-zinc-500 text-xs mt-1">${d.new_users_30d || 0} this month</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-zinc-400 text-xs mb-1">Active — Last 7d</div>
+        <div class="text-3xl font-bold">${d.active_users_7d || 0}</div>
+        <div class="text-zinc-500 text-xs mt-1">${d.total_users ? Math.round(d.active_users_7d / d.total_users * 100) : 0}% of total</div>
+      </div>
     `;
-  } catch (e) { console.error(e); }
+
+    // Plan Distribution
+    const planRows = [
+      { key: 'free', label: 'Free', color: 'bg-zinc-600' },
+      { key: 'premium', label: 'Premium (annual)', color: 'bg-amber-500' },
+      { key: 'premium_monthly', label: 'Premium (monthly)', color: 'bg-amber-400' },
+      { key: 'starter_team', label: 'Starter Team', color: 'bg-blue-500' },
+      { key: 'pro_team', label: 'Pro Team', color: 'bg-purple-500' },
+      { key: 'enterprise', label: 'Enterprise', color: 'bg-emerald-500' },
+    ];
+    const totalUsers = d.total_users || 1;
+    document.getElementById('plan-breakdown').innerHTML = `
+      <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Plan Distribution</div>
+      <div class="space-y-2">
+        ${planRows.map(p => {
+          const cnt = plans[p.key] || 0;
+          const pct = Math.round(cnt / totalUsers * 100);
+          return `<div>
+            <div class="flex justify-between text-xs mb-0.5"><span class="text-zinc-300">${p.label}</span><span class="text-zinc-400 font-mono">${cnt}</span></div>
+            <div class="bg-zinc-800 rounded-full h-1.5"><div class="${p.color} h-1.5 rounded-full" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+
+    // Scholarship block
+    const sch = d.scholarship || {};
+    document.getElementById('scholarship-block').innerHTML = `
+      <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Scholarships</div>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Pending review</span>
+          <span class="font-bold text-amber-400 text-lg">${sch.pending || 0}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Active scholars</span>
+          <span class="font-bold text-white text-lg">${sch.approved || 0}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Graduates</span>
+          <span class="font-bold text-emerald-400 text-lg">${sch.completed || 0}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Rejected</span>
+          <span class="font-bold text-zinc-500 text-base">${sch.rejected || 0}</span>
+        </div>
+      </div>
+      ${sch.pending > 0 ? `<button onclick="showSection('scholarships')" class="mt-4 w-full text-center text-xs bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-900/40 rounded-xl py-2 transition-colors">Review ${sch.pending} pending →</button>` : ''}
+    `;
+
+    // Affiliate block
+    const aff = d.affiliate || {};
+    document.getElementById('affiliate-block').innerHTML = `
+      <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Affiliates</div>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Pending payout</span>
+          <span class="font-bold text-amber-400 text-lg">$${(aff.total_pending_cad || 0).toFixed(2)}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Partners ready to pay</span>
+          <span class="font-bold text-white text-lg">${aff.affiliates_with_pending || 0}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Holding (14d lock)</span>
+          <span class="font-bold text-zinc-400 text-base">$${(aff.total_holding_cad || 0).toFixed(2)}</span>
+        </div>
+      </div>
+      ${aff.affiliates_with_pending > 0 ? `<button onclick="showSection('affiliates')" class="mt-4 w-full text-center text-xs bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-900/40 rounded-xl py-2 transition-colors">View payout queue →</button>` : ''}
+    `;
+
+    // Funnel
+    const funnelContainer = document.getElementById('funnel-chart');
+    if (d.funnel && d.funnel.length) {
+      funnelContainer.innerHTML = d.funnel.map(s => `
+        <div class="flex items-center gap-3">
+          <div class="w-36 text-xs text-zinc-400 text-right shrink-0">${s.label}</div>
+          <div class="flex-1 bg-zinc-800 rounded-full h-5 relative overflow-hidden">
+            <div class="bg-amber-400 h-5 rounded-full transition-all" style="width:${s.pct}%"></div>
+          </div>
+          <div class="w-28 text-xs font-mono text-right"><span class="text-white font-bold">${s.count.toLocaleString()}</span> <span class="text-zinc-500">(${s.pct}%)</span></div>
+        </div>
+      `).join('');
+    }
+
+    // Failed Payments
+    const fp = d.failed_payments || 0;
+    document.getElementById('failed-payments-block').innerHTML = `
+      <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Failed Payments</div>
+      <div class="flex-1 flex flex-col items-center justify-center py-4">
+        <div class="text-5xl font-bold ${fp > 0 ? 'text-red-400' : 'text-emerald-400'} mb-2">${fp}</div>
+        <div class="text-zinc-500 text-xs text-center">${fp > 0 ? 'open invoice(s) with a failed attempt' : 'No failed payments'}</div>
+      </div>
+      ${fp > 0 ? `<button onclick="showSection('payments')" class="mt-4 w-full text-center text-xs bg-red-400/10 hover:bg-red-400/20 text-red-300 border border-red-900/40 rounded-xl py-2 transition-colors">Review failed payments →</button>` : ''}
+    `;
+
+    // Recent Signups
+    const signups = d.recent_signups || [];
+    const planLabels = { free: 'Free', premium: 'Premium', premium_monthly: 'Premium', individual: 'Premium', starter_team: 'Starter Team', pro_team: 'Pro Team', enterprise: 'Enterprise' };
+    const planColors2 = { premium: 'text-amber-400', premium_monthly: 'text-amber-400', individual: 'text-amber-400', starter_team: 'text-blue-400', pro_team: 'text-purple-400', enterprise: 'text-emerald-400', free: 'text-zinc-500' };
+    document.getElementById('recent-signups-block').innerHTML = signups.length ? `
+      <div class="divide-y divide-zinc-800">
+        ${signups.map(u => `
+          <div class="flex items-center justify-between py-2.5">
+            <div>
+              <div class="text-sm font-medium text-white">${esc(u.name || '—')}</div>
+              <div class="text-xs text-zinc-500">${esc(u.email)}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-medium ${planColors2[u.subscription_status] || 'text-zinc-500'}">${planLabels[u.subscription_status] || 'Free'}</div>
+              <div class="text-xs text-zinc-600">${fmtDate(u.created_at)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : '<div class="text-zinc-500 text-sm">No signups yet.</div>';
+
+  } catch (e) { console.error('Dashboard error:', e); }
 }
 
 async function loadUsers() {
