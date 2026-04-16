@@ -2096,6 +2096,7 @@ let kpTtsState = 'idle';
 let kpTtsChunks = [];
 let kpTtsChunkIdx = 0;
 let kpAudio = null;
+let kpTtsPrefetched = {};
 
 function kpTtsSetState(s) {
   kpTtsState = s;
@@ -2142,6 +2143,23 @@ function kpTtsClearAudio() {
   }
 }
 
+function kpTtsRevokePrefetch() {
+  Object.values(kpTtsPrefetched).forEach(url => { try { URL.revokeObjectURL(url); } catch {} });
+  kpTtsPrefetched = {};
+}
+
+function kpTtsPrefetchChunk(idx) {
+  if (idx >= kpTtsChunks.length) return;
+  if (kpTtsPrefetched[idx] || kpTtsPrefetched[idx + '_loading']) return;
+  kpTtsPrefetched[idx + '_loading'] = true;
+  const siteLang = typeof lang !== 'undefined' ? lang : 'en';
+  const params = new URLSearchParams({ text: kpTtsChunks[idx], lang: siteLang });
+  fetch('/api/tts?' + params.toString(), { headers: { Authorization: 'Bearer ' + (authToken || '') } })
+    .then(r => r.ok ? r.blob() : Promise.reject())
+    .then(blob => { kpTtsPrefetched[idx] = URL.createObjectURL(blob); })
+    .catch(() => {});
+}
+
 function kpTtsBrowserFallback() {
   if (!window.speechSynthesis) return;
   const allText = kpTtsChunks.join(' ');
@@ -2160,32 +2178,49 @@ function kpTtsPlayChunk(idx) {
   kpTtsSetState('loading');
   kpTtsClearAudio();
 
-  const siteLang = typeof lang !== 'undefined' ? lang : 'en';
-  const params = new URLSearchParams({ text: kpTtsChunks[idx], lang: siteLang });
+  function _startAudio(src) {
+    kpAudio = new Audio();
+    kpAudio.src = src;
+    kpAudio.preload = 'auto';
+    kpAudio.oncanplay = function() {
+      if (kpTtsState === 'loading') {
+        kpTtsSetState('playing');
+        kpTtsPrefetchChunk(idx + 1);
+      }
+    };
+    kpAudio.onended = function() {
+      if (kpTtsState !== 'idle') {
+        kpTtsChunkIdx++;
+        const nextIdx = kpTtsChunkIdx;
+        if (kpTtsPrefetched[nextIdx]) {
+          kpTtsPlayChunk(nextIdx);
+        } else {
+          const poll = setInterval(function() {
+            if (kpTtsPrefetched[nextIdx] || kpTtsState === 'idle') {
+              clearInterval(poll);
+              if (kpTtsState !== 'idle') kpTtsPlayChunk(nextIdx);
+            }
+          }, 80);
+        }
+      }
+    };
+    kpAudio.onerror = function() { kpTtsStop(); kpTtsBrowserFallback(); };
+    kpAudio.play().catch(function() { kpTtsStop(); kpTtsBrowserFallback(); });
+  }
 
-  kpAudio = new Audio();
-  kpAudio.src = '/api/tts?' + params.toString();
-  kpAudio.preload = 'auto';
-
-  kpAudio.oncanplay = function() {
-    if (kpTtsState === 'loading') kpTtsSetState('playing');
-  };
-  kpAudio.onended = function() {
-    if (kpTtsState !== 'idle') { kpTtsChunkIdx++; kpTtsPlayChunk(kpTtsChunkIdx); }
-  };
-  kpAudio.onerror = function() {
-    kpTtsStop();
-    kpTtsBrowserFallback();
-  };
-
-  kpAudio.play().catch(function() {
-    kpTtsStop();
-    kpTtsBrowserFallback();
-  });
+  if (kpTtsPrefetched[idx]) {
+    _startAudio(kpTtsPrefetched[idx]);
+  } else {
+    const siteLang = typeof lang !== 'undefined' ? lang : 'en';
+    const params = new URLSearchParams({ text: kpTtsChunks[idx], lang: siteLang });
+    _startAudio('/api/tts?' + params.toString());
+    kpTtsPrefetchChunk(idx + 1);
+  }
 }
 
 function kpTtsStop() {
   kpTtsClearAudio();
+  kpTtsRevokePrefetch();
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   kpTtsChunks = [];
   kpTtsChunkIdx = 0;
