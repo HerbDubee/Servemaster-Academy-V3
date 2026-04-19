@@ -1471,24 +1471,37 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
-  const { name, email, restaurantName } = req.body;
-  if (!name || !email || !restaurantName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
+  const { name, email, restaurant, staffCount } = req.body;
+  if (!name || !email || !restaurant) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
   try {
-    await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restaurantName}`]);
+    await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restaurant}${staffCount ? ` | Staff: ${staffCount}` : ''}`]);
+    const staffRow = staffCount ? `<tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Staff count</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(String(staffCount))}</td></tr>` : '';
     resend.emails.send({
       from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
       to: 'kirk_adamson@servemasteracademy.ca',
-      subject: `Starter Team Trial Request — ${restaurantName}`,
+      subject: `Team Trial Request — ${restaurant}`,
       html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
-        <h2 style="color:#7dd3fc;margin-top:0;">New Starter Team Trial Request</h2>
+        <h2 style="color:#FF5E3A;margin-top:0;">New Team Trial Request</h2>
         <table style="font-size:15px;width:100%;border-collapse:collapse;">
           <tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(name)}</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(email)}" style="color:#7dd3fc;">${escapeHtml(email)}</a></td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restaurantName)}</td></tr>
+          <tr><td style="padding:8px 0;color:#a1a1aa;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a></td></tr>
+          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restaurant)}</td></tr>
+          ${staffRow}
         </table>
-        <p style="margin-top:24px;font-size:14px;color:#71717a;">Received via the homepage team trial request form.</p>
+        <p style="margin-top:24px;font-size:14px;color:#71717a;">Reply directly to this email to send ${escapeHtml(name)} their 30-day access code.</p>
       </div>`
-    }).catch(e => console.error('Team trial request email error:', e.message));
+    }).catch(e => console.error('Team trial Kirk email error:', e.message));
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: email.toLowerCase(),
+      subject: 'Your ServeMaster Academy team trial request — received',
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+        <p style="font-size:16px;line-height:1.7;">Hi ${escapeHtml(name)},</p>
+        <p style="font-size:16px;line-height:1.7;">Thanks for requesting a 30-day team trial for <strong>${escapeHtml(restaurant)}</strong>. I've got your request and will send your access code within 1 business day.</p>
+        <p style="font-size:16px;line-height:1.7;">Once you have the code, your whole team can start training immediately — no credit card needed.</p>
+        <p style="font-size:15px;color:#a3a3a3;margin-top:32px;">Any questions? Just reply to this email.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+      </div>`
+    }).catch(e => console.error('Team trial confirmation email error:', e.message));
     res.json({ success: true });
   } catch (err) {
     console.error('Team trial request error:', err.message);

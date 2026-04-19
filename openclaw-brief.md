@@ -76,6 +76,8 @@ It is the only platform of its kind that teaches servers the way professional at
 
 **Note for content creators:** Individual trials are 14-day self-serve (instant). Team plan trials are 30-day manually provisioned by Kirk (access code sent within 1 business day). Do not use "14-day trial" when writing about team plans. Use "30-day free trial" and note the Kirk-sends-the-code workflow.
 
+**What happens on submit:** The form posts to a verified server endpoint. Kirk gets an email immediately with the requester's name, email, restaurant name, and staff count. The requester gets an auto-confirmation from Kirk's address saying their code is coming within 1 business day. No credit card is ever collected at this stage.
+
 ### The Bridge (Servers → Team Plans)
 The highest-value acquisition channel is a server inside the platform who convinces their manager to buy. This is being built as a deliberate mechanic:
 - Scholarship graduates and engaged trial users will see a "Tell your manager" prompt
@@ -194,10 +196,31 @@ Use to differentiate individual posts within a campaign:
 https://servemasteracademy.ca/?utm_source=linkedin&utm_medium=social&utm_campaign=career_tips_2026_04&utm_content=post_01
 ```
 
-For the free trial CTA specifically:
+### Individual server CTAs — link to `/signup`
+
+For awareness content and individual server career content, CTA links go to `/signup`:
 ```
 https://servemasteracademy.ca/signup?utm_source=tiktok&utm_medium=video&utm_campaign=career_tips_2026_04&utm_content=reel_01
 ```
+```
+https://servemasteracademy.ca/signup?utm_source=instagram&utm_medium=social&utm_campaign=career_tips_2026_04&utm_content=post_02
+```
+
+### Manager / team plan CTAs — link to `/teams`
+
+For manager-facing content (ROI angles, staff training, retention), CTA links go to `/teams` — **not** `/signup`. The page has a request form; the manager never self-serves.
+
+```
+https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=manager_roi_2026_04&utm_content=article_01
+```
+```
+https://servemasteracademy.ca/teams?utm_source=instagram&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01
+```
+```
+https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01
+```
+
+**Rule of thumb:** If the content speaks to a server → `/signup`. If it speaks to a manager or owner → `/teams`.
 
 ---
 
