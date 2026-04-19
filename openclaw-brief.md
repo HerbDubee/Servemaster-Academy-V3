@@ -28,7 +28,7 @@ It is the only platform of its kind that teaches servers the way professional at
 
 **Their hesitation:** $19/month feels like a lot when you're making $15/hour plus tips. They need to see a clear return before paying.
 
-**Entry point:** Free 14-day trial, no credit card required.
+**Entry point:** Free 14-day trial, no credit card required (self-serve — instant access upon signup).
 
 **Plans:**
 - Premium Monthly: $19 CAD/month
@@ -69,9 +69,12 @@ It is the only platform of its kind that teaches servers the way professional at
 ### Manager/Team Path
 1. Manager sees content or a server refers them → visits /teams page
 2. Sees ROI case, staff training ROI calculator, demo
-3. Starts Starter Team or Pro Team plan
-4. Manages staff through the manager dashboard
-5. Receives weekly training digest showing staff progress
+3. Submits a 30-day free trial request (form on /teams — no credit card required)
+4. Kirk reviews the request and sends an access code within 1 business day
+5. Manages staff through the manager dashboard
+6. Receives weekly training digest showing staff progress
+
+**Note for content creators:** Individual trials are 14-day self-serve (instant). Team plan trials are 30-day manually provisioned by Kirk (access code sent within 1 business day). Do not use "14-day trial" when writing about team plans. Use "30-day free trial" and note the Kirk-sends-the-code workflow.
 
 ### The Bridge (Servers → Team Plans)
 The highest-value acquisition channel is a server inside the platform who convinces their manager to buy. This is being built as a deliberate mechanic:

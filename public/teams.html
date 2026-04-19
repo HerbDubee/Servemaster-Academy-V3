@@ -50,7 +50,7 @@
     </div>
     <div class="flex items-center gap-3">
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-      <a id="nav-signup-d" href="/signup?plan=starter_team" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Start Team Free Trial</a>
+      <button onclick="openTeamsTrialModal()" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Request 30-Day Trial</button>
       <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
         <span class="w-6 h-0.5 bg-white block"></span>
         <span class="w-6 h-0.5 bg-white block"></span>
@@ -65,7 +65,7 @@
       <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">For Managers</a>
       <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
       <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
-      <a href="/signup?plan=starter_team" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Start Team Free Trial</a>
+      <button onclick="openTeamsTrialModal()" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Request 30-Day Trial</button>
     </div>
   </div>
 </nav>
@@ -88,14 +88,14 @@
         Stop losing 50+ hours a year to ad-hoc server training. Give your team 30 structured modules, AI role-play, and a manager dashboard — starting at $99/month.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-        <a href="/signup?plan=starter_team" class="inline-block font-bold text-lg py-5 px-12 rounded-3xl transition-all hover:scale-105" style="background-color:#FF5E3A;color:#fff;">
-          Start Your Free Team Trial
-        </a>
+        <button onclick="openTeamsTrialModal()" class="inline-block font-bold text-lg py-5 px-12 rounded-3xl transition-all hover:scale-105" style="background-color:#FF5E3A;color:#fff;">
+          Request Your 30-Day Trial
+        </button>
         <a href="#plans" class="inline-block text-zinc-400 hover:text-white text-sm font-medium py-5 px-8 border border-zinc-800 rounded-3xl transition-colors">
           See Team Plans
         </a>
       </div>
-      <p class="text-zinc-600 text-sm">No credit card required &nbsp;·&nbsp; 14-day free trial &nbsp;·&nbsp; Cancel anytime</p>
+      <p class="text-zinc-600 text-sm">No credit card required &nbsp;·&nbsp; Kirk sends your access code within 1 business day</p>
     </div>
   </section>
 
@@ -248,9 +248,9 @@
             <div class="text-zinc-500 text-sm mb-2">/month</div>
           </div>
           <div class="text-zinc-600 text-xs mb-6" id="starter-annual-note">billed monthly · up to 10 team members</div>
-          <a href="/signup?plan=starter_team" id="starter-cta" class="block text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-colors">
-            Start 14-Day Free Trial
-          </a>
+          <button onclick="openTeamsTrialModal()" id="starter-cta" class="block w-full text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-colors">
+            Request 30-Day Free Trial
+          </button>
           <ul class="space-y-3 text-sm text-zinc-300">
             <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Up to 10 team members</li>
             <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> All 30 training modules</li>
@@ -274,9 +274,9 @@
             <div class="text-zinc-500 text-sm mb-2">/month</div>
           </div>
           <div class="text-zinc-600 text-xs mb-6" id="pro-annual-note">billed monthly · up to 30 team members</div>
-          <a href="/signup?plan=pro_team" id="pro-cta" class="block text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white transition-all hover:scale-105" style="background-color:#FF5E3A;">
-            Start 14-Day Free Trial
-          </a>
+          <button onclick="openTeamsTrialModal()" id="pro-cta" class="block w-full text-center font-bold py-4 px-6 rounded-2xl mb-8 text-white transition-all hover:scale-105" style="background-color:#FF5E3A;">
+            Request 30-Day Free Trial
+          </button>
           <ul class="space-y-3 text-sm text-zinc-300">
             <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> Up to 30 team members</li>
             <li class="flex gap-3"><span class="text-emerald-400 flex-shrink-0">✓</span> All 30 training modules</li>
@@ -431,15 +431,40 @@
   <section class="max-w-3xl mx-auto px-4 pb-24 text-center">
     <div class="bg-gradient-to-br from-[#FF5E3A]/10 to-[#0A4D68]/10 border border-zinc-800 rounded-3xl p-10 md:p-16">
       <h2 class="heading text-4xl md:text-5xl mb-5">Ready to train your team?</h2>
-      <p class="text-zinc-400 text-lg mb-8 max-w-xl mx-auto">Start a 14-day free trial today. No credit card required. Your whole team can be onboarded before your next busy weekend.</p>
-      <a href="/signup?plan=starter_team" class="inline-block font-bold text-lg py-5 px-14 rounded-3xl transition-all hover:scale-105 mb-4" style="background-color:#FF5E3A;color:#fff;">
-        Start Your Free Team Trial
-      </a>
+      <p class="text-zinc-400 text-lg mb-8 max-w-xl mx-auto">Request a 30-day free trial today. No credit card required. Kirk sends your access code within 1 business day — your whole team can be onboarded before your next busy weekend.</p>
+      <button onclick="openTeamsTrialModal()" class="inline-block font-bold text-lg py-5 px-14 rounded-3xl transition-all hover:scale-105 mb-4" style="background-color:#FF5E3A;color:#fff;">
+        Request Your 30-Day Trial
+      </button>
       <p class="text-zinc-600 text-sm mt-4">Questions? <a href="/contact" class="text-zinc-400 hover:text-white transition-colors">Get in touch →</a></p>
     </div>
   </section>
 
 </main>
+
+<!-- TRIAL REQUEST MODAL -->
+<div id="teams-trial-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" style="background:rgba(0,0,0,0.8);">
+  <div class="relative w-full max-w-md rounded-3xl p-8 text-white" style="background:#0f1117; border:1px solid rgba(255,255,255,0.08);">
+    <button onclick="closeTeamsTrialModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
+    <div id="teams-trial-form-wrap">
+      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#FF5E3A;">Starter &amp; Pro Team Trial</p>
+      <h2 class="heading text-2xl font-bold text-white mb-1">Request Your 30-Day Trial</h2>
+      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">Kirk will review your request and send your access code within 1 business day — no credit card required.</p>
+      <form id="teams-trial-form" onsubmit="submitTeamsTrialRequest(event)" class="space-y-4">
+        <input type="text" name="name" placeholder="Your name" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="email" name="email" placeholder="Work email" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="text" name="restaurant" placeholder="Restaurant name" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <input type="number" name="staff" placeholder="Number of staff" min="1" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
+        <button type="submit" id="teams-trial-submit" class="w-full font-bold py-3.5 rounded-3xl transition-colors hover:opacity-90" style="background:#FF5E3A;color:#fff;">Send Request →</button>
+      </form>
+    </div>
+    <div id="teams-trial-success" class="text-center hidden">
+      <div class="text-5xl mb-4">🎉</div>
+      <h3 class="heading text-2xl text-white mb-2">Request Sent!</h3>
+      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and send your 30-day access code within 1 business day.</p>
+      <button onclick="closeTeamsTrialModal()" class="font-semibold text-sm py-2.5 px-6 rounded-2xl border border-zinc-600 hover:border-zinc-400 text-white transition-colors">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer class="border-t border-zinc-800 py-12">
@@ -484,10 +509,8 @@
       aLabel.classList.replace('text-zinc-500', 'text-white');
       document.getElementById('starter-price').textContent = '$82';
       document.getElementById('starter-annual-note').textContent = '$990/year billed annually · up to 10 members · save $198';
-      document.getElementById('starter-cta').href = '/signup?plan=starter_team_annual';
       document.getElementById('pro-price').textContent = '$166';
       document.getElementById('pro-annual-note').textContent = '$1,990/year billed annually · up to 30 members · save $398';
-      document.getElementById('pro-cta').href = '/signup?plan=pro_team_annual';
     } else {
       knob.style.transform = 'translateX(0)';
       toggle.classList.replace('bg-[#FF5E3A]', 'bg-zinc-700');
@@ -495,10 +518,8 @@
       aLabel.classList.replace('text-white', 'text-zinc-500');
       document.getElementById('starter-price').textContent = '$99';
       document.getElementById('starter-annual-note').textContent = 'billed monthly · up to 10 team members';
-      document.getElementById('starter-cta').href = '/signup?plan=starter_team';
       document.getElementById('pro-price').textContent = '$199';
       document.getElementById('pro-annual-note').textContent = 'billed monthly · up to 30 team members';
-      document.getElementById('pro-cta').href = '/signup?plan=pro_team';
     }
   }
 
@@ -529,6 +550,38 @@
   }
 
   calcRoi();
+
+  function openTeamsTrialModal() {
+    document.getElementById('teams-trial-modal').classList.remove('hidden');
+  }
+  function closeTeamsTrialModal() {
+    document.getElementById('teams-trial-modal').classList.add('hidden');
+    document.getElementById('teams-trial-form-wrap').classList.remove('hidden');
+    document.getElementById('teams-trial-success').classList.add('hidden');
+    document.getElementById('teams-trial-form').reset();
+  }
+  document.getElementById('teams-trial-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTeamsTrialModal();
+  });
+  async function submitTeamsTrialRequest(e) {
+    e.preventDefault();
+    const btn = document.getElementById('teams-trial-submit');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    const form = e.target;
+    try {
+      const res = await fetch('/api/request-team-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name.value, email: form.email.value, restaurant: form.restaurant.value, staffCount: form.staff.value || '' })
+      });
+      if (!res.ok) throw new Error();
+      document.getElementById('teams-trial-form-wrap').classList.add('hidden');
+      document.getElementById('teams-trial-success').classList.remove('hidden');
+    } catch {
+      btn.disabled = false; btn.textContent = 'Send Request →';
+      alert('Something went wrong. Please try again or email kirk_adamson@servemasteracademy.ca');
+    }
+  }
 </script>
 <script src="/js/pwa-nav.js"></script>
 </body>
