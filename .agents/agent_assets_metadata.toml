@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "99VMEajBifp6iti1fNveZ"
+uri = "file://exports/instagram-post-1080x1350.png"
+type = "image"
+title = "ServeMaster Academy — Instagram Post (1080×1350)"
