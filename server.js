@@ -691,7 +691,6 @@ app.get('/app/training', requirePaidAccess, (req, res) => res.sendFile(path.join
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
-app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
 app.get('/blog/es/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', 'es', slug + '.html');
@@ -5430,6 +5429,15 @@ app.get('/api/custom-modules', authMiddleware, async (req, res) => {
     }
     res.json({ modules: result });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', 'home.html'));
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 server.keepAliveTimeout = 65000;
