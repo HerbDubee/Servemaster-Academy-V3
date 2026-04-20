@@ -53,11 +53,13 @@ It is the only platform of its kind that teaches servers the way professional at
 - Pro Team: $199 CAD/month or $1,990/year (up to 30 staff, 1 location)
 - Enterprise: Custom-quoted (multiple locations, white labeling, SSO, SLA — contact Kirk)
 
+**⚠ Current note for OpenClaw:** Annual team plan checkout is not yet active — the Stripe price IDs need to be added by Kirk before the annual billing option goes live. For now, promote monthly team plans only, or hold annual team plan CTAs until Kirk confirms the switch is flipped.
+
 **Content tone for this audience:** Professional, ROI-focused, peer-to-peer. "Your guests don't forgive poor service twice. Your team can be better than that in 30 days."
 
 ---
 
-## The Platform in Detail (Current Build)
+## The Platform in Detail (Current Build — Confirmed April 2026)
 
 ### The 4 Specialized Training Tracks
 
@@ -102,6 +104,10 @@ Managers have a full dashboard with seven tabs:
 5. **Challenges** — create and review team challenges and leaderboards
 6. **Personas** — build custom AI guest personas
 7. **Custom Modules** — author restaurant-specific training content
+
+### Knowledge Centre (Blog)
+
+The platform hosts 108+ published articles covering fine dining service, wine knowledge, guest handling, and hospitality careers. These live at servemasteracademy.ca/blog. This is a legitimate SEO and content asset — articles can be repurposed as social content, linked in email newsletters, or used as authority references in social captions.
 
 ---
 
@@ -331,6 +337,19 @@ Content opportunities:
 
 ---
 
+## Brand Assets
+
+The brand was updated in April 2026. Current logo assets are available for use in all marketing materials:
+
+- **Logo (wordmark):** Gold soundwave icon + "ServeMaster" in white serif + "ACADEMY" in gold tracked caps — designed for dark backgrounds
+- **Primary colour palette:** #FF5E3A (orange CTA), #0A4D68 (teal), #071a26 (dark navy background), #a17a3f (gold accent)
+- **Icon:** Gold soundwave bars — used as the standalone app icon, favicon, and PWA icon
+- **Social OG image:** 1200×630px wordmark on dark navy — auto-generated for all page link previews
+
+Request the full brand kit (SVG, PNG variants at all required sizes) from Kirk.
+
+---
+
 ## Key Pages and CTAs
 
 | Page | URL | Primary CTA |
@@ -340,6 +359,7 @@ Content opportunities:
 | Team Plans | /teams | Try it for your team |
 | Scholarship | /scholarship | Apply now |
 | Affiliates | /affiliates | Apply to partner |
+| Knowledge Centre | /blog | Read & share articles |
 | Login | /login | Sign in |
 | Signup | /signup | Start free trial |
 
@@ -375,7 +395,9 @@ Use Contentsquare to monitor:
 - Kirk's voice is warm, direct, and mentor-like — not corporate, not hype
 - The platform is Canadian (CAD pricing) but targets Canada and the US equally
 - The Difficult Guest animated training video is available as a shareable asset — use it for platform proof content
+- The Knowledge Centre has 108+ published articles — a rich source for repurposed social content and linked references
+- **Do not promote annual team plans in paid or direct-response content until Kirk confirms annual checkout is live**
 
 ---
 
-*Last updated: April 2026*
+*Last updated: April 20, 2026*
