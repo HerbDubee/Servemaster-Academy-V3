@@ -3582,6 +3582,76 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_book_chapters_book ON book_chapters(book_title, chapter_number)`);
+    // ── Team Challenges ───────────────────────────────────────────────────────────
+    await db.query(`CREATE TABLE IF NOT EXISTS team_challenges (
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      challenge_type TEXT NOT NULL DEFAULT 'quiz',
+      target_module_id INTEGER,
+      target_score INTEGER DEFAULT 80,
+      starts_at TIMESTAMPTZ DEFAULT NOW(),
+      ends_at TIMESTAMPTZ NOT NULL,
+      badge_emoji TEXT DEFAULT '🏆',
+      is_active BOOLEAN DEFAULT TRUE,
+      created_by INTEGER REFERENCES users(id),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS team_challenge_entries (
+      id SERIAL PRIMARY KEY,
+      challenge_id INTEGER NOT NULL REFERENCES team_challenges(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      score INTEGER DEFAULT 0,
+      completed_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(challenge_id, user_id)
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_team_challenges_restaurant ON team_challenges(restaurant_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_challenge_entries_challenge ON team_challenge_entries(challenge_id)`);
+    // ── Custom AI Guest Personas ──────────────────────────────────────────────────
+    await db.query(`CREATE TABLE IF NOT EXISTS custom_personas (
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      role TEXT DEFAULT 'Guest',
+      difficulty TEXT DEFAULT 'medium',
+      scenario_prompt TEXT NOT NULL,
+      emoji TEXT DEFAULT '🎭',
+      is_active BOOLEAN DEFAULT TRUE,
+      created_by INTEGER REFERENCES users(id),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_custom_personas_restaurant ON custom_personas(restaurant_id)`);
+    // ── Custom Module Builder ─────────────────────────────────────────────────────
+    await db.query(`CREATE TABLE IF NOT EXISTS custom_modules (
+      id SERIAL PRIMARY KEY,
+      restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      emoji TEXT DEFAULT '📚',
+      description TEXT DEFAULT '',
+      mins INTEGER DEFAULT 10,
+      is_published BOOLEAN DEFAULT FALSE,
+      created_by INTEGER REFERENCES users(id),
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS custom_module_sections (
+      id SERIAL PRIMARY KEY,
+      module_id INTEGER NOT NULL REFERENCES custom_modules(id) ON DELETE CASCADE,
+      sort_order INTEGER DEFAULT 0,
+      heading TEXT NOT NULL,
+      body TEXT NOT NULL
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS custom_module_questions (
+      id SERIAL PRIMARY KEY,
+      module_id INTEGER NOT NULL REFERENCES custom_modules(id) ON DELETE CASCADE,
+      sort_order INTEGER DEFAULT 0,
+      question TEXT NOT NULL,
+      options JSONB NOT NULL DEFAULT '[]',
+      correct_index INTEGER NOT NULL DEFAULT 0,
+      explanation TEXT
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_custom_modules_restaurant ON custom_modules(restaurant_id)`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
@@ -5098,6 +5168,269 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
   setInterval(runMonthlyAffiliateEmails, 6 * 60 * 60 * 1000);
   setTimeout(runMonthlyAffiliateEmails, 30000);
 })();
+
+// ── Team Challenges API ───────────────────────────────────────────────────────────
+
+app.post('/api/manager/challenges', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
+    const { title, description, challenge_type, target_module_id, target_score, ends_at, badge_emoji } = req.body;
+    if (!title || !ends_at) return res.status(400).json({ error: 'title and ends_at required' });
+    const r = await db.query(
+      `INSERT INTO team_challenges (restaurant_id, title, description, challenge_type, target_module_id, target_score, ends_at, badge_emoji, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [restaurantId, title, description || null, challenge_type || 'quiz', target_module_id || null, target_score || 80, ends_at, badge_emoji || '🏆', req.user.id]
+    );
+    res.json({ challenge: r.rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/manager/challenges', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ challenges: [] });
+    const r = await db.query(
+      `SELECT c.*, (SELECT COUNT(*) FROM team_challenge_entries e WHERE e.challenge_id = c.id) AS entry_count
+       FROM team_challenges c WHERE c.restaurant_id = $1 ORDER BY c.created_at DESC`,
+      [restaurantId]
+    );
+    res.json({ challenges: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/manager/challenges/:id', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    await db.query('DELETE FROM team_challenges WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/challenges', authMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ challenges: [] });
+    const r = await db.query(
+      `SELECT c.*, e.score AS my_score, e.completed_at AS my_completed_at
+       FROM team_challenges c
+       LEFT JOIN team_challenge_entries e ON e.challenge_id = c.id AND e.user_id = $2
+       WHERE c.restaurant_id = $1 AND c.ends_at > NOW() AND c.is_active = TRUE
+       ORDER BY c.ends_at ASC`,
+      [restaurantId, req.user.id]
+    );
+    res.json({ challenges: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/challenges/:id/submit', authMiddleware, async (req, res) => {
+  try {
+    const { score } = req.body;
+    const challengeRes = await db.query('SELECT * FROM team_challenges WHERE id=$1', [req.params.id]);
+    if (!challengeRes.rows.length) return res.status(404).json({ error: 'Not found' });
+    await db.query(
+      `INSERT INTO team_challenge_entries (challenge_id, user_id, score)
+       VALUES ($1,$2,$3)
+       ON CONFLICT (challenge_id, user_id) DO UPDATE SET score=GREATEST(team_challenge_entries.score,$3), completed_at=NOW()`,
+      [req.params.id, req.user.id, score || 0]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/challenges/:id/leaderboard', authMiddleware, async (req, res) => {
+  try {
+    const r = await db.query(
+      `SELECT u.name, e.score, e.completed_at
+       FROM team_challenge_entries e
+       JOIN users u ON u.id = e.user_id
+       WHERE e.challenge_id = $1 ORDER BY e.score DESC, e.completed_at ASC LIMIT 20`,
+      [req.params.id]
+    );
+    res.json({ leaderboard: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Custom AI Guest Personas API ──────────────────────────────────────────────────
+
+app.get('/api/manager/personas', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ personas: [] });
+    const r = await db.query('SELECT * FROM custom_personas WHERE restaurant_id=$1 ORDER BY created_at DESC', [restaurantId]);
+    res.json({ personas: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/manager/personas', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
+    const { name, role, difficulty, scenario_prompt, emoji } = req.body;
+    if (!name || !scenario_prompt) return res.status(400).json({ error: 'name and scenario_prompt required' });
+    const r = await db.query(
+      `INSERT INTO custom_personas (restaurant_id, name, role, difficulty, scenario_prompt, emoji, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [restaurantId, name, role || 'Guest', difficulty || 'medium', scenario_prompt, emoji || '🎭', req.user.id]
+    );
+    res.json({ persona: r.rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/manager/personas/:id', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    const { name, role, difficulty, scenario_prompt, emoji, is_active } = req.body;
+    const r = await db.query(
+      `UPDATE custom_personas SET name=$1,role=$2,difficulty=$3,scenario_prompt=$4,emoji=$5,is_active=$6
+       WHERE id=$7 AND restaurant_id=$8 RETURNING *`,
+      [name, role || 'Guest', difficulty || 'medium', scenario_prompt, emoji || '🎭', is_active !== false, req.params.id, restaurantId]
+    );
+    res.json({ persona: r.rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/manager/personas/:id', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    await db.query('DELETE FROM custom_personas WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/personas', authMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ personas: [] });
+    const r = await db.query(
+      'SELECT * FROM custom_personas WHERE restaurant_id=$1 AND is_active=TRUE ORDER BY created_at ASC',
+      [restaurantId]
+    );
+    res.json({ personas: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Custom Module Builder API ─────────────────────────────────────────────────────
+
+app.get('/api/manager/custom-modules', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ modules: [] });
+    const r = await db.query(
+      `SELECT m.*,
+        (SELECT COUNT(*) FROM custom_module_sections s WHERE s.module_id=m.id) AS section_count,
+        (SELECT COUNT(*) FROM custom_module_questions q WHERE q.module_id=m.id) AS question_count
+       FROM custom_modules m WHERE m.restaurant_id=$1 ORDER BY m.created_at DESC`,
+      [restaurantId]
+    );
+    res.json({ modules: r.rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/manager/custom-modules', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
+    const { title, emoji, description, mins, sections, questions } = req.body;
+    if (!title) return res.status(400).json({ error: 'title required' });
+    const mRes = await db.query(
+      `INSERT INTO custom_modules (restaurant_id, title, emoji, description, mins, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [restaurantId, title, emoji || '📚', description || '', mins || 10, req.user.id]
+    );
+    const mod = mRes.rows[0];
+    if (sections?.length) {
+      for (let i = 0; i < sections.length; i++) {
+        await db.query(
+          'INSERT INTO custom_module_sections (module_id,sort_order,heading,body) VALUES ($1,$2,$3,$4)',
+          [mod.id, i, sections[i].heading, sections[i].body]
+        );
+      }
+    }
+    if (questions?.length) {
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+        await db.query(
+          'INSERT INTO custom_module_questions (module_id,sort_order,question,options,correct_index,explanation) VALUES ($1,$2,$3,$4,$5,$6)',
+          [mod.id, i, q.question, JSON.stringify(q.options || []), q.correct_index || 0, q.explanation || null]
+        );
+      }
+    }
+    res.json({ module: mod });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/manager/custom-modules/:id', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    const { title, emoji, description, mins, is_published, sections, questions } = req.body;
+    await db.query(
+      `UPDATE custom_modules SET title=$1,emoji=$2,description=$3,mins=$4,is_published=$5,updated_at=NOW()
+       WHERE id=$6 AND restaurant_id=$7`,
+      [title, emoji || '📚', description || '', mins || 10, is_published || false, req.params.id, restaurantId]
+    );
+    if (sections !== undefined) {
+      await db.query('DELETE FROM custom_module_sections WHERE module_id=$1', [req.params.id]);
+      for (let i = 0; i < sections.length; i++) {
+        await db.query(
+          'INSERT INTO custom_module_sections (module_id,sort_order,heading,body) VALUES ($1,$2,$3,$4)',
+          [req.params.id, i, sections[i].heading, sections[i].body]
+        );
+      }
+    }
+    if (questions !== undefined) {
+      await db.query('DELETE FROM custom_module_questions WHERE module_id=$1', [req.params.id]);
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+        await db.query(
+          'INSERT INTO custom_module_questions (module_id,sort_order,question,options,correct_index,explanation) VALUES ($1,$2,$3,$4,$5,$6)',
+          [req.params.id, i, q.question, JSON.stringify(q.options || []), q.correct_index || 0, q.explanation || null]
+        );
+      }
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/manager/custom-modules/:id', managerMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    await db.query('DELETE FROM custom_modules WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/custom-modules', authMiddleware, async (req, res) => {
+  try {
+    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = uRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ modules: [] });
+    const mRes = await db.query(
+      'SELECT * FROM custom_modules WHERE restaurant_id=$1 AND is_published=TRUE ORDER BY created_at ASC',
+      [restaurantId]
+    );
+    const result = [];
+    for (const mod of mRes.rows) {
+      const sections = await db.query('SELECT * FROM custom_module_sections WHERE module_id=$1 ORDER BY sort_order', [mod.id]);
+      const questions = await db.query('SELECT * FROM custom_module_questions WHERE module_id=$1 ORDER BY sort_order', [mod.id]);
+      result.push({ ...mod, sections: sections.rows, questions: questions.rows });
+    }
+    res.json({ modules: result });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;

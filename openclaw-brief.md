@@ -49,8 +49,8 @@ It is the only platform of its kind that teaches servers the way professional at
 **Entry point:** Dedicated team page at servemasteracademy.ca/teams — ROI framing, manager testimonials, team plan demo.
 
 **Plans:**
-- Starter Team: $99 CAD/month or $990/year (up to 15 staff, 1 location)
-- Pro Team: $199 CAD/month or $1,990/year (unlimited staff, 1 location)
+- Starter Team: $99 CAD/month or $990/year (up to 10 staff, 1 location)
+- Pro Team: $199 CAD/month or $1,990/year (up to 30 staff, 1 location)
 
 **Content tone for this audience:** Professional, ROI-focused, peer-to-peer. "Your guests don't forgive poor service twice. Your team can be better than that in 30 days."
 

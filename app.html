@@ -386,6 +386,19 @@
         <h2 class="text-xl font-semibold mb-4" id="dash-badges-title">Recent Badges</h2>
         <div id="badge-showcase-grid" class="flex flex-wrap gap-3"></div>
       </div>
+
+      <!-- Track Progress Section -->
+      <div id="track-progress-section">
+        <h2 class="text-xl font-semibold mb-4">Training Tracks</h2>
+        <div id="track-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Active Team Challenges (shown if staff has restaurant) -->
+      <div id="active-challenges-section" class="hidden">
+        <h2 class="text-xl font-semibold mb-4">🏆 Active Challenges</h2>
+        <div id="active-challenges-list" class="space-y-3"></div>
+      </div>
+
       <div class="text-center pt-4">
         <button onclick="showNewsletter()" class="text-zinc-500 hover:text-amber-400 text-sm transition-colors" id="dash-newsletter-btn">📬 Get monthly tips newsletter</button>
       </div>
@@ -543,6 +556,9 @@
           <button onclick="switchMgrTab('plans')" id="mgr-tab-plans" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📋 Onboarding Plans</button>
           <button onclick="switchMgrTab('skillgap')" id="mgr-tab-skillgap" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📊 Skill Gap</button>
           <button onclick="switchMgrTab('graduates')" id="mgr-tab-graduates" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🎓 Graduates</button>
+          <button onclick="switchMgrTab('challenges')" id="mgr-tab-challenges" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🏆 Challenges</button>
+          <button onclick="switchMgrTab('personas')" id="mgr-tab-personas" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🎭 Guest Personas</button>
+          <button onclick="switchMgrTab('custommodules')" id="mgr-tab-custommodules" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📚 Custom Modules</button>
         </div>
 
         <!-- Staff Progress Tab -->
@@ -615,6 +631,166 @@
             </div>
           </div>
         </div>
+
+        <!-- Team Challenges Tab -->
+        <div id="mgr-panel-challenges" class="hidden space-y-6">
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <h2 class="text-lg font-semibold mb-1">Create Team Challenge</h2>
+            <p class="text-zinc-400 text-sm mb-5">Launch a timed competition — staff complete a module quiz or scenario and compete for top score.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Challenge Title</label>
+                <input id="ch-title" type="text" placeholder="e.g. Wine Knowledge Sprint" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Type</label>
+                <select id="ch-type" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
+                  <option value="quiz">Module Quiz</option>
+                  <option value="scenario">AI Scenario</option>
+                  <option value="module">Full Module</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Target Module (optional)</label>
+                <select id="ch-module" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
+                  <option value="">Any module</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Target Score (%)</label>
+                <input id="ch-score" type="number" value="80" min="0" max="100" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Ends At</label>
+                <input id="ch-ends" type="datetime-local" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Badge Emoji</label>
+                <input id="ch-badge" type="text" value="🏆" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="text-xs text-zinc-400 block mb-1">Description (optional)</label>
+              <textarea id="ch-desc" rows="2" placeholder="What are you challenging your team to do?" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
+            </div>
+            <button onclick="createChallenge()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">🏆 Launch Challenge</button>
+            <div id="ch-msg" class="text-sm mt-3 hidden"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-lg font-semibold">Active & Recent Challenges</h2>
+              <button onclick="loadManagerChallenges()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
+            </div>
+            <div id="mgr-challenges-list" class="space-y-3">
+              <div class="text-zinc-500 text-sm">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom AI Guest Personas Tab -->
+        <div id="mgr-panel-personas" class="hidden space-y-6">
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <h2 class="text-lg font-semibold mb-1">Create Guest Persona</h2>
+            <p class="text-zinc-400 text-sm mb-5">Build a custom AI guest character — your staff will see it as a scenario card in the Practice screen.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Guest Name</label>
+                <input id="pn-name" type="text" placeholder="e.g. Margaret Chen" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Role / Type</label>
+                <input id="pn-role" type="text" placeholder="e.g. Regular, VIP, Food Critic" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Difficulty</label>
+                <select id="pn-diff" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400 block mb-1">Emoji</label>
+                <input id="pn-emoji" type="text" value="🎭" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="text-xs text-zinc-400 block mb-1">Persona Prompt — Describe this guest's personality, needs, complaint style, and the situation</label>
+              <textarea id="pn-prompt" rows="4" placeholder="e.g. You are Margaret Chen, a regular diner who is celebrating her anniversary but has received the wrong dish. You are politely insistent, know the menu well, and expect a senior staff member to handle this…" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
+            </div>
+            <button onclick="createPersona()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">🎭 Create Persona</button>
+            <div id="pn-msg" class="text-sm mt-3 hidden"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-lg font-semibold">Your Custom Personas</h2>
+              <button onclick="loadManagerPersonas()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
+            </div>
+            <div id="mgr-personas-list" class="space-y-3">
+              <div class="text-zinc-500 text-sm">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Module Builder Tab -->
+        <div id="mgr-panel-custommodules" class="hidden space-y-6">
+          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
+            <h2 class="text-lg font-semibold mb-1">Build a Custom Training Module</h2>
+            <p class="text-zinc-400 text-sm mb-5">Create restaurant-specific training content — sections of lesson text plus a quiz. Published modules appear in your staff's module list.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div class="md:col-span-2">
+                <label class="text-xs text-zinc-400 block mb-1">Module Title</label>
+                <input id="cm-title" type="text" placeholder="e.g. Our Signature Cocktail Menu" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-zinc-400 block mb-1">Emoji</label>
+                  <input id="cm-emoji" type="text" value="📚" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+                </div>
+                <div>
+                  <label class="text-xs text-zinc-400 block mb-1">Est. mins</label>
+                  <input id="cm-mins" type="number" value="10" min="1" max="120" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+                </div>
+              </div>
+            </div>
+            <!-- Sections builder -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-zinc-300 uppercase tracking-wide">Lesson Sections</label>
+                <button onclick="addCmSection()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors font-semibold">+ Add Section</button>
+              </div>
+              <div id="cm-sections" class="space-y-3">
+                <div class="cm-section bg-zinc-800 rounded-xl p-3 space-y-2">
+                  <input type="text" placeholder="Section heading" class="cm-sec-heading w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+                  <textarea rows="3" placeholder="Section body text…" class="cm-sec-body w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
+                </div>
+              </div>
+            </div>
+            <!-- Quiz builder -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-semibold text-zinc-300 uppercase tracking-wide">Quiz Questions (optional)</label>
+                <button onclick="addCmQuestion()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors font-semibold">+ Add Question</button>
+              </div>
+              <div id="cm-questions" class="space-y-4"></div>
+            </div>
+            <div class="flex gap-3">
+              <button onclick="saveCustomModule(false)" class="bg-zinc-700 hover:bg-zinc-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors">Save Draft</button>
+              <button onclick="saveCustomModule(true)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Publish to Staff</button>
+            </div>
+            <div id="cm-msg" class="text-sm mt-3 hidden"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-lg font-semibold">Your Custom Modules</h2>
+              <button onclick="loadManagerCustomModules()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
+            </div>
+            <div id="mgr-custommodules-list" class="space-y-3">
+              <div class="text-zinc-500 text-sm">Loading…</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -958,6 +1134,7 @@ async function fetchCurrentUser() {
     applyUserToNav(currentUser);
     await syncProgressFromServer();
     await loadAssignedModules();
+    loadCustomPersonas();
     const pendingJoin = localStorage.getItem('sma-pending-join');
     if (pendingJoin) {
       try {
@@ -1063,6 +1240,57 @@ async function pushScenarioToServer(scenarioId) {
 // MODULES + PROGRESS
 // =========================================================
 const modules = window.SMAContent.modules;
+
+const TRAINING_TRACKS = [
+  {
+    id: 'fine-dining',
+    name: 'Fine Dining Excellence',
+    nameFr: 'Excellence en gastronomie',
+    nameEs: 'Excelencia en Alta Cocina',
+    emoji: '🍽️',
+    color: '#FF5E3A',
+    bg: 'rgba(255,94,58,0.1)',
+    border: 'rgba(255,94,58,0.3)',
+    moduleIds: [1, 2, 6, 7, 8, 17, 20]
+  },
+  {
+    id: 'bar-beverage',
+    name: 'Bar & Beverage Mastery',
+    nameFr: 'Maîtrise bar & boissons',
+    nameEs: 'Maestría en Bar y Bebidas',
+    emoji: '🍸',
+    color: '#7dd3fc',
+    bg: 'rgba(125,211,252,0.1)',
+    border: 'rgba(125,211,252,0.3)',
+    moduleIds: [3, 4, 11, 13, 14, 25, 26, 27, 28, 29, 30]
+  },
+  {
+    id: 'guest-experience',
+    name: 'Guest Experience',
+    nameFr: 'Expérience client',
+    nameEs: 'Experiencia del Huésped',
+    emoji: '🧠',
+    color: '#34d399',
+    bg: 'rgba(52,211,153,0.1)',
+    border: 'rgba(52,211,153,0.3)',
+    moduleIds: [5, 9, 10, 15, 16, 19]
+  },
+  {
+    id: 'team-leadership',
+    name: 'Team Leadership',
+    nameFr: 'Leadership d\'équipe',
+    nameEs: 'Liderazgo de Equipo',
+    emoji: '⭐',
+    color: '#c084fc',
+    bg: 'rgba(192,132,252,0.1)',
+    border: 'rgba(192,132,252,0.3)',
+    moduleIds: [12, 18, 21, 22, 23, 24]
+  }
+];
+
+function getModuleTrack(moduleId) {
+  return TRAINING_TRACKS.find(t => t.moduleIds.includes(moduleId)) || TRAINING_TRACKS[0];
+}
 
 let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || [];
 modules.forEach(m => { if (!userProgress.find(u => u.id === m.id)) userProgress.push({ id: m.id, progress: 0 }); });
@@ -1640,6 +1868,7 @@ const practiceScenarios = window.SMAContent.practiceScenarios;
 let chatScenarioId = null;
 let chatHistory = [];
 let chatSessionToken = 0;
+let chatAiMessageCount = 0;
 let firstModuleCompleted = false;
 let scenarioCoachingNotes = [];
 
@@ -1714,9 +1943,13 @@ function startChat(scenarioId) {
   chatScenarioId = scenarioId;
   chatHistory = [];
   chatSessionToken++;
+  chatAiMessageCount = 0;
+  branchChoiceShown = false;
   const s = practiceScenarios.find(s => s.id === scenarioId);
-  const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
-  document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
+  const overridePersona = _customPersonaOverride && String(scenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
+  const titleText = overridePersona ? overridePersona.name : (s ? (lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title) : String(scenarioId));
+  const emojiText = overridePersona ? (overridePersona.emoji || '🎭') : (s ? s.emoji : '🎭');
+  document.getElementById('chat-scenario-title').textContent = emojiText + ' ' + titleText;
   document.getElementById('chat-messages').innerHTML = '';
   document.getElementById('chat-input').disabled = false;
   document.getElementById('chat-send-btn').disabled = false;
@@ -1737,6 +1970,7 @@ function startChat(scenarioId) {
 function exitChat() {
   if (isRecording) { try { stopVoiceRecording(); } catch {} }
   _stopTtsAudio();
+  _customPersonaOverride = null;
   document.getElementById('practice-chat').classList.add('hidden');
   document.getElementById('practice-scenarios').classList.remove('hidden');
 }
@@ -1753,7 +1987,8 @@ function stripMarkdown(text) {
 
 async function sendInitialMessage() {
   const s = practiceScenarios.find(sc => sc.id === chatScenarioId);
-  const scene = s ? (lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene) : '';
+  const _overridePersona = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
+  const scene = _overridePersona ? _overridePersona.scenario_prompt : (s ? (lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene) : '');
   const sceneLabel = lang === 'fr' ? 'Scène' : lang === 'es' ? 'Escena' : 'Scene';
   // Show combined placeholder while loading
   const box = document.getElementById('chat-messages');
@@ -1810,7 +2045,8 @@ async function sendChat() {
   appendChatMessage('assistant', '...');
   try {
     const _sc = practiceScenarios.find(ps => ps.id === chatScenarioId);
-    const _sceneCtx = _sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '';
+    const _overrideP = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
+    const _sceneCtx = _overrideP ? _overrideP.scenario_prompt : (_sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '');
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang })
@@ -1876,7 +2112,7 @@ async function showScenarioSummary() {
     const res = await fetch('/api/roleplay/summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory, lang, sceneTitle: document.getElementById('chat-scenario-title')?.textContent?.replace(/^\S+\s/, '') || '', sceneContext: (() => { const _ss = practiceScenarios.find(ps => ps.id === chatScenarioId); return _ss ? (lang === 'es' && _ss.sceneEs ? _ss.sceneEs : lang === 'fr' && _ss.sceneFr ? _ss.sceneFr : _ss.scene || '') : ''; })() })
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory, lang, sceneTitle: document.getElementById('chat-scenario-title')?.textContent?.replace(/^\S+\s/, '') || '', sceneContext: (() => { const _overrideP2 = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null; if (_overrideP2) return _overrideP2.scenario_prompt; const _ss = practiceScenarios.find(ps => ps.id === chatScenarioId); return _ss ? (lang === 'es' && _ss.sceneEs ? _ss.sceneEs : lang === 'fr' && _ss.sceneFr ? _ss.sceneFr : _ss.scene || '') : ''; })() })
     });
     const data = await res.json();
 
@@ -1926,6 +2162,62 @@ function appendChatMessage(role, text) {
   div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words whitespace-pre-wrap ${role==='user'?'bg-amber-400 text-black':'bg-zinc-800 text-zinc-100'}">${escHtml(text)}</div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
+  // Inject branch choices after AI messages when appropriate
+  if (role === 'assistant' && text !== '...') {
+    chatAiMessageCount++;
+    if (shouldShowBranchChoices(text, chatAiMessageCount)) {
+      branchChoiceShown = true;
+      const choices = generateBranchChoices(text);
+      const choiceEl = renderBranchChoices(choices, (chosen) => {
+        sendChatWithText(chosen);
+      });
+      box.appendChild(choiceEl);
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+}
+
+async function sendChatWithText(text) {
+  const input = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('chat-send-btn');
+  if (input) input.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+  chatHistory.push({ role: 'user', content: text });
+  appendChatMessage('user', text);
+  appendChatMessage('assistant', '...');
+  try {
+    const _sc = practiceScenarios.find(ps => ps.id === chatScenarioId);
+    const _overrideP = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
+    const _sceneCtx = _overrideP ? _overrideP.scenario_prompt : (_sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '');
+    const res = await fetch('/api/roleplay', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang })
+    });
+    if (!res.ok) { replaceLastHtml(`<p class="text-red-400">Server error. Please try again.</p>`); }
+    else {
+      const data = await res.json();
+      const guestText = stripMarkdown(data.reply || '').trim();
+      if (!guestText) throw new Error('empty');
+      chatHistory.push({ role: 'assistant', content: data.reply });
+      replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
+      speakOpenAI(guestText);
+      const userTurns = chatHistory.filter(m => m.role === 'user').length;
+      if (userTurns === 3) {
+        completedScenarios.push(chatScenarioId);
+        localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
+        const _scenTs = JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
+        _scenTs[chatScenarioId] = new Date().toISOString();
+        localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
+        pushScenarioToServer(chatScenarioId);
+        checkBadgesLocal();
+        renderScenarios();
+        showScenarioSummary();
+      }
+    }
+  } catch { replaceLastHtml(`<p class="text-red-400">Connection error</p>`); }
+  if (input) input.disabled = false;
+  if (sendBtn) sendBtn.disabled = false;
+  if (input) input.focus();
 }
 
 function replaceLast(text) {
@@ -2968,7 +3260,7 @@ const MODULE_NAMES_CLIENT = {
 };
 
 function switchMgrTab(tab) {
-  ['staff','plans','skillgap','graduates'].forEach(t => {
+  ['staff','plans','skillgap','graduates','challenges','personas','custommodules'].forEach(t => {
     const panel = document.getElementById('mgr-panel-'+t);
     const btn = document.getElementById('mgr-tab-'+t);
     if (panel) panel.classList.toggle('hidden', t !== tab);
@@ -2982,6 +3274,9 @@ function switchMgrTab(tab) {
   if (tab === 'plans') loadTrainingPlans();
   if (tab === 'skillgap') loadSkillGap();
   if (tab === 'graduates') loadGraduates();
+  if (tab === 'challenges') { populateChallengeModuleSelect(); loadManagerChallenges(); }
+  if (tab === 'personas') loadManagerPersonas();
+  if (tab === 'custommodules') loadManagerCustomModules();
 }
 
 async function loadGraduates() {
@@ -3346,7 +3641,14 @@ function navigate(screen) {
   if (screen === 'leaderboard') loadLeaderboard();
   if (screen === 'achievements') renderAchievements();
   if (screen === 'manager') loadManagerDashboard();
-  if (screen === 'dashboard') renderQuickWins();
+  if (screen === 'dashboard') {
+    renderQuickWins();
+    renderTrackProgress();
+    loadActiveChallenges();
+  }
+  if (screen === 'learn') {
+    loadStaffCustomModules();
+  }
 }
 
 function renderQuickWins() {
@@ -3675,6 +3977,8 @@ function renderHub() {
       blogBody.innerHTML = `<p class="text-zinc-500 text-sm">${lang === 'fr' ? 'Article bientôt disponible.' : lang === 'es' ? 'Artículo próximamente.' : 'Article coming soon.'}</p>`;
     }
   }
+  // Inject custom restaurant personas as additional scenario cards
+  if (restaurantCustomPersonas.length) renderCustomPersonaScenarioCards();
 }
 
 function renderAchievements() {
@@ -4148,20 +4452,37 @@ function renderAll() {
   if (allEl) {
     const freeModuleLimit = 3;
     const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
-    const trackFineDining = lang==='fr' ? '🍽️ Piste fine cuisine — Modules 1–24' : lang==='es' ? '🍽️ Pista Fine Dining — Módulos 1–24' : '🍽️ Fine Dining & Restaurant Service Track — Modules 1–24';
-    const trackBar = lang==='fr' ? '🍸 Piste service bar — Modules 25–30' : lang==='es' ? '🍸 Pista Servicio de Bar — Módulos 25–30' : '🍸 Bar Service Track — Modules 25–30';
-    allEl.innerHTML = modules.map((m, idx) => {
+    // Sort modules by track order, then by module id within each track
+    const trackOrder = TRAINING_TRACKS.map(t => t.id);
+    const sortedModules = [...modules].sort((a, b) => {
+      const tA = trackOrder.indexOf(getModuleTrack(a.id).id);
+      const tB = trackOrder.indexOf(getModuleTrack(b.id).id);
+      if (tA !== tB) return tA - tB;
+      return a.id - b.id;
+    });
+    let lastTrackId = null;
+    let trackIdx = 0;
+    allEl.innerHTML = sortedModules.map((m, idx) => {
+      const track = getModuleTrack(m.id);
       let trackHeader = '';
-      if (idx === 0) {
-        trackHeader = `<div class="col-span-full mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#FF5E3A; background:rgba(255,94,58,0.1);">${trackFineDining}</span></div>`;
-      } else if (m.id === 25) {
-        trackHeader = `<div class="col-span-full mt-4 mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#7dd3fc; background:rgba(125,211,252,0.1);">${trackBar}</span></div>`;
+      if (track.id !== lastTrackId) {
+        lastTrackId = track.id;
+        const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
+        const trackDone = track.moduleIds.filter(id => (userProgress.find(u=>u.id===id)||{progress:0}).progress >= 100).length;
+        const trackTotal = track.moduleIds.length;
+        const mt = idx === 0 ? '' : 'mt-6 ';
+        trackHeader = `<div class="col-span-full ${mt}mb-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:${track.color}; background:${track.bg};">${track.emoji} ${trackName}</span>
+            <span class="text-xs text-zinc-500">${trackDone}/${trackTotal} ${lang==='fr'?'complétés':lang==='es'?'completados':'completed'}${trackDone===trackTotal?' 🏅':''}</span>
+          </div>
+        </div>`;
       }
       const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
-      const orderNum = idx + 1;
-      const locked = !hasPaidPlan() && idx >= freeModuleLimit;
+      const orderNum = m.id;
+      const locked = !hasPaidPlan() && m.id > freeModuleLimit;
       if (locked) {
         return trackHeader + `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
           <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
@@ -4207,7 +4528,7 @@ function renderAll() {
       </div>`;
     }).join('');
     if (proModulesLocked) {
-      const upgradeContextLabel = lang==='fr' ? '27 modules + Piste service bar' : lang==='es' ? '27 módulos + Pista Servicio de Bar' : '27 More Modules + Full Bar Service Track';
+      const upgradeContextLabel = lang==='fr' ? '27 modules + 4 pistes spécialisées' : lang==='es' ? '27 módulos + 4 pistas especializadas' : '27 More Modules + 4 Specialized Tracks';
       allEl.innerHTML += showUpgradePrompt(upgradeContextLabel);
     }
   }
@@ -4390,6 +4711,638 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW reg failed:', e));
   });
 }
+
+// =========================================================
+// TRAINING TRACKS — progress cards & certificates (#17)
+// =========================================================
+function renderTrackProgress() {
+  const grid = document.getElementById('track-progress-grid');
+  if (!grid) return;
+  grid.innerHTML = TRAINING_TRACKS.map(track => {
+    const done = track.moduleIds.filter(id => (userProgress.find(u=>u.id===id)||{progress:0}).progress >= 100).length;
+    const pct = Math.round((done / track.moduleIds.length) * 100);
+    const complete = done === track.moduleIds.length;
+    const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
+    return `<div class="bg-zinc-900 border rounded-2xl p-5 transition-all" style="border-color:${complete ? track.color : 'rgba(63,63,70,0.6)'};">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="text-2xl mb-1">${track.emoji}</div>
+          <div class="font-semibold text-sm">${trackName}</div>
+          <div class="text-zinc-500 text-xs mt-0.5">${track.moduleIds.length} modules</div>
+        </div>
+        ${complete ? `<div class="flex flex-col items-end gap-2">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:${track.bg};color:${track.color};">✓ Complete</span>
+          <button onclick="downloadTrackCertificate('${track.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors hover:opacity-80" style="color:${track.color};border-color:${track.border};">🎓 Certificate</button>
+        </div>` : `<span class="text-sm font-bold" style="color:${track.color};">${pct}%</span>`}
+      </div>
+      <div class="w-full bg-zinc-800 rounded-full h-1.5 mt-2">
+        <div class="h-1.5 rounded-full transition-all" style="width:${pct}%;background:${track.color};"></div>
+      </div>
+      <div class="text-zinc-500 text-xs mt-2">${done} / ${track.moduleIds.length} ${lang==='fr'?'modules complétés':lang==='es'?'módulos completados':'modules completed'}</div>
+    </div>`;
+  }).join('');
+}
+
+async function downloadTrackCertificate(trackId) {
+  if (!hasPaidPlan()) { window.location.href = '/pricing'; return; }
+  const track = TRAINING_TRACKS.find(t => t.id === trackId);
+  if (!track) return;
+  const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
+  const userName = document.getElementById('dashboard-greeting')?.textContent?.replace(/welcome back,?\s*/i, '').replace('👋','').trim() || 'Learner';
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+  doc.setFillColor(25, 9, 17);
+  doc.rect(0, 0, w, h, 'F');
+  doc.setFillColor(40, 20, 5);
+  doc.rect(8, 8, w-16, h-16, 'F');
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(0.8);
+  doc.rect(10, 10, w-20, h-20);
+  doc.setFont('times', 'italic');
+  doc.setTextColor(212, 175, 55);
+  doc.setFontSize(13);
+  doc.text('ServeMaster Academy', w/2, 28, { align: 'center' });
+  doc.setFont('times', 'bold');
+  doc.setFontSize(28);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Certificate of Track Completion', w/2, 50, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 180, 180);
+  doc.text('This certifies that', w/2, 68, { align: 'center' });
+  doc.setFont('times', 'bolditalic');
+  doc.setFontSize(24);
+  doc.setTextColor(255, 200, 50);
+  doc.text(userName, w/2, 82, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(180, 180, 180);
+  doc.text('has successfully completed all modules in the', w/2, 94, { align: 'center' });
+  doc.setFont('times', 'bold');
+  doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
+  doc.text(`${track.emoji}  ${trackName}`, w/2, 108, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120);
+  doc.text(`Issued ${new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' })} · servemasteracademy.ca`, w/2, h-22, { align: 'center' });
+  doc.save(`ServeMaster_${track.id}_certificate.pdf`);
+}
+
+// =========================================================
+// TEAM CHALLENGES — staff + manager (#15)
+// =========================================================
+async function loadActiveChallenges() {
+  const section = document.getElementById('active-challenges-section');
+  const list = document.getElementById('active-challenges-list');
+  if (!section || !list || !authToken) return;
+  try {
+    const res = await fetch('/api/challenges', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const challenges = data.challenges || [];
+    if (!challenges.length) { section.classList.add('hidden'); return; }
+    section.classList.remove('hidden');
+    list.innerHTML = challenges.map(c => {
+      const endsAt = new Date(c.ends_at);
+      const now = new Date();
+      const msLeft = endsAt - now;
+      const hoursLeft = Math.max(0, Math.round(msLeft / 3600000));
+      const joined = c.my_score !== null;
+      const typeLabel = c.challenge_type === 'quiz' ? 'Module Quiz' : c.challenge_type === 'scenario' ? 'AI Scenario' : 'Full Module';
+      return `<div class="bg-zinc-900 border border-amber-900/30 rounded-2xl p-5 flex items-start gap-4">
+        <div class="text-3xl">${c.badge_emoji || '🏆'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold mb-1">${escHtml(c.title)}</div>
+          ${c.description ? `<div class="text-zinc-400 text-sm mb-2">${escHtml(c.description)}</div>` : ''}
+          <div class="flex flex-wrap gap-2 text-xs text-zinc-500">
+            <span>${typeLabel}</span><span>·</span>
+            <span>Target: ${c.target_score}%</span><span>·</span>
+            <span>${hoursLeft}h remaining</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+          ${joined ? `<span class="text-xs font-semibold text-emerald-400">✓ Score: ${c.my_score}%</span>` : ''}
+          <button onclick="showChallengeLeaderboard(${c.id},'${escHtml(c.title)}')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">View Leaderboard →</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+async function showChallengeLeaderboard(id, title) {
+  try {
+    const res = await fetch(`/api/challenges/${id}/leaderboard`, { headers: { Authorization: 'Bearer ' + authToken } });
+    const data = await res.json();
+    const lb = data.leaderboard || [];
+    const rows = lb.length ? lb.map((e, i) => `<div class="flex items-center gap-3 py-2 border-b border-zinc-800 last:border-0">
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i===0?'bg-amber-400/20 text-amber-400':i===1?'bg-zinc-600 text-zinc-300':i===2?'bg-orange-900/40 text-orange-400':'bg-zinc-800 text-zinc-500'}">${i+1}</div>
+      <div class="flex-1 text-sm">${escHtml(e.name)}</div>
+      <div class="text-sm font-semibold text-amber-400">${e.score}%</div>
+    </div>`).join('') : '<div class="text-zinc-500 text-sm py-4 text-center">No entries yet — be the first!</div>';
+    const panel = document.getElementById('scorecard-panel') || document.body;
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4';
+    overlay.innerHTML = `<div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-lg">🏆 ${escHtml(title)}</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-zinc-400 hover:text-white text-2xl leading-none">×</button>
+      </div>
+      <div class="space-y-0">${rows}</div>
+    </div>`;
+    document.body.appendChild(overlay);
+  } catch {}
+}
+
+function populateChallengeModuleSelect() {
+  const sel = document.getElementById('ch-module');
+  if (!sel || sel.options.length > 1) return;
+  modules.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = `${m.id}. ${getModuleTitle(m)}`;
+    sel.appendChild(opt);
+  });
+}
+
+async function createChallenge() {
+  const title = document.getElementById('ch-title').value.trim();
+  const desc = document.getElementById('ch-desc').value.trim();
+  const type = document.getElementById('ch-type').value;
+  const modId = document.getElementById('ch-module').value;
+  const score = parseInt(document.getElementById('ch-score').value) || 80;
+  const ends = document.getElementById('ch-ends').value;
+  const badge = document.getElementById('ch-badge').value.trim() || '🏆';
+  const msg = document.getElementById('ch-msg');
+  if (!title || !ends) { msg.textContent = 'Please enter a title and end date.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
+  msg.textContent = 'Creating…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/manager/challenges', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ title, description: desc, challenge_type: type, target_module_id: modId || null, target_score: score, ends_at: new Date(ends).toISOString(), badge_emoji: badge })
+    });
+    if (res.ok) {
+      msg.textContent = '✓ Challenge launched!'; msg.className = 'text-sm mt-3 text-emerald-400';
+      document.getElementById('ch-title').value = '';
+      document.getElementById('ch-desc').value = '';
+      loadManagerChallenges();
+    } else {
+      const d = await res.json();
+      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
+    }
+  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
+}
+
+async function loadManagerChallenges() {
+  const el = document.getElementById('mgr-challenges-list');
+  if (!el) return;
+  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/manager/challenges', { headers: { Authorization: 'Bearer ' + authToken } });
+    const data = await res.json();
+    const cs = data.challenges || [];
+    if (!cs.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No challenges yet. Create one above!</div>'; return; }
+    el.innerHTML = cs.map(c => {
+      const active = new Date(c.ends_at) > new Date();
+      const endsDate = new Date(c.ends_at).toLocaleDateString('en-CA');
+      return `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-center gap-4">
+        <div class="text-2xl">${c.badge_emoji || '🏆'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">${escHtml(c.title)}</div>
+          <div class="text-zinc-500 text-xs mt-0.5">${c.challenge_type} · Target ${c.target_score}% · Ends ${endsDate}</div>
+          <div class="text-zinc-400 text-xs mt-0.5">${c.entry_count} participant${c.entry_count!=1?'s':''}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${active?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${active?'Active':'Ended'}</span>
+          <button onclick="showChallengeLeaderboard(${c.id},'${escHtml(c.title)}')" class="text-xs text-amber-400 hover:text-amber-300">Leaderboard</button>
+          <button onclick="deleteChallenge(${c.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
+}
+
+async function deleteChallenge(id) {
+  if (!confirm('Delete this challenge?')) return;
+  await fetch(`/api/manager/challenges/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
+  loadManagerChallenges();
+}
+
+// =========================================================
+// CUSTOM AI GUEST PERSONAS — manager + staff (#16)
+// =========================================================
+let restaurantCustomPersonas = [];
+let _customPersonaOverride = null;
+
+async function loadCustomPersonas() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/personas', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) return;
+    const data = await res.json();
+    restaurantCustomPersonas = data.personas || [];
+    renderCustomPersonaScenarioCards();
+  } catch {}
+}
+
+function renderCustomPersonaScenarioCards() {
+  const hubGrid = document.getElementById('hub-scenarios-grid');
+  if (!hubGrid || !restaurantCustomPersonas.length) return;
+  // Append custom persona cards to the existing scenario grid
+  const existingCustom = hubGrid.querySelectorAll('.custom-persona-card');
+  existingCustom.forEach(e => e.remove());
+  if (!restaurantCustomPersonas.length) return;
+  const header = document.createElement('div');
+  header.className = 'custom-persona-card col-span-full mt-2 mb-1';
+  header.innerHTML = '<div class="text-xs font-semibold uppercase tracking-wider text-violet-400">🎭 Restaurant Custom Scenarios</div>';
+  hubGrid.appendChild(header);
+  restaurantCustomPersonas.forEach(p => {
+    const diffColor = p.difficulty === 'easy' ? 'text-emerald-400 border-emerald-700/40' : p.difficulty === 'hard' ? 'text-red-400 border-red-700/40' : 'text-amber-400 border-amber-700/40';
+    const card = document.createElement('div');
+    card.className = 'custom-persona-card bg-zinc-800/50 border border-violet-800/40 hover:border-violet-400 rounded-2xl p-4 cursor-pointer transition-all';
+    card.innerHTML = `<div class="flex items-start gap-3">
+      <div class="text-3xl">${p.emoji || '🎭'}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm mb-0.5">${escHtml(p.name)}</div>
+        <div class="text-zinc-400 text-xs mb-2">${escHtml(p.role || 'Guest')}</div>
+        <span class="text-xs px-2 py-0.5 rounded-full border ${diffColor} capitalize">${p.difficulty}</span>
+      </div>
+    </div>`;
+    card.onclick = () => startCustomPersonaRoleplay(p);
+    hubGrid.appendChild(card);
+  });
+}
+
+async function startCustomPersonaRoleplay(persona) {
+  _customPersonaOverride = persona;
+  startChat(`persona_${persona.id}`);
+}
+
+async function loadManagerPersonas() {
+  const el = document.getElementById('mgr-personas-list');
+  if (!el) return;
+  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/manager/personas', { headers: { Authorization: 'Bearer ' + authToken } });
+    const data = await res.json();
+    const ps = data.personas || [];
+    if (!ps.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No personas yet. Create one above!</div>'; return; }
+    el.innerHTML = ps.map(p => {
+      const diffColor = p.difficulty === 'easy' ? 'text-emerald-400' : p.difficulty === 'hard' ? 'text-red-400' : 'text-amber-400';
+      return `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-start gap-4">
+        <div class="text-2xl">${p.emoji || '🎭'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">${escHtml(p.name)}</div>
+          <div class="text-zinc-500 text-xs mt-0.5">${escHtml(p.role || 'Guest')} · <span class="${diffColor} capitalize">${p.difficulty}</span></div>
+          <div class="text-zinc-400 text-xs mt-1 truncate">${escHtml(p.scenario_prompt.substring(0,100))}${p.scenario_prompt.length>100?'…':''}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs px-2 py-0.5 rounded-full ${p.is_active?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${p.is_active?'Active':'Hidden'}</span>
+          <button onclick="togglePersonaActive(${p.id},${!p.is_active})" class="text-xs text-zinc-400 hover:text-white">${p.is_active?'Hide':'Show'}</button>
+          <button onclick="deletePersona(${p.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
+}
+
+async function createPersona() {
+  const name = document.getElementById('pn-name').value.trim();
+  const role = document.getElementById('pn-role').value.trim();
+  const diff = document.getElementById('pn-diff').value;
+  const emoji = document.getElementById('pn-emoji').value.trim() || '🎭';
+  const prompt = document.getElementById('pn-prompt').value.trim();
+  const msg = document.getElementById('pn-msg');
+  if (!name || !prompt) { msg.textContent = 'Name and prompt are required.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
+  msg.textContent = 'Creating…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/manager/personas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ name, role, difficulty: diff, scenario_prompt: prompt, emoji })
+    });
+    if (res.ok) {
+      msg.textContent = '✓ Persona created!'; msg.className = 'text-sm mt-3 text-emerald-400';
+      document.getElementById('pn-name').value = '';
+      document.getElementById('pn-role').value = '';
+      document.getElementById('pn-prompt').value = '';
+      loadManagerPersonas();
+    } else {
+      const d = await res.json();
+      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
+    }
+  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
+}
+
+async function togglePersonaActive(id, active) {
+  await fetch(`/api/manager/personas/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+    body: JSON.stringify({ is_active: active })
+  });
+  loadManagerPersonas();
+}
+
+async function deletePersona(id) {
+  if (!confirm('Delete this persona?')) return;
+  await fetch(`/api/manager/personas/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
+  loadManagerPersonas();
+}
+
+// =========================================================
+// CUSTOM MODULE BUILDER — manager + staff (#18)
+// =========================================================
+function addCmSection() {
+  const container = document.getElementById('cm-sections');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'cm-section bg-zinc-800 rounded-xl p-3 space-y-2 relative';
+  div.innerHTML = `<button onclick="this.closest('.cm-section').remove()" class="absolute top-2 right-2 text-zinc-500 hover:text-red-400 text-lg leading-none">×</button>
+    <input type="text" placeholder="Section heading" class="cm-sec-heading w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+    <textarea rows="3" placeholder="Section body text…" class="cm-sec-body w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>`;
+  container.appendChild(div);
+}
+
+let cmQIdx = 0;
+function addCmQuestion() {
+  const container = document.getElementById('cm-questions');
+  if (!container) return;
+  const qi = cmQIdx++;
+  const div = document.createElement('div');
+  div.className = 'cm-question bg-zinc-800 rounded-xl p-3 space-y-2 relative';
+  div.innerHTML = `<button onclick="this.closest('.cm-question').remove()" class="absolute top-2 right-2 text-zinc-500 hover:text-red-400 text-lg leading-none">×</button>
+    <input type="text" placeholder="Question text" class="cm-q-text w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+    <div class="space-y-1.5" id="cm-opts-${qi}">
+      ${[0,1,2,3].map(i => `<div class="flex items-center gap-2">
+        <input type="radio" name="correct-${qi}" value="${i}" ${i===0?'checked':''} class="accent-amber-400">
+        <input type="text" placeholder="Option ${i+1}" class="cm-opt flex-1 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:border-amber-400 outline-none" />
+      </div>`).join('')}
+    </div>
+    <input type="text" placeholder="Explanation (optional)" class="cm-q-expl w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:border-amber-400 outline-none" />`;
+  container.appendChild(div);
+}
+
+async function saveCustomModule(publish) {
+  const title = document.getElementById('cm-title').value.trim();
+  const emoji = document.getElementById('cm-emoji').value.trim() || '📚';
+  const mins = parseInt(document.getElementById('cm-mins').value) || 10;
+  const msg = document.getElementById('cm-msg');
+  if (!title) { msg.textContent = 'Please enter a title.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
+  const sections = [];
+  document.querySelectorAll('#cm-sections .cm-section').forEach(sec => {
+    const h = sec.querySelector('.cm-sec-heading')?.value?.trim();
+    const b = sec.querySelector('.cm-sec-body')?.value?.trim();
+    if (h && b) sections.push({ heading: h, body: b });
+  });
+  const questions = [];
+  document.querySelectorAll('#cm-questions .cm-question').forEach(qel => {
+    const question = qel.querySelector('.cm-q-text')?.value?.trim();
+    const opts = [...qel.querySelectorAll('.cm-opt')].map(o => o.value.trim()).filter(Boolean);
+    const correctEl = qel.querySelector('input[type=radio]:checked');
+    const correctIdx = correctEl ? parseInt(correctEl.value) : 0;
+    const expl = qel.querySelector('.cm-q-expl')?.value?.trim() || '';
+    if (question && opts.length >= 2) questions.push({ question, options: opts, correct_index: correctIdx, explanation: expl });
+  });
+  msg.textContent = 'Saving…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/manager/custom-modules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+      body: JSON.stringify({ title, emoji, mins, sections, questions, is_published: publish })
+    });
+    if (res.ok) {
+      msg.textContent = publish ? '✓ Module published to staff!' : '✓ Draft saved.';
+      msg.className = 'text-sm mt-3 text-emerald-400';
+      document.getElementById('cm-title').value = '';
+      document.getElementById('cm-sections').innerHTML = '';
+      document.getElementById('cm-questions').innerHTML = '';
+      addCmSection();
+      loadManagerCustomModules();
+    } else {
+      const d = await res.json();
+      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
+    }
+  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
+}
+
+async function loadManagerCustomModules() {
+  const el = document.getElementById('mgr-custommodules-list');
+  if (!el) return;
+  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/manager/custom-modules', { headers: { Authorization: 'Bearer ' + authToken } });
+    const data = await res.json();
+    const mods = data.modules || [];
+    if (!mods.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No custom modules yet.</div>'; return; }
+    el.innerHTML = mods.map(m => `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-start gap-4">
+      <div class="text-2xl">${m.emoji || '📚'}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm">${escHtml(m.title)}</div>
+        <div class="text-zinc-500 text-xs mt-0.5">${m.section_count} sections · ${m.question_count} questions · ~${m.mins} min</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-2 py-0.5 rounded-full ${m.is_published?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${m.is_published?'Published':'Draft'}</span>
+        ${!m.is_published ? `<button onclick="publishCustomModule(${m.id})" class="text-xs text-amber-400 hover:text-amber-300">Publish</button>` : `<button onclick="unpublishCustomModule(${m.id})" class="text-xs text-zinc-400 hover:text-white">Unpublish</button>`}
+        <button onclick="deleteCustomModule(${m.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+      </div>
+    </div>`).join('');
+  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
+}
+
+async function publishCustomModule(id) {
+  await fetch(`/api/manager/custom-modules/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+    body: JSON.stringify({ is_published: true })
+  });
+  loadManagerCustomModules();
+}
+
+async function unpublishCustomModule(id) {
+  await fetch(`/api/manager/custom-modules/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+    body: JSON.stringify({ is_published: false })
+  });
+  loadManagerCustomModules();
+}
+
+async function deleteCustomModule(id) {
+  if (!confirm('Delete this module?')) return;
+  await fetch(`/api/manager/custom-modules/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
+  loadManagerCustomModules();
+}
+
+let staffCustomModules = [];
+
+async function loadStaffCustomModules() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/custom-modules', { headers: { Authorization: 'Bearer ' + authToken } });
+    if (!res.ok) return;
+    const data = await res.json();
+    staffCustomModules = data.modules || [];
+    renderCustomModulesInLearnScreen();
+  } catch {}
+}
+
+function renderCustomModulesInLearnScreen() {
+  const allEl = document.getElementById('all-modules');
+  if (!allEl || !staffCustomModules.length) return;
+  // Remove any existing custom module cards
+  allEl.querySelectorAll('.staff-custom-module').forEach(e => e.remove());
+  // Add custom modules section header
+  const hdr = document.createElement('div');
+  hdr.className = 'staff-custom-module col-span-full mt-6 mb-2';
+  hdr.innerHTML = `<div class="flex items-center justify-between flex-wrap gap-2">
+    <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#c084fc;background:rgba(192,132,252,0.1);">🏢 Restaurant Custom Modules</span>
+  </div>`;
+  allEl.appendChild(hdr);
+  staffCustomModules.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'staff-custom-module bg-zinc-900 border border-violet-900/40 hover:border-violet-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start';
+    card.innerHTML = `<div class="text-3xl">${m.emoji || '📚'}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold mb-1">${escHtml(m.title)}</div>
+        <div class="flex items-center gap-2 text-xs text-zinc-500">
+          <span>⏱ ~${m.mins} min</span>
+          <span>·</span>
+          <span>${m.sections?.length || 0} sections</span>
+          ${m.questions?.length ? `<span>·</span><span>${m.questions.length} quiz questions</span>` : ''}
+        </div>
+      </div>`;
+    card.onclick = () => openCustomModuleModal(m);
+    allEl.appendChild(card);
+  });
+}
+
+function openCustomModuleModal(mod) {
+  const modal = document.getElementById('module-modal');
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+  if (!modal || !content) return;
+  title.textContent = `${mod.emoji || '📚'} ${mod.title}`;
+  let html = '';
+  (mod.sections || []).sort((a,b)=>a.sort_order-b.sort_order).forEach(s => {
+    html += `<div class="mb-6">
+      <h3 class="text-lg font-semibold text-amber-400 mb-3">${escHtml(s.heading)}</h3>
+      <p class="text-zinc-300 leading-relaxed whitespace-pre-wrap">${escHtml(s.body)}</p>
+    </div>`;
+  });
+  if (mod.questions?.length) {
+    html += '<hr class="border-zinc-700 my-6"><h3 class="text-lg font-semibold mb-4">📝 Quiz</h3>';
+    html += `<div id="custom-quiz-${mod.id}" class="space-y-6">`;
+    mod.questions.sort((a,b)=>a.sort_order-b.sort_order).forEach((q, qi) => {
+      html += `<div class="bg-zinc-800 rounded-2xl p-5">
+        <div class="font-semibold mb-3">${qi+1}. ${escHtml(q.question)}</div>
+        <div class="space-y-2">`;
+      (q.options || []).forEach((opt, oi) => {
+        html += `<label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-zinc-700/50 transition-colors">
+          <input type="radio" name="cq-${mod.id}-${qi}" value="${oi}" class="accent-amber-400">
+          <span class="text-sm">${escHtml(opt)}</span>
+        </label>`;
+      });
+      html += `</div>
+        <button onclick="checkCustomQuizAnswer(this,${q.correct_index},'${escHtml((q.explanation||'').replace(/'/g,"\\\'"))}')" class="mt-3 text-xs font-semibold bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg transition-colors">Check Answer</button>
+        <div class="hidden mt-2 text-sm font-semibold"></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  content.innerHTML = html;
+  modal.classList.remove('hidden');
+}
+
+function checkCustomQuizAnswer(btn, correctIdx, explanation) {
+  const qBlock = btn.closest('div.bg-zinc-800');
+  const radios = qBlock.querySelectorAll('input[type=radio]');
+  let selected = -1;
+  radios.forEach((r,i) => { if (r.checked) selected = i; });
+  if (selected === -1) return;
+  const feedback = btn.nextElementSibling;
+  feedback.classList.remove('hidden');
+  if (selected === correctIdx) {
+    feedback.textContent = '✓ Correct!' + (explanation ? ' ' + explanation : '');
+    feedback.className = 'mt-2 text-sm font-semibold text-emerald-400';
+  } else {
+    feedback.textContent = `✗ Incorrect. ${explanation || ''}`;
+    feedback.className = 'mt-2 text-sm font-semibold text-red-400';
+  }
+  btn.disabled = true;
+}
+
+// =========================================================
+// SCENARIO BRANCHING — roleplay choice buttons (#19)
+// =========================================================
+let branchingEnabled = true;
+let branchChoiceShown = false;
+
+function renderBranchChoices(choices, onChoice) {
+  const el = document.createElement('div');
+  el.className = 'branch-choices mt-3 flex flex-col gap-2';
+  el.innerHTML = `<div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">How do you respond?</div>`;
+  choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'branch-btn text-left text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-400 rounded-xl px-4 py-3 transition-all text-zinc-200';
+    btn.textContent = choice;
+    btn.onclick = () => {
+      el.remove();
+      onChoice(choice);
+    };
+    el.appendChild(btn);
+  });
+  return el;
+}
+
+function shouldShowBranchChoices(aiMessage, messageCount) {
+  if (!branchingEnabled || branchChoiceShown) return false;
+  if (messageCount < 2) return false;
+  const branchTriggers = ['complaint', 'unhappy', 'wrong', 'mistake', 'waiting', 'rude', 'manager', 'refund', 'bill', 'error', 'cold', 'slow'];
+  const lower = aiMessage.toLowerCase();
+  return branchTriggers.some(t => lower.includes(t));
+}
+
+function generateBranchChoices(aiMessage) {
+  const lower = aiMessage.toLowerCase();
+  if (lower.includes('refund') || lower.includes('bill') || lower.includes('charge')) {
+    return [
+      'I sincerely apologize — let me review the bill right away.',
+      'I\'ll get my manager to assist you immediately.',
+      'I understand your concern. Could you help me identify the issue?'
+    ];
+  }
+  if (lower.includes('cold') || lower.includes('wrong dish') || lower.includes('incorrect')) {
+    return [
+      'I\'m so sorry — let me get that replaced for you right away.',
+      'I apologize. Let me bring this to the kitchen immediately.',
+      'Thank you for letting me know. I\'ll make this right.'
+    ];
+  }
+  if (lower.includes('waiting') || lower.includes('long') || lower.includes('slow')) {
+    return [
+      'I sincerely apologize for the wait. Your order is next out.',
+      'I\'ll check with the kitchen right now and give you an update.',
+      'Thank you for your patience — can I bring you something while you wait?'
+    ];
+  }
+  if (lower.includes('manager') || lower.includes('speak to')) {
+    return [
+      'Of course — I\'ll bring the manager over right away.',
+      'Absolutely, let me get them for you immediately.',
+      'I understand. May I first try to resolve this for you?'
+    ];
+  }
+  return [
+    'I\'m sorry to hear that — how can I make this right for you?',
+    'Let me find the best solution for you immediately.',
+    'Thank you for bringing this to my attention. I\'ll resolve it.'
+  ];
+}
+
+// Scenario branching is wired directly into appendChatMessage and sendChatWithText above.
 </script>
 </body>
 </html>
