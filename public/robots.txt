@@ -3,5 +3,7 @@ Allow: /
 # Block crawlers from API routes — prevents OAuth redirect chains
 # and API endpoints from being indexed or scanned for secrets
 Disallow: /api/
+Disallow: /admin
+Disallow: /admin.html
 
 Sitemap: https://servemasteracademy.ca/sitemap.xml
