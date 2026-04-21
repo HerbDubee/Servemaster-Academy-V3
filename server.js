@@ -2582,7 +2582,7 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
 });
 
 app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang, sceneTitle, sceneContext } = req.body;
+  const { scenarioId, messages, lang, sceneTitle, sceneContext, branchChoice } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
   const scenarioTitle = scenario ? scenario.title : (sceneTitle || 'Hospitality Scenario');
@@ -2591,9 +2591,19 @@ app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) =>
     : lang === 'es'
     ? 'IMPORTANTE: Escribe toda tu respuesta en español. Todos los campos JSON deben estar en español.\n\n'
     : '';
+  // Decision-point context for the trainer (only when the scenario has a branch).
+  let branchContext = '';
+  if (branchChoice && branchChoice.choiceId && Array.isArray(branchChoice.all) && branchChoice.all.length) {
+    const optionLines = branchChoice.all.map(opt => {
+      const picked = opt.id === branchChoice.choiceId ? ' [SERVER PICKED THIS]' : '';
+      const rec    = opt.recommended ? ' [RECOMMENDED PATH]' : '';
+      return `- "${opt.label}"${rec}${picked}`;
+    }).join('\n');
+    branchContext = `\n\nDECISION POINT — At a key moment in this scenario the server was given the following choice options. Treat this as part of their performance and reference whether they chose the recommended path in your "right" or "wrong" arrays.\n${optionLines}\n`;
+  }
   const systemPrompt = langInstruction + `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
 
-Scenario: "${scenarioTitle}"
+Scenario: "${scenarioTitle}"${branchContext}
 
 You will be given the full conversation between the server (user) and the simulated customer (assistant). Review what the server actually said — their word choices, tone, phrasing, and actions — and provide a structured critique.
 
