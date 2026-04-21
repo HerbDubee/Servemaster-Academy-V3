@@ -1228,11 +1228,18 @@ async function pushProgressToServer(moduleId, progress, quizScore) {
 
 async function pushScenarioToServer(scenarioId) {
   if (!authToken) return;
+  // Include the chosen branch path (when the scenario had a decision point)
+  // so the choice is persisted server-side alongside the completion.
+  const payload = { scenarioId };
+  if (chatBranchChoice && chatBranchChoice.scenarioId === scenarioId) {
+    payload.branchChoiceId   = chatBranchChoice.choiceId;
+    payload.branchRecommended = !!chatBranchChoice.recommended;
+  }
   try {
     await fetch('/api/user/scenario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ scenarioId })
+      body: JSON.stringify(payload)
     });
   } catch {}
 }
@@ -2029,6 +2036,8 @@ async function sendInitialMessage() {
     box.scrollTop = box.scrollHeight;
     // Play dialogue after scene finishes — only if still in the same session
     if (aiSpeechEnabled) sceneEndPromise.then(() => { if (chatSessionToken === sessionAtStart) speakOpenAI(guestText); });
+    // Branch decision point eval (this is the AI's first turn)
+    handleAssistantReplyComplete();
   } catch {
     div.querySelector('div').innerHTML = `${_sceneHtml}<p class="text-red-400">${lang==='es'?'No se pudo conectar al servidor.':lang==='fr'?'Impossible de se connecter au serveur.':'Could not connect to server.'}</p>${_retryBtn}`;
     box.scrollTop = box.scrollHeight;
@@ -2079,6 +2088,9 @@ async function sendChat() {
         checkBadgesLocal();
         renderScenarios();
         showScenarioSummary();
+      } else {
+        // Branch decision point eval after a real assistant reply.
+        handleAssistantReplyComplete();
       }
     }
   } catch {
@@ -2189,30 +2201,37 @@ function appendChatMessage(role, text) {
   div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words whitespace-pre-wrap ${role==='user'?'bg-amber-400 text-black':'bg-zinc-800 text-zinc-100'}">${escHtml(text)}</div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
-  // Inject branch choices after AI messages when appropriate
-  if (role === 'assistant' && text !== '...') {
-    chatAiMessageCount++;
-    if (shouldShowBranchChoices(chatScenarioId, chatAiMessageCount)) {
-      branchChoiceShown = true;
-      const branch = getScenarioBranch(chatScenarioId);
-      // Disable the text input while choices are visible.
-      const _inp = document.getElementById('chat-input');
-      const _btn = document.getElementById('chat-send-btn');
-      if (_inp) _inp.disabled = true;
-      if (_btn) _btn.disabled = true;
-      const choiceEl = renderBranchChoices(branch, (chosen) => {
-        recordBranchChoice(chatScenarioId, chosen);
-        if (_inp) _inp.disabled = false;
-        if (_btn) _btn.disabled = false;
-        sendChatWithText(_bxL(chosen.prompt));
-      });
-      box.appendChild(choiceEl);
-      box.scrollTop = box.scrollHeight;
-    }
+}
+
+// Called after a real assistant reply has rendered (whether via direct
+// append in sendInitialMessage or replaceLastHtml in sendChat / sendChatWithText).
+// Increments the AI-turn counter and, when the scenario's branch turn is
+// reached, swaps the text input for a panel of choice buttons. Tap-friendly
+// so voice mode users can use it without typing.
+function handleAssistantReplyComplete() {
+  chatAiMessageCount++;
+  if (!shouldShowBranchChoices(chatScenarioId, chatAiMessageCount)) return;
+  branchChoiceShown = true;
+  const branch = getScenarioBranch(chatScenarioId);
+  if (!branch) return;
+  const _inp = document.getElementById('chat-input');
+  const _btn = document.getElementById('chat-send-btn');
+  if (_inp) _inp.disabled = true;
+  if (_btn) _btn.disabled = true;
+  const box = document.getElementById('chat-messages');
+  const choiceEl = renderBranchChoices(branch, (chosen) => {
+    recordBranchChoice(chatScenarioId, chosen);
+    if (_inp) _inp.disabled = false;
+    if (_btn) _btn.disabled = false;
+    sendChatWithText(_bxL(chosen.prompt), chosen);
+  });
+  if (box) {
+    box.appendChild(choiceEl);
+    box.scrollTop = box.scrollHeight;
   }
 }
 
-async function sendChatWithText(text) {
+async function sendChatWithText(text, chosenBranchOption) {
   const input = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send-btn');
   if (input) input.disabled = true;
@@ -2224,9 +2243,15 @@ async function sendChatWithText(text) {
     const _sc = practiceScenarios.find(ps => ps.id === chatScenarioId);
     const _overrideP = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
     const _sceneCtx = _overrideP ? _overrideP.scenario_prompt : (_sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '');
+    // When this call originates from a branch choice, pass an English
+    // description of the chosen path so the AI guest can calibrate its
+    // emotional reaction without the choice ID being visible to the user.
+    const _choicePrompt = chosenBranchOption
+      ? `Path "${chosenBranchOption.id}" — ${(chosenBranchOption.label && (chosenBranchOption.label.en || chosenBranchOption.label[lang])) || ''}${chosenBranchOption.recommended ? ' (RECOMMENDED PATH)' : ' (NOT the recommended path)'}`
+      : undefined;
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang })
+      body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang, choicePrompt: _choicePrompt })
     });
     if (!res.ok) { replaceLastHtml(`<p class="text-red-400">Server error. Please try again.</p>`); }
     else {
@@ -2247,6 +2272,8 @@ async function sendChatWithText(text) {
         checkBadgesLocal();
         renderScenarios();
         showScenarioSummary();
+      } else {
+        handleAssistantReplyComplete();
       }
     }
   } catch { replaceLastHtml(`<p class="text-red-400">Connection error</p>`); }

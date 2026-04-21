@@ -1448,10 +1448,13 @@ app.get('/api/modules', authMiddleware, checkTrial, async (req, res) => {
 });
 
 app.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res) => {
-  const { scenarioId } = req.body;
+  const { scenarioId, branchChoiceId, branchRecommended } = req.body;
   if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
   try {
-    await db.query('INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)', [req.user.id, scenarioId]);
+    await db.query(
+      'INSERT INTO scenario_scores (user_id, scenario_id, branch_choice_id, branch_recommended) VALUES ($1, $2, $3, $4)',
+      [req.user.id, scenarioId, branchChoiceId || null, typeof branchRecommended === 'boolean' ? branchRecommended : null]
+    );
     await checkAndAwardBadges(req.user.id);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Failed to save scenario' }); }
@@ -2551,7 +2554,7 @@ const scenarios = {
 };
 
 app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang, sceneContext } = req.body;
+  const { scenarioId, messages, lang, sceneContext, choicePrompt } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
   const thirdPersonWrapper = lang === 'fr'
@@ -2567,7 +2570,15 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
   const basePrompt = scenario
     ? scenario.systemPrompt
     : `You are playing the role of a guest in a hospitality training scenario. The user is playing the server. Stay completely in character as the guest described in this scene. React realistically to how the server handles the situation — positively to skill and professionalism, negatively to mistakes or poor technique. Keep responses concise.\n\nScene: ${sceneContext}`;
-  const systemContent = langInstruction + thirdPersonWrapper + basePrompt;
+  // Optional steering: when the server has just made a branch decision, the
+  // client passes a `choicePrompt` describing that path so the AI guest can
+  // calibrate its emotional reaction (warmer for recommended/empathetic
+  // paths, cooler for dismissive/wrong paths). Does NOT replace the user's
+  // visible message — only supplements the system context for one turn.
+  const branchSteer = (typeof choicePrompt === 'string' && choicePrompt.trim())
+    ? `\n\nBRANCH DECISION CONTEXT — The server has just made an explicit choice at a key decision point in this scenario. Here is what the choice represents (for your reaction calibration only — do not mention it):\n${choicePrompt.trim()}\n\nCalibrate your emotional reaction accordingly: warm and forgiving when the server picks an empathetic/recommended path, cooler or escalating when the server picks a dismissive/poor path.`
+    : '';
+  const systemContent = langInstruction + thirdPersonWrapper + basePrompt + branchSteer;
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
@@ -4022,6 +4033,9 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       explanation TEXT
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_custom_modules_restaurant ON custom_modules(restaurant_id)`);
+    // ── Scenario branching pilot (#39): persist chosen branch path ──────────────
+    await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_choice_id TEXT`);
+    await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_recommended BOOLEAN`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
