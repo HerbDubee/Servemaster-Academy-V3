@@ -600,11 +600,11 @@ async function submitTrialRequest(e) {
     const res = await fetch('/api/request-team-trial', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))({
         name: document.getElementById('tr-name').value.trim(),
         email: document.getElementById('tr-email').value.trim(),
         restaurantName: document.getElementById('tr-restaurant').value.trim()
-      })
+      }))
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Something went wrong');
@@ -704,6 +704,7 @@ showTrialBanner();
     });
   }
 </script>
+  <script src="/js/utm-capture.js"></script>
   <script src="/js/pwa-nav.js"></script>
 </body>
 </html>

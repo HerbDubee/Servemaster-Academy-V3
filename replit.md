@@ -100,6 +100,8 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 | `badges` | Earned badge records |
 | `scenario_scores` | Completed roleplay sessions |
 | `restaurants` | Manager restaurant profiles + `cert_logo_url` + white-label branding columns (`wl_brand_name`, `wl_logo_url`, `wl_primary_color`, `wl_accent_color`, `wl_is_active`, `wl_is_enterprise`) |
+| `users` (UTM cols) | `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `attribution_referrer`, `paid_started_at` — first-touch attribution captured at signup; `paid_started_at` set on first Stripe checkout completion (used for free→Premium conversion attribution) |
+| `contact_messages` (UTM cols) | Same UTM columns — captured on `/api/request-team-trial` so manager-funnel attribution lines up with server-funnel attribution |
 | `invite_codes` | Admin-generated invite codes |
 | `invite_code_redemptions` | Code redemption log |
 | `email_subscribers` | Newsletter signups |
@@ -125,6 +127,7 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 - **Drip sequence**: `sendDripEmailIfDue(userId, email, name)` — called on login; Days 1/3/7/14 onboarding sequence tracked via `email_drip_log`
 - **Trial drip (legacy)**: `sendTrialDripEmails(user)` — kept for grandfathered users with in-flight trials only; new individual signups no longer receive trial emails (free tier replaced 14-day trial)
 - **Weekly manager digest**: `sendWeeklyManagerDigests()` — every Monday; summaries team progress per restaurant; POST `/api/admin/trigger-weekly-digest` for manual trigger
+- **OpenClaw weekly attribution digest**: `sendOpenClawWeeklyDigest()` — every Monday 8am ET (America/Toronto); emails Kirk a digest of last-7d signups, /teams trial requests, and free→Premium conversions, grouped by `utm_source × utm_medium × utm_campaign`, with WoW deltas. Cron checks hourly via `maybeRunOpenClawDigestCron()`; idempotence tracked in `site_settings.openclaw_digest_last_sent_at`. Manual trigger: POST `/api/admin/trigger-openclaw-digest`. Live admin panel at `/admin#attribution` with CSV export at `/api/admin/weekly-attribution.csv`. UTM capture lives in `public/js/utm-capture.js` (loaded on home, signup, teams, pricing, app) — first-touch, stored in sessionStorage + localStorage + cookies, attached to signup/team-trial payloads via `window.SMAUtm.attach(payload)`. Google OAuth flow forwards UTMs via short-lived cookies set by `/api/auth/google` so `/api/auth/google/callback` can attribute the new user.
 - **Streak recovery**: email sent inside `updateStreak()` when a streak breaks
 - **CASL compliance**: `emailFooter(unsubUrl)` appended to all outbound Resend emails; `getOrCreateUnsubToken(userId)` generates persistent tokens; `GET /unsubscribe?token=` + `POST /api/resubscribe`
 

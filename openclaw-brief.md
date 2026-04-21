@@ -289,6 +289,17 @@ https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_ca
 
 **Rule of thumb:** If the content speaks to a server → `/signup`. If it speaks to a manager or owner → `/teams`.
 
+### Reporting buckets (weekly digest)
+
+ServeMaster Academy now captures `utm_source`, `utm_medium`, `utm_campaign`, and `utm_content` on every free signup and every `/teams` trial request, plus on free → Premium conversions. Every Monday at 8am ET, Kirk receives a weekly digest grouped on these three keys: `utm_source × utm_medium × utm_campaign`.
+
+To keep the report buckets clean and comparable week-over-week, OpenClaw must use the canonical values listed above. In particular:
+
+- Stick to lowercase, no spaces, no punctuation other than `_`, `-`, `.` (the server normalises and strips anything else).
+- Do not invent new sources mid-month — every new `utm_source` becomes its own row in the digest.
+- Always include all three: `utm_source`, `utm_medium`, `utm_campaign`. Visits without UTMs are bucketed as `(direct)` / `(none)` / `(none)` and Kirk cannot tell paid from organic for those rows.
+- `utm_content` is optional but useful for differentiating posts inside the same campaign — it appears in the CSV export but not in the headline tables.
+
 ---
 
 ## The Affiliate Program

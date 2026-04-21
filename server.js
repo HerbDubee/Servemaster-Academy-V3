@@ -446,9 +446,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [plan, parseInt(session.metadata.restaurantId)]);
             await db.query('UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2', [session.subscription, customerId]);
           } else {
+            const newStatus = (plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan;
             await db.query(
-              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
-              [(plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan, session.subscription, customerId]
+              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
+              [newStatus, session.subscription, customerId]
             );
           }
           const payingUser = await db.query('SELECT id, email, influencer_ref_code FROM users WHERE stripe_customer_id = $1', [customerId]);
@@ -766,9 +767,10 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 10);
+    const utm = extractUtm(req);
     const result = await db.query(
-      "INSERT INTO users (email, password_hash, name, experience_level, subscription_status, is_trial_active) VALUES ($1, $2, $3, $4, 'free', false) RETURNING id, name, email, role, subscription_status",
-      [email.toLowerCase(), hash, name, level || 'New to serving']
+      "INSERT INTO users (email, password_hash, name, experience_level, subscription_status, is_trial_active, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, 'free', false, $5, $6, $7, $8, $9) RETURNING id, name, email, role, subscription_status",
+      [email.toLowerCase(), hash, name, level || 'New to serving', utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
@@ -960,6 +962,17 @@ app.get('/api/auth/google', authLimiter, (req, res) => {
   // Explicitly block crawlers from following this redirect chain
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.setHeader('Referrer-Policy', 'no-referrer');
+  // Stash UTM params from the inbound query into short-lived cookies so the
+  // OAuth callback can attribute the new account back to the campaign.
+  try {
+    const cookieOpts = { maxAge: 30 * 60 * 1000, httpOnly: false, sameSite: 'lax' };
+    UTM_KEYS.forEach(k => {
+      const v = _normalizeUtmValue(req.query[k]);
+      if (v) res.cookie('sma_' + k, v, cookieOpts);
+    });
+    const ref = _normalizeReferrer(req.query.attribution_referrer || req.query.referrer || req.get('referer'));
+    if (ref) res.cookie('sma_attribution_referrer', ref, cookieOpts);
+  } catch (e) {}
   const BASE_URL = process.env.APP_URL || `https://${req.get('host')}`;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
@@ -1047,6 +1060,33 @@ app.get('/api/auth/google/callback', async (req, res) => {
 });
 
 // ── Shared email helpers ──────────────────────────────────────────────────────
+// ── UTM attribution helper ────────────────────────────────────────────────────
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+function _normalizeUtmValue(v) {
+  if (v == null) return null;
+  const s = String(v).trim().toLowerCase();
+  if (!s || s.length > 120) return null;
+  return s.replace(/[^a-z0-9._\-]/g, '').slice(0, 120) || null;
+}
+function _normalizeReferrer(v) {
+  if (v == null) return null;
+  const s = String(v).trim();
+  if (!s || s.length > 500) return null;
+  return s.slice(0, 500);
+}
+function extractUtm(req) {
+  const body = (req && req.body) || {};
+  const cookies = (req && req.cookies) || {};
+  const get = (k) => body[k] || cookies['sma_' + k] || null;
+  return {
+    source: _normalizeUtmValue(get('utm_source')),
+    medium: _normalizeUtmValue(get('utm_medium')),
+    campaign: _normalizeUtmValue(get('utm_campaign')),
+    content: _normalizeUtmValue(get('utm_content')),
+    referrer: _normalizeReferrer(body.attribution_referrer || body.referrer || cookies.sma_attribution_referrer || null),
+  };
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -1476,10 +1516,15 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
-  const { name, email, restaurant, staffCount } = req.body;
-  if (!name || !email || !restaurant) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
+  const { name, email, restaurant, restaurantName, staffCount } = req.body;
+  const restName = restaurant || restaurantName;
+  if (!name || !email || !restName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
   try {
-    await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restaurant}${staffCount ? ` | Staff: ${staffCount}` : ''}`]);
+    const utm = extractUtm(req);
+    await db.query(
+      'INSERT INTO contact_messages (name, email, message, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restName}${staffCount ? ` | Staff: ${staffCount}` : ''}`, utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
+    );
     const staffRow = staffCount ? `<tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Staff count</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(String(staffCount))}</td></tr>` : '';
     resend.emails.send({
       from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
@@ -3113,6 +3158,275 @@ app.get('/api/admin/analytics', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch analytics' }); }
 });
 
+// ── Admin: weekly attribution (OpenClaw / UTM) ────────────────────────────────
+async function buildWeeklyAttribution() {
+  const now = new Date();
+  const periodEnd = now;
+  const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const priorEnd = periodStart;
+  const priorStart = new Date(priorEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const norm = (r) => ({
+    utm_source: r.utm_source || '(direct)',
+    utm_medium: r.utm_medium || '(none)',
+    utm_campaign: r.utm_campaign || '(none)',
+    count: parseInt(r.cnt) || 0,
+  });
+
+  // Helper: aggregate one query for a window
+  async function agg(sql, start, end) {
+    const r = await db.query(sql, [start, end]);
+    return r.rows.map(norm);
+  }
+
+  const signupSql = `
+    SELECT utm_source, utm_medium, utm_campaign, COUNT(*) AS cnt
+    FROM users
+    WHERE created_at >= $1 AND created_at < $2
+    GROUP BY utm_source, utm_medium, utm_campaign
+    ORDER BY cnt DESC`;
+  const teamReqSql = `
+    SELECT utm_source, utm_medium, utm_campaign, COUNT(*) AS cnt
+    FROM contact_messages
+    WHERE created_at >= $1 AND created_at < $2
+      AND message LIKE '[TEAM TRIAL REQUEST]%'
+    GROUP BY utm_source, utm_medium, utm_campaign
+    ORDER BY cnt DESC`;
+  const conversionSql = `
+    SELECT utm_source, utm_medium, utm_campaign, COUNT(*) AS cnt
+    FROM users
+    WHERE paid_started_at >= $1 AND paid_started_at < $2
+    GROUP BY utm_source, utm_medium, utm_campaign
+    ORDER BY cnt DESC`;
+
+  const [
+    signupsCur, signupsPrev,
+    teamCur, teamPrev,
+    convCur, convPrev,
+  ] = await Promise.all([
+    agg(signupSql, periodStart, periodEnd),
+    agg(signupSql, priorStart, priorEnd),
+    agg(teamReqSql, periodStart, periodEnd),
+    agg(teamReqSql, priorStart, priorEnd),
+    agg(conversionSql, periodStart, periodEnd),
+    agg(conversionSql, priorStart, priorEnd),
+  ]);
+
+  function diffRows(curRows, prevRows) {
+    const key = (r) => r.utm_source + '|' + r.utm_medium + '|' + r.utm_campaign;
+    const prevMap = {};
+    prevRows.forEach(r => { prevMap[key(r)] = r.count; });
+    const seen = {};
+    const merged = curRows.map(r => {
+      seen[key(r)] = true;
+      const prev = prevMap[key(r)] || 0;
+      return {
+        utm_source: r.utm_source, utm_medium: r.utm_medium, utm_campaign: r.utm_campaign,
+        count: r.count, prior_count: prev, delta: r.count - prev,
+      };
+    });
+    // Include prior rows that dropped to 0 this week
+    prevRows.forEach(r => {
+      if (!seen[key(r)]) {
+        merged.push({
+          utm_source: r.utm_source, utm_medium: r.utm_medium, utm_campaign: r.utm_campaign,
+          count: 0, prior_count: r.count, delta: -r.count,
+        });
+      }
+    });
+    return merged.sort((a, b) => b.count - a.count || b.prior_count - a.prior_count);
+  }
+
+  const signupsRows = diffRows(signupsCur, signupsPrev);
+  const teamRows = diffRows(teamCur, teamPrev);
+  const convRows = diffRows(convCur, convPrev);
+
+  const sumCount = (rows) => rows.reduce((s, r) => s + r.count, 0);
+  const sumPrior = (rows) => rows.reduce((s, r) => s + r.prior_count, 0);
+
+  const totals = {
+    signups: { current: sumCount(signupsRows), prior: sumPrior(signupsRows) },
+    team_requests: { current: sumCount(teamRows), prior: sumPrior(teamRows) },
+    conversions: { current: sumCount(convRows), prior: sumPrior(convRows) },
+  };
+
+  // Top campaign across signups + conversions (weighted: 1 signup, 5 conversion)
+  const campaignScore = {};
+  signupsRows.forEach(r => {
+    const k = r.utm_source + ' / ' + r.utm_campaign;
+    campaignScore[k] = (campaignScore[k] || 0) + r.count;
+  });
+  convRows.forEach(r => {
+    const k = r.utm_source + ' / ' + r.utm_campaign;
+    campaignScore[k] = (campaignScore[k] || 0) + r.count * 5;
+  });
+  const topCampaignKey = Object.keys(campaignScore).sort((a, b) => campaignScore[b] - campaignScore[a])[0] || null;
+
+  return {
+    generated_at: now.toISOString(),
+    period_start: periodStart.toISOString(),
+    period_end: periodEnd.toISOString(),
+    prior_start: priorStart.toISOString(),
+    prior_end: priorEnd.toISOString(),
+    totals,
+    signups: signupsRows,
+    team_requests: teamRows,
+    conversions: convRows,
+    top_campaign: topCampaignKey,
+  };
+}
+
+app.get('/api/admin/weekly-attribution', adminMiddleware, async (req, res) => {
+  try {
+    const data = await buildWeeklyAttribution();
+    res.json(data);
+  } catch (err) {
+    console.error('Weekly attribution error:', err.message);
+    res.status(500).json({ error: 'Failed to build weekly attribution' });
+  }
+});
+
+// CSV export of the same aggregation
+app.get('/api/admin/weekly-attribution.csv', adminMiddleware, async (req, res) => {
+  try {
+    const data = await buildWeeklyAttribution();
+    const lines = ['metric,utm_source,utm_medium,utm_campaign,count_7d,prior_7d,delta'];
+    const push = (metric, rows) => rows.forEach(r => {
+      const csvSafe = (v) => `"${String(v).replace(/"/g, '""')}"`;
+      lines.push([metric, csvSafe(r.utm_source), csvSafe(r.utm_medium), csvSafe(r.utm_campaign), r.count, r.prior_count, r.delta].join(','));
+    });
+    push('signups', data.signups);
+    push('team_requests', data.team_requests);
+    push('free_to_premium', data.conversions);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="weekly-attribution-${data.period_start.slice(0,10)}.csv"`);
+    res.send(lines.join('\n'));
+  } catch (err) {
+    console.error('Weekly attribution CSV error:', err.message);
+    res.status(500).json({ error: 'Failed to export CSV' });
+  }
+});
+
+function _renderAttributionDigestHtml(data) {
+  const fmtPct = (cur, prev) => {
+    if (!prev) return cur > 0 ? '<span style="color:#10b981;">new</span>' : '<span style="color:#71717a;">—</span>';
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    const colour = pct >= 0 ? '#10b981' : '#ef4444';
+    const sign = pct >= 0 ? '+' : '';
+    return `<span style="color:${colour};font-weight:600;">${sign}${pct}%</span>`;
+  };
+  const fmtRange = (start, end) => {
+    const s = new Date(start), e = new Date(end);
+    const opt = { month: 'short', day: 'numeric', timeZone: 'America/Toronto' };
+    return s.toLocaleDateString('en-CA', opt) + ' – ' + e.toLocaleDateString('en-CA', opt);
+  };
+  function renderTable(title, rows) {
+    if (!rows.length) {
+      return `<h3 style="font-family:Montserrat,sans-serif;color:#FF5E3A;margin:24px 0 8px;">${title}</h3>
+        <p style="color:#71717a;font-size:14px;margin:4px 0 0;">0 this week.</p>`;
+    }
+    const trs = rows.slice(0, 12).map(r => `
+      <tr>
+        <td style="padding:6px 12px 6px 0;font-size:13px;">${escapeHtml(r.utm_source)}</td>
+        <td style="padding:6px 12px 6px 0;font-size:13px;color:#a1a1aa;">${escapeHtml(r.utm_medium)}</td>
+        <td style="padding:6px 12px 6px 0;font-size:13px;color:#a1a1aa;">${escapeHtml(r.utm_campaign)}</td>
+        <td style="padding:6px 0;font-size:13px;font-weight:600;text-align:right;">${r.count}</td>
+        <td style="padding:6px 0 6px 12px;font-size:12px;color:#71717a;text-align:right;">prev ${r.prior_count}</td>
+      </tr>`).join('');
+    return `<h3 style="font-family:Montserrat,sans-serif;color:#FF5E3A;margin:24px 0 8px;">${title}</h3>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:1px solid #27272a;">
+          <th style="text-align:left;padding:6px 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Source</th>
+          <th style="text-align:left;padding:6px 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Medium</th>
+          <th style="text-align:left;padding:6px 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Campaign</th>
+          <th style="text-align:right;padding:6px 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">7d</th>
+          <th style="text-align:right;padding:6px 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Δ</th>
+        </tr></thead>
+        <tbody>${trs}</tbody>
+      </table>`;
+  }
+  const adminUrl = `${APP_URL}/admin#attribution`;
+  const totals = data.totals;
+  const headlineRow = (label, t) => `
+    <tr>
+      <td style="padding:8px 0;font-size:14px;color:#a1a1aa;">${label}</td>
+      <td style="padding:8px 0;font-size:18px;font-weight:700;text-align:right;">${t.current}</td>
+      <td style="padding:8px 0 8px 16px;font-size:13px;text-align:right;">${fmtPct(t.current, t.prior)}</td>
+    </tr>`;
+  return `<div style="font-family:Inter,sans-serif;background:#0a0a0a;color:#f5f5f5;padding:32px;max-width:680px;margin:0 auto;border-radius:12px;">
+    <h1 style="font-family:Montserrat,sans-serif;color:#FF5E3A;margin:0 0 4px;font-size:24px;">OpenClaw Weekly Digest</h1>
+    <p style="color:#a1a1aa;margin:0 0 24px;font-size:14px;">${fmtRange(data.period_start, data.period_end)} (vs prior 7 days)</p>
+    <table style="width:100%;border-collapse:collapse;background:#18181b;border-radius:8px;padding:8px;">
+      <tbody>
+        ${headlineRow('New free signups', totals.signups)}
+        ${headlineRow('Team trial requests', totals.team_requests)}
+        ${headlineRow('Free → Premium conversions', totals.conversions)}
+      </tbody>
+    </table>
+    ${data.top_campaign ? `<p style="margin:16px 0 0;font-size:14px;color:#d4d4d8;">🏆 Top-performing campaign: <strong style="color:#FF5E3A;">${escapeHtml(data.top_campaign)}</strong></p>` : ''}
+    ${renderTable('Signups by source', data.signups)}
+    ${renderTable('Team trial requests by source', data.team_requests)}
+    ${renderTable('Free → Premium conversions by source', data.conversions)}
+    <p style="margin:32px 0 0;font-size:13px;color:#71717a;">
+      <a href="${adminUrl}" style="color:#FF5E3A;text-decoration:none;font-weight:600;">Open the live attribution panel →</a>
+    </p>
+    <p style="margin:24px 0 0;font-size:12px;color:#52525b;">Buckets shown as <code>(direct)</code> / <code>(none)</code> are visits with no UTM tag (typed URLs, untagged links). Pre–this-week signups are not back-attributed.</p>
+  </div>`;
+}
+
+const KIRK_DIGEST_EMAIL = 'kirk_adamson@servemasteracademy.ca';
+async function sendOpenClawWeeklyDigest() {
+  try {
+    const data = await buildWeeklyAttribution();
+    const html = _renderAttributionDigestHtml(data);
+    await resend.emails.send({
+      from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
+      to: KIRK_DIGEST_EMAIL,
+      subject: `OpenClaw weekly digest — ${data.totals.signups.current} signups, ${data.totals.team_requests.current} team trial requests`,
+      html,
+    });
+    await db.query(
+      `INSERT INTO site_settings (key, value) VALUES ('openclaw_digest_last_sent_at', $1)
+       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+      [new Date().toISOString()]
+    );
+    console.log('[OpenClaw digest] sent to', KIRK_DIGEST_EMAIL);
+    return { sent: true };
+  } catch (e) {
+    console.error('[OpenClaw digest] send error:', e.message);
+    throw e;
+  }
+}
+
+// Cron: check hourly; fire on Monday 8am ET if not yet sent today.
+async function maybeRunOpenClawDigestCron() {
+  try {
+    const now = new Date();
+    const torontoFmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Toronto', weekday: 'short', hour: 'numeric', hour12: false
+    }).formatToParts(now).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
+    const isMonday = torontoFmt.weekday === 'Mon';
+    const hour = parseInt(torontoFmt.hour);
+    if (!isMonday || hour < 8 || hour >= 9) return;
+    const last = await db.query(`SELECT value FROM site_settings WHERE key='openclaw_digest_last_sent_at'`);
+    const lastIso = last.rows[0]?.value;
+    if (lastIso) {
+      const lastDate = new Date(lastIso);
+      const sinceMs = now.getTime() - lastDate.getTime();
+      if (sinceMs < 6 * 24 * 60 * 60 * 1000) return; // already sent in last 6 days
+    }
+    await sendOpenClawWeeklyDigest();
+  } catch (e) { console.error('[OpenClaw digest] cron error:', e.message); }
+}
+setInterval(maybeRunOpenClawDigestCron, 60 * 60 * 1000); // hourly
+setTimeout(maybeRunOpenClawDigestCron, 30 * 1000); // initial check shortly after boot
+
+// Manual trigger for Kirk / admin
+app.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res) => {
+  try { await sendOpenClawWeeklyDigest(); res.json({ success: true }); }
+  catch (e) { res.status(500).json({ error: 'Failed to send digest' }); }
+});
+
 // ── Admin: Stripe revenue ─────────────────────────────────────────────────────
 app.get('/api/admin/stripe-revenue', adminMiddleware, async (req, res) => {
   try {
@@ -3474,6 +3788,19 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       created_by INT REFERENCES users(id),
       created_at TIMESTAMPTZ DEFAULT NOW()
     )`);
+    // ── UTM attribution columns (for OpenClaw weekly digest) ──────────────
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_source TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_medium TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_content TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS paid_started_at TIMESTAMPTZ`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_users_paid_started_at ON users(paid_started_at)`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_source TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_medium TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_content TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
     await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
       id SERIAL PRIMARY KEY,
       plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,

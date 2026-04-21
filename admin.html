@@ -76,6 +76,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
       <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
       <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
+      <div class="nav-item" onclick="showSection('attribution')" id="nav-attribution">📈 Attribution</div>
       <div class="nav-item" onclick="showSection('payments')" id="nav-payments">⚠️ Payments</div>
       <div class="nav-item" onclick="showSection('siteconfig')" id="nav-siteconfig">⚙️ Site Config</div>
       <div class="nav-item" onclick="showSection('scholarships')" id="nav-scholarships">🎓 Scholarships</div>
@@ -95,6 +96,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
       <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
       <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
+      <button onclick="showSection('attribution')" class="nav-item whitespace-nowrap" id="mnav-attribution">📈</button>
       <button onclick="showSection('payments')" class="nav-item whitespace-nowrap" id="mnav-payments">⚠️</button>
       <button onclick="showSection('siteconfig')" class="nav-item whitespace-nowrap" id="mnav-siteconfig">⚙️</button>
       <button onclick="showSection('scholarships')" class="nav-item whitespace-nowrap" id="mnav-scholarships">🎓</button>
@@ -412,6 +414,11 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <h2 class="font-semibold mb-1">Individual Emails</h2>
           <p class="text-zinc-400 text-sm">Use the Users tab to find a specific user, then use the Edit button to access per-user email options in the Users section.</p>
         </div>
+      </div>
+
+      <!-- ATTRIBUTION (OpenClaw last 7 days by source) -->
+      <div id="section-attribution" class="section">
+        <div id="attribution-wrap"><div class="text-zinc-500 text-sm">Loading…</div></div>
       </div>
 
       <!-- PAYMENTS -->
@@ -1544,6 +1551,90 @@ function showSection(name) {
   if (name === 'affiliates') loadAffiliates();
   if (name === 'tenants') loadTenants();
   if (name === 'books') loadBooks();
+  if (name === 'attribution') loadAttribution();
+}
+
+// ── Last 7 days by source (OpenClaw weekly attribution) ───────────────────────
+async function loadAttribution() {
+  const wrap = document.getElementById('attribution-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+  try {
+    const res = await fetch('/api/admin/weekly-attribution', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    const fmtDate = iso => new Date(iso).toLocaleDateString('en-CA', { month:'short', day:'numeric' });
+    const range = `${fmtDate(data.period_start)} – ${fmtDate(data.period_end)}`;
+    const priorRange = `${fmtDate(data.prior_start)} – ${fmtDate(data.prior_end)}`;
+    const headline = (label, t) => {
+      const pct = t.prior ? Math.round((t.current - t.prior) / t.prior * 100) : null;
+      const color = pct == null ? 'text-zinc-500' : pct >= 0 ? 'text-emerald-400' : 'text-red-400';
+      const sign = pct != null && pct >= 0 ? '+' : '';
+      return `<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div class="text-xs uppercase tracking-wide text-zinc-500 mb-1">${label}</div>
+        <div class="text-3xl font-bold">${t.current}</div>
+        <div class="text-xs ${color} mt-1">${pct == null ? '—' : sign + pct + '% vs prior 7d (' + t.prior + ')'}</div>
+      </div>`;
+    };
+    function table(rows) {
+      if (!rows.length) return '<div class="text-zinc-500 text-sm py-3">No activity in the last 7 days.</div>';
+      return `<div class="overflow-x-auto"><table class="min-w-full text-sm">
+        <thead><tr class="text-left text-xs uppercase tracking-wide text-zinc-500 border-b border-zinc-800">
+          <th class="py-2 pr-4">Source</th><th class="py-2 pr-4">Medium</th><th class="py-2 pr-4">Campaign</th>
+          <th class="py-2 pr-4 text-right">Last 7d</th><th class="py-2 pr-4 text-right">Prior 7d</th><th class="py-2 text-right">Δ</th>
+        </tr></thead><tbody>
+        ${rows.map(r => `<tr class="border-b border-zinc-900">
+          <td class="py-2 pr-4">${escHtml(r.utm_source)}</td>
+          <td class="py-2 pr-4 text-zinc-400">${escHtml(r.utm_medium)}</td>
+          <td class="py-2 pr-4 text-zinc-400">${escHtml(r.utm_campaign)}</td>
+          <td class="py-2 pr-4 text-right font-semibold">${r.count}</td>
+          <td class="py-2 pr-4 text-right text-zinc-500">${r.prior_count}</td>
+          <td class="py-2 text-right ${r.delta>0?'text-emerald-400':r.delta<0?'text-red-400':'text-zinc-500'}">${r.delta>0?'+':''}${r.delta}</td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+    }
+    wrap.innerHTML = `
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 class="heading text-3xl font-bold">Attribution — Last 7 Days</h1>
+          <p class="text-zinc-500 text-xs mt-1">${range} · prior period ${priorRange}</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/api/admin/weekly-attribution.csv" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-sm font-medium px-4 py-2 rounded-xl transition-colors">⬇ CSV export</a>
+          <button onclick="triggerOpenClawDigest()" class="bg-amber-400 hover:bg-amber-300 text-black text-sm font-bold px-4 py-2 rounded-xl transition-colors">📧 Send digest now</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        ${headline('Free signups', data.totals.signups)}
+        ${headline('Team trial requests', data.totals.team_requests)}
+        ${headline('Free → Premium conversions', data.totals.conversions)}
+      </div>
+      ${data.top_campaign ? `<div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-4 mb-6 text-sm">🏆 Top-performing campaign: <strong class="text-amber-400">${escHtml(data.top_campaign)}</strong></div>` : ''}
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+        <div class="text-xs uppercase tracking-wide text-zinc-400 mb-3">Signups by source</div>
+        ${table(data.signups)}
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+        <div class="text-xs uppercase tracking-wide text-zinc-400 mb-3">Team trial requests by source</div>
+        ${table(data.team_requests)}
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+        <div class="text-xs uppercase tracking-wide text-zinc-400 mb-3">Free → Premium conversions by source</div>
+        ${table(data.conversions)}
+      </div>
+      <p class="text-zinc-500 text-xs">Buckets shown as <code>(direct)</code>/<code>(none)</code> are visits with no UTM tag. Pre-launch signups (before this feature shipped) appear as <code>(direct)</code> permanently.</p>`;
+  } catch (e) {
+    wrap.innerHTML = '<div class="text-red-400 text-sm">Failed to load attribution.</div>';
+  }
+}
+
+async function triggerOpenClawDigest() {
+  if (!confirm('Send the OpenClaw weekly digest email to Kirk now?')) return;
+  try {
+    const res = await fetch('/api/admin/trigger-openclaw-digest', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) throw new Error();
+    alert('Digest sent.');
+  } catch (e) { alert('Failed to send digest.'); }
 }
 
 async function loadScholarships() {

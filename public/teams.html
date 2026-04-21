@@ -572,7 +572,7 @@
       const res = await fetch('/api/request-team-trial', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name.value, email: form.email.value, restaurant: form.restaurant.value, staffCount: form.staff.value || '' })
+        body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))({ name: form.name.value, email: form.email.value, restaurant: form.restaurant.value, staffCount: form.staff.value || '' }))
       });
       if (!res.ok) throw new Error();
       document.getElementById('teams-trial-form-wrap').classList.add('hidden');
@@ -583,6 +583,7 @@
     }
   }
 </script>
+<script src="/js/utm-capture.js"></script>
 <script src="/js/pwa-nav.js"></script>
 </body>
 </html>

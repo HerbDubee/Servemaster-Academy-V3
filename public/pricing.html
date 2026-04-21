@@ -695,7 +695,7 @@ async function submitPricingTrialRequest(e) {
     const res = await fetch('/api/request-team-trial', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))(body))
     });
     if (!res.ok) throw new Error('Request failed');
     document.getElementById('pricing-trial-form-wrap').classList.add('hidden');
@@ -717,6 +717,7 @@ async function submitPricingTrialRequest(e) {
     });
   }
 </script>
+  <script src="/js/utm-capture.js"></script>
   <script src="/js/pwa-nav.js"></script>
 </body>
 </html>
