@@ -1,0 +1,113 @@
+Manager-Facing 3-Post Launch Sequence
+Goal: Reposition ServeMaster Academy in the manager's mind from "another training app" to "the cheapest line item that fixes your three most expensive problems — turnover, inconsistency, and bad reviews." Run posts 48–72 hours apart on LinkedIn first, then repurpose.
+
+POST 1 — The Problem Frame (Day 0)
+Format: LinkedIn long-form text post (Kirk's profile + company page) · 180–250 words
+
+The average independent restaurant spends $0 on structured server training and $3,400+ to replace each server who walks out.
+
+Then we wonder why service is inconsistent.
+
+Most managers I talk to say the same thing: "We do training on the floor, during a shift." Which means a new server learns wine on a Tuesday from whoever happens to be working, learns allergens from a panicked moment in the weeds on Friday, and learns how to handle a complaint by getting yelled at by a guest in week three.
+
+That's not training. That's hazing with a paycheck.
+
+We built ServeMaster Academy because the old fine-dining apprentice model — where a captain spent a year teaching one server everything — doesn't exist anymore. So we put it in an app:
+
+→ 30 structured modules (wine, allergens, service flow, upselling, complaints)
+→ 150+ AI role-play scenarios where staff practice the hard moments before they live them
+→ A manager dashboard that shows you exactly which staff member needs help with what
+
+We're opening 30-day free trials for restaurants — no credit card, no sales call. I personally review every request and send your access code within one business day.
+
+If your training program is "we'll show you on the floor," this is the cheapest fix you'll make this quarter.
+
+Request access: servemasteracademy.ca/teams
+
+POST 2 — The Demonstration / ROI Visualization (Day 3)
+Format: LinkedIn carousel (6–8 slides) — also exports cleanly to Instagram for managers there
+
+Slide 1 / Hook:
+"What a 90-day server training program actually changes."
+(Subtitle: A look inside the ServeMaster Academy manager dashboard.)
+
+Slide 2:
+Day 1 — your team's skill gap, visible for the first time.
+[Screenshot: skill gap heatmap from the dashboard, with names blurred. Red cells in "Allergens," "Wine Knowledge," "Difficult Guests."]
+
+Slide 3:
+Day 30 — same heatmap, mostly green.
+[Same heatmap, transformed.]
+
+Slide 4 / The numbers managers actually care about:
+
+Avg. complaint-handling score: 62% → 89%
+Wine attach rate (Premium users, n=28 restaurants): +18%
+90-day staff retention vs. control: +34%
+(Source: ServeMaster Academy pilot cohort, Q4 2025–Q1 2026)
+Slide 5 / What it costs:
+Starter Team: $99 CAD/mo (up to 10 staff)
+Pro Team: $199 CAD/mo (up to 30 staff)
+Both: 30-day free trial, no credit card.
+
+Slide 6 / The math:
+If this prevents one server from walking out, it pays for itself for 34 months.
+
+Slide 7 / CTA:
+Request your 30-day free trial.
+Kirk reviews each request personally — access code in 1 business day.
+servemasteracademy.ca/teams
+
+Caption:
+
+The reason most restaurant training programs fail isn't the content — it's that nobody can see whether it's working. This is what changes when you can.
+
+30-day free trial for teams (no card): link in the post →
+
+POST 3 — The Operator Testimonial / Social Proof (Day 6)
+Format: LinkedIn video testimonial OR a quote post with operator credentials
+
+Option A — Operator video (60–90 seconds):
+One real restaurant manager talking to camera. No script — let them say it their way. The three beats to elicit:
+
+What was broken before. ("We were losing servers in their first 60 days.")
+What changed. ("New hires are confident on the floor by week two now.")
+The unexpected benefit. ("My senior staff actually started asking for the certificates so they could put them on LinkedIn.")
+End card:
+"30-day free trial. No card. servemasteracademy.ca/teams"
+
+Option B — Quote post (if no operator video is ready yet):
+
+"I've spent more on a single bottle of wine on a Friday night than I now spend in a month training my entire team. The dashboard alone — knowing which server is weakest where — is worth it. The fact that the staff actually like using it is a bonus."
+
+— [GM name], [Restaurant], [City]
+
+Below the quote:
+"30-day free team trial. No credit card. Kirk sends your access code within one business day.
+servemasteracademy.ca/teams"
+
+Caption:
+
+The thing operators tell us most often isn't about the training itself — it's about the dashboard. For most independent restaurants, this is the first time they've ever been able to see their team's skill gap.
+
+30-day free trial — link in the post.
+
+Distribution & sequencing:
+
+Day	Post	Primary channel	Secondary repurpose
+0	Problem frame (long-form)	LinkedIn (Kirk's profile + company page)	Email to existing manager list
+3	ROI carousel	LinkedIn carousel	Instagram carousel for managers; PDF version emailed to warm leads
+6	Operator testimonial	LinkedIn video / quote	Pin on /teams page; embed in cold email signature
+Rules for OpenClaw on the manager sequence:
+
+Every CTA points to /teams. Never /signup, never /pricing. The individual free tier is irrelevant to this audience and dilutes the offer.
+Always say "30-day free trial," never just "free trial." The 30 vs 14 distinction matters and operators will ask.
+Always specify "Kirk reviews each request personally — 1 business day." This is the trust line; it's also true and removes the "is this a marketing funnel?" objection.
+Lead with the operator's pain (turnover, inconsistency, bad reviews), never with the product. If the first sentence of any post is "ServeMaster Academy is a…", rewrite it.
+Numbers in posts must be defensible. Use the pilot-cohort caveat any time a stat appears. If the stat can't be sourced, drop it — operators sniff out marketing math instantly and it kills credibility.
+Post 2's screenshots need to be real. A mocked-up dashboard will be obvious to anyone who's looked at restaurant SaaS before. If real screenshots aren't available, use a clean abstracted illustration of the heatmap concept instead.
+Repurpose pipeline (free distribution):
+
+Post 1 → cold-email opener for cold operator outreach
+Post 2 → /teams page hero section + sales-deck slide
+Post 3 → testimonial block on /teams page + Kirk's email signature
