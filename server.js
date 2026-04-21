@@ -1010,12 +1010,18 @@ app.get('/api/auth/google/callback', async (req, res) => {
         await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [profile.sub, existing.rows[0].id]);
         user = existing.rows[0];
       } else {
+        const utm = extractUtm(req);
         const ins = await db.query(
-          "INSERT INTO users (email, google_id, name, experience_level, subscription_status, is_trial_active) VALUES ($1, $2, $3, $4, 'free', false) RETURNING *",
-          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving']
+          "INSERT INTO users (email, google_id, name, experience_level, subscription_status, is_trial_active, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, 'free', false, $5, $6, $7, $8, $9) RETURNING *",
+          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving', utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
         );
         user = ins.rows[0];
         isNewUser = true;
+        // Clear short-lived attribution cookies now that they have been persisted.
+        try {
+          UTM_KEYS.forEach(k => res.clearCookie('sma_' + k, { path: '/' }));
+          res.clearCookie('sma_attribution_referrer', { path: '/' });
+        } catch (e) {}
         await db.query('INSERT INTO streaks (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [user.id]);
         try {
           await db.query(
@@ -3159,10 +3165,39 @@ app.get('/api/admin/analytics', adminMiddleware, async (req, res) => {
 });
 
 // ── Admin: weekly attribution (OpenClaw / UTM) ────────────────────────────────
+// Returns the UTC Date corresponding to the most recent Monday 00:00:00
+// in America/Toronto (ET). Used to bucket the digest into ET calendar weeks.
+function _mostRecentMondayMidnightET(now) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Toronto', hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short'
+  });
+  const parts = fmt.formatToParts(now).reduce((a, p) => (a[p.type] = p.value, a), {});
+  const wdMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const wd = wdMap[parts.weekday] ?? 1;
+  const daysSinceMon = (wd + 6) % 7; // Mon=0, Sun=6
+  // Compose an ET wall-clock instant for "today 00:00 ET", then subtract daysSinceMon.
+  // We approximate the ET->UTC offset by re-formatting the candidate date back to ET
+  // and adjusting until the wall-clock matches.
+  let candidate = new Date(Date.UTC(
+    parseInt(parts.year), parseInt(parts.month) - 1, parseInt(parts.day) - daysSinceMon,
+    5, 0, 0 // ET is UTC-5 (EST) or UTC-4 (EDT); start at 05:00 UTC and let the loop correct
+  ));
+  for (let i = 0; i < 3; i++) {
+    const c = fmt.formatToParts(candidate).reduce((a, p) => (a[p.type] = p.value, a), {});
+    const drift = (parseInt(c.hour) * 3600 + parseInt(c.minute) * 60 + parseInt(c.second));
+    if (drift === 0) break;
+    candidate = new Date(candidate.getTime() - drift * 1000);
+  }
+  return candidate;
+}
+
 async function buildWeeklyAttribution() {
   const now = new Date();
-  const periodEnd = now;
-  const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // Period = previous ET calendar week (last Mon 00:00 ET → this Mon 00:00 ET).
+  const periodEnd = _mostRecentMondayMidnightET(now);
+  const periodStart = new Date(periodEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
   const priorEnd = periodStart;
   const priorStart = new Date(priorEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
