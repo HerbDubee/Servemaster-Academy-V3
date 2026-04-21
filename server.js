@@ -533,6 +533,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 });
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -1525,9 +1526,19 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
-  const { name, email, restaurant, restaurantName, staffCount } = req.body;
-  const restName = restaurant || restaurantName;
-  if (!name || !email || !restName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
+  const body = req.body || {};
+  const name = (body.name || '').toString().trim();
+  const email = (body.email || '').toString().trim();
+  const restName = ((body.restaurant || body.restaurantName || '')).toString().trim();
+  const staffCount = body.staffCount || body.staff_count || body.staff || '';
+  if (!name || !email || !restName) {
+    console.warn('Team trial request rejected — missing fields', {
+      hasName: !!name, hasEmail: !!email, hasRestaurant: !!restName,
+      contentType: req.headers['content-type'] || null,
+      bodyKeys: Object.keys(body)
+    });
+    return res.status(400).json({ error: 'Name, email and restaurant name are required' });
+  }
   try {
     const utm = extractUtm(req);
     await db.query(
