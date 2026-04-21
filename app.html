@@ -448,7 +448,7 @@
           </div>
         </div>
         <div id="chat-messages" class="space-y-4 flex-1 overflow-y-auto pr-2 py-2" style="min-height: 200px;"></div>
-        <div class="mt-auto pt-3 flex gap-3 flex-wrap">
+        <div id="chat-input-row" class="mt-auto pt-3 flex gap-3 flex-wrap">
           <input id="chat-input" type="text" inputmode="text" autocomplete="off" placeholder="Type your response as the server..."
             class="flex-1 min-w-0 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
             onkeydown="if(event.key==='Enter') sendChat()"
@@ -2044,7 +2044,15 @@ async function sendInitialMessage() {
   }
 }
 
+// True while branch choice buttons are visible and waiting for the server
+// to pick one. Blocks both keyboard sendChat() and voice sendVoiceChat()
+// from bypassing the decision point.
+function _branchPending() {
+  return branchChoiceShown && !!document.querySelector('#chat-messages .branch-choices');
+}
+
 async function sendChat() {
+  if (_branchPending()) return;
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
@@ -2214,15 +2222,14 @@ function handleAssistantReplyComplete() {
   branchChoiceShown = true;
   const branch = getScenarioBranch(chatScenarioId);
   if (!branch) return;
-  const _inp = document.getElementById('chat-input');
-  const _btn = document.getElementById('chat-send-btn');
-  if (_inp) _inp.disabled = true;
-  if (_btn) _btn.disabled = true;
+  // Hide the entire input row (text + voice + send) so the choice
+  // buttons fully replace it for this turn — matches product spec.
+  const _row = document.getElementById('chat-input-row');
+  if (_row) _row.classList.add('hidden');
   const box = document.getElementById('chat-messages');
   const choiceEl = renderBranchChoices(branch, (chosen) => {
     recordBranchChoice(chatScenarioId, chosen);
-    if (_inp) _inp.disabled = false;
-    if (_btn) _btn.disabled = false;
+    if (_row) _row.classList.remove('hidden');
     sendChatWithText(_bxL(chosen.prompt), chosen);
   });
   if (box) {
