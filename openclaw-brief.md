@@ -28,7 +28,7 @@ It is the only platform of its kind that teaches servers the way professional at
 
 **Their hesitation:** $19/month feels like a lot when you're making $15/hour plus tips. They need to see a clear return before paying.
 
-**Entry point:** Free 14-day trial, no credit card required (self-serve — instant access upon signup).
+**Entry point:** Free tier forever — 3 modules + 5 AI role-play scenarios, no credit card required (self-serve, instant access upon signup). Upgrade any time to unlock all 30 modules.
 
 **Plans:**
 - Premium Monthly: $19 CAD/month
@@ -97,7 +97,7 @@ Pro and Enterprise managers can build their own training modules from scratch in
 ### The Manager Dashboard
 
 Managers have a full dashboard with seven tabs:
-1. **Staff** — roster, trial/plan status, progress overview
+1. **Staff** — roster, plan status, progress overview
 2. **Plans** — subscription and billing management
 3. **Skill Gap** — which modules the team has not completed
 4. **Graduates** — completed module certificates per staff member
@@ -114,11 +114,11 @@ The platform hosts 108+ published articles covering fine dining service, wine kn
 ## The Conversion Mechanics
 
 ### Individual Server Path
-1. User sees content → visits site → starts free 14-day trial
+1. User sees content → visits site → creates free account (no credit card)
 2. Completes onboarding (name, experience level)
 3. Lands on dashboard with a **Quick Wins checklist**: Module 1, first AI role-play, first quiz
-4. Receives a 4-email trial drip sequence (Days 1, 3, 7, 14)
-5. Converts to Premium at $19/month or $149/year
+4. Uses the free tier: 3 modules + 5 AI role-play scenarios, forever free
+5. Hits the paywall on locked content → upgrades to Premium at $19/month or $149/year
 6. Works toward track completion certificates and the full 30-module credential
 
 ### Manager/Team Path
@@ -129,7 +129,7 @@ The platform hosts 108+ published articles covering fine dining service, wine kn
 5. Manages staff through the manager dashboard (7 tabs)
 6. Receives weekly training digest showing staff progress
 
-**Note for content creators:** Individual trials are 14-day self-serve (instant). Team plan trials are 30-day manually provisioned by Kirk (access code sent within 1 business day). Do not use "14-day trial" when writing about team plans. Use "30-day free trial" and note the Kirk-sends-the-code workflow.
+**Note for content creators:** Individuals get a forever-free tier (3 modules + 5 scenarios) — there is no individual trial. Team plan trials are 30-day, manually provisioned by Kirk (access code sent within 1 business day). When writing about individuals, use "free — 3 modules, no credit card." When writing about teams, use "30-day free team trial" and note the Kirk-sends-the-code workflow.
 
 **What happens on submit:** The form posts to a verified server endpoint. Kirk gets an email immediately with the requester's name, email, restaurant name, and staff count. The requester gets an auto-confirmation from Kirk's address saying their code is coming within 1 business day. No credit card is ever collected at this stage.
 
@@ -354,14 +354,14 @@ Request the full brand kit (SVG, PNG variants at all required sizes) from Kirk.
 
 | Page | URL | Primary CTA |
 |---|---|---|
-| Homepage | servemasteracademy.ca | Start Free Trial |
+| Homepage | servemasteracademy.ca | Get Started Free |
 | Pricing | /pricing | Choose a plan |
-| Team Plans | /teams | Try it for your team |
+| Team Plans | /teams | Request 30-day team trial |
 | Scholarship | /scholarship | Apply now |
 | Affiliates | /affiliates | Apply to partner |
 | Knowledge Centre | /blog | Read & share articles |
 | Login | /login | Sign in |
-| Signup | /signup | Start free trial |
+| Signup | /signup | Create free account |
 
 ---
 
@@ -370,7 +370,7 @@ Request the full brand kit (SVG, PNG variants at all required sizes) from Kirk.
 Ask GA4 to track these conversion events:
 - `sign_up_start` — user reaches /signup
 - `sign_up_complete` — user completes account creation
-- `trial_start` — 14-day trial begins
+- `trial_start` — free account created (legacy event name; now fires on free signup)
 - `pricing_view` — user visits /pricing
 - `team_plan_view` — user visits /teams
 - `checkout_start` — user clicks a plan CTA
@@ -386,7 +386,7 @@ Use Contentsquare to monitor:
 
 ## Notes for OpenClaw
 
-- Always link to the free trial, not the homepage, unless specifically building awareness content
+- Always link to /signup (free account, no credit card), not the homepage, unless specifically building awareness content
 - The AI role-play with branching choices is the biggest differentiator — feature it in video content whenever possible; the "choose your response" mechanic is immediately legible on TikTok
 - The 4 track certificates are a shareable career credential — treat them like LinkedIn certifications in content framing
 - Team challenges and custom personas are the strongest Pro plan selling points for independent restaurants — lead with these for manager content

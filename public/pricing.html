@@ -161,7 +161,7 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_prem_mo_h" class="text-2xl font-semibold">Premium</h3>
       <p data-i18n="pricing_prem_mo_sub" class="text-sm text-zinc-400 mt-1">Individual servers</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_prem_mo_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Cancel anytime</p>
+      <p data-i18n="pricing_prem_mo_trial" class="text-sm text-amber-400 mt-2">Cancel anytime · Instant access</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat1">All 30 training modules</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat2">All 150+ AI scenarios</span></li>
@@ -170,8 +170,8 @@ details[open] summary::after { content: '−'; }
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat5">Streak &amp; gamification</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat6">EN / FR / ES</span></li>
       </ul>
-      <button onclick="checkout('premium_monthly')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start 14-Day Free Trial
+      <button onclick="checkout('premium_monthly')" data-i18n="pricing_subscribe_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Get Premium
       </button>
     </div>
 
@@ -183,14 +183,14 @@ details[open] summary::after { content: '−'; }
         <p class="text-5xl font-bold price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
         <p data-i18n="pricing_prem_yr_save_note" class="text-sm text-emerald-400 font-semibold mt-1">~$12.42/mo · Save 35%</p>
       </div>
-      <p data-i18n="pricing_prem_yr_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Billed annually</p>
+      <p data-i18n="pricing_prem_yr_trial" class="text-sm text-amber-400 mt-2">Billed annually · Cancel anytime</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_yr_feat1">Everything in Premium</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat2">2 months free vs monthly</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat3">Priority feature access</span></li>
       </ul>
-      <button onclick="checkout('premium_annual')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start 14-Day Free Trial
+      <button onclick="checkout('premium_annual')" data-i18n="pricing_subscribe_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Get Premium
       </button>
     </div>
 
@@ -633,11 +633,11 @@ async function checkout(plan) {
       window.location.href = data.url;
     } else {
       alert(data.error || 'Could not start checkout. Please try again.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Get Premium'; }
     }
   } catch {
     alert('Connection error. Please try again.');
-    if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Get Premium'; }
   }
 }
 

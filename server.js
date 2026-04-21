@@ -630,8 +630,8 @@ async function checkTrial(req, res, next) {
     }
 
     return res.status(402).json({
-      error: 'Trial expired',
-      message: 'Your 14-day trial has ended. Please upgrade to continue.'
+      error: 'Premium required',
+      message: 'This feature is part of Premium. Upgrade any time to unlock all 30 modules and 150+ AI scenarios.'
     });
   } catch (err) {
     console.error('checkTrial error:', err.message);
@@ -758,11 +758,9 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 10);
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
     const result = await db.query(
-      'INSERT INTO users (email, password_hash, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, role, trial_ends_at, is_trial_active',
-      [email.toLowerCase(), hash, name, level || 'New to serving', trialEndsAt, true]
+      "INSERT INTO users (email, password_hash, name, experience_level, subscription_status, is_trial_active) VALUES ($1, $2, $3, $4, 'free', false) RETURNING id, name, email, role, subscription_status",
+      [email.toLowerCase(), hash, name, level || 'New to serving']
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
@@ -778,7 +776,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – your free training starts now!' });
     (async () => { try {
       const wb = await getTenantBrandingForEmail(user.id);
       const unsubToken = await getOrCreateUnsubToken(user.id);
@@ -786,14 +784,14 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       resend.emails.send({
         from: wb.fromLine,
         to: user.email,
-        subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
+        subject: `Welcome to ${wb.brandName} – your free training starts now`,
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
             <img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">I recommend starting with Module 1: Foundations of Exceptional Service. When you're ready for the full library — all 30 modules, 150+ scenarios, voice practice and your certificate — Premium unlocks everything.</p>
             <p style="margin-bottom:32px;">
               <a href="${APP_URL}/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
             </p>
@@ -839,9 +837,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, experience_level: user.experience_level, subscription_status: user.subscription_status || 'free' },
       token,
       trialDaysLeft: daysLeft,
-      message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
+      message: 'Welcome back'
     });
-    sendTrialDripEmails(user);
+    if (daysLeft > 0) sendTrialDripEmails(user);
     sendDripEmailIfDue(user.id, user.email, user.name).catch(() => {});
   } catch (err) {
     console.error('Login error:', err.message);
@@ -991,11 +989,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
         await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [profile.sub, existing.rows[0].id]);
         user = existing.rows[0];
       } else {
-        const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
         const ins = await db.query(
-          'INSERT INTO users (email, google_id, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving', trialEndsAt, true]
+          "INSERT INTO users (email, google_id, name, experience_level, subscription_status, is_trial_active) VALUES ($1, $2, $3, $4, 'free', false) RETURNING *",
+          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving']
         );
         user = ins.rows[0];
         isNewUser = true;
@@ -1029,8 +1025,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
         resend.emails.send({
           from: wb.fromLine,
           to: user.email,
-          subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
-          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${wb.poweredBy}${emailFooter(unsubUrl)}</div>`
+          subject: `Welcome to ${wb.brandName} – your free training starts now`,
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">I recommend starting with Module 1: Foundations of Exceptional Service. When you're ready for the full library — all 30 modules, 150+ scenarios, voice practice and your certificate — Premium unlocks everything.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${wb.poweredBy}${emailFooter(unsubUrl)}</div>`
         }).catch(err => console.error('Google welcome email error:', err.message));
       } catch(e) {} })();
     } else {
@@ -1085,6 +1081,8 @@ async function getTenantBrandingForEmail(userId) {
 }
 
 async function sendTrialDripEmails(user) {
+  // Legacy: only sends to users who still have an in-flight 14-day trial
+  // (provisioned before April 21 2026). New signups never enter this path.
   if (!user.trial_ends_at || user.subscription_status === 'active') return;
   const isUnsub = await db.query('SELECT is_unsubscribed FROM users WHERE id = $1', [user.id]).then(r => r.rows[0]?.is_unsubscribed).catch(() => false);
   if (isUnsub) return;
@@ -1553,8 +1551,9 @@ app.post('/api/referral/invite-manager', authMiddleware, contactLimiter, async (
           </p>
           ${note ? `<p style="font-size:15px;line-height:1.7;background:#1c1c1c;padding:16px;border-left:3px solid #fbbf24;border-radius:6px;margin-bottom:20px;">"${escapeHtml(note)}"<br><em>— ${escapeHtml(sender.name)}</em></p>` : ''}
           <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">ServeMaster Academy gives your servers AI role-play, voice practice, and gamified modules that reduce onboarding time and raise tip averages — all trackable from a manager dashboard.</p>
-          <a href="https://servemasteracademy.ca/managers" style="display:inline-block;background:#fbbf24;color:#000;font-weight:bold;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;">See How It Works →</a>
-          <p style="font-size:13px;color:#71717a;margin-top:32px;">Team plans start at $49 for your first 30 days. Questions? Reply to this email.</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Right now we're offering restaurants a <strong>free 30-day team trial</strong> — no credit card required. I'll send you the access code within one business day.</p>
+          <a href="https://servemasteracademy.ca/teams" style="display:inline-block;background:#fbbf24;color:#000;font-weight:bold;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;">Request Your 30-Day Team Trial →</a>
+          <p style="font-size:13px;color:#71717a;margin-top:32px;">Questions? Reply to this email and Kirk will get back to you personally.</p>
         </div>
       `
     });
@@ -2322,8 +2321,8 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
     const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
     const emails = {
       welcome: {
-        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
-        html: emailShell(`${p(`Hi ${name},`)}${p("I'm Kirk Adamson, founder of ServeMaster Academy.")}${p("Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.")}${p("Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.")}${btn("Start Module 1 Now", "https://servemasteracademy.ca/app")}${p("I'd love to hear what you think after your first session.")}${sig}`)
+        subject: 'Welcome to ServeMaster Academy – your free training starts now',
+        html: emailShell(`${p(`Hi ${name},`)}${p("I'm Kirk Adamson, founder of ServeMaster Academy.")}${p("Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.")}${p("I recommend starting with Module 1: Foundations of Exceptional Service.")}${btn("Start Module 1 Now", "https://servemasteracademy.ca/app")}${p("I'd love to hear what you think after your first session.")}${sig}`)
       },
       module2: {
         subject: 'Module 1 complete — here\'s what\'s next',
@@ -2333,21 +2332,13 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
         subject: 'Have you tried the AI role-play yet?',
         html: emailShell(`${p(`Hi ${name},`)}${p("One of the most powerful features in ServeMaster Academy is the AI role-play.")}${p("You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.")}${p("It feels surprisingly real — and it's the fastest way to build confidence.")}${p("Try one scenario today — it only takes 2 minutes.")}${btn("Open AI Role-Play Now", "https://servemasteracademy.ca/app")}${sig}`)
       },
-      day7: {
-        subject: 'You\'re halfway through your trial — here\'s what to try next',
-        html: emailShell(`${p(`Hi ${name},`)}${p("You're now halfway through your 14-day trial.")}${p("Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.")}${p("If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.")}${btn("Continue Training", "https://servemasteracademy.ca/app")}${sig}`)
+      upgrade_nudge: {
+        subject: 'Ready to unlock all 30 modules?',
+        html: emailShell(`${p(`Hi ${name},`)}${p("You've been training on the free tier — nice work.")}${p("If you're getting value from the modules and scenarios you have access to, Premium opens up all 30 modules, 150+ AI scenarios, voice practice, and your completion certificate.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("See Premium plans →", "https://servemasteracademy.ca/pricing")}${sig}`)
       },
-      day10: {
-        subject: 'Your trial ends in 4 days — save 20% today',
-        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day free trial ends in just 4 days.")}${p("If you're enjoying the training and want to keep access to all 30 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("Upgrade Now", "https://servemasteracademy.ca/pricing")}${sig}`)
-      },
-      day13: {
-        subject: 'Your trial ends tomorrow — keep your access',
-        html: emailShell(`${p(`Hi ${name},`)}${p("Your free trial ends tomorrow.")}${p("If you've found value in the training, I'd love for you to continue the journey with a full membership.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.')}${btn("Keep Access →", "https://servemasteracademy.ca/pricing")}${sig}`)
-      },
-      expired: {
-        subject: 'Your trial has ended — 20% off for the next 7 days',
-        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day trial has now ended.")}${p("Thank you for giving ServeMaster Academy a try. I hope you found the training valuable.")}${p('If you\'d like to continue, I\'ve extended a special 20% launch discount for another 7 days. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.')}${btn("Continue with 20% off", "https://servemasteracademy.ca/pricing")}${p("Questions? Just reply to this email — I read every one.")}${sig}`)
+      premium_offer: {
+        subject: 'A small gift — 20% off Premium',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Thank you for being part of ServeMaster Academy.")}${p('If you\'d like to unlock the full library, I\'ve set up a 20% discount on Premium. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.')}${btn("Continue with 20% off", "https://servemasteracademy.ca/pricing")}${p("Questions? Just reply to this email — I read every one.")}${sig}`)
       }
     };
     const chosen = emails[emailType];
@@ -3968,17 +3959,17 @@ About ServeMaster Academy:
 - Manager Dashboard for restaurant owners/managers to track staff progress, assign modules, get weekly digest emails
 - PWA — works offline, mobile-first design
 
-Pricing (CAD, all with 14-day free trial):
-- Free: $0 — 3 modules, 5 AI scenarios, forever free
+Pricing (CAD):
+- Free: $0 — 3 modules, 5 AI scenarios, forever free, no credit card required
 - Premium Monthly: $19/mo — all 30 modules, 150+ scenarios, voice roleplay, certificate
 - Premium Annual: $149/yr (~$12.42/mo, save 35%) — same as Premium + 2 months free
-- Starter Team: $99/mo — up to 10 staff, manager dashboard, assign required modules, weekly digest
-- Pro Team: $199/mo — unlimited staff, custom AI scenarios, advanced analytics, priority support
+- Starter Team: $99/mo — up to 10 staff, manager dashboard, assign required modules, weekly digest. Free 30-day team trial available on request.
+- Pro Team: $199/mo — up to 30 staff, custom AI scenarios, advanced analytics, priority support. Free 30-day team trial available on request.
 - Starter Team Annual: $990/yr (~$82.50/mo, save ~17%)
 - Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
 - Enterprise: custom pricing — multi-location, white-label, SSO, API access
 
-Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and the 30-day free team trial that restaurants can request on /teams. There is no individual trial — Premium is a paid subscription from day one. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -4454,7 +4445,7 @@ app.post('/api/admin/scholarship/:id/reject', adminMiddleware, async (req, res) 
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: app.email,
       subject: 'Your ServeMaster Academy scholarship application',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for taking the time to apply for the Career Launch Scholarship. I reviewed your application personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Unfortunately, we weren't able to offer you a scholarship spot at this time — we receive more applications than we have spaces each month, and it's a difficult selection process.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I encourage you to try again next month or take advantage of our free 14-day trial at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca</a>.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for taking the time to apply for the Career Launch Scholarship. I reviewed your application personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Unfortunately, we weren't able to offer you a scholarship spot at this time — we receive more applications than we have spaces each month, and it's a difficult selection process.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I encourage you to try again next month or sign up for our free tier at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca</a> — 3 modules and 5 AI scenarios, no credit card required.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
     }).catch(e => console.error('Scholarship rejection email error:', e.message));
     res.json({ success: true });
   } catch (e) {

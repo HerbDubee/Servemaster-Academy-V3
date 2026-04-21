@@ -123,7 +123,7 @@ The pricing page has a monthly/annual billing toggle. Annual team plans show dis
 ## Email Automation
 
 - **Drip sequence**: `sendDripEmailIfDue(userId, email, name)` — called on login; Days 1/3/7/14 onboarding sequence tracked via `email_drip_log`
-- **Trial drip**: `sendTrialDripEmails(user)` — Days 7/10/13 + expiry emails; all include CASL-compliant unsubscribe footer
+- **Trial drip (legacy)**: `sendTrialDripEmails(user)` — kept for grandfathered users with in-flight trials only; new individual signups no longer receive trial emails (free tier replaced 14-day trial)
 - **Weekly manager digest**: `sendWeeklyManagerDigests()` — every Monday; summaries team progress per restaurant; POST `/api/admin/trigger-weekly-digest` for manual trigger
 - **Streak recovery**: email sent inside `updateStreak()` when a streak breaks
 - **CASL compliance**: `emailFooter(unsubUrl)` appended to all outbound Resend emails; `getOrCreateUnsubToken(userId)` generates persistent tokens; `GET /unsubscribe?token=` + `POST /api/resubscribe`
@@ -243,7 +243,7 @@ Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB
 - Google Analytics: `G-1BPWXRYVXS` on all pages
 - ContentSquare: `2e14c5cc7ec76` on all pages
 - Crisp chat widget on all public marketing pages (replace `REPLACE_WITH_CRISP_WEBSITE_ID` with real ID)
-- `trial_start` GA event fires on email signup and Google OAuth new user
+- `trial_start` GA event fires on email signup and Google OAuth new user (legacy event name; now signals free account creation, not a 14-day trial)
 
 ## Features
 
@@ -255,7 +255,7 @@ Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB
 - Restaurant Manager dashboard + staff invite system + assigned required modules
 - Admin invite code generator
 - Newsletter capture + enterprise inquiry modal
-- Stripe subscription + trial expiry enforcement (monthly, annual, team, annual team plans)
+- Stripe subscription enforcement (monthly, annual, team, annual team plans). Individual 14-day trials removed — free tier (3 modules + 5 scenarios) is the only no-cost path. Team trials are 30-day, manually provisioned.
 - Referral system: servers invite managers → $50 CAD Stripe credit auto-applied on subscription
 - CASL-compliant email unsubscribe on all transactional emails
 
