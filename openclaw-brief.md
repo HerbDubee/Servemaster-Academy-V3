@@ -275,17 +275,46 @@ https://servemasteracademy.ca/signup?utm_source=instagram&utm_medium=social&utm_
 
 ### Manager / team plan CTAs — link to `/teams`
 
-For manager-facing content (ROI angles, staff training, retention, custom modules, personas), CTA links go to `/teams` — **not** `/signup`. The page has a request form; the manager never self-serves.
+For manager-facing content (ROI angles, staff training, retention, custom modules, personas), CTA links go to `/teams` — **not** `/signup`. The page has a request form; the manager never self-serves. Every team-trial submission attributes back to the `utm_source × utm_medium × utm_campaign` combination on the original click, so these tags are how Kirk knows which channel produced the request.
+
+#### Reusable team-plan link template
 
 ```
-https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=manager_roi_2026_04&utm_content=article_01
+https://servemasteracademy.ca/teams?utm_source=SOURCE&utm_medium=MEDIUM&utm_campaign=CAMPAIGN&utm_content=CONTENT
 ```
-```
-https://servemasteracademy.ca/teams?utm_source=instagram&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01
-```
-```
-https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=team_challenge_2026_04&utm_content=post_01
-```
+
+#### Recommended manager-content UTM matrix
+
+Pick one row per post. Replace `_2026_04` with the current `_YYYY_MM`. Replace `post_01` / `article_01` with a unique slug per post.
+
+| Manager content theme | Channel | Ready-to-use `/teams` link |
+|---|---|---|
+| Manager ROI / staff training cost | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=manager_roi_2026_04&utm_content=article_01` |
+| Manager ROI / staff training cost | LinkedIn organic post | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01` |
+| Staff retention / turnover | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=staff_retention_2026_04&utm_content=article_01` |
+| Team challenges feature | Instagram | `https://servemasteracademy.ca/teams?utm_source=instagram&utm_medium=social&utm_campaign=team_challenge_2026_04&utm_content=post_01` |
+| Team challenges feature | Facebook | `https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=team_challenge_2026_04&utm_content=post_01` |
+| Custom AI guest personas | LinkedIn organic post | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=social&utm_campaign=custom_persona_2026_04&utm_content=post_01` |
+| Custom module builder demo | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=custom_module_2026_04&utm_content=article_01` |
+| Manager intelligence / weekly digest | Email newsletter | `https://servemasteracademy.ca/teams?utm_source=email&utm_medium=email&utm_campaign=manager_digest_2026_04&utm_content=cta_01` |
+| Partner referral (industry creator) | Partner channel | `https://servemasteracademy.ca/teams?utm_source=partner&utm_medium=partner&utm_campaign=manager_roi_2026_04&utm_content=PARTNER_SLUG` |
+
+#### Manager-audience campaign IDs (use these — do not invent new ones mid-month)
+
+- `manager_roi_2026_MM` — anything cost / ROI / training-spend framed
+- `staff_retention_2026_MM` — turnover, hiring cost, "trained staff stay longer"
+- `team_challenge_2026_MM` — team challenges feature
+- `custom_persona_2026_MM` — custom AI guest personas
+- `custom_module_2026_MM` — custom module builder
+- `manager_digest_2026_MM` — weekly progress digest, manager dashboard tour
+
+#### Do / don't for team-plan links
+
+- **Do** route every manager-targeted CTA to `/teams`. The form there is the only conversion path; sending managers to `/signup` produces an individual server account by mistake.
+- **Do** keep `utm_source` / `utm_medium` lowercase and from the canonical list above.
+- **Do** reuse the same `utm_campaign` value across all posts in a single push so the weekly digest groups them.
+- **Don't** promote annual team plans in any link copy until Kirk confirms annual checkout is live (see warning at the top of this brief). Monthly is the only safe team CTA right now.
+- **Don't** use a fragment (`#…`) or extra query params like `gclid` in these manual links — they break the digest grouping.
 
 **Rule of thumb:** If the content speaks to a server → `/signup`. If it speaks to a manager or owner → `/teams`.
 

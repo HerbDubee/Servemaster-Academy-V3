@@ -1535,19 +1535,40 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
       [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restName}${staffCount ? ` | Staff: ${staffCount}` : ''}`, utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
     );
     const staffRow = staffCount ? `<tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Staff count</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(String(staffCount))}</td></tr>` : '';
+    const receivedAtET = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto', dateStyle: 'medium', timeStyle: 'short' });
+    const utmParts = [];
+    if (utm.source)   utmParts.push(`source: <strong>${escapeHtml(utm.source)}</strong>`);
+    if (utm.medium)   utmParts.push(`medium: <strong>${escapeHtml(utm.medium)}</strong>`);
+    if (utm.campaign) utmParts.push(`campaign: <strong>${escapeHtml(utm.campaign)}</strong>`);
+    if (utm.content)  utmParts.push(`content: <strong>${escapeHtml(utm.content)}</strong>`);
+    const attribLine = utmParts.length
+      ? utmParts.join(' &nbsp;·&nbsp; ')
+      : '<em style="color:#71717a;">No UTM tags — direct visit or untagged share</em>';
+    const refRow = utm.referrer
+      ? `<tr><td style="padding:8px 0;color:#a1a1aa;">Referrer</td><td style="padding:8px 0;font-size:13px;color:#d4d4d8;word-break:break-all;">${escapeHtml(utm.referrer)}</td></tr>`
+      : '';
     resend.emails.send({
       from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
       to: 'kirk_adamson@servemasteracademy.ca',
-      subject: `Team Trial Request — ${restaurant}`,
+      reply_to: email.toLowerCase(),
+      subject: `[Team Trial] ${restName}${staffCount ? ` (${staffCount} staff)` : ''} — ${name}`,
       html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
         <h2 style="color:#FF5E3A;margin-top:0;">New Team Trial Request</h2>
+        <p style="margin:0 0 20px 0;font-size:13px;color:#a1a1aa;">Received ${escapeHtml(receivedAtET)} ET</p>
         <table style="font-size:15px;width:100%;border-collapse:collapse;">
           <tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(name)}</td></tr>
           <tr><td style="padding:8px 0;color:#a1a1aa;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a></td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restaurant)}</td></tr>
+          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restName)}</td></tr>
           ${staffRow}
+          ${refRow}
         </table>
-        <p style="margin-top:24px;font-size:14px;color:#71717a;">Reply directly to this email to send ${escapeHtml(name)} their 30-day access code.</p>
+        <div style="margin-top:20px;padding:14px 16px;background:#18181b;border-left:3px solid #FF5E3A;border-radius:6px;">
+          <div style="font-size:12px;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Attribution</div>
+          <div style="font-size:14px;color:#f5f5f5;line-height:1.6;">${attribLine}</div>
+        </div>
+        <p style="margin-top:24px;font-size:14px;color:#71717a;line-height:1.6;">
+          Hit <strong style="color:#f5f5f5;">Reply</strong> to send ${escapeHtml(name)} their 30-day access code — this email is set to reply directly to <a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a>.
+        </p>
       </div>`
     }).catch(e => console.error('Team trial Kirk email error:', e.message));
     resend.emails.send({
@@ -1556,7 +1577,7 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
       subject: 'Your ServeMaster Academy team trial request — received',
       html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
         <p style="font-size:16px;line-height:1.7;">Hi ${escapeHtml(name)},</p>
-        <p style="font-size:16px;line-height:1.7;">Thanks for requesting a 30-day team trial for <strong>${escapeHtml(restaurant)}</strong>. I've got your request and will send your access code within 1 business day.</p>
+        <p style="font-size:16px;line-height:1.7;">Thanks for requesting a 30-day team trial for <strong>${escapeHtml(restName)}</strong>. I've got your request and will send your access code within 1 business day.</p>
         <p style="font-size:16px;line-height:1.7;">Once you have the code, your whole team can start training immediately — no credit card needed.</p>
         <p style="font-size:15px;color:#a3a3a3;margin-top:32px;">Any questions? Just reply to this email.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
       </div>`
