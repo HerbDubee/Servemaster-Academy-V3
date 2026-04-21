@@ -674,7 +674,7 @@
 
       home_hero: 'Formez-vous comme un serveur pro',
       home_hero_sub: 'ServeMaster Academy forme les professionnels de l\'hôtellerie avec des jeux de rôle IA, la pratique vocale et 30 modules experts — en anglais, français et espagnol.',
-      home_free_strip: 'Essai gratuit de 14 jours &bull; Aucune carte de crédit requise &bull; Annulez à tout moment',
+      home_free_strip: 'Niveau gratuit pour toujours &bull; Aucune carte de crédit requise &bull; Passez Premium quand vous voulez',
       home_features_h: 'Tout ce dont un grand serveur a besoin',
       home_ai_h: 'Jeu de rôle IA',
       home_ai_p: 'Pratiquez des scénarios difficiles — plaintes sur le vin, questions d\'allergies, vente incitative — avec un convive IA qui répond comme une vraie personne.',
@@ -1324,7 +1324,7 @@
 
       home_hero: 'Entrénate como un mesero pro',
       home_hero_sub: 'ServeMaster Academy forma a profesionales de la hostelería con juego de rol IA, práctica de voz y 30 módulos expertos — en inglés, francés y español.',
-      home_free_strip: 'Prueba gratuita de 14 días &bull; Sin tarjeta de crédito &bull; Cancela cuando quieras',
+      home_free_strip: 'Nivel gratuito para siempre &bull; Sin tarjeta de crédito &bull; Actualiza cuando quieras',
       home_features_h: 'Todo lo que necesita un gran mesero',
       home_ai_h: 'Juego de rol con IA',
       home_voice_h: 'Práctica de voz',
