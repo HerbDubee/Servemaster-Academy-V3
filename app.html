@@ -5353,7 +5353,7 @@ function _bxL(t) { return (t && (t[lang] || t.en)) || ''; }
 
 const SCENARIO_BRANCHES = {
   // ── 1 · The Difficult Guest ────────────────────────────────────────────
-  1: { afterAiTurn: 1, choices: [
+  1: { afterAiTurn: 2, choices: [
     { id:'apologize_recover', recommended:true,
       label:{en:'Apologize sincerely and offer to make it right',fr:"S'excuser sincèrement et proposer une solution",es:'Disculparse sinceramente y ofrecer una solución'},
       prompt:{en:"I'm so sorry your evening has started this way — that's on us, not you. Let me see exactly what I can do right now to get you seated.",fr:"Je suis vraiment désolé que votre soirée commence ainsi — c'est notre faute, pas la vôtre. Laissez-moi voir tout de suite ce que je peux faire pour vous installer.",es:"Lamento mucho que su noche empiece así — es responsabilidad nuestra, no suya. Déjeme ver ahora mismo qué puedo hacer para sentarles."} },
@@ -5365,7 +5365,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"Let me get my manager for you right away — please give me one moment.",fr:"Je vais chercher mon manager tout de suite — un instant s'il vous plaît.",es:"Voy a buscar a mi gerente ahora mismo — un momento, por favor."} },
   ]},
   // ── 2 · Wine Upselling ─────────────────────────────────────────────────
-  2: { afterAiTurn: 1, choices: [
+  2: { afterAiTurn: 2, choices: [
     { id:'ask_food_first', recommended:true,
       label:{en:'Ask what they plan to eat, then suggest a pairing',fr:'Demander ce qu\'ils vont manger, puis proposer un accord',es:'Preguntar qué van a comer y sugerir un maridaje'},
       prompt:{en:"Have you had a chance to look at the menu? If you tell me what you're leaning toward, I can suggest a wine that will make the meal sing.",fr:"Avez-vous eu le temps de regarder le menu ? Si vous me dites ce qui vous tente, je peux vous suggérer un vin qui mettra le repas en valeur.",es:"¿Han podido ojear el menú? Si me dicen qué les apetece, puedo sugerirles un vino que realce la comida."} },
@@ -5377,7 +5377,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"No problem — take all the time you need with the wine list. I'll come back in a few minutes.",fr:"Aucun souci — prenez tout votre temps avec la carte des vins. Je reviens dans quelques minutes.",es:"Sin problema — tómense todo el tiempo que necesiten con la carta. Vuelvo en unos minutos."} },
   ]},
   // ── 4 · The Long Wait Complaint ────────────────────────────────────────
-  4: { afterAiTurn: 1, choices: [
+  4: { afterAiTurn: 2, choices: [
     { id:'own_check_kitchen', recommended:true,
       label:{en:'Apologize, go to the kitchen now, return with a real timeline',fr:'S\'excuser, aller en cuisine et revenir avec un délai concret',es:'Disculparse, ir a cocina y volver con un tiempo real'},
       prompt:{en:"You're absolutely right to be frustrated — that's far too long. I'm going to the kitchen this second and I'll be back in under a minute with a real time on your mains.",fr:"Vous avez tout à fait raison d'être frustré — c'est beaucoup trop long. Je vais en cuisine immédiatement et je reviens dans moins d'une minute avec un délai précis pour vos plats.",es:"Tienen toda la razón de estar molestos — es demasiado tiempo. Voy a la cocina ahora mismo y vuelvo en menos de un minuto con un tiempo real para sus platos."} },
@@ -5389,7 +5389,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"I'll bring you a glass of wine on the house while you wait. Sorry again.",fr:"Je vous apporte un verre de vin offert en attendant. Encore désolé.",es:"Les traigo una copa de vino por cuenta de la casa mientras esperan. Disculpen otra vez."} },
   ]},
   // ── 7 · Splitting the Bill ─────────────────────────────────────────────
-  7: { afterAiTurn: 1, choices: [
+  7: { afterAiTurn: 2, choices: [
     { id:'pen_paper_offer', recommended:true,
       label:{en:'Offer to itemize on paper with them',fr:'Proposer de détailler la note avec eux sur papier',es:'Ofrecer detallar la cuenta con ellos en papel'},
       prompt:{en:"Happy to help — let me grab the printed itemized bill and we can mark together who had what. Easiest way to make sure no one overpays.",fr:"Avec plaisir — je vous apporte la note détaillée imprimée et on note ensemble qui a pris quoi. C'est le plus simple pour que personne ne paie en trop.",es:"Con gusto les ayudo — traigo la cuenta detallada impresa y marcamos juntos quién tomó qué. Es la forma más fácil de que nadie pague de más."} },
@@ -5401,7 +5401,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"Unfortunately our system only allows up to four separate bills, so you'll have to sort the rest among yourselves.",fr:"Malheureusement notre système ne permet que quatre additions séparées, vous devrez régler le reste entre vous.",es:"Lamentablemente nuestro sistema solo permite hasta cuatro cuentas separadas, tendrán que arreglar el resto entre ustedes."} },
   ]},
   // ── 10 · Wrong Order Delivered ─────────────────────────────────────────
-  10: { afterAiTurn: 1, choices: [
+  10: { afterAiTurn: 2, choices: [
     { id:'own_remake', recommended:true,
       label:{en:'Apologize, take the plates back, fast-track the correct dish',fr:'S\'excuser, reprendre les assiettes et accélérer le bon plat',es:'Disculparse, retirar los platos y acelerar el plato correcto'},
       prompt:{en:"I am so sorry — that's entirely on me. I'm taking these back right now and I'll have your correct plates fired and out as fast as the kitchen can move.",fr:"Je suis vraiment désolé — c'est entièrement de ma faute. Je reprends ces assiettes tout de suite et je fais relancer vos vrais plats aussi vite que possible.",es:"Lo siento muchísimo — la culpa es totalmente mía. Me llevo estos platos ahora mismo y haré que preparen los suyos lo más rápido posible."} },
@@ -5413,7 +5413,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"The kitchen mixed up the ticket — I'll let them know but it might take a while to redo.",fr:"La cuisine s'est trompée de bon — je leur dis, mais ça risque de prendre un moment à refaire.",es:"La cocina confundió la comanda — les aviso, pero puede tardar en rehacerse."} },
   ]},
   // ── 13 · Severe Allergy Emergency ──────────────────────────────────────
-  13: { afterAiTurn: 1, choices: [
+  13: { afterAiTurn: 2, choices: [
     { id:'remove_alert_manager', recommended:true,
       label:{en:'Remove the plate, alert manager and kitchen, ask if they need help',fr:'Retirer l\'assiette, alerter le manager et la cuisine, proposer de l\'aide',es:'Retirar el plato, avisar al gerente y a la cocina, ofrecer ayuda'},
       prompt:{en:"I'm removing this plate right now. Stay seated — I'm getting my manager and alerting the kitchen this second. Do you have your EpiPen ready in case you need it?",fr:"Je retire cette assiette tout de suite. Restez assis — je vais chercher mon manager et j'alerte la cuisine immédiatement. Avez-vous votre EpiPen prêt au cas où ?",es:"Estoy retirando este plato ahora mismo. Quédense sentados — voy a buscar al gerente y aviso a la cocina al instante. ¿Tienen su EpiPen a mano por si lo necesitan?"} },
@@ -5425,7 +5425,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"I'm calling 911 right now — please nobody touch anything.",fr:"J'appelle le 911 tout de suite — que personne ne touche à rien s'il vous plaît.",es:"Estoy llamando al 911 ahora mismo — por favor que nadie toque nada."} },
   ]},
   // ── 14 · The Marriage Proposal ─────────────────────────────────────────
-  14: { afterAiTurn: 1, choices: [
+  14: { afterAiTurn: 2, choices: [
     { id:'discreet_signal', recommended:true,
       label:{en:'Give a discreet signal and confirm the dessert timing',fr:'Donner un signal discret et confirmer le moment du dessert',es:'Dar una señal discreta y confirmar el momento del postre'},
       prompt:{en:"(Quietly, without drawing attention) Everything is ready — I'll bring the champagne and dessert together when you give me the small nod we agreed on. The ring is safe with the manager.",fr:"(Discrètement, sans attirer l'attention) Tout est prêt — j'apporte le champagne et le dessert ensemble quand vous me ferez le petit signe convenu. La bague est en sécurité avec le manager.",es:"(En voz baja, sin llamar la atención) Todo está listo — traeré el champán y el postre juntos cuando me hagan la señal acordada. El anillo está a salvo con el gerente."} },
@@ -5437,7 +5437,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"Are you ready to order dessert now?",fr:"Êtes-vous prêts à commander le dessert ?",es:"¿Listos para pedir el postre?"} },
   ]},
   // ── 17 · Vegan Tasting Menu ────────────────────────────────────────────
-  17: { afterAiTurn: 1, choices: [
+  17: { afterAiTurn: 2, choices: [
     { id:'walk_through_chef', recommended:true,
       label:{en:'Walk through each course and offer to verify with the chef',fr:'Détailler chaque plat et proposer de vérifier avec le chef',es:'Repasar cada plato y ofrecer verificarlo con el chef'},
       prompt:{en:"Let's go through every course together. I know the menu, but for anything you're uncertain about I'll go straight to the chef and confirm before it leaves the pass.",fr:"Passons en revue chaque plat ensemble. Je connais le menu, mais pour tout ce dont vous n'êtes pas sûr, j'irai voir le chef directement avant que ça ne sorte de la cuisine.",es:"Repasemos cada plato juntos. Conozco el menú, pero ante cualquier duda iré directo al chef a confirmar antes de que salga de cocina."} },
@@ -5449,7 +5449,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"It might be easier if you ordered à la carte tonight instead of the tasting menu.",fr:"Ce serait peut-être plus simple de commander à la carte ce soir plutôt que le menu dégustation.",es:"Quizá sea más fácil si esta noche piden a la carta en lugar del menú degustación."} },
   ]},
   // ── 23 · Noise Complaint ───────────────────────────────────────────────
-  23: { afterAiTurn: 1, choices: [
+  23: { afterAiTurn: 2, choices: [
     { id:'acknowledge_act_both', recommended:true,
       label:{en:'Acknowledge them, then quietly ask the loud table to lower volume',fr:'Les reconnaître, puis demander discrètement à la table bruyante de baisser le ton',es:'Reconocer su queja y pedir discretamente a la mesa ruidosa que bajen el tono'},
       prompt:{en:"You're absolutely right — I'm so sorry. Let me have a quiet word with the table next door right now, and I'll come back to make sure things have improved.",fr:"Vous avez tout à fait raison — je suis vraiment désolé. Je vais discrètement parler à la table à côté tout de suite et je reviens m'assurer que ça s'est amélioré.",es:"Tienen toda la razón — lo siento mucho. Voy a hablar discretamente con la mesa de al lado ahora mismo y vuelvo a asegurarme de que ha mejorado."} },
@@ -5461,7 +5461,7 @@ const SCENARIO_BRANCHES = {
       prompt:{en:"(Loudly to the next table) Excuse me — you're being far too loud and disturbing other guests.",fr:"(Fort à la table d'à côté) Excusez-moi — vous êtes beaucoup trop bruyants et vous dérangez les autres clients.",es:"(En voz alta a la mesa de al lado) Disculpen — están haciendo demasiado ruido y molestan a los demás clientes."} },
   ]},
   // ── 31 · Cocktail Recommendation ───────────────────────────────────────
-  31: { afterAiTurn: 1, choices: [
+  31: { afterAiTurn: 2, choices: [
     { id:'discover_then_pitch', recommended:true,
       label:{en:'Ask 1–2 quick taste questions, then suggest two specifics',fr:'Poser 1–2 questions sur leurs goûts puis proposer deux cocktails',es:'Hacer 1–2 preguntas sobre sus gustos y proponer dos opciones'},
       prompt:{en:"Quick question to nail it: do you usually go for something refreshing and citrusy, or richer and spirit-forward? Based on your answers I have two house cocktails I'd love to put in front of you.",fr:"Petite question pour bien viser : vous penchez plutôt vers quelque chose de frais et citronné, ou plus corsé et spiritueux ? Selon vos réponses j'ai deux cocktails maison à vous proposer.",es:"Una pregunta rápida para acertar: ¿suelen preferir algo fresco y cítrico, o más intenso y espirituoso? Según su respuesta tengo dos cócteles de la casa para proponerles."} },
