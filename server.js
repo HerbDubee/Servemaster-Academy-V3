@@ -2016,8 +2016,16 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
+      // No credit card required for the 30-day trial. Stripe Checkout will
+      // skip card collection because no payment is due upfront. If the user
+      // never adds a card, the subscription auto-cancels at trial end and
+      // the existing webhook flips them back to free → paywall.
+      payment_method_collection: 'if_required',
       subscription_data: {
         trial_period_days: 30,
+        trial_settings: {
+          end_behavior: { missing_payment_method: 'cancel' },
+        },
         metadata,
       },
       success_url: 'https://servemasteracademy.ca/success.html',
@@ -4446,7 +4454,7 @@ Pricing (CAD):
 - Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
 - Enterprise: custom pricing — multi-location, white-label, SSO, API access
 
-Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and that all paid plans (Premium Monthly, Premium Annual, Starter Team, Pro Team, and their annual versions) come with a 30-day free trial. Team trials are activated by an access code Kirk sends within 1 business day of a request on /teams. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and that all paid plans (Premium Monthly, Premium Annual, Starter Team, Pro Team, and their annual versions) come with a 30-day free trial — no credit card required to start. Team trials are activated by an access code Kirk sends within 1 business day of a request on /teams. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
 app.post('/api/chat', async (req, res) => {
   try {
