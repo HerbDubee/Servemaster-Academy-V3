@@ -442,9 +442,21 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           const customerId = session.customer;
           const plan = session.metadata?.plan || 'premium';
           const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
-          if (isTeamPlan && session.metadata?.restaurantId) {
-            await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [plan, parseInt(session.metadata.restaurantId)]);
-            await db.query('UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2', [session.subscription, customerId]);
+          // Normalize annual variants to their base plan name (Stripe metadata may
+          // contain *_annual; restaurants.plan and subscription_status only know
+          // the base names: starter_team, pro_team, premium).
+          const isAnyTeamPlan = plan === 'starter_team' || plan === 'pro_team' || plan === 'starter_team_annual' || plan === 'pro_team_annual';
+          const normalizedTeamPlan = (plan === 'starter_team' || plan === 'starter_team_annual') ? 'starter_team'
+            : (plan === 'pro_team' || plan === 'pro_team_annual') ? 'pro_team' : null;
+          if (isAnyTeamPlan && session.metadata?.restaurantId && normalizedTeamPlan) {
+            await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [normalizedTeamPlan, parseInt(session.metadata.restaurantId)]);
+            // Also set the manager's subscription_status immediately so they
+            // have premium access during the 30-day trial — the
+            // customer.subscription.created webhook may arrive in any order.
+            await db.query(
+              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
+              [normalizedTeamPlan, session.subscription, customerId]
+            );
           } else {
             const newStatus = (plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan;
             await db.query(
@@ -460,13 +472,39 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         }
         break;
       }
+      case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const sub = event.data.object;
-        if (sub.status === 'active') {
-          await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['premium', sub.id]);
-        } else if (sub.status === 'canceled' || sub.status === 'unpaid') {
+        // 'trialing' = inside the 30-day free trial; 'active' = paying.
+        // Both grant premium-level access.
+        if (sub.status === 'active' || sub.status === 'trialing') {
+          const subPlan = sub.metadata?.plan;
+          const isTeam = subPlan === 'starter_team' || subPlan === 'pro_team' || subPlan === 'starter_team_annual' || subPlan === 'pro_team_annual';
+          const subStatus = isTeam
+            ? (subPlan.startsWith('starter_team') ? 'starter_team' : 'pro_team')
+            : 'premium';
+          // Try update by subscription id first; if that affects 0 rows
+          // (event arrived before checkout.session.completed), fall back to
+          // matching by stripe_customer_id and backfill the subscription id.
+          const upd = await db.query(
+            'UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2 RETURNING id',
+            [subStatus, sub.id]
+          );
+          if (upd.rowCount === 0 && sub.customer) {
+            await db.query(
+              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
+              [subStatus, sub.id, sub.customer]
+            );
+          }
+          if (isTeam) {
+            await db.query(
+              "UPDATE restaurants SET plan = $1 WHERE id = (SELECT restaurant_id FROM users WHERE users.stripe_subscription_id = $2 LIMIT 1)",
+              [subStatus, sub.id]
+            );
+          }
+        } else if (sub.status === 'canceled' || sub.status === 'unpaid' || sub.status === 'incomplete_expired') {
           await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['free', sub.id]);
-          await db.query("UPDATE restaurants SET plan = 'free' WHERE (SELECT stripe_subscription_id FROM users WHERE users.restaurant_id = restaurants.id LIMIT 1) = $1", [sub.id]);
+          await db.query("UPDATE restaurants SET plan = 'free' WHERE id = (SELECT restaurant_id FROM users WHERE users.stripe_subscription_id = $1 LIMIT 1)", [sub.id]);
         }
         break;
       }
@@ -1978,6 +2016,10 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
+      subscription_data: {
+        trial_period_days: 30,
+        metadata,
+      },
       success_url: 'https://servemasteracademy.ca/success.html',
       cancel_url: 'https://servemasteracademy.ca',
     };
