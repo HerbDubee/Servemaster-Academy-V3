@@ -4404,7 +4404,7 @@ Pricing (CAD):
 - Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
 - Enterprise: custom pricing — multi-location, white-label, SSO, API access
 
-Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and the 30-day free team trial that restaurants can request on /teams. There is no individual trial — Premium is a paid subscription from day one. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and that all paid plans (Premium Monthly, Premium Annual, Starter Team, Pro Team, and their annual versions) come with a 30-day free trial. Team trials are activated by an access code Kirk sends within 1 business day of a request on /teams. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
 app.post('/api/chat', async (req, res) => {
   try {

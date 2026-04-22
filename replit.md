@@ -258,7 +258,7 @@ Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB
 - Restaurant Manager dashboard + staff invite system + assigned required modules
 - Admin invite code generator
 - Newsletter capture + enterprise inquiry modal
-- Stripe subscription enforcement (monthly, annual, team, annual team plans). Individual 14-day trials removed — free tier (3 modules + 5 scenarios) is the only no-cost path. Team trials are 30-day, manually provisioned.
+- Stripe subscription enforcement (monthly, annual, team, annual team plans). All paid plans are marketed with a 30-day free trial on the pricing cards (Premium Monthly/Annual, Starter Team monthly/annual, Pro Team monthly/annual). Free tier (3 modules + 5 scenarios) remains the only permanent no-cost path. Team trials are still manually provisioned by Kirk via access code; legacy individual 14-day Stripe trial logic remains disabled.
 - Referral system: servers invite managers → $50 CAD Stripe credit auto-applied on subscription
 - CASL-compliant email unsubscribe on all transactional emails
 

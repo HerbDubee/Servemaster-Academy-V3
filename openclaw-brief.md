@@ -129,7 +129,7 @@ The platform hosts 108+ published articles covering fine dining service, wine kn
 5. Manages staff through the manager dashboard (7 tabs)
 6. Receives weekly training digest showing staff progress
 
-**Note for content creators:** Individuals get a forever-free tier (3 modules + 5 scenarios) — there is no individual trial. Team plan trials are 30-day, manually provisioned by Kirk (access code sent within 1 business day). When writing about individuals, use "free — 3 modules, no credit card." When writing about teams, use "30-day free team trial" and note the Kirk-sends-the-code workflow.
+**Note for content creators:** Individuals get a forever-free tier (3 modules + 5 scenarios). All paid plans — Premium Monthly/Annual and Starter/Pro Team monthly/annual — are now marketed with a 30-day free trial on the pricing cards. Team-plan trials remain manually provisioned by Kirk (access code sent within 1 business day). When writing about individuals, you can lead with "free — 3 modules, no credit card" or "30-day free trial on Premium." When writing about teams, use "30-day free team trial" and note the Kirk-sends-the-code workflow.
 
 **What happens on submit:** The form posts to a verified server endpoint. Kirk gets an email immediately with the requester's name, email, restaurant name, and staff count. The requester gets an auto-confirmation from Kirk's address saying their code is coming within 1 business day. No credit card is ever collected at this stage.
 
