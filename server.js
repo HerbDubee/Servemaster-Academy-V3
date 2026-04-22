@@ -1136,8 +1136,17 @@ async function getTenantBrandingForEmail(userId) {
 }
 
 async function sendTrialDripEmails(user) {
-  // Legacy: only sends to users who still have an in-flight 14-day trial
-  // (provisioned before April 21 2026). New signups never enter this path.
+  // Disabled: individual 14-day trials no longer exist on this platform.
+  // Premium is paid from day one; the only trial we offer is the 30-day
+  // team trial, which is provisioned manually by Kirk and tracked
+  // separately. Any legacy `trial_ends_at` values still present in the
+  // users table must NOT trigger trial-end emails — the copy in those
+  // emails referenced a 14-day trial that is no longer offered.
+  // Kept as a no-op so the two call sites (auth + scheduled drip) don't
+  // need to change. Safe to delete the function entirely once we're sure
+  // nothing else imports the symbol.
+  return;
+  // eslint-disable-next-line no-unreachable
   if (!user.trial_ends_at || user.subscription_status === 'active') return;
   const isUnsub = await db.query('SELECT is_unsubscribed FROM users WHERE id = $1', [user.id]).then(r => r.rows[0]?.is_unsubscribed).catch(() => false);
   if (isUnsub) return;
