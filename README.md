@@ -4,7 +4,7 @@ Professional hospitality training platform for restaurant servers, bartenders, a
 
 ## What it is
 
-ServeMaster Academy is a SaaS training platform purpose-built for the Canadian restaurant industry. It combines structured curriculum (30 modules, 150+ scenarios) with AI-powered role-play and voice practice to help front-of-house staff earn more in tips, handle difficult guests, and build lasting careers.
+ServeMaster Academy is a SaaS training platform purpose-built for the Canadian restaurant industry. It combines structured curriculum (30 modules, 150 scenarios) with AI-powered role-play and voice practice to help front-of-house staff earn more in tips, handle difficult guests, and build lasting careers.
 
 **Brand:** #FF5E3A orange · #0A4D68 teal · Montserrat/Inter · Dark navy backgrounds
 
@@ -15,7 +15,7 @@ ServeMaster Academy is a SaaS training platform purpose-built for the Canadian r
 - **AI Role-Play** — GPT-4o powered guest simulations with structured debriefs (objective, common mistakes, pro tip)
 - **Voice Practice** — TTS playback of scenario dialogue; browser-based mic recording
 - **30 Curriculum Modules** — Greeting to farewell; upselling, allergens, difficult guests, bar service, and more
-- **150+ Practice Scenarios** — Served from PostgreSQL; content managed in `public/js/content.js`
+- **150 Practice Scenarios** — Served from PostgreSQL; content managed in `public/js/content.js`
 - **Manager Dashboard** — Team progress tracking, module assignment, white-label branding, referral program
 - **White-Label** — Enterprise clients brand the training app with their logo, name, and colours
 - **Affiliate Program** — 25 % year-1 / 10 % lifetime (individual); 30 % / 15 % + $75 activation bonus (team)

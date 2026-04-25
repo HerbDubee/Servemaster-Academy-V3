@@ -10,7 +10,7 @@
 
 ## What ServeMaster Academy Is
 
-ServeMaster Academy is a professional training platform for restaurant servers. It delivers fine-dining standards, wine knowledge, and guest service skills through 30 interactive modules organized into 4 specialized training tracks, 150+ AI role-play scenarios, voice practice, quizzes, and track completion certificates.
+ServeMaster Academy is a professional training platform for restaurant servers. It delivers fine-dining standards, wine knowledge, and guest service skills through 30 interactive modules organized into 4 specialized training tracks, 150 AI role-play scenarios, voice practice, quizzes, and track completion certificates.
 
 It is the only platform of its kind that teaches servers the way professional athletes train — with simulated high-pressure situations, immediate feedback, branching scenarios, and progressive skill-building across a full career path.
 

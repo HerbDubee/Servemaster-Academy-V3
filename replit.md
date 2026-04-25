@@ -250,7 +250,7 @@ Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB
 
 ## Features
 
-- 30 training modules across two tracks: Fine Dining & Restaurant Service (modules 1–24) and Bar Service (modules 25–30); 150+ AI roleplay scenarios (3 difficulty levels), 51 glossary terms
+- 30 training modules across two tracks: Fine Dining & Restaurant Service (modules 1–24) and Bar Service (modules 25–30); 150 AI roleplay scenarios (3 difficulty levels), 51 glossary terms
 - Whisper voice transcription for voice roleplay
 - EN/FR/ES trilingual toggle
 - Gamification: streaks, 12 badges, leaderboard
