@@ -1,269 +1,78 @@
 # ServeMaster Academy
 
-A professional hospitality training platform at `servemasteracademy.ca` — full multi-page marketing site + Google/email auth + training SPA + Stripe pricing + hidden admin dashboard.
+ServeMaster Academy is a professional hospitality training platform offering multi-page marketing, user authentication, a training SPA, Stripe-based subscriptions, and an admin dashboard.
 
-## Architecture
+## Run & Operate
 
-- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe, admin APIs, webhooks; email via Resend
-- `app.html` — Training SPA (auth-gated at `/app`)
-- `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
-- `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
-- `public/blog/` — 106 blog articles (HTML) + index + article template; served via dynamic `/blog/:slug` route
-- `public/blog/es/` — 106 Spanish translations of all articles; served at `/blog/es/:slug`
-- `public/js/content.js` — Central content store (`window.SMAContent`); single source of truth for modules, lessonData, glossaryTerms, practiceScenarios, blogArticles, blogSections. Loaded by `app.html`, `blog/index.html`, and `blog/article.html`.
-- `public/blog/article.html` — Universal blog article template; reads `window.SMAContent.blogArticles` for metadata, then fetches the static HTML body from the slug-specific file.
-- `public/unsubscribe.html` — CASL unsubscribe page
-- `public/manifest.json` — PWA manifest
-- `public/sw.js` — Service worker (offline support)
-- `public/logo.svg` — Horizontal nav wordmark: gold soundwave icon + white "ServeMaster" + gold "ACADEMY" (dark-bg optimised)
-- `public/logo-icon.svg` — Soundwave-only icon for app nav (gold, transparent bg)
-- `public/logo.png` — 1200×630 OG/social share image (brand photo on dark navy #071a26)
-- `public/logo-transparent.png` — Full stacked logo, transparent background (for footers, dark sections)
-- `public/favicon.png` (64px), `public/apple-touch-icon.png` (180px), `public/icon-192.png`, `public/icon-512.png` — PWA/browser icons: gold soundwave on dark navy rounded square
-- `stripeClient.js` — Replit Stripe connector helpers
-- `db.js` — PostgreSQL connection pool (Replit built-in)
-- `public/js/wl-branding.js` — White-label branding injection utility (used on app.html, login.html, signup.html)
+**Run:** `node server.js`
+**Env Vars:**
+- `JWT_SECRET`: JWT signing secret
+- `AI_INTEGRATIONS_OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_BASE_URL`: OpenAI API (auto-injected)
+- `DATABASE_URL`: PostgreSQL (auto-injected)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: Google OAuth
+- `STRIPE_PREMIUM_MONTHLY_ID`, `STRIPE_PREMIUM_ANNUAL_ID`, `STRIPE_STARTER_TEAM_ID`, `STRIPE_PRO_TEAM_ID`, `STRIPE_STARTER_TEAM_ANNUAL_ID`, `STRIPE_PRO_TEAM_ANNUAL_ID`: Stripe Price IDs
+- `ADMIN_EMAIL`: Email for auto-granted admin access
+- `RESEND_API_KEY`: Resend transactional email (auto-injected)
+- `APP_URL`: Production application URL (`https://servemasteracademy.ca`)
 
-## Pages
+## Stack
 
-| Path | File |
-|------|------|
-| `/` | `public/home.html` |
-| `/about` | `public/about.html` |
-| `/features` | `public/features.html` |
-| `/pricing` | `public/pricing.html` |
-| `/contact` | `public/contact.html` |
-| `/login` | `public/login.html` |
-| `/signup` | `public/signup.html` |
-| `/privacy` | `public/privacy.html` |
-| `/terms` | `public/terms.html` |
-| `/brand` | `public/brand.html` |
-| `/app` | `app.html` (training SPA) |
-| `/blog` | `public/blog/index.html` (rendered from content.js) |
-| `/blog/:slug` | `public/blog/{slug}.html` or `public/blog/article.html` template |
-| `/blog/es/:slug` | `public/blog/es/{slug}.html` (Spanish translations) |
-| `/admin` | `admin.html` (admin dashboard) |
-| `/unsubscribe` | `public/unsubscribe.html` (CASL) |
-| `/training` | `public/training.html` (public curriculum preview) |
-| `/app/training` | `public/app-training.html` (protected — `requirePaidAccess`) |
+- **Backend:** Express.js (Node.js)
+- **Database:** PostgreSQL
+- **Auth:** JWT, Google OAuth
+- **Payments:** Stripe
+- **Email:** Resend
+- **Frontend:** Vanilla JS, HTML, CSS (Tailwind CSS)
+- **AI:** OpenAI (Whisper for voice transcription)
+- **Build Tool:** Tailwind CSS CLI
 
-## Subscription Model
+## Where things live
 
-| Tier | Price | Stripe Price ID env var |
-|------|-------|----------------|
-| Free | $0 | — |
-| Individual Monthly | $19/mo | `STRIPE_PREMIUM_MONTHLY_ID` |
-| Individual Yearly | $149/yr | `STRIPE_PREMIUM_ANNUAL_ID` |
-| Team Starter | $99/mo | `STRIPE_STARTER_TEAM_ID` |
-| Team Pro | $199/mo | `STRIPE_PRO_TEAM_ID` |
-| Team Starter Annual | $990/yr | `STRIPE_STARTER_TEAM_ANNUAL_ID` |
-| Team Pro Annual | $1990/yr | `STRIPE_PRO_TEAM_ANNUAL_ID` |
-| Enterprise | Custom | Contact sales form (modal on pricing page) |
+- `server.js`: Express backend, API routes, auth, AI, Stripe, webhooks.
+- `public/`: Marketing pages, blog, static assets.
+- `app.html`: Main training Single Page Application (SPA).
+- `admin.html`: Admin dashboard.
+- `db.js`: PostgreSQL connection.
+- `public/js/content.js`: Central content store for modules, lessons, glossary, scenarios, blog.
+- **DB Schema:** Refer to `db.js` for table creation and `server.js` for column usage.
+- **API Contracts:** Defined within `server.js` routes.
+- **Theme/Styling:** `tailwind-input.css` for custom Tailwind overrides, `public/logo.svg`, `public/logo-icon.svg`, `public/logo.png` for branding assets.
 
-Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`, `starter_team_annual`, `pro_team_annual`
-Both `premium_monthly` and `premium_annual` normalize to `'premium'` in DB. `PLAN_TIER_ORDER` and `PAID_PLAN_STATUSES` in server.js govern access gating.
+## Architecture decisions
 
-The pricing page has a monthly/annual billing toggle. Annual team plans show discounted pricing.
+- **Centralized Content Store:** `window.SMAContent` (from `public/js/content.js`) acts as a single source of truth for static content across multiple frontend contexts (training SPA, blog).
+- **Database-driven Admin Roles:** Admin access is verified via a database role lookup on each request, ensuring immediate permission changes without re-login.
+- **Hybrid Content Delivery:** Marketing pages are static HTML, while the training and admin sections are SPAs. Blog content uses a universal template dynamically populated from static HTML files and a content store.
+- **White-labeling through CSS Variables:** Enterprise branding is implemented by dynamically injecting CSS custom properties and swapping logos, minimizing changes to core application stylesheets.
+- **Multi-channel UTM Tracking:** UTM parameters are robustly captured across different user journeys (marketing site, Google OAuth, team trial requests) using session/local storage and temporary cookies to ensure attribution accuracy.
 
-## Admin Access
+## Product
 
-- Visit `/admin` → if not admin, shows diagnostic panel → click "Grant Admin Access to This Account"
-- `adminMiddleware` verifies role from **database** (not JWT) — so role upgrades take effect immediately without re-login
-- `ADMIN_EMAIL` env var gets admin role auto-granted on server startup
+- **Interactive Training:** 30 modules, 150 AI roleplay scenarios with voice transcription, quizzes.
+- **Gamification:** Streaks, badges, leaderboard.
+- **Certifications:** Completion certificates with optional custom restaurant logos.
+- **Subscription Management:** Free tier, individual (monthly/annual), and team (monthly/annual) paid plans via Stripe.
+- **Manager Dashboard:** Staff invitation, assigned module management, white-label branding for enterprise clients.
+- **Referral Program:** Servers can refer managers for a $50 CAD Stripe credit.
+- **Multilingual Support:** EN/FR/ES toggle.
+- **PWA Capabilities:** Offline support for module text.
 
-## Key Environment Variables
+## User preferences
 
-| Variable | Purpose |
-|----------|---------|
-| `JWT_SECRET` | JWT signing secret (set as shared env var) |
-| `AI_INTEGRATIONS_OPENAI_API_KEY` | Replit OpenAI integration (auto-injected) |
-| `AI_INTEGRATIONS_OPENAI_BASE_URL` | Replit OpenAI integration (auto-injected) |
-| `DATABASE_URL` | Replit PostgreSQL (auto-injected) |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `STRIPE_PREMIUM_MONTHLY_ID` | Stripe price ID |
-| `STRIPE_PREMIUM_ANNUAL_ID` | Stripe price ID |
-| `STRIPE_STARTER_TEAM_ID` | Stripe price ID |
-| `STRIPE_PRO_TEAM_ID` | Stripe price ID |
-| `STRIPE_STARTER_TEAM_ANNUAL_ID` | Stripe price ID (annual team starter) |
-| `STRIPE_PRO_TEAM_ANNUAL_ID` | Stripe price ID (annual team pro) |
-| `ADMIN_EMAIL` | Auto-granted admin on startup |
-| `RESEND_API_KEY` | Resend transactional email (Replit integration, auto-injected) |
-| `APP_URL` | `https://servemasteracademy.ca` (production) |
+- _Populate as you build_
 
-## Database Tables
+## Gotchas
 
-| Table | Purpose |
-|-------|---------|
-| `users` | Accounts — email, google_id, role, subscription_status, stripe IDs, `is_unsubscribed` flag |
-| `user_progress` | Module progress + quiz scores |
-| `streaks` | Daily login streak tracking |
-| `badges` | Earned badge records |
-| `scenario_scores` | Completed roleplay sessions |
-| `restaurants` | Manager restaurant profiles + `cert_logo_url` + white-label branding columns (`wl_brand_name`, `wl_logo_url`, `wl_primary_color`, `wl_accent_color`, `wl_is_active`, `wl_is_enterprise`) |
-| `users` (UTM cols) | `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `attribution_referrer`, `paid_started_at` — first-touch attribution captured at signup; `paid_started_at` set on first Stripe checkout completion (used for free→Premium conversion attribution) |
-| `contact_messages` (UTM cols) | Same UTM columns — captured on `/api/request-team-trial` so manager-funnel attribution lines up with server-funnel attribution |
-| `invite_codes` | Admin-generated invite codes |
-| `invite_code_redemptions` | Code redemption log |
-| `email_subscribers` | Newsletter signups |
-| `contact_messages` | Contact + enterprise inquiry submissions |
-| `referrals` | Manager referral tracking |
-| `email_drip_log` | Tracks which drip emails have been sent per user (Day 1/3/7/14) |
-| `unsubscribe_tokens` | CASL unsubscribe tokens for one-click unsubscribe links |
-| `assigned_modules` | Manager-assigned required modules per restaurant |
-| `affiliates` | Affiliate accounts — tier, language, payout info, website, commission_rate, activation_bonus |
-| `commissions` | Per-sale commission records linked to affiliates |
-| `affiliate_payouts` | Payout history with status tracking |
-| `roleplays` | Curriculum role-play scenarios — category, title, setup, dialogue, debrief, voice_styles; UNIQUE on title |
-| `quizzes` | Curriculum knowledge checks — module_name, title, questions (JSONB); UNIQUE on module+title |
+- **Tailwind CSS changes:** Always run `npm run build:css` after modifying `tailwind-input.css`.
+- **Admin Access:** To grant admin access, visit `/admin` and click "Grant Admin Access to This Account" or set the `ADMIN_EMAIL` environment variable.
+- **Referral Credit:** Referrer's Stripe credit is applied only when they first check out if the referred manager pays before the referrer has a Stripe customer ID.
+- **CASL Compliance:** All outbound emails include an unsubscribe link.
 
-### Referral Status State Machine
-- **pending**: invite sent, awaiting referred manager signup + checkout
-- **credited**: $50 CAD balance credit applied to referrer's Stripe account
-- **pending_credit**: referred manager paid but referrer has no Stripe customer yet; credit applied when referrer first checks out
-- **closed**: duplicate referral for same referee; another referrer already credited for this user
+## Pointers
 
-## Email Automation
-
-- **Drip sequence**: `sendDripEmailIfDue(userId, email, name)` — called on login; Days 1/3/7/14 onboarding sequence tracked via `email_drip_log`
-- **Trial drip (legacy)**: `sendTrialDripEmails(user)` — kept for grandfathered users with in-flight trials only; new individual signups no longer receive trial emails (free tier replaced 14-day trial)
-- **Weekly manager digest**: `sendWeeklyManagerDigests()` — every Monday; summaries team progress per restaurant; POST `/api/admin/trigger-weekly-digest` for manual trigger
-- **OpenClaw weekly attribution digest**: `sendOpenClawWeeklyDigest()` — every Monday 8am ET (America/Toronto); emails Kirk a digest of last-7d signups, /teams trial requests, and free→Premium conversions, grouped by `utm_source × utm_medium × utm_campaign`, with WoW deltas. Cron checks hourly via `maybeRunOpenClawDigestCron()`; idempotence tracked in `site_settings.openclaw_digest_last_sent_at`. Manual trigger: POST `/api/admin/trigger-openclaw-digest`. Live admin panel at `/admin#attribution` with CSV export at `/api/admin/weekly-attribution.csv`. UTM capture lives in `public/js/utm-capture.js` (loaded on home, signup, teams, pricing, app) — first-touch, stored in sessionStorage + localStorage + cookies, attached to signup/team-trial payloads via `window.SMAUtm.attach(payload)`. Google OAuth flow forwards UTMs via short-lived cookies set by `/api/auth/google` so `/api/auth/google/callback` can attribute the new user.
-- **Streak recovery**: email sent inside `updateStreak()` when a streak breaks
-- **CASL compliance**: `emailFooter(unsubUrl)` appended to all outbound Resend emails; `getOrCreateUnsubToken(userId)` generates persistent tokens; `GET /unsubscribe?token=` + `POST /api/resubscribe`
-
-## White-Label System
-
-Allows enterprise restaurant clients to brand the training app with their own name, logo, and colours. All branding is app-only (marketing pages remain ServeMaster Academy).
-
-**How it works:**
-- Admin creates a tenant via `POST /api/admin/tenants` → generates restaurant + invite link
-- Manager saves branding via `POST /api/manager/white-label` (requires `managerMiddleware`)
-- On app load, `applyWlBranding()` (from `public/js/wl-branding.js`) calls `GET /api/tenant/branding` and injects CSS custom properties (`--wl-primary`, `--wl-accent`) and swaps the nav logo
-- On invite pages (login/signup `?join=CODE`), `applyWlBrandingForInvite(code)` calls `GET /api/tenant/branding/invite?code=` for pre-auth branding
-- Nudge emails use `getTenantBrandingForEmail(userId)` to swap from-name, logo, and subject line for white-label tenants
-
-**API endpoints:**
-| Endpoint | Auth | Purpose |
-|----------|------|---------|
-| `GET /api/manager/white-label` | managerMiddleware | Load own white-label config |
-| `POST /api/manager/white-label` | managerMiddleware | Save branding (brandName, logoUrl, primaryColor, accentColor, isActive) |
-| `GET /api/tenant/branding` | authMiddleware | Active branding for logged-in user's restaurant |
-| `GET /api/tenant/branding/invite?code=` | public | Pre-auth branding lookup by invite code |
-| `GET /api/admin/tenants` | adminMiddleware | List all active/enterprise tenants |
-| `PATCH /api/admin/tenants/:id/toggle` | adminMiddleware | Toggle wl_is_active |
-| `PATCH /api/admin/tenants/:id/enterprise` | adminMiddleware | Toggle wl_is_enterprise |
-| `POST /api/admin/tenants` | adminMiddleware | Create new enterprise tenant |
-
-**Admin panel:** `/admin` → Tenants tab — lists tenants with toggle controls and "New Tenant" modal
-
-## Affiliate Program
-
-Managed entirely from the admin panel (`/admin` → Affiliates tab).
-
-**Commission structure:**
-| Plan type | Year 1 rate | Lifetime rate | Activation bonus |
-|-----------|------------|---------------|-----------------|
-| Individual (premium) | 25% | 10% | — |
-| Team (starter/pro) | 30% | 15% | $75 CAD |
-| First sale bonus | — | — | $100 CAD welcome bonus |
-
-**DB tables:** `affiliates`, `commissions`, `affiliate_payouts`
-
-**Admin panel features:**
-- `renderAffList()` — shows tier badge, language, payout details, website per affiliate
-- `renderCommissions()` — shows commission_rate % and activation_bonus column
-- `openMarkPaidModal()` / `submitMarkPaid()` — full mark-paid modal flow
-- `generateMonthlySummaries()` — monthly affiliate payout summary generation
-- `exportAffiliateCSV()` — exports full affiliate list as CSV
-- `closeSummariesModal()` — closes the summaries modal
-
-## Curriculum (Role-Plays & Quizzes)
-
-Training content beyond the 30 modules lives in the `roleplays` and `quizzes` DB tables (not `content.js`).
-
-**API endpoints:**
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/roleplays?category=` | Returns role-plays by category (default: `difficult-guests`) |
-| `GET /api/quizzes?module=` | Returns quizzes by module (default: `wine-service`) |
-| `GET /check-curriculum` | Unprotected debug — confirms tables exist and row counts |
-| `GET /setup-curriculum` | Admin-protected — seeds initial role-plays and quiz |
-| `GET /setup-curriculum-expanded` | Admin-protected — updates debriefs with full structured content |
-
-**Seeded content:**
-- 3 difficult-guest role-plays: wine complaint, ignored/hostile guest, policy exception request
-- Each debrief includes: primary objective, why it matters, common mistakes, pro tip
-- 1 wine service quiz — 10 questions with per-question explanations (JSONB)
-
-**Protected training pages:**
-| Route | File | Auth |
-|-------|------|------|
-| `/training` | `public/training.html` | Public (marketing preview) |
-| `/app/training` | `public/app-training.html` | `requirePaidAccess` |
-
-## Manager Dashboard Features
-
-- **Assigned Modules**: Managers select required modules from the full list (Settings tab); stored in `assigned_modules` table; staff see "Required" badge on those modules in app.html
-- **Custom Certificate Logo**: Managers enter a logo URL in Settings; stored in `restaurants.cert_logo_url`; served via `GET /api/manager/cert-logo`; used on generated certificates
-- **White-Label Branding**: Enterprise managers customise brand name, logo, and colours in Settings → White-Label Branding card (only visible if restaurant has white-label configured)
-
-## App (Training SPA) Features
-
-- **PWA**: `manifest.json` + `sw.js` service worker for offline module text caching
-- **Required badges**: Modules assigned by manager show a "Required" badge; loaded via `GET /api/user/assigned-modules`
-- **Quiz first-attempt tracking**: `sma-quiz-first-attempts` localStorage key stores first attempt scores; achievements tab shows first vs best
-- **Upsell modal**: Shows social proof count + urgency countdown when free user hits a locked module
-
-## Security
-
-- JWT_SECRET: set as shared env var (48-byte hex)
-- `adminMiddleware`: DB role lookup on every admin request
-- `authMiddleware` + `checkTrial`: used on API routes — returns JSON 401/402 on failure
-- `requirePaidAccess`: used on HTML page routes — does its own JWT verification + DB lookup and **redirects** (to `/login` or `/app/upgrade`) instead of returning JSON errors; checks invite window → paid plan → active trial in that order
-- Security headers: helmet middleware
-- Bootstrap endpoint disabled (returns 410)
-- Trial expiry check: validates `trial_end` is non-null before comparison
-
-## Brand Style Guide
-
-- **Headline font**: Montserrat Bold/Black (Google Fonts)
-- **Body font**: Inter
-- **Primary CTA color**: `#FF5E3A` (brand orange) — all buttons, highlights
-- **Secondary color**: `#0A4D68` (deep teal) — hero backgrounds, secondary elements
-- **Success**: `#22C55E` | **Warning/Error**: `#EF4444`
-- **Dark neutral**: `#1A1A1A` / `#09090b` | **Light neutral**: `#F8F9FA`
-- **Footer tagline**: "Shift Smarter. Tip Bigger. Burn Out Less."
-- Amber Tailwind utility classes are overridden to brand orange in `tailwind-input.css`
-- Run `npm run build:css` after any tailwind-input.css changes
-
-## Navigation Structure
-
-- Home `/` | Academy `/features` | Knowledge Centre `/blog` | AI Role-Play `/app` | Pricing `/pricing` | Scholarship `/scholarship` | About `/about`
-- `lang.js` auto-translates nav links via `NAV_HREF_MAP` — update `nav_features`, `nav_blog`, `nav_roleplay` keys there
-
-## Analytics & Tracking
-
-- Google Analytics: `G-1BPWXRYVXS` on all pages
-- ContentSquare: `2e14c5cc7ec76` on all pages
-- Crisp chat widget on all public marketing pages (replace `REPLACE_WITH_CRISP_WEBSITE_ID` with real ID)
-- `trial_start` GA event fires on email signup and Google OAuth new user (legacy event name; now signals free account creation, not a 14-day trial)
-
-## Features
-
-- 30 training modules across two tracks: Fine Dining & Restaurant Service (modules 1–24) and Bar Service (modules 25–30); 150 AI roleplay scenarios (3 difficulty levels), 51 glossary terms
-- Whisper voice transcription for voice roleplay
-- EN/FR/ES trilingual toggle
-- Gamification: streaks, 12 badges, leaderboard
-- Completion certificate (with custom restaurant logo support)
-- Restaurant Manager dashboard + staff invite system + assigned required modules
-- Admin invite code generator
-- Newsletter capture + enterprise inquiry modal
-- Stripe subscription enforcement (monthly, annual, team, annual team plans). All paid plans are marketed with a 30-day free trial on the pricing cards (Premium Monthly/Annual, Starter Team monthly/annual, Pro Team monthly/annual). Free tier (3 modules + 5 scenarios) remains the only permanent no-cost path. Team trials are still manually provisioned by Kirk via access code; legacy individual 14-day Stripe trial logic remains disabled.
-- Referral system: servers invite managers → $50 CAD Stripe credit auto-applied on subscription
-- CASL-compliant email unsubscribe on all transactional emails
-
-## Deployment
-
-- Workflow: `node server.js` on port 5000
-- Deploy target: Autoscale
-- Domain: `servemasteracademy.ca`
+- **Stripe Integration:** Refer to Stripe API documentation for `STRIPE_PREMIUM_MONTHLY_ID` and other price IDs.
+- **Google OAuth:** Consult Google Cloud Console for `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` setup.
+- **Resend API:** See Resend documentation for email sending and `RESEND_API_KEY` usage.
+- **PostgreSQL:** Refer to PostgreSQL documentation for database queries and schema management.
+- **OpenAI API:** Consult OpenAI documentation for AI integrations and Whisper transcription.
+- **Tailwind CSS:** Refer to Tailwind CSS documentation for utility classes and customization.
