@@ -644,7 +644,10 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
             <h1 class="heading text-3xl font-bold">Books & Manuscripts</h1>
             <p class="text-zinc-400 text-sm mt-1">Private repository for novels, textbooks, and workbooks. Only visible to admin.</p>
           </div>
-          <button onclick="openBookEditor(null)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Chapter</button>
+          <div class="flex gap-2">
+            <button onclick="syncBooksFromGit()" id="btn-sync-books" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2">⬇ Sync from Git</button>
+            <button onclick="openBookEditor(null)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Chapter</button>
+          </div>
         </div>
 
         <!-- Book filter bar -->
@@ -2214,6 +2217,24 @@ function copyTenantInvite() {
 let allChapters = [];
 let editingChapterId = null;
 let bookFilter = '';
+
+async function syncBooksFromGit() {
+  const btn = document.getElementById('btn-sync-books');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  try {
+    const res = await fetch('/api/admin/books-sync', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Sync failed');
+    btn.textContent = `✓ Done (${data.inserted} new, ${data.updated} updated)`;
+    await loadBooks();
+  } catch (e) {
+    btn.textContent = '✗ Error';
+    alert('Sync error: ' + e.message);
+  } finally {
+    setTimeout(() => { btn.disabled = false; btn.textContent = '⬇ Sync from Git'; }, 4000);
+  }
+}
 
 async function loadBooks() {
   try {

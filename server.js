@@ -3736,6 +3736,18 @@ app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, 
   } catch (e) { console.error('Books webhook sync error:', e.message); }
 });
 
+// ── Admin: manual books-branch sync trigger ───────────────────────────────────
+app.post('/api/admin/books-sync', adminMiddleware, async (req, res) => {
+  try {
+    const { syncBooks } = require('./scripts/sync-books');
+    const result = await syncBooks();
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    console.error('Admin books sync error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Admin Books / Manuscript API ─────────────────────────────────────────────
 app.get('/api/admin/books', adminMiddleware, async (req, res) => {
   try {
