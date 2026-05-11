@@ -591,7 +591,7 @@ function authMiddleware(req, res, next) {
 }
 
 async function adminMiddleware(req, res, next) {
-  const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
+  const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '') || req.query._t || '';
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     req.user = jwt.verify(token, JWT_SECRET);
@@ -3739,11 +3739,29 @@ app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, 
 // ── Admin: manual books-branch sync trigger ───────────────────────────────────
 // ── Admin: ElevenLabs TTS proxy ───────────────────────────────────────────────
 const ELEVENLABS_VOICE_ID = 'kmGaJLbiPLbc00TRnS3K';
-app.post('/api/admin/tts', adminMiddleware, express.json(), async (req, res) => {
+// In-memory store for TTS stream tokens (text+speed, expires after 2 min)
+const _ttsTokens = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of _ttsTokens) { if (v.expires < now) _ttsTokens.delete(k); }
+}, 30000);
+
+// Step 1: POST – validate admin, store text, return stream token
+app.post('/api/admin/tts', adminMiddleware, express.json(), (req, res) => {
   const { text, speed = 1.0 } = req.body || {};
   if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided' });
+  if (!process.env.ELEVENLABS_API_KEY) return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
+  const id = require('crypto').randomUUID();
+  _ttsTokens.set(id, { text: text.slice(0, 4900), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.7), 1.2), expires: Date.now() + 120000 });
+  res.json({ id });
+});
+
+// Step 2: GET – stream audio directly from ElevenLabs → browser
+app.get('/api/admin/tts-stream', adminMiddleware, async (req, res) => {
+  const entry = _ttsTokens.get(req.query.id);
+  if (!entry) return res.status(404).json({ error: 'TTS token not found or expired' });
+  _ttsTokens.delete(req.query.id);
   const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
   try {
     const elRes = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
@@ -3751,9 +3769,9 @@ app.post('/api/admin/tts', adminMiddleware, express.json(), async (req, res) => 
         method: 'POST',
         headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
         body: JSON.stringify({
-          text: text.slice(0, 4900),
+          text: entry.text,
           model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.8, speed: Math.min(Math.max(speed, 0.7), 1.2) }
+          voice_settings: { stability: 0.5, similarity_boost: 0.8, speed: entry.speed }
         })
       }
     );
@@ -3762,13 +3780,13 @@ app.post('/api/admin/tts', adminMiddleware, express.json(), async (req, res) => 
       console.error('ElevenLabs TTS error:', elRes.status, err.slice(0, 200));
       return res.status(elRes.status).json({ error: 'TTS generation failed' });
     }
-    const audioBuffer = await elRes.arrayBuffer();
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
-    res.send(Buffer.from(audioBuffer));
+    const { Readable } = require('stream');
+    Readable.fromWeb(elRes.body).pipe(res);
   } catch (e) {
-    console.error('TTS proxy error:', e.message);
-    res.status(500).json({ error: e.message });
+    console.error('TTS stream error:', e.message);
+    if (!res.headersSent) res.status(500).json({ error: e.message });
   }
 });
 
