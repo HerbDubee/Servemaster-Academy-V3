@@ -3737,6 +3737,40 @@ app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, 
 });
 
 // ── Admin: manual books-branch sync trigger ───────────────────────────────────
+// ── Admin: ElevenLabs TTS proxy ───────────────────────────────────────────────
+const ELEVENLABS_VOICE_ID = 'kmGaJLbiPLbc00TRnS3K';
+app.post('/api/admin/tts', adminMiddleware, express.json(), async (req, res) => {
+  const { text, speed = 1.0 } = req.body || {};
+  if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided' });
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
+  try {
+    const elRes = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
+      {
+        method: 'POST',
+        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
+        body: JSON.stringify({
+          text: text.slice(0, 4900),
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.5, similarity_boost: 0.8, speed: Math.min(Math.max(speed, 0.7), 1.2) }
+        })
+      }
+    );
+    if (!elRes.ok) {
+      const err = await elRes.text();
+      console.error('ElevenLabs TTS error:', elRes.status, err.slice(0, 200));
+      return res.status(elRes.status).json({ error: 'TTS generation failed' });
+    }
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    elRes.body.pipe(res);
+  } catch (e) {
+    console.error('TTS proxy error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/admin/books-sync', adminMiddleware, async (req, res) => {
   try {
     const { syncBooks } = require('./scripts/sync-books');

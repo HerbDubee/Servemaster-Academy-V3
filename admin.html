@@ -2371,40 +2371,81 @@ function closeBookEditor() {
   editingChapterId = null;
 }
 
-let _ttsUtterance = null;
+let _ttsAudio = null;
 let _ttsSpeaking = false;
+let _ttsAbort = false;
 
-function toggleChapterTTS() {
-  if (_ttsSpeaking) { stopChapterTTS(); return; }
-  const text = (document.getElementById('bk-content').value || '').trim();
-  if (!text) return;
-  const rate = parseFloat(document.getElementById('bk-tts-speed').value) || 1;
-  _ttsUtterance = new SpeechSynthesisUtterance(text);
-  _ttsUtterance.rate = rate;
-  _ttsUtterance.onstart = () => {
-    _ttsSpeaking = true;
-    document.getElementById('bk-tts-icon').textContent = '⏹';
-    document.getElementById('bk-tts-label').textContent = 'Stop';
-    document.getElementById('bk-tts-btn').classList.add('border-amber-400', 'text-amber-400');
-  };
-  _ttsUtterance.onend = _ttsUtterance.onerror = () => {
-    _ttsSpeaking = false;
-    document.getElementById('bk-tts-icon').textContent = '🔊';
-    document.getElementById('bk-tts-label').textContent = 'Listen';
-    document.getElementById('bk-tts-btn').classList.remove('border-amber-400', 'text-amber-400');
-  };
-  speechSynthesis.speak(_ttsUtterance);
+function _ttsChunks(text, maxLen = 4800) {
+  const paras = text.split(/\n\n+/);
+  const chunks = [];
+  let current = '';
+  for (const para of paras) {
+    if ((current + '\n\n' + para).length > maxLen && current) {
+      chunks.push(current.trim());
+      current = para;
+    } else {
+      current = current ? current + '\n\n' + para : para;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
 }
 
-function stopChapterTTS() {
-  if (speechSynthesis.speaking) speechSynthesis.cancel();
-  _ttsSpeaking = false;
+function _ttsSetState(playing) {
+  _ttsSpeaking = playing;
   const icon = document.getElementById('bk-tts-icon');
   const label = document.getElementById('bk-tts-label');
   const btn = document.getElementById('bk-tts-btn');
-  if (icon) icon.textContent = '🔊';
-  if (label) label.textContent = 'Listen';
-  if (btn) btn.classList.remove('border-amber-400', 'text-amber-400');
+  if (!icon) return;
+  if (playing) {
+    icon.textContent = '⏹'; label.textContent = 'Stop';
+    btn.classList.add('border-amber-400', 'text-amber-400');
+  } else {
+    icon.textContent = '🔊'; label.textContent = 'Listen';
+    btn.classList.remove('border-amber-400', 'text-amber-400');
+  }
+}
+
+async function toggleChapterTTS() {
+  if (_ttsSpeaking) { stopChapterTTS(); return; }
+  const text = (document.getElementById('bk-content').value || '').trim();
+  if (!text) return;
+  const speed = parseFloat(document.getElementById('bk-tts-speed').value) || 1;
+  const chunks = _ttsChunks(text);
+  _ttsAbort = false;
+  _ttsSetState(true);
+  for (let i = 0; i < chunks.length; i++) {
+    if (_ttsAbort) break;
+    const label = document.getElementById('bk-tts-label');
+    if (label) label.textContent = chunks.length > 1 ? `Stop (${i+1}/${chunks.length})` : 'Stop';
+    try {
+      const res = await fetch('/api/admin/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ text: chunks[i], speed })
+      });
+      if (!res.ok) { console.error('TTS error', res.status); break; }
+      const blob = await res.blob();
+      if (_ttsAbort) break;
+      await new Promise((resolve, reject) => {
+        _ttsAudio = new Audio(URL.createObjectURL(blob));
+        _ttsAudio.playbackRate = 1;
+        _ttsAudio.onended = resolve;
+        _ttsAudio.onerror = reject;
+        _ttsAudio.play().catch(reject);
+      });
+    } catch (e) {
+      if (!_ttsAbort) console.error('TTS playback error:', e);
+      break;
+    }
+  }
+  _ttsSetState(false);
+}
+
+function stopChapterTTS() {
+  _ttsAbort = true;
+  if (_ttsAudio) { _ttsAudio.pause(); _ttsAudio.src = ''; _ttsAudio = null; }
+  _ttsSetState(false);
 }
 
 function updateBookWordCount() {
