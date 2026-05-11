@@ -3738,7 +3738,7 @@ app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, 
 
 // ── Admin: manual books-branch sync trigger ───────────────────────────────────
 // ── Admin: ElevenLabs TTS proxy ───────────────────────────────────────────────
-const ELEVENLABS_VOICE_ID = 'kmGaJLbiPLbc00TRnS3K';
+const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel — warm female narrator
 // In-memory store for TTS stream tokens (text+speed, expires after 2 min)
 const _ttsTokens = new Map();
 setInterval(() => {
