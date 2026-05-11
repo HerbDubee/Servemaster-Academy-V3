@@ -3762,9 +3762,10 @@ app.post('/api/admin/tts', adminMiddleware, express.json(), async (req, res) => 
       console.error('ElevenLabs TTS error:', elRes.status, err.slice(0, 200));
       return res.status(elRes.status).json({ error: 'TTS generation failed' });
     }
+    const audioBuffer = await elRes.arrayBuffer();
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
-    elRes.body.pipe(res);
+    res.send(Buffer.from(audioBuffer));
   } catch (e) {
     console.error('TTS proxy error:', e.message);
     res.status(500).json({ error: e.message });
