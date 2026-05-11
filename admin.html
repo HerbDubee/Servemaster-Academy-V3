@@ -701,7 +701,20 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <input id="bk-chapter-title" type="text" placeholder="The Last Table" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
     </div>
     <div class="mb-4">
-      <label class="text-xs text-zinc-400 block mb-1">Content (prose, manuscript text)</label>
+      <div class="flex items-center justify-between mb-1">
+        <label class="text-xs text-zinc-400">Content (prose, manuscript text)</label>
+        <div class="flex items-center gap-2">
+          <button id="bk-tts-btn" onclick="toggleChapterTTS()" class="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-300 hover:text-white text-xs font-medium px-3 py-1 rounded-full transition-colors">
+            <span id="bk-tts-icon">🔊</span><span id="bk-tts-label">Listen</span>
+          </button>
+          <select id="bk-tts-speed" class="bg-zinc-800 border border-zinc-600 text-zinc-400 text-xs rounded-full px-2 py-1 focus:outline-none">
+            <option value="0.8">0.8×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.2">1.2×</option>
+            <option value="1.5">1.5×</option>
+          </select>
+        </div>
+      </div>
       <textarea id="bk-content" rows="18" placeholder="Paste or write your chapter here…" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono leading-relaxed resize-y"></textarea>
       <div class="text-right text-xs text-zinc-500 mt-1"><span id="bk-wordcount">0</span> words</div>
     </div>
@@ -2353,8 +2366,45 @@ function openBookEditor(id) {
 }
 
 function closeBookEditor() {
+  stopChapterTTS();
   document.getElementById('book-editor-modal').classList.add('hidden');
   editingChapterId = null;
+}
+
+let _ttsUtterance = null;
+let _ttsSpeaking = false;
+
+function toggleChapterTTS() {
+  if (_ttsSpeaking) { stopChapterTTS(); return; }
+  const text = (document.getElementById('bk-content').value || '').trim();
+  if (!text) return;
+  const rate = parseFloat(document.getElementById('bk-tts-speed').value) || 1;
+  _ttsUtterance = new SpeechSynthesisUtterance(text);
+  _ttsUtterance.rate = rate;
+  _ttsUtterance.onstart = () => {
+    _ttsSpeaking = true;
+    document.getElementById('bk-tts-icon').textContent = '⏹';
+    document.getElementById('bk-tts-label').textContent = 'Stop';
+    document.getElementById('bk-tts-btn').classList.add('border-amber-400', 'text-amber-400');
+  };
+  _ttsUtterance.onend = _ttsUtterance.onerror = () => {
+    _ttsSpeaking = false;
+    document.getElementById('bk-tts-icon').textContent = '🔊';
+    document.getElementById('bk-tts-label').textContent = 'Listen';
+    document.getElementById('bk-tts-btn').classList.remove('border-amber-400', 'text-amber-400');
+  };
+  speechSynthesis.speak(_ttsUtterance);
+}
+
+function stopChapterTTS() {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  _ttsSpeaking = false;
+  const icon = document.getElementById('bk-tts-icon');
+  const label = document.getElementById('bk-tts-label');
+  const btn = document.getElementById('bk-tts-btn');
+  if (icon) icon.textContent = '🔊';
+  if (label) label.textContent = 'Listen';
+  if (btn) btn.classList.remove('border-amber-400', 'text-amber-400');
 }
 
 function updateBookWordCount() {
