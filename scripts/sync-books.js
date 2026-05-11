@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * sync-books.js
- * Reads .md files from origin/books branch (no checkout needed) and upserts
- * them into the book_chapters table.
+ * Reads .md files from the books/ folder on origin/main (no checkout needed)
+ * and upserts them into the book_chapters table.
  *
  * Usage:
  *   node scripts/sync-books.js              ← fetches + syncs
@@ -13,7 +13,8 @@ const { execSync } = require('child_process');
 const db = require('../db');
 
 const NO_FETCH = process.argv.includes('--no-fetch');
-const BRANCH = 'origin/books';
+const BRANCH = 'origin/main';
+const BOOKS_DIR = 'books';
 
 function gitFetch() {
   try {
@@ -25,10 +26,11 @@ function gitFetch() {
 
 function listMdFiles() {
   try {
-    const out = execSync(`git ls-tree --name-only ${BRANCH}`, { stdio: 'pipe' }).toString();
+    const out = execSync(`git ls-tree --name-only ${BRANCH} ${BOOKS_DIR}/`, { stdio: 'pipe' }).toString();
+    const SKIP = ['README.md', 'STATUS.md'];
     return out.split('\n')
       .map(f => f.trim())
-      .filter(f => f.endsWith('.md') && f !== 'README.md' && f !== 'books/README.md');
+      .filter(f => f.endsWith('.md') && !SKIP.some(s => f.endsWith(s)));
   } catch {
     return [];
   }
@@ -102,7 +104,7 @@ async function syncBooks() {
 
   const files = listMdFiles();
   if (!files.length) {
-    console.log('No .md files found on origin/books. Nothing to sync.');
+    console.log(`No .md files found in ${BOOKS_DIR}/ on ${BRANCH}. Nothing to sync.`);
     return { inserted: 0, updated: 0, skipped: 0 };
   }
 
