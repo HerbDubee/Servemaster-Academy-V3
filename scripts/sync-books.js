@@ -1,47 +1,78 @@
 #!/usr/bin/env node
 /**
  * sync-books.js
- * Reads .md files from the books/ folder on origin/main (no checkout needed)
- * and upserts them into the book_chapters table.
+ * Fetches .md files from the books/ folder on GitHub (origin/main) via the
+ * GitHub API and upserts them into the book_chapters table.
+ * Works in both local dev (with git) and production (no .git directory).
+ *
+ * Requires: GITHUB_TOKEN env var for private repos.
+ * Repo / branch configured via BOOKS_GITHUB_REPO and BOOKS_GITHUB_BRANCH
+ * (defaults: HerbDubee/servemaster-academy, main).
  *
  * Usage:
- *   node scripts/sync-books.js              ← fetches + syncs
- *   node scripts/sync-books.js --no-fetch   ← skips git fetch (already done)
+ *   node scripts/sync-books.js
  */
 
-const { execSync } = require('child_process');
+const https = require('https');
 const db = require('../db');
 
-const NO_FETCH = process.argv.includes('--no-fetch');
-const BRANCH = 'origin/main';
-const BOOKS_DIR = 'books';
+const REPO   = process.env.BOOKS_GITHUB_REPO   || 'HerbDubee/servemaster-academy';
+const BRANCH = process.env.BOOKS_GITHUB_BRANCH || 'main';
+const DIR    = 'books';
+const TOKEN  = process.env.GITHUB_TOKEN;
+const SKIP   = ['README.md', 'STATUS.md'];
 
-function gitFetch() {
-  try {
-    execSync('git fetch origin', { stdio: 'pipe' });
-  } catch (e) {
-    console.warn('git fetch warning:', e.stderr?.toString().trim());
-  }
+function ghGet(path) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.github.com',
+      path,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'servemaster-books-sync',
+        'Accept': 'application/vnd.github+json',
+        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {})
+      }
+    };
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch (e) { reject(new Error('Invalid JSON from GitHub API')); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
 }
 
-function listMdFiles() {
-  try {
-    const out = execSync(`git ls-tree --name-only ${BRANCH} ${BOOKS_DIR}/`, { stdio: 'pipe' }).toString();
-    const SKIP = ['README.md', 'STATUS.md'];
-    return out.split('\n')
-      .map(f => f.trim())
-      .filter(f => f.endsWith('.md') && !SKIP.some(s => f.endsWith(s)));
-  } catch {
-    return [];
-  }
+async function listMdFiles() {
+  const items = await ghGet(`/repos/${REPO}/contents/${DIR}?ref=${BRANCH}`);
+  if (items.message) throw new Error(`GitHub API: ${items.message}`);
+  return items.filter(f => f.type === 'file' && f.name.endsWith('.md') && !SKIP.includes(f.name));
 }
 
-function readFile(file) {
-  try {
-    return execSync(`git show ${BRANCH}:${file}`, { stdio: 'pipe' }).toString();
-  } catch {
-    return null;
-  }
+async function fetchFileContent(downloadUrl) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(downloadUrl);
+    const options = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'servemaster-books-sync',
+        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {})
+      }
+    };
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve(data));
+    });
+    req.on('error', reject);
+    req.end();
+  });
 }
 
 function parseFrontmatter(raw) {
@@ -100,41 +131,59 @@ async function upsertChapter({ book_title, chapter_number, chapter_title, conten
 }
 
 async function syncBooks() {
-  if (!NO_FETCH) gitFetch();
-
-  const files = listMdFiles();
-  if (!files.length) {
-    console.log(`No .md files found in ${BOOKS_DIR}/ on ${BRANCH}. Nothing to sync.`);
+  let files;
+  try {
+    files = await listMdFiles();
+  } catch (e) {
+    console.error('Failed to list files from GitHub:', e.message);
     return { inserted: 0, updated: 0, skipped: 0 };
   }
 
+  if (!files.length) {
+    console.log(`No .md files found in ${DIR}/ on ${REPO}@${BRANCH}.`);
+    return { inserted: 0, updated: 0, skipped: 0 };
+  }
+
+  console.log(`Found ${files.length} .md file(s) in ${DIR}/ — syncing…`);
   let inserted = 0, updated = 0, skipped = 0;
 
   for (const file of files) {
-    const raw = readFile(file);
-    if (!raw || !raw.trim()) { console.warn(`  SKIP ${file} — could not read`); skipped++; continue; }
+    let raw;
+    try {
+      raw = await fetchFileContent(file.download_url);
+    } catch (e) {
+      console.warn(`  SKIP ${file.name} — download error: ${e.message}`);
+      skipped++;
+      continue;
+    }
+
+    if (!raw || !raw.trim()) {
+      console.warn(`  SKIP ${file.name} — empty file`);
+      skipped++;
+      continue;
+    }
 
     let book_title, chapter_number, chapter_title, content, is_published;
 
     const parsed = parseFrontmatter(raw);
     if (parsed) {
       const { frontmatter } = parsed;
-      book_title = (frontmatter.book || '').trim();
+      book_title     = (frontmatter.book || '').trim();
       chapter_number = parseInt(frontmatter.chapter, 10) || 1;
-      chapter_title = (frontmatter.title || `Chapter ${chapter_number}`).trim();
-      content = parsed.content;
-      is_published = String(frontmatter.published).toLowerCase() === 'true';
+      chapter_title  = (frontmatter.title || `Chapter ${chapter_number}`).trim();
+      content        = parsed.content;
+      is_published   = String(frontmatter.published).toLowerCase() === 'true';
     } else {
-      const fromFile = parseFilename(file);
-      book_title = fromFile.book_title;
+      const fromFile = parseFilename(file.name);
+      book_title     = fromFile.book_title;
       chapter_number = fromFile.chapter_number;
-      chapter_title = fromFile.chapter_title;
-      content = raw.trim();
-      is_published = false;
+      chapter_title  = fromFile.chapter_title;
+      content        = raw.trim();
+      is_published   = false;
     }
 
     if (!book_title || content === '[paste full Chapter 1 prose from chat here — copy from earlier response]') {
-      console.warn(`  SKIP ${file} — placeholder or missing book title`);
+      console.warn(`  SKIP ${file.name} — placeholder or missing book title`);
       skipped++;
       continue;
     }
