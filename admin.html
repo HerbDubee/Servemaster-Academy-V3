@@ -2409,33 +2409,43 @@ function _ttsSetState(playing) {
 async function toggleChapterTTS() {
   if (_ttsSpeaking) { stopChapterTTS(); return; }
   const text = (document.getElementById('bk-content').value || '').trim();
-  if (!text) return;
+  if (!text) { alert('No content to read — open a chapter first.'); return; }
   const speed = parseFloat(document.getElementById('bk-tts-speed').value) || 1;
   const chunks = _ttsChunks(text);
   _ttsAbort = false;
-  _ttsSetState(true);
+  _ttsSpeaking = true;
+  const btn = document.getElementById('bk-tts-btn');
+  const icon = document.getElementById('bk-tts-icon');
+  const label = document.getElementById('bk-tts-label');
+  if (btn) btn.classList.add('border-amber-400', 'text-amber-400');
   for (let i = 0; i < chunks.length; i++) {
     if (_ttsAbort) break;
-    const label = document.getElementById('bk-tts-label');
-    if (label) label.textContent = chunks.length > 1 ? `Stop (${i+1}/${chunks.length})` : 'Stop';
+    if (icon) icon.textContent = '⏳';
+    if (label) label.textContent = chunks.length > 1 ? `Loading… (${i+1}/${chunks.length})` : 'Loading…';
     try {
       const res = await fetch('/api/admin/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({ text: chunks[i], speed })
       });
-      if (!res.ok) { console.error('TTS error', res.status); break; }
+      if (!res.ok) {
+        let errMsg = `TTS error ${res.status}`;
+        try { const j = await res.json(); errMsg = j.error || errMsg; } catch {}
+        alert('Could not generate audio: ' + errMsg);
+        break;
+      }
       const blob = await res.blob();
       if (_ttsAbort) break;
+      if (icon) icon.textContent = '⏹';
+      if (label) label.textContent = chunks.length > 1 ? `Stop (${i+1}/${chunks.length})` : 'Stop';
       await new Promise((resolve, reject) => {
         _ttsAudio = new Audio(URL.createObjectURL(blob));
-        _ttsAudio.playbackRate = 1;
         _ttsAudio.onended = resolve;
-        _ttsAudio.onerror = reject;
+        _ttsAudio.onerror = e => reject(new Error('Playback error'));
         _ttsAudio.play().catch(reject);
       });
     } catch (e) {
-      if (!_ttsAbort) console.error('TTS playback error:', e);
+      if (!_ttsAbort) alert('Audio playback error: ' + e.message);
       break;
     }
   }
