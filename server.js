@@ -1845,43 +1845,6 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
       'INSERT INTO contact_messages (name, email, message, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [name, email.toLowerCase(), `[TEAM TRIAL REQUEST] Restaurant: ${restName}${staffCount ? ` | Staff: ${staffCount}` : ''}`, utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
     );
-    const staffRow = staffCount ? `<tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Staff count</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(String(staffCount))}</td></tr>` : '';
-    const receivedAtET = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto', dateStyle: 'medium', timeStyle: 'short' });
-    const utmParts = [];
-    if (utm.source)   utmParts.push(`source: <strong>${escapeHtml(utm.source)}</strong>`);
-    if (utm.medium)   utmParts.push(`medium: <strong>${escapeHtml(utm.medium)}</strong>`);
-    if (utm.campaign) utmParts.push(`campaign: <strong>${escapeHtml(utm.campaign)}</strong>`);
-    if (utm.content)  utmParts.push(`content: <strong>${escapeHtml(utm.content)}</strong>`);
-    const attribLine = utmParts.length
-      ? utmParts.join(' &nbsp;·&nbsp; ')
-      : '<em style="color:#71717a;">No UTM tags — direct visit or untagged share</em>';
-    const refRow = utm.referrer
-      ? `<tr><td style="padding:8px 0;color:#a1a1aa;">Referrer</td><td style="padding:8px 0;font-size:13px;color:#d4d4d8;word-break:break-all;">${escapeHtml(utm.referrer)}</td></tr>`
-      : '';
-    await resend.emails.send({
-      from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
-      to: 'kirk_adamson@servemasteracademy.ca',
-      reply_to: email.toLowerCase(),
-      subject: `[Team Trial] ${restName}${staffCount ? ` (${staffCount} staff)` : ''} — ${name}`,
-      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
-        <h2 style="color:#FF5E3A;margin-top:0;">New Team Trial Request</h2>
-        <p style="margin:0 0 20px 0;font-size:13px;color:#a1a1aa;">Received ${escapeHtml(receivedAtET)} ET</p>
-        <table style="font-size:15px;width:100%;border-collapse:collapse;">
-          <tr><td style="padding:8px 0;color:#a1a1aa;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(name)}</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a></td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Restaurant</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(restName)}</td></tr>
-          ${staffRow}
-          ${refRow}
-        </table>
-        <div style="margin-top:20px;padding:14px 16px;background:#18181b;border-left:3px solid #FF5E3A;border-radius:6px;">
-          <div style="font-size:12px;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Attribution</div>
-          <div style="font-size:14px;color:#f5f5f5;line-height:1.6;">${attribLine}</div>
-        </div>
-        <p style="margin-top:24px;font-size:14px;color:#71717a;line-height:1.6;">
-          Hit <strong style="color:#f5f5f5;">Reply</strong> to send ${escapeHtml(name)} their 30-day access code — this email is set to reply directly to <a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a>.
-        </p>
-      </div>`
-    });
     await resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: email.toLowerCase(),
@@ -4048,10 +4011,116 @@ async function maybeRunManagerDigestCron() {
 setInterval(maybeRunManagerDigestCron, 60 * 60 * 1000); // hourly
 setTimeout(maybeRunManagerDigestCron, 45 * 1000); // initial check shortly after boot
 
+// ── Kirk daily trial-request digest — 8 am ET, idempotent ────────────────────
+async function sendKirkTrialDigest() {
+  const rows = await db.query(`
+    SELECT id, name, email, message, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer, created_at
+    FROM contact_messages
+    WHERE message LIKE '[TEAM TRIAL REQUEST]%'
+      AND kirk_trial_digest_notified = FALSE
+    ORDER BY created_at ASC
+  `);
+  if (!rows.rows.length) return { sent: 0 };
+
+  const requests = rows.rows;
+  const ids = requests.map(r => r.id);
+
+  const dateLabel = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const rowsHtml = requests.map(r => {
+    const receivedAt = new Date(r.created_at).toLocaleString('en-CA', { timeZone: 'America/Toronto', dateStyle: 'medium', timeStyle: 'short' });
+    const msgMatch = r.message.match(/\[TEAM TRIAL REQUEST\] Restaurant: ([^|]+?)(?:\s*\|\s*Staff:\s*(\S+))?$/);
+    const restName = msgMatch ? msgMatch[1].trim() : '(unknown)';
+    const staffCount = msgMatch && msgMatch[2] ? msgMatch[2].trim() : null;
+    const utmParts = [];
+    if (r.utm_source)   utmParts.push(`source: <strong>${escapeHtml(r.utm_source)}</strong>`);
+    if (r.utm_medium)   utmParts.push(`medium: <strong>${escapeHtml(r.utm_medium)}</strong>`);
+    if (r.utm_campaign) utmParts.push(`campaign: <strong>${escapeHtml(r.utm_campaign)}</strong>`);
+    const attrib = utmParts.length ? utmParts.join(' · ') : '<em style="color:#71717a;">direct / untagged</em>';
+    return `<tr style="border-bottom:1px solid #27272a;">
+      <td style="padding:12px 8px;font-weight:600;">${escapeHtml(r.name)}</td>
+      <td style="padding:12px 8px;"><a href="mailto:${escapeHtml(r.email)}" style="color:#FF5E3A;">${escapeHtml(r.email)}</a></td>
+      <td style="padding:12px 8px;">${escapeHtml(restName)}</td>
+      <td style="padding:12px 8px;text-align:center;">${staffCount ? escapeHtml(staffCount) : '—'}</td>
+      <td style="padding:12px 8px;font-size:12px;color:#a1a1aa;">${escapeHtml(receivedAt)} ET</td>
+      <td style="padding:12px 8px;font-size:12px;color:#a1a1aa;">${attrib}</td>
+    </tr>`;
+  }).join('');
+
+  const subjectCount = requests.length === 1 ? '1 new team trial request' : `${requests.length} new team trial requests`;
+  await resend.emails.send({
+    from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
+    to: 'kirk_adamson@servemasteracademy.ca',
+    subject: `[Daily Digest] ${subjectCount} — ${dateLabel}`,
+    html: `<div style="font-family:sans-serif;max-width:720px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+      <h2 style="color:#FF5E3A;margin-top:0;">Team Trial Request Digest</h2>
+      <p style="font-size:13px;color:#a1a1aa;margin:0 0 24px 0;">${dateLabel} &nbsp;·&nbsp; ${requests.length} request${requests.length === 1 ? '' : 's'} pending your action</p>
+      <div style="overflow-x:auto;">
+        <table style="font-size:14px;width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #3f3f46;color:#a1a1aa;text-align:left;">
+              <th style="padding:8px 8px 12px;">Name</th>
+              <th style="padding:8px 8px 12px;">Email</th>
+              <th style="padding:8px 8px 12px;">Restaurant</th>
+              <th style="padding:8px 8px 12px;text-align:center;">Staff</th>
+              <th style="padding:8px 8px 12px;">Received</th>
+              <th style="padding:8px 8px 12px;">Attribution</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+      <p style="margin-top:24px;font-size:13px;color:#71717a;line-height:1.6;">
+        Click an email address above to open a new message, or hit Reply to reach the last requester.<br>
+        Each requester has already received their "request received" confirmation.
+      </p>
+    </div>`
+  });
+
+  await db.query(
+    `UPDATE contact_messages SET kirk_trial_digest_notified = TRUE WHERE id = ANY($1::int[])`,
+    [ids]
+  );
+
+  console.log(`[Kirk trial digest] sent digest covering ${ids.length} request(s)`);
+  return { sent: ids.length };
+}
+
+async function maybeRunKirkTrialDigestCron() {
+  try {
+    const torontoFmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Toronto', hour: 'numeric', hour12: false
+    }).formatToParts(new Date()).reduce((a, p) => ({ ...a, [p.type]: p.value }), {});
+    const hour = parseInt(torontoFmt.hour, 10);
+    if (hour < 8 || hour >= 9) return;
+
+    const key = 'kirk_trial_digest_last_sent_at';
+    const settingRes = await db.query(`SELECT value FROM site_settings WHERE key = $1`, [key]);
+    if (settingRes.rows.length) {
+      const lastSent = new Date(settingRes.rows[0].value);
+      if (Date.now() - lastSent.getTime() < 20 * 60 * 60 * 1000) return; // already sent in last 20 h
+    }
+
+    const { sent } = await sendKirkTrialDigest();
+    await db.query(
+      `INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2`,
+      [key, new Date().toISOString()]
+    );
+    if (sent > 0) console.log(`[Kirk trial digest] cron fired, ${sent} request(s) included`);
+  } catch (e) { console.error('[Kirk trial digest] cron error:', e.message); }
+}
+setInterval(maybeRunKirkTrialDigestCron, 60 * 60 * 1000); // hourly
+setTimeout(maybeRunKirkTrialDigestCron, 60 * 1000); // initial check shortly after boot
+
 // Manual trigger for Kirk / admin
 app.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res) => {
   try { await sendOpenClawWeeklyDigest(); res.json({ success: true }); }
   catch (e) { res.status(500).json({ error: 'Failed to send digest' }); }
+});
+
+app.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, res) => {
+  try { const result = await sendKirkTrialDigest(); res.json({ success: true, ...result }); }
+  catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
 });
 
 // ── Admin: Stripe revenue ─────────────────────────────────────────────────────
@@ -4506,6 +4575,16 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_content TEXT`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS provisioned BOOLEAN DEFAULT FALSE`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS kirk_trial_digest_notified BOOLEAN NOT NULL DEFAULT FALSE`);
+    // Backfill: mark any existing team trial rows as already notified so the
+    // first digest run only covers new requests going forward.
+    await db.query(`
+      UPDATE contact_messages
+      SET kirk_trial_digest_notified = TRUE
+      WHERE message LIKE '[TEAM TRIAL REQUEST]%'
+        AND kirk_trial_digest_notified = FALSE
+        AND created_at < NOW() - INTERVAL '25 hours'
+    `);
     await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
       id SERIAL PRIMARY KEY,
       plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,
