@@ -1,9 +1,22 @@
 User-agent: *
 Allow: /
-# Block crawlers from API routes — prevents OAuth redirect chains
-# and API endpoints from being indexed or scanned for secrets
+
+# API, admin, and auth routes
 Disallow: /api/
 Disallow: /admin
 Disallow: /admin.html
+
+# Utility / post-action pages (no crawl value)
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify
+Disallow: /unsubscribe
+Disallow: /success
+Disallow: /trial-started
+Disallow: /partner-onboarding-complete
+Disallow: /manager-dashboard
+Disallow: /brand
+Disallow: /training
+Disallow: /app-training
 
 Sitemap: https://servemasteracademy.ca/sitemap.xml

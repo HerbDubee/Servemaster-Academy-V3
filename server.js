@@ -709,8 +709,7 @@ app.get('/sitemap.xml', (req, res) => {
     ['/managers', '0.8', 'monthly'],
     ['/teams', '0.8', 'monthly'],
     ['/scholarship', '0.8', 'monthly'],
-    ['/blog/', '0.8', 'weekly'],
-    ['/training', '0.7', 'monthly'],
+    ['/blog', '0.8', 'weekly'],
   ];
   let blogUrls = '';
   try {
