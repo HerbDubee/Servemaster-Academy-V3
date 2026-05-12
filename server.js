@@ -5239,6 +5239,16 @@ app.post('/api/admin/site-settings', adminMiddleware, async (req, res) => {
       `INSERT INTO site_settings (key, value, updated_at) VALUES ($1,$2,NOW()) ON CONFLICT (key) DO UPDATE SET value=$2, updated_at=NOW()`,
       [key, String(value)]
     );
+
+    // When the digest hour changes, reset the last-sent timestamp so the new
+    // schedule fires at the next cron window without being blocked by the
+    // 20-hour dedup guard from a send that happened at the old hour.
+    if (key === 'kirk_trial_digest_hour_et') {
+      await db.query(
+        `INSERT INTO site_settings (key, value, updated_at) VALUES ('kirk_trial_digest_last_sent_at','1970-01-01T00:00:00.000Z',NOW()) ON CONFLICT (key) DO UPDATE SET value='1970-01-01T00:00:00.000Z', updated_at=NOW()`
+      );
+    }
+
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Failed to save setting' }); }
 });
