@@ -204,14 +204,14 @@
 
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_training_deadline">Training Deadline</h2>
-            <p class="text-zinc-400 text-sm mb-5">Set a target completion date for your team. This date is shown as a reminder and helps you track urgency.</p>
+            <p class="text-zinc-400 text-sm mb-5" data-i18n="mgr_deadline_desc">Set a target completion date for your team. This date is shown as a reminder and helps you track urgency.</p>
             <div class="flex gap-3 items-end">
               <div class="flex-1">
-                <label class="text-xs text-zinc-400 block mb-1">Target Date</label>
+                <label class="text-xs text-zinc-400 block mb-1" data-i18n="mgr_deadline_label">Target Date</label>
                 <input id="deadline-input" type="date" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
               </div>
-              <button onclick="saveDeadline()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save</button>
-              <button onclick="clearDeadline()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors">Clear</button>
+              <button onclick="saveDeadline()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_save">Save</button>
+              <button onclick="clearDeadline()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_clear">Clear</button>
             </div>
             <p id="deadline-msg" class="text-sm mt-3 hidden"></p>
           </div>
@@ -219,64 +219,64 @@
           <!-- Assigned Required Modules -->
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_required_modules">Required Modules</h2>
-            <p class="text-zinc-400 text-sm mb-4">Mark modules as required for your team. Staff will see a "Required" badge on those modules in their training app.</p>
+            <p class="text-zinc-400 text-sm mb-4" data-i18n="mgr_required_modules_desc">Mark modules as required for your team. Staff will see a "Required" badge on those modules in their training app.</p>
             <div id="assign-module-list" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-3">
-              <p class="text-zinc-500 text-sm">Loading modules…</p>
+              <p class="text-zinc-500 text-sm" data-i18n="mgr_loading">Loading…</p>
             </div>
             <p id="assign-msg" class="text-sm hidden"></p>
           </div>
 
           <!-- Certificate Logo -->
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
-            <h2 class="font-semibold text-lg mb-1">Certificate Logo URL</h2>
-            <p class="text-zinc-400 text-sm mb-4">Add your restaurant's logo URL to have it appear on staff completion certificates.</p>
+            <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_cert_logo_title">Certificate Logo URL</h2>
+            <p class="text-zinc-400 text-sm mb-4" data-i18n="mgr_cert_logo_desc">Add your restaurant's logo URL to have it appear on staff completion certificates.</p>
             <div class="space-y-3">
-              <input id="cert-logo-input" type="url" placeholder="https://yourrestaurant.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+              <input id="cert-logo-input" type="url" data-i18n-placeholder="mgr_cert_logo_placeholder" placeholder="https://yourrestaurant.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
               <div id="cert-logo-preview-wrap" class="hidden">
-                <p class="text-xs text-zinc-400 mb-1">Preview:</p>
+                <p class="text-xs text-zinc-400 mb-1" data-i18n="mgr_preview">Preview:</p>
                 <img id="cert-logo-preview" src="" alt="Logo preview" class="h-12 rounded-lg border border-zinc-700 object-contain bg-zinc-800 p-1">
               </div>
               <div class="flex gap-2">
-                <button onclick="saveCertLogo()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save Logo</button>
-                <button onclick="clearCertLogo()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors">Clear</button>
+                <button onclick="saveCertLogo()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_save_logo">Save Logo</button>
+                <button onclick="clearCertLogo()" class="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_clear">Clear</button>
               </div>
               <p id="cert-logo-msg" class="text-sm hidden"></p>
             </div>
           </div>
 
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
-            <h2 class="font-semibold text-lg mb-1">Invite Link</h2>
-            <p class="text-zinc-400 text-sm mb-4">Share this link with your staff to join your team on ServeMaster Academy.</p>
-            <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3">Loading invite code…</div>
-            <button onclick="copyInviteCode()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors">Copy Invite Link</button>
+            <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_invite_title">Invite Link</h2>
+            <p class="text-zinc-400 text-sm mb-4" data-i18n="mgr_invite_desc">Share this link with your staff to join your team on ServeMaster Academy.</p>
+            <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3" data-i18n-loading="mgr_loading">Loading…</div>
+            <button onclick="copyInviteCode()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_copy_invite">Copy Invite Link</button>
           </div>
 
           <!-- White-Label Branding -->
           <div id="wl-section" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <div class="flex items-center gap-2 mb-1">
-              <h2 class="font-semibold text-lg">White-Label Branding</h2>
+              <h2 class="font-semibold text-lg" data-i18n="mgr_wl_title">White-Label Branding</h2>
               <span class="text-xs bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full">Enterprise</span>
             </div>
-            <p class="text-zinc-400 text-sm mb-5">Customise the training app with your restaurant's brand. Changes apply instantly for all team members.</p>
+            <p class="text-zinc-400 text-sm mb-5" data-i18n="mgr_wl_desc">Customise the training app with your restaurant's brand. Changes apply instantly for all team members.</p>
             <div class="space-y-4">
               <div>
-                <label class="text-xs text-zinc-400 block mb-1">Brand Name</label>
-                <input id="wl-brand-name" type="text" placeholder="Marriott Training" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+                <label class="text-xs text-zinc-400 block mb-1" data-i18n="mgr_wl_brand_name">Brand Name</label>
+                <input id="wl-brand-name" type="text" data-i18n-placeholder="mgr_wl_brand_placeholder" placeholder="Marriott Training" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
               </div>
               <div>
-                <label class="text-xs text-zinc-400 block mb-1">Logo URL <span class="text-zinc-600">(must start with https://)</span></label>
-                <input id="wl-logo-url" type="url" placeholder="https://your-cdn.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
+                <label class="text-xs text-zinc-400 block mb-1" data-i18n="mgr_wl_logo_url">Logo URL <span class="text-zinc-600">(must start with https://)</span></label>
+                <input id="wl-logo-url" type="url" data-i18n-placeholder="mgr_wl_logo_placeholder" placeholder="https://your-cdn.com/logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400">
               </div>
               <div class="flex gap-4">
                 <div class="flex-1">
-                  <label class="text-xs text-zinc-400 block mb-1">Primary Colour</label>
+                  <label class="text-xs text-zinc-400 block mb-1" data-i18n="mgr_wl_primary_color">Primary Colour</label>
                   <div class="flex items-center gap-2">
                     <input id="wl-primary-color" type="color" value="#FF5E3A" oninput="wlSyncColor('primary')" class="h-9 w-14 rounded cursor-pointer bg-zinc-800 border border-zinc-700 p-0.5">
                     <input id="wl-primary-hex" type="text" placeholder="#FF5E3A" maxlength="7" oninput="wlSyncColor('primary')" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono">
                   </div>
                 </div>
                 <div class="flex-1">
-                  <label class="text-xs text-zinc-400 block mb-1">Accent Colour</label>
+                  <label class="text-xs text-zinc-400 block mb-1" data-i18n="mgr_wl_accent_color">Accent Colour</label>
                   <div class="flex items-center gap-2">
                     <input id="wl-accent-color" type="color" value="#0A4D68" oninput="wlSyncColor('accent')" class="h-9 w-14 rounded cursor-pointer bg-zinc-800 border border-zinc-700 p-0.5">
                     <input id="wl-accent-hex" type="text" placeholder="#0A4D68" maxlength="7" oninput="wlSyncColor('accent')" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono">
@@ -288,10 +288,10 @@
                   <input id="wl-is-active" type="checkbox" class="sr-only peer" onchange="wlToggleActive()">
                   <div class="w-10 h-6 bg-zinc-700 peer-checked:bg-amber-400 rounded-full transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
                 </label>
-                <span class="text-sm text-zinc-300">Enable white-label branding for my team</span>
+                <span class="text-sm text-zinc-300" data-i18n="mgr_wl_enable">Enable white-label branding for my team</span>
               </div>
               <div class="flex gap-2 pt-1">
-                <button onclick="saveWlConfig()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors">Save Branding</button>
+                <button onclick="saveWlConfig()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_wl_save">Save Branding</button>
               </div>
               <p id="wl-msg" class="text-sm hidden"></p>
             </div>
@@ -567,7 +567,7 @@
           inviteCode = dashData.restaurant.invite_code || '';
           document.getElementById('invite-display').textContent = inviteCode
             ? `https://servemasteracademy.ca/app?invite=${inviteCode}`
-            : 'No invite code found.';
+            : t('mgr_no_members','No invite code found.');
         }
       } catch (e) { console.error(e); }
       loadWlConfig();
@@ -622,13 +622,13 @@
           })
         });
         if (res.success) {
-          msg.textContent = 'Branding saved.'; msg.style.color = '#34d399';
+          msg.textContent = t('mgr_branding_saved','Branding saved.'); msg.style.color = '#34d399';
         } else {
-          msg.textContent = res.error || 'Failed to save.'; msg.style.color = '#f87171';
+          msg.textContent = res.error || t('mgr_logo_failed','Failed to save.'); msg.style.color = '#f87171';
         }
         msg.classList.remove('hidden');
         setTimeout(() => msg.classList.add('hidden'), 3500);
-      } catch { msg.textContent = 'Connection error.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
+      } catch { msg.textContent = t('mgr_logo_failed','Connection error.'); msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
     }
 
     async function saveDeadline() {
@@ -636,11 +636,11 @@
       const msg = document.getElementById('deadline-msg');
       try {
         await apiFetch('/api/manager/deadline', { method: 'POST', body: JSON.stringify({ deadline: val || null }) });
-        msg.textContent = val ? `Deadline set to ${fmtDate(val)}.` : 'Deadline cleared.';
+        msg.textContent = val ? `${t('mgr_deadline_saved','Deadline saved.')} (${fmtDate(val)})` : t('mgr_deadline_cleared','Deadline cleared.');
         msg.style.color = '#34d399';
         msg.classList.remove('hidden');
         setTimeout(() => msg.classList.add('hidden'), 3000);
-      } catch { msg.textContent = 'Failed to save.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
+      } catch { msg.textContent = t('mgr_logo_failed','Failed to save.'); msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
     }
 
     async function clearDeadline() {
@@ -652,9 +652,9 @@
       if (!inviteCode) return;
       const link = `https://servemasteracademy.ca/app?invite=${inviteCode}`;
       navigator.clipboard.writeText(link).then(() => {
-        const btn = event.target;
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy Invite Link', 2000);
+        const btn = event.target.closest('button') || event.target;
+        btn.textContent = t('mgr_copied','Copied!');
+        setTimeout(() => btn.textContent = t('mgr_copy_invite','Copy Invite Link'), 2000);
       });
     }
 
@@ -881,11 +881,11 @@
       const msgEl = document.getElementById('cert-logo-msg');
       try {
         const res = await fetch('/api/manager/cert-logo', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ certLogoUrl: url }) });
-        if (res.ok) { msgEl.textContent = 'Logo saved successfully.'; msgEl.className = 'text-sm text-emerald-400'; }
-        else { msgEl.textContent = 'Failed to save logo.'; msgEl.className = 'text-sm text-red-400'; }
+        if (res.ok) { msgEl.textContent = t('mgr_logo_saved','Logo saved successfully.'); msgEl.className = 'text-sm text-emerald-400'; }
+        else { msgEl.textContent = t('mgr_logo_failed','Failed to save logo.'); msgEl.className = 'text-sm text-red-400'; }
         msgEl.classList.remove('hidden');
         setTimeout(() => msgEl.classList.add('hidden'), 3000);
-      } catch { msgEl.textContent = 'Error saving.'; msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); }
+      } catch { msgEl.textContent = t('mgr_logo_failed','Error saving.'); msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); }
     }
 
     async function clearCertLogo() {

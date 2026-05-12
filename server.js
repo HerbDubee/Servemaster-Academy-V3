@@ -1308,8 +1308,8 @@ async function sendWeeklyManagerDigests() {
       `, [mgr.restaurant_id]);
       if (!team.rows.length) { skipped++; continue; }
 
-      // Modules completed in window (prev Mon–Sun) and WoW delta
-      const [thisWeekR, prevWeekR, quizThisR, quizPrevR] = await Promise.all([
+      // Modules completed in window (prev Mon–Sun), scenarios, quiz — all with WoW deltas
+      const [thisWeekR, prevWeekR, quizThisR, quizPrevR, scenThisR, scenPrevR] = await Promise.all([
         db.query(`SELECT COUNT(*) as cnt FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.progress >= 100
@@ -1329,6 +1329,14 @@ async function sendWeeklyManagerDigests() {
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.quiz_score IS NOT NULL
             AND p.updated_at >= $2 AND p.updated_at < $3`,
+          [mgr.restaurant_id, prev2Monday, lastMonday]),
+        db.query(`SELECT COUNT(*) as cnt FROM scenario_scores ss
+          JOIN restaurant_members rm ON rm.user_id = ss.user_id
+          WHERE rm.restaurant_id = $1 AND ss.completed_at >= $2 AND ss.completed_at < $3`,
+          [mgr.restaurant_id, lastMonday, thisMonday]),
+        db.query(`SELECT COUNT(*) as cnt FROM scenario_scores ss
+          JOIN restaurant_members rm ON rm.user_id = ss.user_id
+          WHERE rm.restaurant_id = $1 AND ss.completed_at >= $2 AND ss.completed_at < $3`,
           [mgr.restaurant_id, prev2Monday, lastMonday])
       ]);
       const thisWeekCount = parseInt(thisWeekR.rows[0].cnt);
@@ -1341,6 +1349,11 @@ async function sendWeeklyManagerDigests() {
       const quizWow  = quizThis - quizPrev;
       const quizWowStr   = quizWow > 0 ? `+${quizWow}` : `${quizWow}`;
       const quizWowColor = quizWow > 0 ? '#34d399' : quizWow < 0 ? '#f87171' : '#a3a3a3';
+      const scenThis = parseInt(scenThisR.rows[0].cnt);
+      const scenPrev = parseInt(scenPrevR.rows[0].cnt);
+      const scenWow  = scenThis - scenPrev;
+      const scenWowStr   = scenWow > 0 ? `+${scenWow}` : `${scenWow}`;
+      const scenWowColor = scenWow > 0 ? '#34d399' : scenWow < 0 ? '#f87171' : '#a3a3a3';
 
       // White-label: use restaurant cert_logo_url if set, else SMA logo
       const logoUrl = mgr.cert_logo_url || 'https://servemasteracademy.ca/logo.png';
@@ -1380,21 +1393,23 @@ async function sendWeeklyManagerDigests() {
           <h2 style="font-size:18px;color:#f5f5f5;margin-bottom:4px;">Weekly Training Digest</h2>
           <p style="font-size:13px;color:#a3a3a3;margin-bottom:20px;">${weekLabel}</p>
           <table style="width:100%;border-collapse:collapse;background:#1a1a1a;border-radius:8px;margin-bottom:20px;"><tr>
-            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
-              <div style="font-size:24px;font-weight:700;color:#d4af37;">${thisWeekCount}</div>
-              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Modules Completed</div>
+            <td style="text-align:center;padding:12px 8px;border-right:1px solid #333;">
+              <div style="font-size:22px;font-weight:700;color:#d4af37;">${thisWeekCount}</div>
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Modules</div>
+              <div style="font-size:10px;color:${wowColor};margin-top:1px;">${wowStr} vs prior</div>
             </td>
-            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
-              <div style="font-size:24px;font-weight:700;color:${wowColor};">${wowStr}</div>
-              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">vs Prior Week</div>
+            <td style="text-align:center;padding:12px 8px;border-right:1px solid #333;">
+              <div style="font-size:22px;font-weight:700;color:#a78bfa;">${scenThis}</div>
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Scenarios</div>
+              <div style="font-size:10px;color:${scenWowColor};margin-top:1px;">${scenWowStr} vs prior</div>
             </td>
-            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
-              <div style="font-size:24px;font-weight:700;color:${quizWowColor};">${quizThis > 0 ? quizThis+'%' : '—'}</div>
-              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Avg Quiz Score</div>
-              ${quizThis > 0 && quizPrev > 0 ? `<div style="font-size:10px;color:${quizWowColor};">${quizWowStr} vs prior</div>` : ''}
+            <td style="text-align:center;padding:12px 8px;border-right:1px solid #333;">
+              <div style="font-size:22px;font-weight:700;color:${quizWowColor};">${quizThis > 0 ? quizThis+'%' : '—'}</div>
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Avg Quiz</div>
+              ${quizThis > 0 && quizPrev > 0 ? `<div style="font-size:10px;color:${quizWowColor};margin-top:1px;">${quizWowStr}pp vs prior</div>` : ''}
             </td>
-            <td style="text-align:center;padding:16px;">
-              <div style="font-size:24px;font-weight:700;color:#34d399;">${newCertsR.rows.length}</div>
+            <td style="text-align:center;padding:12px 8px;">
+              <div style="font-size:22px;font-weight:700;color:#34d399;">${newCertsR.rows.length}</div>
               <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">New Certs</div>
             </td>
           </tr></table>
@@ -3116,6 +3131,25 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
         return `<tr><td style="padding:4px 8px;font-size:11px;white-space:nowrap;">${label}</td><td style="padding:4px 8px;width:180px;"><div style="background:#e5e7eb;border-radius:3px;height:12px;"><div style="background:${color};width:${w}%;height:12px;border-radius:3px;"></div></div></td><td style="padding:4px 8px;font-size:11px;text-align:right;">${count}</td></tr>`;
       }).join('');
 
+      // Top 5 strongest modules by average completion rate
+      const moduleNamesArr = ['Service Foundations','Table Setup & Mise en Place','Welcoming Guests','Taking Orders','Serving Food & Timing','Wine Fundamentals','Wine Service Etiquette','Champagne & Sparkling','Beer & Non-Alcoholic','Cocktails & Spirits','Upselling Without Pressure','Handling Complaints','Special Dietary Needs','Table Management','Payment & Closing','VIP Service','Event & Banquet Service','Managing Side Duties','Working as a Team','Digital Menus & Tech','Culture & Inclusivity','Food Safety & Hygiene','Leadership & Mentorship','Wellness & Career','Bar Setup & Mise en Place','Essential Bartending','Classic Cocktails','Bar Upselling','Responsible Service','Bar Career & Culture'];
+      const moduleStatsRes = await db.query(`
+        SELECT p.module_id, ROUND(AVG(p.progress)::numeric, 1) as avg_progress
+        FROM user_progress p
+        JOIN users u ON u.id = p.user_id
+        ${whereClause}
+        GROUP BY p.module_id
+        ORDER BY avg_progress DESC
+        LIMIT 5
+      `, params);
+      const strongestModulesHtml = moduleStatsRes.rows.length
+        ? `<table>${moduleStatsRes.rows.map(r => {
+            const pct = Math.round(Number(r.avg_progress));
+            const name = moduleNamesArr[r.module_id - 1] || ('Module ' + r.module_id);
+            return `<tr><td style="padding:3px 8px;font-size:10px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;">${name}</td><td style="padding:3px 8px;"><div style="background:#e5e7eb;border-radius:3px;height:10px;"><div style="background:#0A4D68;width:${pct}%;height:10px;border-radius:3px;"></div></div></td><td style="padding:3px 8px;font-size:10px;text-align:right;">${pct}%</td></tr>`;
+          }).join('')}</table>`
+        : '<p style="font-size:11px;color:#6b7280;">No module data yet.</p>';
+
       // Staff table rows
       let tableRows = '';
       for (const row of staffRes.rows) {
@@ -3181,6 +3215,10 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
           <div>
             <h3>Completion Distribution</h3>
             <table>${distBars}</table>
+          </div>
+          <div>
+            <h3>Top 5 Strongest Modules</h3>
+            ${strongestModulesHtml}
           </div>
         </div>
         <h3>Staff Progress</h3>
