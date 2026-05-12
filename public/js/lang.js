@@ -783,6 +783,11 @@
       mgr_export_failed: 'Export failed.',
       mgr_hover_for_name: '(hover for name)',
       mgr_scenario_label: 'Scenario',
+      mgr_enterprise: 'Enterprise',
+      mgr_digest_enabled: 'Weekly digest enabled.',
+      mgr_digest_disabled: 'Weekly digest disabled.',
+      mgr_wl_color_invalid_primary: 'Primary colour must be #rrggbb format.',
+      mgr_wl_color_invalid_accent: 'Accent colour must be #rrggbb format.',
     },
 
     fr: {
@@ -1561,6 +1566,11 @@
       mgr_export_failed: "Échec de l'export.",
       mgr_hover_for_name: '(survoler pour le nom)',
       mgr_scenario_label: 'Scénario',
+      mgr_enterprise: 'Entreprise',
+      mgr_digest_enabled: 'Résumé hebdomadaire activé.',
+      mgr_digest_disabled: 'Résumé hebdomadaire désactivé.',
+      mgr_wl_color_invalid_primary: 'La couleur principale doit être au format #rrggbb.',
+      mgr_wl_color_invalid_accent: "La couleur d'accent doit être au format #rrggbb.",
     },
 
     es: {
@@ -2341,6 +2351,11 @@
       mgr_export_failed: 'Error al exportar.',
       mgr_hover_for_name: '(pasar el cursor para el nombre)',
       mgr_scenario_label: 'Escenario',
+      mgr_enterprise: 'Empresa',
+      mgr_digest_enabled: 'Resumen semanal activado.',
+      mgr_digest_disabled: 'Resumen semanal desactivado.',
+      mgr_wl_color_invalid_primary: 'El color principal debe tener el formato #rrggbb.',
+      mgr_wl_color_invalid_accent: 'El color de acento debe tener el formato #rrggbb.',
     }
   };
 

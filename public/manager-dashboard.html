@@ -255,7 +255,7 @@
           <div id="wl-section" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <div class="flex items-center gap-2 mb-1">
               <h2 class="font-semibold text-lg" data-i18n="mgr_wl_title">White-Label Branding</h2>
-              <span class="text-xs bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full">Enterprise</span>
+              <span class="text-xs bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full" data-i18n="mgr_enterprise">Enterprise</span>
             </div>
             <p class="text-zinc-400 text-sm mb-5" data-i18n="mgr_wl_desc">Customise the training app with your restaurant's brand. Changes apply instantly for all team members.</p>
             <div class="space-y-4">
@@ -606,10 +606,10 @@
       const primaryHex = document.getElementById('wl-primary-hex').value.trim();
       const accentHex  = document.getElementById('wl-accent-hex').value.trim();
       if (primaryHex && !/^#[0-9a-fA-F]{6}$/.test(primaryHex)) {
-        msg.textContent = 'Primary colour must be #rrggbb format.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
+        msg.textContent = t('mgr_wl_color_invalid_primary','Primary colour must be #rrggbb format.'); msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
       }
       if (accentHex && !/^#[0-9a-fA-F]{6}$/.test(accentHex)) {
-        msg.textContent = 'Accent colour must be #rrggbb format.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
+        msg.textContent = t('mgr_wl_color_invalid_accent','Accent colour must be #rrggbb format.'); msg.style.color = '#f87171'; msg.classList.remove('hidden'); return;
       }
       try {
         const res = await apiFetch('/api/manager/white-label', {
@@ -743,8 +743,31 @@
         const name = activeTab.id.replace('tab-', '');
         document.getElementById('tab-title').textContent = getMgrTitles()[name] || name;
       }
-      // Re-render table so JS-injected status labels and action buttons update
-      if (allTeamData.length) renderTable(allTeamData);
+      // Re-render all JS-injected dynamic sections so language switch takes full effect
+      if (allTeamData.length) {
+        renderTable(allTeamData);
+        // Re-render quiz table if visible
+        const quizTable = document.getElementById('quiz-table');
+        if (quizTable && quizTable.children.length) {
+          const sorted = [...allTeamData].sort((a, b) => b.avg_quiz_score - a.avg_quiz_score);
+          quizTable.innerHTML = sorted.map(m => `
+            <div class="flex items-center gap-4 py-2 border-b border-zinc-800">
+              <div class="w-36 text-sm text-zinc-300 truncate">${esc(m.name)}</div>
+              <div class="flex-1 bg-zinc-800 h-2 rounded-full"><div class="h-2 bg-amber-400 rounded-full" style="width:${m.avg_quiz_score || 0}%"></div></div>
+              <div class="text-sm font-mono w-12 text-right text-zinc-300">${m.avg_quiz_score || 0}%</div>
+            </div>
+          `).join('') || `<div class="text-zinc-500 text-sm">${t('mgr_no_quiz','No quiz data yet.')}</div>`;
+        }
+        // Re-render required modules list if visible
+        const assignList = document.getElementById('assign-module-list');
+        if (assignList && assignList.children.length) renderAssignedModules();
+      }
+      // Update team summary subtitle
+      const summaryEl = document.getElementById('team-summary');
+      if (summaryEl && allTeamData.length) {
+        const avg = Math.round(allTeamData.reduce((s, m) => s + m.progress, 0) / allTeamData.length);
+        summaryEl.textContent = `${allTeamData.length} ${t('mgr_team_members','staff')} · ${avg}% ${t('mgr_avg_completion','average completion')}`;
+      }
     }
 
     function toggleLangMenu() {
@@ -765,10 +788,9 @@
       try {
         await apiFetch('/api/manager/digest-preference', { method: 'PUT', body: JSON.stringify({ enabled }) });
         if (msg) {
-          const lang = localStorage.getItem('sma-lang') || 'en';
           msg.textContent = enabled
-            ? { en: 'Weekly digest enabled.', fr: 'Résumé hebdomadaire activé.', es: 'Resumen semanal activado.' }[lang]
-            : { en: 'Weekly digest disabled.', fr: 'Résumé hebdomadaire désactivé.', es: 'Resumen semanal desactivado.' }[lang];
+            ? t('mgr_digest_enabled', 'Weekly digest enabled.')
+            : t('mgr_digest_disabled', 'Weekly digest disabled.');
           msg.style.color = '#34d399';
           msg.classList.remove('hidden');
           setTimeout(() => msg.classList.add('hidden'), 2500);
