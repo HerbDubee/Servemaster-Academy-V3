@@ -3660,7 +3660,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
     const [
       usersRes, new7dRes, new30dRes, active7dRes, tierCountsRes,
       trialStartedRes, mod1Res, mod5Res, mod10Res, paidRes,
-      scholarshipRes, affiliateRes, recentRes, newsletterRes
+      scholarshipRes, affiliateRes, recentRes, newsletterRes, pendingTrialsRes
     ] = await Promise.all([
       db.query('SELECT COUNT(*) as cnt FROM users'),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '7 days'"),
@@ -3680,6 +3680,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
         FROM influencer_commissions`),
       db.query('SELECT id, name, email, subscription_status, created_at FROM users ORDER BY created_at DESC LIMIT 6'),
       db.query('SELECT COUNT(*) as cnt FROM email_subscribers WHERE active = TRUE'),
+      db.query("SELECT COUNT(*) as cnt FROM contact_messages WHERE message LIKE '[TEAM TRIAL REQUEST]%' AND (provisioned IS NULL OR provisioned = FALSE)"),
     ]);
 
     const byTier = {};
@@ -3732,6 +3733,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
         total_holding_cad: parseFloat(affiliateRes.rows[0].total_holding_cad) || 0,
       },
       webhook_sig_failure: lastWebhookSigFailure,
+      pending_trials: parseInt(pendingTrialsRes.rows[0].cnt) || 0,
       funnel: [
         { label: 'Signed Up', count: total, pct: 100 },
         { label: 'Started Trial', count: parseInt(trialStartedRes.rows[0].cnt), pct: Math.round(parseInt(trialStartedRes.rows[0].cnt) / total * 100) },

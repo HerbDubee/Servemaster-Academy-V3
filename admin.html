@@ -152,7 +152,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         </div>
 
         <!-- Plan Breakdown | Scholarship | Affiliates -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
           <div id="plan-breakdown" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Plan Distribution</div>
             <div class="text-zinc-500 text-sm">Loading…</div>
@@ -163,6 +163,10 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           </div>
           <div id="affiliate-block" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Affiliates</div>
+            <div class="text-zinc-500 text-sm">Loading…</div>
+          </div>
+          <div id="trials-block" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Team Trials</div>
             <div class="text-zinc-500 text-sm">Loading…</div>
           </div>
         </div>
@@ -1041,6 +1045,19 @@ async function loadDashboard() {
         </div>
       </div>
       ${aff.affiliates_with_pending > 0 ? `<button onclick="showSection('affiliates')" class="mt-4 w-full text-center text-xs bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-900/40 rounded-xl py-2 transition-colors">View payout queue →</button>` : ''}
+    `;
+
+    // Team Trials block
+    const pendingTrials = d.pending_trials || 0;
+    document.getElementById('trials-block').innerHTML = `
+      <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Team Trials</div>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-zinc-400 text-sm">Pending provisioning</span>
+          <span class="font-bold ${pendingTrials > 0 ? 'text-amber-400' : 'text-white'} text-lg">${pendingTrials}</span>
+        </div>
+      </div>
+      ${pendingTrials > 0 ? `<button onclick="showSection('trials')" class="mt-4 w-full text-center text-xs bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-900/40 rounded-xl py-2 transition-colors">Review ${pendingTrials} pending →</button>` : ''}
     `;
 
     // Funnel
