@@ -1833,7 +1833,7 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
     const refRow = utm.referrer
       ? `<tr><td style="padding:8px 0;color:#a1a1aa;">Referrer</td><td style="padding:8px 0;font-size:13px;color:#d4d4d8;word-break:break-all;">${escapeHtml(utm.referrer)}</td></tr>`
       : '';
-    resend.emails.send({
+    await resend.emails.send({
       from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
       to: 'kirk_adamson@servemasteracademy.ca',
       reply_to: email.toLowerCase(),
@@ -1856,8 +1856,8 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
           Hit <strong style="color:#f5f5f5;">Reply</strong> to send ${escapeHtml(name)} their 30-day access code — this email is set to reply directly to <a href="mailto:${escapeHtml(email)}" style="color:#FF5E3A;">${escapeHtml(email)}</a>.
         </p>
       </div>`
-    }).catch(e => console.error('Team trial Kirk email error:', e.message));
-    resend.emails.send({
+    });
+    await resend.emails.send({
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: email.toLowerCase(),
       subject: 'Your ServeMaster Academy team trial request — received',
@@ -1867,7 +1867,7 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
         <p style="font-size:16px;line-height:1.7;">Once you have the code, your whole team can start training immediately — no credit card needed.</p>
         <p style="font-size:15px;color:#a3a3a3;margin-top:32px;">Any questions? Just reply to this email.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
       </div>`
-    }).catch(e => console.error('Team trial confirmation email error:', e.message));
+    });
     res.json({ success: true });
   } catch (err) {
     console.error('Team trial request error:', err.message);
