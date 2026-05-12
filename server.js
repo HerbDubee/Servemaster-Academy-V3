@@ -4551,8 +4551,7 @@ app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, 
 });
 
 // ── Admin: manual books-branch sync trigger ───────────────────────────────────
-// ── Admin: ElevenLabs TTS proxy ───────────────────────────────────────────────
-const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel — warm female narrator
+// ── Admin: OpenAI TTS proxy (book chapter reader) ─────────────────────────────
 // In-memory store for TTS stream tokens (text+speed, expires after 2 min)
 const _ttsTokens = new Map();
 setInterval(() => {
@@ -4560,55 +4559,45 @@ setInterval(() => {
   for (const [k, v] of _ttsTokens) { if (v.expires < now) _ttsTokens.delete(k); }
 }, 30000);
 
-// Step 1: POST – validate admin, store text, return stream token
+// Step 1: POST – validate admin, store text+speed, return stream token
 app.post('/api/admin/tts', adminMiddleware, express.json(), (req, res) => {
   const { text, speed = 1.0 } = req.body || {};
   if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided' });
-  if (!process.env.ELEVENLABS_API_KEY) return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
   const id = require('crypto').randomUUID();
-  _ttsTokens.set(id, { text: text.slice(0, 4900), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.7), 1.2), expires: Date.now() + 120000 });
+  _ttsTokens.set(id, { text: text.slice(0, 4900), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.25), 4.0), expires: Date.now() + 120000 });
   res.json({ id });
 });
 
-// Step 2: GET – stream audio directly from ElevenLabs → browser
+// Step 2: GET – generate audio via OpenAI TTS and stream to browser
 app.get('/api/admin/tts-stream', adminMiddleware, async (req, res) => {
   const entry = _ttsTokens.get(req.query.id);
   if (!entry) return res.status(404).json({ error: 'TTS token not found or expired' });
   _ttsTokens.delete(req.query.id);
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey || !apiKey.trim()) {
-    console.error('TTS stream: ELEVENLABS_API_KEY is not configured');
-    return res.status(500).json({ error: 'ElevenLabs API key not configured' });
-  }
   try {
-    const elRes = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
-      {
-        method: 'POST',
-        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-        body: JSON.stringify({
-          text: entry.text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.8, speed: entry.speed }
-        })
-      }
-    );
-    if (!elRes.ok) {
-      let errDetail = '';
-      try {
-        const errBody = await elRes.json();
-        errDetail = errBody?.detail?.message || errBody?.detail || errBody?.message || '';
-      } catch { errDetail = await elRes.text().catch(() => ''); }
-      const msg = errDetail
-        ? `ElevenLabs error (${elRes.status}): ${String(errDetail).slice(0, 200)}`
-        : `ElevenLabs error (${elRes.status})`;
-      console.error('ElevenLabs TTS error:', msg);
-      return res.status(502).json({ error: msg });
-    }
+    const response = await getTTS().audio.speech.create({
+      model: 'tts-1',
+      voice: 'nova',
+      input: entry.text,
+      speed: entry.speed,
+      response_format: 'mp3'
+    });
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
-    const { Readable } = require('stream');
-    Readable.fromWeb(elRes.body).pipe(res);
+    const reader = response.body.getReader();
+    const pump = async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || res.writableEnded) break;
+          res.write(value);
+        }
+        if (!res.writableEnded) res.end();
+      } catch (e) {
+        console.error('TTS stream pump error:', e.message);
+        if (!res.writableEnded) res.end();
+      }
+    };
+    pump();
   } catch (e) {
     console.error('TTS stream error:', e.message);
     if (!res.headersSent) res.status(500).json({ error: e.message });
