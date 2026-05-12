@@ -774,7 +774,16 @@ app.get('/sitemap.xml', (req, res) => {
         return `  <url><loc>${base}/blog/fr/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
       });
     } catch (fe) { /* skip */ }
-    blogUrls = [...enUrls, ...frUrls].join('\n');
+    const esDir = path.join(__dirname, 'public', 'blog', 'es');
+    let esUrls = [];
+    try {
+      const esFiles = fs.readdirSync(esDir).filter(f => f.endsWith('.html'));
+      esUrls = esFiles.map(f => {
+        const slug = f.replace('.html', '');
+        return `  <url><loc>${base}/blog/es/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
+      });
+    } catch (ee) { /* skip */ }
+    blogUrls = [...enUrls, ...frUrls, ...esUrls].join('\n');
   } catch (e) { /* skip */ }
   const staticUrls = staticPages.map(([p, pri, freq]) =>
     `  <url><loc>${base}${p}</loc><lastmod>${today}</lastmod><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
