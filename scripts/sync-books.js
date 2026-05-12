@@ -6,8 +6,8 @@
  * Works in both local dev (with git) and production (no .git directory).
  *
  * Requires: GITHUB_TOKEN env var for private repos.
- * Repo / branch configured via BOOKS_GITHUB_REPO and BOOKS_GITHUB_BRANCH
- * (defaults: HerbDubee/servemaster-academy, main).
+ * Repo / branch configured via BOOKS_GITHUB_REPO, BOOKS_GITHUB_BRANCH, BOOKS_GITHUB_DIR
+ * (defaults: HerbDubee/servemaster-openclaw-ops, main, servemaster-academy/books).
  *
  * Usage:
  *   node scripts/sync-books.js
@@ -16,9 +16,9 @@
 const https = require('https');
 const db = require('../db');
 
-const REPO   = process.env.BOOKS_GITHUB_REPO   || 'HerbDubee/servemaster-academy';
+const REPO   = process.env.BOOKS_GITHUB_REPO   || 'HerbDubee/servemaster-openclaw-ops';
 const BRANCH = process.env.BOOKS_GITHUB_BRANCH || 'main';
-const DIR    = 'books';
+const DIR    = process.env.BOOKS_GITHUB_DIR    || 'servemaster-academy/books';
 const TOKEN  = process.env.GITHUB_TOKEN;
 const SKIP   = ['README.md', 'STATUS.md'];
 
