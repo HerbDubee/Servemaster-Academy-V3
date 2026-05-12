@@ -895,6 +895,7 @@ async function init() {
     document.getElementById('auth-check').classList.add('hidden');
     document.getElementById('admin-shell').classList.remove('hidden');
     loadAll();
+    setInterval(checkConfigHealth, 60 * 1000);
   } catch { window.location.href = '/login?next=/admin'; }
 }
 
@@ -2077,6 +2078,7 @@ function showSection(name) {
   const mNavEl = document.getElementById('mnav-' + name);
   if (navEl) navEl.classList.add('active');
   if (mNavEl) mNavEl.classList.add('active');
+  if (name === 'overview') checkConfigHealth();
   if (name === 'siteconfig') loadSiteConfig();
   if (name === 'scholarships') loadScholarships();
   if (name === 'affiliates') loadAffiliates();
