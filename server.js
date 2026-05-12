@@ -2655,7 +2655,8 @@ app.get('/api/admin/team-trial-requests', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT id, name, email, message, provisioned, created_at,
-              utm_source, utm_medium, utm_campaign, kirk_trial_digest_notified
+              utm_source, utm_medium, utm_campaign, kirk_trial_digest_notified,
+              invite_code, invite_code_sent_at
        FROM contact_messages
        WHERE message LIKE '[TEAM TRIAL REQUEST]%'
        ORDER BY created_at DESC`
@@ -2741,8 +2742,8 @@ app.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, async 
     }
 
     await db.query(
-      `UPDATE contact_messages SET provisioned = TRUE WHERE id = $1`,
-      [id]
+      `UPDATE contact_messages SET provisioned = TRUE, invite_code = $2, invite_code_sent_at = NOW() WHERE id = $1`,
+      [id, code]
     );
 
     res.json({ ok: true, code, plan });
@@ -4840,6 +4841,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS provisioned BOOLEAN DEFAULT FALSE`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS kirk_trial_digest_notified BOOLEAN NOT NULL DEFAULT FALSE`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS invite_code TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS invite_code_sent_at TIMESTAMPTZ`);
     // Backfill: mark any existing team trial rows as already notified so the
     // first digest run only covers new requests going forward.
     await db.query(`
