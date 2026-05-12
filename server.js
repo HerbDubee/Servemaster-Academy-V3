@@ -11,6 +11,7 @@ const OpenAI = require('openai').default;
 const { toFile } = require('openai');
 const { getUncachableStripeClient, getStripePublishableKey, getStripeSync } = require('./stripeClient');
 const { Resend } = require('resend');
+const puppeteer = require('puppeteer');
 const db = require('./db');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -1267,24 +1268,122 @@ async function sendDripEmailIfDue(userId, userEmail, userName) {
 // ── Weekly manager digest ────────────────────────────────────────────────────
 async function sendWeeklyManagerDigests() {
   try {
-    const managers = await db.query(`SELECT u.id, u.name, u.email, r.id as restaurant_id, r.name as restaurant_name FROM users u JOIN restaurants r ON r.manager_id = u.id WHERE u.is_unsubscribed IS NOT TRUE AND u.subscription_status NOT IN ('free') ORDER BY u.id`);
-    let sent = 0;
+    const now = new Date();
+    // Current week window: most recent Mon 00:00 ET → +7 days. Previous week: Mon-7d → Mon.
+    const weekStart = _mostRecentMondayMidnightET(now);
+    const weekEnd   = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const prevStart = new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weekLabel = `${weekStart.toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})} – ${new Date(weekEnd.getTime()-1000).toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})}`;
+
+    // Only paid, opted-in, not unsubscribed managers with a restaurant
+    const managers = await db.query(`
+      SELECT u.id, u.name, u.email, u.weekly_digest_enabled,
+             r.id as restaurant_id, r.name as restaurant_name
+      FROM users u
+      JOIN restaurants r ON r.manager_id = u.id
+      WHERE u.is_unsubscribed IS NOT TRUE
+        AND u.subscription_status NOT IN ('free')
+        AND COALESCE(u.weekly_digest_enabled, TRUE) = TRUE
+      ORDER BY u.id
+    `);
+
+    let sent = 0, skipped = 0;
     for (const mgr of managers.rows) {
-      const team = await db.query(`SELECT u.name, COALESCE(up_agg.modules_done,0) as modules, COALESCE(up_agg.avg_score,0) as avg_score FROM restaurant_members rm JOIN users u ON u.id = rm.user_id LEFT JOIN (SELECT user_id, COUNT(*) FILTER (WHERE progress>=100) as modules_done, AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL) as avg_score FROM user_progress GROUP BY user_id) up_agg ON up_agg.user_id = rm.user_id WHERE rm.restaurant_id = $1 ORDER BY modules DESC LIMIT 10`, [mgr.restaurant_id]);
-      if (!team.rows.length) continue;
+      // Team member list (lifetime totals for the table)
+      const team = await db.query(`
+        SELECT u.name,
+          COALESCE(agg.modules_done,0) as modules_done,
+          COALESCE(agg.avg_score,0) as avg_score
+        FROM restaurant_members rm
+        JOIN users u ON u.id = rm.user_id
+        LEFT JOIN (
+          SELECT user_id,
+            COUNT(*) FILTER (WHERE progress>=100) as modules_done,
+            AVG(quiz_score) FILTER (WHERE quiz_score IS NOT NULL) as avg_score
+          FROM user_progress GROUP BY user_id
+        ) agg ON agg.user_id = rm.user_id
+        WHERE rm.restaurant_id = $1
+        ORDER BY modules_done DESC LIMIT 15
+      `, [mgr.restaurant_id]);
+      if (!team.rows.length) { skipped++; continue; }
+
+      // Modules completed this week vs prev week (week-over-week)
+      const [thisWeekR, prevWeekR] = await Promise.all([
+        db.query(`SELECT COUNT(*) as cnt FROM user_progress p
+          JOIN restaurant_members rm ON rm.user_id = p.user_id
+          WHERE rm.restaurant_id = $1 AND p.progress >= 100
+            AND p.updated_at >= $2 AND p.updated_at < $3`,
+          [mgr.restaurant_id, weekStart, weekEnd]),
+        db.query(`SELECT COUNT(*) as cnt FROM user_progress p
+          JOIN restaurant_members rm ON rm.user_id = p.user_id
+          WHERE rm.restaurant_id = $1 AND p.progress >= 100
+            AND p.updated_at >= $2 AND p.updated_at < $3`,
+          [mgr.restaurant_id, prevStart, weekStart])
+      ]);
+      const thisWeekCount = parseInt(thisWeekR.rows[0].cnt);
+      const prevWeekCount = parseInt(prevWeekR.rows[0].cnt);
+      const wow = thisWeekCount - prevWeekCount;
+      const wowStr   = wow > 0 ? `+${wow}` : `${wow}`;
+      const wowColor = wow > 0 ? '#34d399' : wow < 0 ? '#f87171' : '#a3a3a3';
+
+      // Newly certified this week
+      const newCertsR = await db.query(`
+        SELECT u.name FROM certificate_log cl
+        JOIN users u ON u.id = cl.user_id
+        JOIN restaurant_members rm ON rm.user_id = cl.user_id
+        WHERE rm.restaurant_id = $1 AND cl.issued_at >= $2 AND cl.issued_at < $3
+      `, [mgr.restaurant_id, weekStart, weekEnd]);
+
+      const certsHtml = newCertsR.rows.length
+        ? `<div style="margin:16px 0;padding:12px 16px;background:#064e3b;border-radius:8px;font-size:13px;color:#34d399;">🎓 <strong>New certifications this week:</strong> ${newCertsR.rows.map(r=>escapeHtml(r.name)).join(', ')}</div>`
+        : '';
+
+      const rows = team.rows.map(s =>
+        `<tr><td style="padding:8px 12px;border-bottom:1px solid #222;">${escapeHtml(s.name)}</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.modules_done}/30</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.avg_score ? Math.round(s.avg_score)+'%' : '—'}</td></tr>`
+      ).join('');
+
       const unsubToken = await getOrCreateUnsubToken(mgr.id);
       const unsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${unsubToken}`;
-      const rows = team.rows.map(s => `<tr><td style="padding:8px 12px;border-bottom:1px solid #222;">${escapeHtml(s.name)}</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.modules}/30</td><td style="padding:8px 12px;border-bottom:1px solid #222;text-align:center;">${s.avg_score ? Math.round(s.avg_score)+'%' : '—'}</td></tr>`).join('');
+
       resend.emails.send({
         from: 'ServeMaster Academy <kirk_adamson@servemasteracademy.ca>',
         to: mgr.email,
-        subject: `Weekly Training Digest — ${mgr.restaurant_name}`,
-        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><h2 style="font-size:20px;color:#d4af37;margin-bottom:4px;">Weekly Team Digest</h2><p style="font-size:14px;color:#a3a3a3;margin-bottom:24px;">${escapeHtml(mgr.restaurant_name)} · Week of ${new Date().toLocaleDateString('en-CA',{month:'long',day:'numeric',year:'numeric'})}</p><table style="width:100%;border-collapse:collapse;font-size:14px;"><thead><tr style="background:#1a1a1a;"><th style="padding:8px 12px;text-align:left;color:#a3a3a3;">Staff Member</th><th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Modules</th><th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Avg Quiz</th></tr></thead><tbody>${rows}</tbody></table><p style="margin-top:24px;"><a href="https://servemasteracademy.ca/manager-dashboard" style="background:#d4af37;color:#000;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard →</a></p>${emailFooter(unsubUrl)}</div>`
+        subject: `Weekly Training Digest — ${mgr.restaurant_name} (${weekLabel})`,
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <h2 style="font-size:20px;color:#d4af37;margin-bottom:4px;">Weekly Team Digest</h2>
+          <p style="font-size:14px;color:#a3a3a3;margin-bottom:16px;">${escapeHtml(mgr.restaurant_name)} · ${weekLabel}</p>
+          <div style="background:#1a1a1a;border-radius:8px;padding:16px;margin-bottom:20px;display:flex;gap:0;">
+            <div style="text-align:center;flex:1;border-right:1px solid #333;">
+              <div style="font-size:24px;font-weight:700;color:#d4af37;">${thisWeekCount}</div>
+              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">Modules This Week</div>
+            </div>
+            <div style="text-align:center;flex:1;border-right:1px solid #333;">
+              <div style="font-size:24px;font-weight:700;color:${wowColor};">${wowStr}</div>
+              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">vs Last Week</div>
+            </div>
+            <div style="text-align:center;flex:1;">
+              <div style="font-size:24px;font-weight:700;color:#34d399;">${newCertsR.rows.length}</div>
+              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">New Certs</div>
+            </div>
+          </div>
+          ${certsHtml}
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead><tr style="background:#1a1a1a;">
+              <th style="padding:8px 12px;text-align:left;color:#a3a3a3;">Staff Member</th>
+              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Modules</th>
+              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Avg Quiz</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <p style="margin-top:24px;"><a href="https://servemasteracademy.ca/manager-dashboard" style="background:#d4af37;color:#000;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard →</a></p>
+          ${emailFooter(unsubUrl)}
+        </div>`
       }).catch(e => console.error('Weekly digest error:', e.message));
       sent++;
     }
-    return sent;
-  } catch (e) { console.error('Weekly digest error:', e.message); return 0; }
+    return { sent, skipped };
+  } catch (e) { console.error('Weekly digest error:', e.message); return { sent: 0, skipped: 0 }; }
 }
 
 async function updateStreak(userId) {
@@ -2928,12 +3027,12 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
   try {
     const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
     const user = userRes.rows[0];
-
     const isAdmin = user?.role === 'admin';
     const whereClause = isAdmin && !user?.restaurant_id
       ? "WHERE u.role NOT IN ('manager', 'admin')"
       : "WHERE u.restaurant_id = $1 AND u.role NOT IN ('manager', 'admin')";
     const params = isAdmin && !user?.restaurant_id ? [] : [user?.restaurant_id];
+    const today = new Date().toISOString().split('T')[0];
 
     const staffRes = await db.query(`
       SELECT u.name, u.email, u.experience_level, u.last_login,
@@ -2947,6 +3046,54 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
       ORDER BY avg_progress DESC
     `, params);
 
+    // ── PDF export ─────────────────────────────────────────────────────────
+    if (req.query.format === 'pdf') {
+      let rows = '';
+      for (const row of staffRes.rows) {
+        const avg = Math.round(Number(row.avg_progress));
+        const status = calculateStatus([avg]);
+        const lastLogin = row.last_login ? new Date(row.last_login).toLocaleDateString('en-CA') : 'Never';
+        const badgeColor = { completed:'#d1fae5;color:#065f46', 'on-track':'#fef3c7;color:#92400e', lagging:'#ffedd5;color:#9a3412', overdue:'#fee2e2;color:#991b1b' }[status] || '#f3f4f6;color:#374151';
+        rows += `<tr>
+          <td>${escapeHtml(row.name||'')}</td>
+          <td>${escapeHtml(row.email)}</td>
+          <td>${escapeHtml(row.experience_level||'—')}</td>
+          <td style="text-align:center">${avg}%</td>
+          <td style="text-align:center">${row.modules_completed}/30</td>
+          <td style="text-align:center">${Math.round(Number(row.avg_quiz_score))}%</td>
+          <td>${lastLogin}</td>
+          <td><span style="background:${badgeColor};padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;">${status}</span></td>
+        </tr>`;
+      }
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+        body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;padding:40px;font-size:12px;}
+        h1{font-size:20px;color:#0A4D68;margin-bottom:4px;}
+        h2{font-size:12px;color:#6b7280;margin-bottom:20px;font-weight:normal;}
+        table{width:100%;border-collapse:collapse;}
+        th{background:#0A4D68;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;}
+        td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+        tr:nth-child(even) td{background:#f9fafb;}
+        .footer{margin-top:24px;color:#9ca3af;font-size:10px;border-top:1px solid #e5e7eb;padding-top:10px;}
+      </style></head><body>
+        <h1>ServeMaster Academy — Team Training Report</h1>
+        <h2>Generated ${today}</h2>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Avg Progress</th><th>Modules</th><th>Avg Quiz</th><th>Last Login</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">ServeMaster Academy &mdash; servemasteracademy.ca &mdash; Confidential</div>
+      </body></html>`;
+      const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdf = await page.pdf({ format: 'A4', landscape: true, margin: { top:'15mm', bottom:'15mm', left:'12mm', right:'12mm' } });
+      await browser.close();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="team-report-${today}.pdf"`);
+      return res.send(pdf);
+    }
+
+    // ── CSV export (default) ───────────────────────────────────────────────
     let csv = 'Name,Email,Level,Avg Progress,Modules Completed,Avg Quiz Score,Last Login,Status\n';
     for (const row of staffRes.rows) {
       const avg = Math.round(Number(row.avg_progress));
@@ -2954,14 +3101,30 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
       const lastLogin = row.last_login ? new Date(row.last_login).toLocaleDateString() : 'Never';
       csv += `"${row.name || ''}","${row.email}","${row.experience_level || ''}",${avg}%,${row.modules_completed},${Math.round(Number(row.avg_quiz_score))}%,"${lastLogin}","${status}"\n`;
     }
-
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="team-report-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.setHeader('Content-Disposition', `attachment; filename="team-report-${today}.csv"`);
     res.send(csv);
   } catch (err) {
     console.error('Export error:', err.message);
     res.status(500).json({ error: 'Failed to export report' });
   }
+});
+
+// ── Manager: weekly digest preference ────────────────────────────────────────
+app.get('/api/manager/digest-preference', managerMiddleware, async (req, res) => {
+  try {
+    const r = await db.query('SELECT weekly_digest_enabled FROM users WHERE id = $1', [req.user.id]);
+    res.json({ enabled: r.rows[0]?.weekly_digest_enabled !== false });
+  } catch (e) { res.status(500).json({ error: 'Failed to fetch preference' }); }
+});
+
+app.put('/api/manager/digest-preference', managerMiddleware, express.json(), async (req, res) => {
+  const { enabled } = req.body;
+  if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'enabled must be boolean' });
+  try {
+    await db.query('UPDATE users SET weekly_digest_enabled = $1 WHERE id = $2', [enabled, req.user.id]);
+    res.json({ success: true, enabled });
+  } catch (e) { res.status(500).json({ error: 'Failed to save preference' }); }
 });
 
 // ── User: language preference ────────────────────────────────────────────────
@@ -3566,6 +3729,39 @@ async function maybeRunOpenClawDigestCron() {
 }
 setInterval(maybeRunOpenClawDigestCron, 60 * 60 * 1000); // hourly
 setTimeout(maybeRunOpenClawDigestCron, 30 * 1000); // initial check shortly after boot
+
+// ── Manager weekly digest — Monday 8 am ET, idempotent ───────────────────────
+async function maybeRunManagerDigestCron() {
+  try {
+    const torontoFmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Toronto',
+      weekday: 'short', hour: 'numeric', hour12: false
+    }).formatToParts(new Date()).reduce((a, p) => ({ ...a, [p.type]: p.value }), {});
+    if (torontoFmt.weekday !== 'Mon') return;
+    const hour = parseInt(torontoFmt.hour, 10);
+    if (hour < 8 || hour >= 9) return;
+
+    // Idempotency: only send once per Mon window
+    const key = 'manager_digest_last_sent_at';
+    const settingRes = await db.query(`SELECT value FROM site_settings WHERE key = $1`, [key]);
+    if (settingRes.rows.length) {
+      const lastSent = new Date(settingRes.rows[0].value);
+      const sinceMs = Date.now() - lastSent.getTime();
+      if (sinceMs < 6 * 24 * 60 * 60 * 1000) return; // already sent in last 6 days
+    }
+
+    const { sent, skipped } = await sendWeeklyManagerDigests();
+    const now = new Date().toISOString();
+    await db.query(
+      `INSERT INTO site_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = $2`,
+      [key, now]
+    );
+    console.log(`[Manager digest] sent=${sent} skipped=${skipped} at ${now}`);
+  } catch (e) { console.error('[Manager digest] cron error:', e.message); }
+}
+setInterval(maybeRunManagerDigestCron, 60 * 60 * 1000); // hourly
+setTimeout(maybeRunManagerDigestCron, 45 * 1000); // initial check shortly after boot
 
 // Manual trigger for Kirk / admin
 app.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res) => {
@@ -4204,6 +4400,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_choice_id TEXT`);
     await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_recommended BOOLEAN`);
     await db.query(`ALTER TABLE book_chapters ADD COLUMN IF NOT EXISTS source_file TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_digest_enabled BOOLEAN DEFAULT TRUE`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
@@ -4869,8 +5066,8 @@ app.post('/api/manager/cert-logo', authMiddleware, async (req, res) => {
 app.post('/api/admin/trigger-weekly-digest', authMiddleware, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
-    const sent = await sendWeeklyManagerDigests();
-    res.json({ success: true, sent });
+    const { sent, skipped } = await sendWeeklyManagerDigests();
+    res.json({ success: true, sent, skipped });
   } catch (e) { res.status(500).json({ error: 'Server error' }); }
 });
 

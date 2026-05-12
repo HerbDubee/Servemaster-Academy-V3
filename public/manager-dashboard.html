@@ -14,6 +14,7 @@
   <title>Manager Dashboard – ServeMaster Academy</title>
   <link rel="stylesheet" href="/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/js/lang.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -46,10 +47,10 @@
         </div>
       </div>
       <nav class="flex-1 p-4 space-y-1">
-        <button onclick="switchTab('team')" id="tab-team" class="tab-btn active w-full text-left flex items-center gap-3"><i class="fa-solid fa-users w-4"></i> Team Overview</button>
-        <button onclick="switchTab('certs')" id="tab-certs" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-certificate w-4"></i> Certificates</button>
-        <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-chart-bar w-4"></i> Reports</button>
-        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-gear w-4"></i> Settings</button>
+        <button onclick="switchTab('team')" id="tab-team" class="tab-btn active w-full text-left flex items-center gap-3"><i class="fa-solid fa-users w-4"></i> <span data-i18n="mgr_team_overview">Team Overview</span></button>
+        <button onclick="switchTab('certs')" id="tab-certs" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-certificate w-4"></i> <span data-i18n="mgr_certs">Certificates</span></button>
+        <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-chart-bar w-4"></i> <span data-i18n="mgr_reports">Reports</span></button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn w-full text-left flex items-center gap-3"><i class="fa-solid fa-gear w-4"></i> <span data-i18n="mgr_settings">Settings</span></button>
       </nav>
       <div class="p-4 border-t border-zinc-800">
         <a href="/ai-roleplay" class="block w-full text-center py-2 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm transition-colors">
@@ -66,9 +67,27 @@
           <h1 class="text-2xl font-bold" id="tab-title">Team Overview</h1>
           <p class="text-zinc-400 text-sm" id="team-summary">Loading…</p>
         </div>
-        <button onclick="exportReport()" class="bg-amber-400 hover:bg-amber-300 text-black px-5 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors">
-          <i class="fa-solid fa-download"></i> Export CSV
-        </button>
+        <div class="flex items-center gap-3">
+          <!-- Lang toggle -->
+          <div class="relative" id="lang-selector">
+            <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button>
+            <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
+              <button onclick="setMgrLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
+              <button onclick="setMgrLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
+              <button onclick="setMgrLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
+            </div>
+          </div>
+          <!-- Export dropdown -->
+          <div class="relative" id="export-selector">
+            <button onclick="toggleExportMenu()" class="bg-amber-400 hover:bg-amber-300 text-black px-5 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors">
+              <i class="fa-solid fa-download"></i> <span data-i18n="mgr_export_csv">Export CSV</span> <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+            </button>
+            <div id="export-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[150px]">
+              <button onclick="exportReportFormat('csv')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-csv mr-2"></i><span data-i18n="mgr_export_csv">Export CSV</span></button>
+              <button onclick="exportReportFormat('pdf')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-pdf mr-2"></i><span data-i18n="mgr_export_pdf">Export PDF</span></button>
+            </div>
+          </div>
+        </div>
       </header>
 
       <div class="p-8">
@@ -78,19 +97,19 @@
           <!-- Stats row -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-              <div class="text-zinc-400 text-xs mb-1">Team Members</div>
+              <div class="text-zinc-400 text-xs mb-1" data-i18n="mgr_team_members">Team Members</div>
               <div class="text-3xl font-bold" id="stat-members">—</div>
             </div>
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-              <div class="text-zinc-400 text-xs mb-1">Avg Completion</div>
+              <div class="text-zinc-400 text-xs mb-1" data-i18n="mgr_avg_completion">Avg Completion</div>
               <div class="text-3xl font-bold text-amber-400" id="stat-avg">—</div>
             </div>
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-              <div class="text-zinc-400 text-xs mb-1">Certified</div>
+              <div class="text-zinc-400 text-xs mb-1" data-i18n="mgr_certified">Certified</div>
               <div class="text-3xl font-bold text-emerald-400" id="stat-certified">—</div>
             </div>
             <div class="bg-zinc-900 border border-amber-900/40 rounded-2xl p-5">
-              <div class="text-zinc-400 text-xs mb-1">Needs Attention</div>
+              <div class="text-zinc-400 text-xs mb-1" data-i18n="mgr_needs_attention">Needs Attention</div>
               <div class="text-3xl font-bold text-red-400" id="stat-lagging">—</div>
             </div>
           </div>
@@ -167,8 +186,24 @@
 
         <!-- SETTINGS TAB -->
         <div id="content-settings" class="tab-content space-y-6">
+
+          <!-- Weekly Digest Toggle -->
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
-            <h2 class="font-semibold text-lg mb-1">Training Deadline</h2>
+            <div class="flex items-start justify-between">
+              <div class="flex-1 pr-4">
+                <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_digest_toggle">Weekly Email Digest</h2>
+                <p class="text-zinc-400 text-sm" data-i18n="mgr_digest_desc">Receive a weekly summary of your team's training progress every Monday morning.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer mt-1 flex-shrink-0">
+                <input id="digest-toggle" type="checkbox" class="sr-only peer" onchange="saveDigestPref(this.checked)">
+                <div class="w-10 h-6 bg-zinc-700 peer-checked:bg-amber-400 rounded-full transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+              </label>
+            </div>
+            <p id="digest-msg" class="text-sm mt-3 hidden"></p>
+          </div>
+
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
+            <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_training_deadline">Training Deadline</h2>
             <p class="text-zinc-400 text-sm mb-5">Set a target completion date for your team. This date is shown as a reminder and helps you track urgency.</p>
             <div class="flex gap-3 items-end">
               <div class="flex-1">
@@ -183,7 +218,7 @@
 
           <!-- Assigned Required Modules -->
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
-            <h2 class="font-semibold text-lg mb-1">Required Modules</h2>
+            <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_required_modules">Required Modules</h2>
             <p class="text-zinc-400 text-sm mb-4">Mark modules as required for your team. Staff will see a "Required" badge on those modules in their training app.</p>
             <div id="assign-module-list" class="space-y-2 max-h-72 overflow-y-auto pr-1 mb-3">
               <p class="text-zinc-500 text-sm">Loading modules…</p>
@@ -311,16 +346,24 @@
       return res.json();
     }
 
+    function getMgrTitles() {
+      const lang = localStorage.getItem('sma-lang') || 'en';
+      return {
+        en: { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' },
+        fr: { team: "Aperçu de l'équipe", certs: 'Certificats', reports: 'Rapports', settings: 'Paramètres' },
+        es: { team: 'Resumen del equipo', certs: 'Certificados', reports: 'Informes', settings: 'Configuración' }
+      }[lang] || { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' };
+    }
+
     function switchTab(name) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
       document.getElementById('content-' + name).classList.add('active');
-      const titles = { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' };
-      document.getElementById('tab-title').textContent = titles[name] || name;
+      document.getElementById('tab-title').textContent = getMgrTitles()[name] || name;
       if (name === 'reports') renderCharts();
       if (name === 'certs') loadCertHistory();
-      if (name === 'settings') { loadSettings(); setTimeout(() => { loadAssignedModules(); loadCertLogo(); }, 50); }
+      if (name === 'settings') { loadSettings(); loadDigestPref(); setTimeout(() => { loadAssignedModules(); loadCertLogo(); }, 50); }
     }
 
     function fmtDate(d) {
@@ -607,19 +650,31 @@
       });
     }
 
-    async function exportReport() {
+    function toggleExportMenu() {
+      document.getElementById('export-menu').classList.toggle('hidden');
+    }
+
+    async function exportReportFormat(format) {
+      document.getElementById('export-menu').classList.add('hidden');
+      const btn = document.querySelector('#export-selector button');
+      const origHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
+      btn.disabled = true;
       try {
-        const res = await fetch('/api/export-report', { headers: authHeaders(), credentials: 'include' });
+        const res = await fetch(`/api/export-report?format=${format}`, { headers: authHeaders(), credentials: 'include' });
         if (!res.ok) { alert('Export failed.'); return; }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `team-report-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `team-report-${new Date().toISOString().split('T')[0]}.${format}`;
         a.click();
         URL.revokeObjectURL(url);
       } catch { alert('Export failed.'); }
+      finally { btn.innerHTML = origHTML; btn.disabled = false; }
     }
+
+    async function exportReport() { exportReportFormat('csv'); }
 
     function renderCharts() {
       if (!allTeamData.length) return;
@@ -664,7 +719,69 @@
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    window.onload = loadTeam;
+    // ── Lang toggle ─────────────────────────────────────────────────────────
+    function setMgrLang(lang) {
+      localStorage.setItem('sma-lang', lang);
+      document.getElementById('lang-menu').classList.add('hidden');
+      const labels = { en: 'EN', fr: 'FR', es: 'ES' };
+      document.getElementById('lang-btn').textContent = labels[lang] || 'EN';
+      if (typeof applyLang === 'function') applyLang(lang);
+      const activeTab = document.querySelector('.tab-btn.active');
+      if (activeTab) {
+        const name = activeTab.id.replace('tab-', '');
+        document.getElementById('tab-title').textContent = getMgrTitles()[name] || name;
+      }
+    }
+
+    function toggleLangMenu() {
+      document.getElementById('lang-menu').classList.toggle('hidden');
+    }
+
+    // ── Digest preference ───────────────────────────────────────────────────
+    async function loadDigestPref() {
+      try {
+        const data = await apiFetch('/api/manager/digest-preference');
+        const toggle = document.getElementById('digest-toggle');
+        if (toggle) toggle.checked = data.enabled !== false;
+      } catch (e) { console.error('Digest pref load error:', e); }
+    }
+
+    async function saveDigestPref(enabled) {
+      const msg = document.getElementById('digest-msg');
+      try {
+        await apiFetch('/api/manager/digest-preference', { method: 'PUT', body: JSON.stringify({ enabled }) });
+        if (msg) {
+          const lang = localStorage.getItem('sma-lang') || 'en';
+          msg.textContent = enabled
+            ? { en: 'Weekly digest enabled.', fr: 'Résumé hebdomadaire activé.', es: 'Resumen semanal activado.' }[lang]
+            : { en: 'Weekly digest disabled.', fr: 'Résumé hebdomadaire désactivé.', es: 'Resumen semanal desactivado.' }[lang];
+          msg.style.color = '#34d399';
+          msg.classList.remove('hidden');
+          setTimeout(() => msg.classList.add('hidden'), 2500);
+        }
+      } catch (e) {
+        if (msg) { msg.textContent = 'Failed to save.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
+      }
+    }
+
+    // Click outside → close dropdowns
+    document.addEventListener('click', function(e) {
+      const exportSel = document.getElementById('export-selector');
+      const exportMenu = document.getElementById('export-menu');
+      if (exportSel && exportMenu && !exportSel.contains(e.target)) exportMenu.classList.add('hidden');
+      const langSel = document.getElementById('lang-selector');
+      const langMenu = document.getElementById('lang-menu');
+      if (langSel && langMenu && !langSel.contains(e.target)) langMenu.classList.add('hidden');
+    });
+
+    window.onload = function() {
+      // Apply saved lang on load
+      const savedLang = localStorage.getItem('sma-lang') || 'en';
+      const labels = { en: 'EN', fr: 'FR', es: 'ES' };
+      document.getElementById('lang-btn').textContent = labels[savedLang] || 'EN';
+      if (typeof applyLang === 'function') applyLang(savedLang);
+      loadTeam();
+    };
 
     // ── Assigned modules ────────────────────────────────────────────────────
     const MODULE_LIST = [
