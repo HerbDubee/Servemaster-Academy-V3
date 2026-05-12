@@ -321,7 +321,7 @@
         </div>
       </div>
       <div class="p-7 space-y-6" id="modal-content">
-        <div class="text-zinc-500 text-sm">Loading…</div>
+        <div class="text-zinc-500 text-sm" data-i18n="mgr_loading">Loading…</div>
       </div>
     </div>
   </div>
@@ -445,7 +445,7 @@
       if (member) {
         document.getElementById('modal-staff-name').textContent = member.name;
         document.getElementById('modal-staff-email').textContent = '';
-        document.getElementById('modal-content').innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
+        document.getElementById('modal-content').innerHTML = `<div class="text-zinc-500 text-sm">${t('mgr_loading','Loading…')}</div>`;
       }
       document.getElementById('staff-modal').classList.remove('hidden');
       try {
@@ -502,36 +502,37 @@
     async function nudgeStaff() {
       if (!currentStaffId) return;
       const btn = document.getElementById('modal-nudge-btn');
-      btn.textContent = 'Sending…';
+      btn.textContent = t('mgr_sending','Sending…');
       btn.disabled = true;
       try {
         const data = await apiFetch('/api/manager/nudge', { method: 'POST', body: JSON.stringify({ userId: currentStaffId }) });
-        btn.textContent = data.success ? '✓ Sent!' : '✗ Failed';
+        btn.textContent = data.success ? t('mgr_sent','✓ Sent!') : t('mgr_failed','✗ Failed');
         btn.style.color = data.success ? '#34d399' : '#f87171';
-        setTimeout(() => { btn.textContent = 'Send Nudge'; btn.style.color = ''; btn.disabled = false; }, 2500);
-      } catch { btn.textContent = '✗ Error'; btn.disabled = false; }
+        setTimeout(() => { btn.textContent = t('mgr_send_nudge','Send Nudge'); btn.style.color = ''; btn.disabled = false; }, 2500);
+      } catch { btn.textContent = t('mgr_error','✗ Error'); btn.disabled = false; }
     }
 
     async function quickNudge(userId, name) {
-      if (!confirm(`Send a training reminder email to ${name}?`)) return;
+      if (!confirm(t('mgr_nudge_confirm','Send a training reminder to ') + name + '?')) return;
       try {
         const data = await apiFetch('/api/manager/nudge', { method: 'POST', body: JSON.stringify({ userId }) });
-        alert(data.success ? `Reminder sent to ${name}!` : 'Failed to send reminder.');
-      } catch { alert('Error sending reminder.'); }
+        alert(data.success ? name + ' — ' + t('mgr_nudge_sent','reminder sent!') : t('mgr_nudge_fail','Failed to send reminder.'));
+      } catch { alert(t('mgr_error_generic','Error sending reminder.')); }
     }
 
     async function issueCertificate() {
       if (!currentStaffId) return;
       const member = allTeamData.find(m => m.id === currentStaffId);
-      if (!confirm(`Issue completion certificate for ${member ? member.name : 'this staff member'}? This marks all 30 modules as complete.`)) return;
+      const certName = member ? member.name : t('mgr_this_member','this staff member');
+      if (!confirm(`${t('mgr_cert_confirm','Issue completion certificate for')} ${certName}? ${t('mgr_cert_confirm2','This marks all 30 modules as complete.')}`)) return;
       try {
         const data = await apiFetch('/api/certificate', { method: 'POST', body: JSON.stringify({ userId: currentStaffId }) });
         if (data.success) {
-          alert(data.message);
+          alert(data.message || t('mgr_cert_issued_ok','Certificate issued.'));
           closeStaffModal();
           loadTeam();
-        } else { alert('Error: ' + (data.error || 'Unknown error')); }
-      } catch { alert('Failed to issue certificate.'); }
+        } else { alert(t('mgr_error_prefix','Error: ') + (data.error || t('mgr_unknown_error','Unknown error'))); }
+      } catch { alert(t('mgr_cert_fail','Failed to issue certificate.')); }
     }
 
     async function loadCertHistory() {
@@ -567,7 +568,7 @@
           inviteCode = dashData.restaurant.invite_code || '';
           document.getElementById('invite-display').textContent = inviteCode
             ? `https://servemasteracademy.ca/app?invite=${inviteCode}`
-            : t('mgr_no_members','No invite code found.');
+            : t('mgr_invite_none','No invite code found.');
         }
       } catch (e) { console.error(e); }
       loadWlConfig();
@@ -719,7 +720,7 @@
           <div class="flex-1 bg-zinc-800 h-2 rounded-full"><div class="h-2 bg-amber-400 rounded-full" style="width:${m.avg_quiz_score || 0}%"></div></div>
           <div class="text-sm font-mono w-12 text-right text-zinc-300">${m.avg_quiz_score || 0}%</div>
         </div>
-      `).join('') || '<div class="text-zinc-500 text-sm">No quiz data yet.</div>';
+      `).join('') || `<div class="text-zinc-500 text-sm">${t('mgr_no_quiz','No quiz data yet.')}</div>`;
     }
 
     function esc(str) {
@@ -770,7 +771,7 @@
           setTimeout(() => msg.classList.add('hidden'), 2500);
         }
       } catch (e) {
-        if (msg) { msg.textContent = 'Failed to save.'; msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
+        if (msg) { msg.textContent = t('mgr_logo_failed','Failed to save.'); msg.style.color = '#f87171'; msg.classList.remove('hidden'); }
       }
     }
 
@@ -833,7 +834,7 @@
           <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleAssign(${m.id}, this.checked)"
             class="w-4 h-4 rounded text-amber-400 accent-amber-400">
           <span class="text-sm text-zinc-300">${m.id}. ${esc(m.title)}</span>
-          ${checked ? '<span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30">Required</span>' : ''}
+          ${checked ? `<span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30">${t('mgr_required','Required')}</span>` : ''}
         </label>`;
       }).join('');
     }
@@ -847,9 +848,9 @@
         if (res.ok) {
           if (isChecked) assignedModuleIds.add(moduleId); else assignedModuleIds.delete(moduleId);
           renderAssignedModules();
-          if (msgEl) { msgEl.textContent = isChecked ? 'Module marked as required.' : 'Module removed from required.'; msgEl.className = 'text-sm text-emerald-400'; msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 2000); }
+          if (msgEl) { msgEl.textContent = isChecked ? t('mgr_module_required','Module marked as required.') : t('mgr_module_unrequired','Module removed from required.'); msgEl.className = 'text-sm text-emerald-400'; msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 2000); }
         }
-      } catch (e) { if (msgEl) { msgEl.textContent = 'Error saving. Please try again.'; msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); } }
+      } catch (e) { if (msgEl) { msgEl.textContent = t('mgr_error_generic','Error saving. Please try again.'); msgEl.className = 'text-sm text-red-400'; msgEl.classList.remove('hidden'); } }
     }
 
     // ── Certificate logo ────────────────────────────────────────────────────

@@ -1279,7 +1279,8 @@ async function sendWeeklyManagerDigests() {
     // Only paid, opted-in, not unsubscribed managers with a restaurant
     const managers = await db.query(`
       SELECT u.id, u.name, u.email, u.weekly_digest_enabled,
-             r.id as restaurant_id, r.name as restaurant_name, r.cert_logo_url
+             r.id as restaurant_id, r.name as restaurant_name, r.cert_logo_url,
+             r.wl_logo_url, r.wl_brand_name, r.wl_primary_color, r.wl_is_active
       FROM users u
       JOIN restaurants r ON r.manager_id = u.id
       WHERE u.is_unsubscribed IS NOT TRUE
@@ -1313,12 +1314,12 @@ async function sendWeeklyManagerDigests() {
         db.query(`SELECT COUNT(*) as cnt FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.progress >= 100
-            AND p.updated_at >= $2 AND p.updated_at < $3`,
+            AND p.completed_at >= $2 AND p.completed_at < $3`,
           [mgr.restaurant_id, lastMonday, thisMonday]),
         db.query(`SELECT COUNT(*) as cnt FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.progress >= 100
-            AND p.updated_at >= $2 AND p.updated_at < $3`,
+            AND p.completed_at >= $2 AND p.completed_at < $3`,
           [mgr.restaurant_id, prev2Monday, lastMonday]),
         db.query(`SELECT COALESCE(AVG(p.quiz_score),0) as avg FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
@@ -1355,9 +1356,11 @@ async function sendWeeklyManagerDigests() {
       const scenWowStr   = scenWow > 0 ? `+${scenWow}` : `${scenWow}`;
       const scenWowColor = scenWow > 0 ? '#34d399' : scenWow < 0 ? '#f87171' : '#a3a3a3';
 
-      // White-label: use restaurant cert_logo_url if set, else SMA logo
-      const logoUrl = mgr.cert_logo_url || 'https://servemasteracademy.ca/logo.png';
-      const brandName = escapeHtml(mgr.restaurant_name);
+      // White-label: prefer wl config when active, else cert_logo_url, else SMA defaults
+      const wlActive = !!mgr.wl_is_active;
+      const logoUrl = (wlActive && mgr.wl_logo_url) || mgr.cert_logo_url || 'https://servemasteracademy.ca/logo.png';
+      const brandName = escapeHtml((wlActive && mgr.wl_brand_name) || mgr.restaurant_name);
+      const brandColor = (wlActive && mgr.wl_primary_color) || '#d4af37';
 
       // Newly certified in window
       const newCertsR = await db.query(`
@@ -1386,7 +1389,7 @@ async function sendWeeklyManagerDigests() {
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px;"><tr>
             <td><img src="${logoUrl}" alt="${brandName}" style="width:48px;height:48px;border-radius:10px;object-fit:cover;"></td>
             <td style="padding-left:12px;vertical-align:middle;">
-              <div style="font-size:18px;font-weight:700;color:#d4af37;">${brandName}</div>
+              <div style="font-size:18px;font-weight:700;color:${brandColor};">${brandName}</div>
               <div style="font-size:11px;color:#a3a3a3;">Powered by ServeMaster Academy</div>
             </td>
           </tr></table>
@@ -1422,7 +1425,7 @@ async function sendWeeklyManagerDigests() {
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
-          <p style="margin-top:24px;"><a href="https://servemasteracademy.ca/manager-dashboard" style="background:#d4af37;color:#000;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard →</a></p>
+          <p style="margin-top:24px;"><a href="https://servemasteracademy.ca/manager-dashboard" style="background:${brandColor};color:#000;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard →</a></p>
           ${emailFooter(unsubUrl)}
         </div>`
       }).catch(e => console.error('Weekly digest error:', e.message));
