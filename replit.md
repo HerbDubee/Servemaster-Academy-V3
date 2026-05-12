@@ -61,6 +61,23 @@ ServeMaster Academy is a professional hospitality training platform offering mul
 
 - _Populate as you build_
 
+## Blog article freshness convention
+
+Each entry in the `blogArticles` array in `public/js/content.js` has two date fields:
+
+- `datePublished` — the original publication date; never changes.
+- `dateModified` — must be updated (to today's date in `YYYY-MM-DD` format) **every time the corresponding HTML file in `public/blog/` is meaningfully revised** (new content, corrected facts, updated references, restructured sections). Minor typo fixes do not require a bump.
+
+**Why this matters:** Google uses `dateModified` in the JSON-LD schema on every article page to detect freshness. A stale value signals old content; a missing bump after a real revision means fresh content goes undetected.
+
+**Checking for drift:** Run the freshness-check utility at any time to find articles whose HTML file has been committed more recently than their declared date:
+
+```
+node scripts/check-blog-freshness.js
+```
+
+It compares each article's declared date against the last `git log` commit date for its HTML file (stable across clones and CI — unlike filesystem mtime). It lists every article that needs a `dateModified` bump and exits with a non-zero code if any are found. Run it after any blog editing session.
+
 ## Gotchas
 
 - **Tailwind CSS changes:** Always run `npm run build:css` after modifying `tailwind-input.css`.
