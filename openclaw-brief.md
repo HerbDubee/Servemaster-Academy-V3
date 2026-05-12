@@ -257,6 +257,9 @@ Use to differentiate individual posts within a campaign:
 - `reel_quiz_demo`
 - `reel_branching_demo`
 - `reel_certificate`
+- `reel_ai_demo` *(Facebook — server-facing reel showcasing AI roleplay practice)*
+- `post_career_tips` *(Facebook — static post highlighting server career growth)*
+- `post_certification_value` *(Facebook — static post promoting the completion certificate)*
 
 ### Example tagged link
 ```
