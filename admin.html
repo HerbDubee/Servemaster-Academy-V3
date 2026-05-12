@@ -931,10 +931,19 @@ async function loadDashboard() {
       alerts.push(`
         <div class="flex items-start gap-3 bg-red-950/60 border border-red-700/60 rounded-xl px-4 py-3 text-sm">
           <span class="text-red-400 text-base mt-0.5">⚠️</span>
-          <div>
+          <div class="flex-1">
             <span class="font-semibold text-red-300">Stripe webhook signature failure detected</span>
             <span class="text-red-400/80"> — ${failedAt}</span>
             <p class="text-red-400/70 text-xs mt-1">This usually means <code class="bg-red-900/40 px-1 rounded">STRIPE_WEBHOOK_SECRET</code> was rotated in the Stripe dashboard but hasn't been updated here. Subscription activations and cancellations will not process until the secret is corrected in Replit Secrets.</p>
+            <div class="mt-2 bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-xs text-red-300/80">
+              <span class="font-semibold text-red-200">Zero-downtime rotation steps:</span>
+              <ol class="list-decimal list-inside mt-1 space-y-0.5">
+                <li>In the <a href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener" class="underline hover:text-red-100">Stripe webhook settings</a>, click <em>Roll secret</em> — both old and new secrets are valid during the roll window.</li>
+                <li>Copy the new signing secret and add it as <code class="bg-red-900/40 px-1 rounded">STRIPE_WEBHOOK_SECRET</code> in Replit Secrets.</li>
+                <li>Restart the server — webhook processing resumes immediately.</li>
+                <li>Return to Stripe and delete the old secret to close the roll window.</li>
+              </ol>
+            </div>
           </div>
         </div>
       `);
