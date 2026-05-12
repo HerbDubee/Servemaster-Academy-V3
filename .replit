@@ -21,17 +21,32 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "blog-freshness"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node server.js"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "blog-freshness"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/check-blog-freshness.js"
+
 [workflows.workflow.metadata]
-outputType = "webview"
+isValidation = true
 
 [[ports]]
 localPort = 80
@@ -40,10 +55,6 @@ externalPort = 80
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 23636
-externalPort = 3000
 
 [[ports]]
 localPort = 23637
