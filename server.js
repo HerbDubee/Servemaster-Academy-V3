@@ -2390,6 +2390,16 @@ app.get('/api/admin/config-health', adminMiddleware, (req, res) => {
   res.json({ ok: missing.length === 0, missing });
 });
 
+app.get('/api/admin/blog-freshness', adminMiddleware, (req, res) => {
+  try {
+    const { checkFreshness } = require('./lib/blogFreshness');
+    const { stale } = checkFreshness();
+    res.json({ stale });
+  } catch (e) {
+    res.json({ stale: [] });
+  }
+});
+
 app.get('/api/admin/overview', adminMiddleware, async (req, res) => {
   try {
     const [users, new7d, new30d, active7d, tierCounts, teamCounts, subs, scenarios, modules, contacts] = await Promise.all([

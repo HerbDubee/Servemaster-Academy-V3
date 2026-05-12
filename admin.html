@@ -113,6 +113,22 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <!-- OVERVIEW -->
       <div id="section-overview" class="section active">
 
+        <!-- Blog freshness warning banner -->
+        <div id="blog-freshness-banner" class="hidden mb-5 bg-amber-950 border border-amber-700 rounded-2xl p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <span class="text-amber-400 text-lg leading-none mt-0.5">📝</span>
+              <div>
+                <div class="font-semibold text-amber-300 text-sm mb-1">Blog articles need a <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> update</div>
+                <ul id="blog-freshness-list" class="space-y-1 text-xs text-amber-400"></ul>
+                <p class="mt-2 text-xs text-amber-500">Update the <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> field for each article above in <code class="font-mono bg-amber-900/40 px-1 rounded">public/js/content.js</code>.</p>
+              </div>
+            </div>
+            <button onclick="document.getElementById('blog-freshness-banner').classList.add('hidden')"
+              class="text-amber-500 hover:text-amber-300 text-lg leading-none flex-shrink-0" title="Dismiss">&times;</button>
+          </div>
+        </div>
+
         <!-- Config-health warning banner -->
         <div id="config-health-banner" class="hidden mb-5 bg-red-950 border border-red-700 rounded-2xl p-4">
           <div class="flex items-start justify-between gap-4">
@@ -889,6 +905,25 @@ async function loadAll() {
   loadFailedPayments();
 }
 
+async function checkBlogFreshness() {
+  try {
+    const data = await apiFetch('/api/admin/blog-freshness');
+    const banner = document.getElementById('blog-freshness-banner');
+    const list   = document.getElementById('blog-freshness-list');
+    if (data.stale && data.stale.length) {
+      list.innerHTML = data.stale.map(({ slug, fileLastCommit, declaredDateModified, usingFallback }) => {
+        const note = usingFallback ? ' <span class="text-amber-600">(no dateModified set)</span>' : '';
+        return `<li><code class="font-mono bg-amber-900/40 px-1 rounded">${slug}</code> — committed ${fileLastCommit}, declared ${declaredDateModified}${note}</li>`;
+      }).join('');
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+  } catch (e) {
+    /* silently ignore — don't let a freshness-check failure break the rest of the dashboard */
+  }
+}
+
 async function checkConfigHealth() {
   try {
     const data = await apiFetch('/api/admin/config-health');
@@ -917,6 +952,7 @@ async function checkConfigHealth() {
 
 async function loadDashboard() {
   checkConfigHealth();
+  checkBlogFreshness();
   try {
     const d = await apiFetch('/api/admin/dashboard-summary');
 
