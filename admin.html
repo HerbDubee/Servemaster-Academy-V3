@@ -73,7 +73,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
       <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
       <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
-      <div class="nav-item" onclick="showSection('trials')" id="nav-trials">🧪 Team Trials</div>
+      <div class="nav-item flex items-center" onclick="showSection('trials')" id="nav-trials">🧪 Team Trials<span id="trials-nav-badge" class="hidden ml-auto text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1.5 py-0.5 leading-none"></span></div>
       <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
       <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
       <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
@@ -94,7 +94,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
       <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
       <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
-      <button onclick="showSection('trials')" class="nav-item whitespace-nowrap" id="mnav-trials">🧪</button>
+      <button onclick="showSection('trials')" class="nav-item whitespace-nowrap relative" id="mnav-trials">🧪<span id="trials-mnav-badge" class="hidden absolute -top-1 -right-1 text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1 leading-none" style="min-width:1.1rem;line-height:1.1rem;text-align:center;"></span></button>
       <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
       <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
       <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
@@ -1131,6 +1131,17 @@ async function loadDashboard() {
 
     // Team Trials block
     const pendingTrials = d.pending_trials || 0;
+    // Update nav badges
+    ['trials-nav-badge', 'trials-mnav-badge'].forEach(id => {
+      const badge = document.getElementById(id);
+      if (!badge) return;
+      if (pendingTrials > 0) {
+        badge.textContent = pendingTrials;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
     document.getElementById('trials-block').innerHTML = `
       <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Team Trials</div>
       <div class="space-y-2">
