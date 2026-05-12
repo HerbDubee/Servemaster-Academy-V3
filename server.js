@@ -2406,6 +2406,23 @@ app.get('/api/admin/blog-freshness', adminMiddleware, (req, res) => {
   }
 });
 
+app.patch('/api/admin/blog-freshness/:slug', adminMiddleware, (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+      return res.status(400).json({ error: 'Invalid slug' });
+    }
+    const { updateDateModified } = require('./lib/blogFreshness');
+    const today = updateDateModified(slug);
+    res.json({ ok: true, slug, dateModified: today });
+  } catch (e) {
+    if (e.message && e.message.startsWith('Slug not found')) {
+      return res.status(404).json({ error: e.message });
+    }
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/admin/overview', adminMiddleware, async (req, res) => {
   try {
     const [users, new7d, new30d, active7d, tierCounts, teamCounts, subs, scenarios, modules, contacts] = await Promise.all([

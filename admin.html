@@ -123,8 +123,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
               <span class="text-amber-400 text-lg leading-none mt-0.5">📝</span>
               <div>
                 <div class="font-semibold text-amber-300 text-sm mb-1">Blog articles need a <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> update</div>
-                <ul id="blog-freshness-list" class="space-y-1 text-xs text-amber-400"></ul>
-                <p class="mt-2 text-xs text-amber-500">Update the <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> field for each article above in <code class="font-mono bg-amber-900/40 px-1 rounded">public/js/content.js</code>.</p>
+                <ul id="blog-freshness-list" class="space-y-2 text-xs text-amber-400"></ul>
               </div>
             </div>
             <button onclick="document.getElementById('blog-freshness-banner').classList.add('hidden')"
@@ -899,8 +898,12 @@ async function init() {
   } catch { window.location.href = '/login?next=/admin'; }
 }
 
-async function apiFetch(path) {
-  const res = await fetch(path, { headers: { Authorization: 'Bearer ' + token } });
+async function apiFetch(path, options = {}) {
+  const { headers: extraHeaders, ...rest } = options;
+  const res = await fetch(path, {
+    ...rest,
+    headers: { Authorization: 'Bearer ' + token, ...(extraHeaders || {}) },
+  });
   return res.json();
 }
 
@@ -927,7 +930,12 @@ async function checkBlogFreshness() {
     if (data.stale && data.stale.length) {
       list.innerHTML = data.stale.map(({ slug, fileLastCommit, declaredDateModified, usingFallback }) => {
         const note = usingFallback ? ' <span class="text-amber-600">(no dateModified set)</span>' : '';
-        return `<li><code class="font-mono bg-amber-900/40 px-1 rounded">${slug}</code> — committed ${fileLastCommit}, declared ${declaredDateModified}${note}</li>`;
+        return `<li class="flex items-center gap-2 flex-wrap">
+          <code class="font-mono bg-amber-900/40 px-1 rounded">${slug}</code>
+          <span class="text-amber-500">committed ${fileLastCommit}, declared ${declaredDateModified}${note}</span>
+          <button onclick="markBlogArticleUpdated('${slug}', this)"
+            class="ml-auto flex-shrink-0 text-xs bg-amber-700 hover:bg-amber-600 text-amber-100 px-2 py-0.5 rounded transition-colors">Mark updated</button>
+        </li>`;
       }).join('');
       banner.classList.remove('hidden');
     } else {
@@ -935,6 +943,23 @@ async function checkBlogFreshness() {
     }
   } catch (e) {
     /* silently ignore — don't let a freshness-check failure break the rest of the dashboard */
+  }
+}
+
+async function markBlogArticleUpdated(slug, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Updating…';
+  try {
+    const data = await apiFetch(`/api/admin/blog-freshness/${slug}`, { method: 'PATCH' });
+    if (data.ok) {
+      await checkBlogFreshness();
+    } else {
+      btn.textContent = 'Error';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+    btn.disabled = false;
   }
 }
 
