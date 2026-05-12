@@ -148,6 +148,35 @@
   schemaScript.text = JSON.stringify(articleSchema);
   document.head.appendChild(schemaScript);
 
+  var breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://servemasteracademy.ca/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Knowledge Centre",
+        "item": "https://servemasteracademy.ca/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": title,
+        "item": articleUrl
+      }
+    ]
+  };
+  var breadcrumbScript = document.createElement('script');
+  breadcrumbScript.type = 'application/ld+json';
+  breadcrumbScript.text = JSON.stringify(breadcrumbSchema);
+  document.head.appendChild(breadcrumbScript);
+
   var backLabel = lang === 'fr' ? '← Retour au Centre de Connaissances' : lang === 'es' ? '← Volver al Centro de Conocimiento' : '← Back to Knowledge Centre';
   var minRead = lang === 'fr' ? 'min de lecture' : lang === 'es' ? 'min de lectura' : 'min read';
   var ctaH = lang === 'fr' ? 'Pratiquez avec des scénarios IA' : lang === 'es' ? 'Practica con escenarios de IA' : 'Practice with AI scenarios';
