@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Art of Hosting: Waitlist Management, Seating Strategy & First Impressions – ServeMaster Academy</title>
+  <meta name="description" content="The host role shapes the entire guest experience before a single word is spoken at the table. Here's a professional guide to waitlist management, strategic seating, and the first impression that sets the tone for everything that follows.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="The Art of Hosting: Waitlist Management, Seating Strategy & First Impressions – ServeMaster Academy">
+  <meta property="og:description" content="The host role shapes the entire guest experience before a single word is spoken at the table. Here's a professional guide to waitlist management, strategic seating, and the first impression that sets the tone for everything that follows.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/fr/hosting-seating-strategy">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/fr/hosting-seating-strategy">
+  <meta name="blog-category" content="server-skills">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) { nav { flex-direction: column; padding: 1rem; } .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; } }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://servemasteracademy.ca/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Knowledge Centre",
+        "item": "https://servemasteracademy.ca/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "The Art of Hosting: Waitlist Management, Seating Strategy & First Impressions",
+        "item": "https://servemasteracademy.ca/blog/fr/hosting-seating-strategy"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Accueil</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Académie</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Jeu de rôle IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Tarifs</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Bourse</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">À propos</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Se connecter</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Commencer gratuitement</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Front of House</span>
+      <span>9 <span data-i18n="blog_min_read">min de lecture</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">The Art of Hosting: Waitlist Management, Seating Strategy & First Impressions</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">The host is the first and last person a guest sees. How they are greeted, how long they wait, and where they sit will color every impression that follows — including how they rate their meal, how much they tip, and whether they come back. This is how to do the role properly.</p>
+  </div>
+
+  <div class="prose">
+
+    <h2>The host role: what it actually encompasses</h2>
+
+    <p>The host position is often treated as an entry-level role — a stepping stone before someone earns a server position. This is a mistake that consistently undermines front-of-house operations. The host controls the flow of the entire dining room. A skilled host manages seating rotation to keep servers from being overwhelmed, maintains accurate wait times to keep guests happy, spots VIPs and special occasion parties before they reach the floor, and sets the emotional tone of the entire experience.</p>
+
+    <p>Every person who walks through the door makes a judgment about your restaurant in the first thirty seconds. That judgment is formed almost entirely by the host. Even if the food is exceptional and the server is brilliant, a cold, distracted, or disorganized host has already damaged the experience before it has begun.</p>
+
+    <blockquote>"Guests remember two things most clearly: how they were greeted and how they were said goodbye to. Everything in between blurs. The host owns both moments."</blockquote>
+
+    <h2>The first impression: the greeting</h2>
+
+    <p>The greeting is not a formality. It is the single most powerful moment in the guest's arrival sequence. Here is what a professional greeting looks like:</p>
+
+    <ul>
+      <li><strong>Eye contact before they reach you</strong> — Acknowledge guests the moment they enter, even if you are on the phone or assisting another party. A brief nod or a raised finger to signal "I see you, one moment" prevents the invisible-guest experience.</li>
+      <li><strong>A warm, specific welcome</strong> — "Good evening, welcome to [restaurant name]" is minimal but effective. For reservation guests, use their name: "Good evening, welcome back — I have your reservation right here."</li>
+      <li><strong>Do not lead with problems</strong> — Never start a greeting with "We're running about 45 minutes" or "It's really busy tonight." Establish the welcome first. Then manage expectations.</li>
+      <li><strong>Check for reservation notes before they arrive</strong> — If a guest has a birthday, an anniversary, or a special dietary note in their reservation, know this before you greet them. Use it: "Happy anniversary — I have a wonderful table for you."</li>
+    </ul>
+
+    <h2>Strategic seating: how to assign tables intelligently</h2>
+
+    <p>Random seating creates uneven service. When all walk-ins are seated in the same section, one server drowns while others stand around. Strategic seating distributes guests to balance server workload, manage kitchen output, and create the atmosphere the restaurant needs at that moment in service.</p>
+
+    <h3>The rotation principle</h3>
+    <p>Rotate seating across sections rather than filling one section first. If you have three servers and you seat three consecutive parties in section one, that server is immediately behind — taking orders, running drinks, and greeting new tables all at once. The correct approach is to rotate: section one, section two, section three, back to section one. Each server gets a new table when they are ready for it.</p>
+
+    <h3>Matching table size to party size</h3>
+    <p>Never seat a party of two at a six-top when two-tops are available. This is not just about capacity — it also makes the couple feel exposed and the table arrangement awkward. Conversely, a party of four uncomfortable at a cramped two-top will rush through the meal just to reclaim personal space. Match the table size as closely as possible.</p>
+
+    <h3>Placement considerations</h3>
+    <ul>
+      <li><strong>Loud parties</strong> — Seat energetic or celebratory groups near the bar or in the private section, away from tables of quiet couples or business diners.</li>
+      <li><strong>Special occasions</strong> — Anniversary and birthday tables deserve a prime location: a window seat, a corner booth, somewhere that feels intentional rather than random.</li>
+      <li><strong>Solo diners</strong> — Many solo guests prefer a seat at the bar or a small table near activity. Others prefer privacy. Ask: "Do you prefer somewhere quieter, or are you happy anywhere?"</li>
+      <li><strong>Elderly or mobility-limited guests</strong> — Seat near the entrance, away from stairs, in chairs rather than booths if mobility is a concern. Anticipate before they ask.</li>
+      <li><strong>Guests with infants or young children</strong> — Away from the kitchen noise and the bar, with floor space for a stroller or high chair. Bring the high chair before they sit down.</li>
+    </ul>
+
+    <h2>Managing the waitlist</h2>
+
+    <p>A waitlist is a pressure situation for guests. They are hungry, often standing, and increasingly impatient. How you manage this moment directly affects how much goodwill you recover — or lose — before they even sit down.</p>
+
+    <h3>Quoting wait times accurately</h3>
+    <p>Always quote slightly longer than you expect. If you think 20 minutes, say 25. A guest seated in 22 minutes feels pleasantly surprised; a guest told 20 and seated in 27 feels deceived, regardless of how reasonable the delay was. Never guess blindly — check your table management system, assess how many parties are ahead, and give an honest estimate.</p>
+
+    <h3>Keeping waitlisted guests engaged</h3>
+    <ul>
+      <li>Offer the bar area or a waiting bench immediately. Standing near the host stand for 30 minutes is miserable; sitting with a drink is acceptable.</li>
+      <li>Check in every 10–12 minutes with a brief update. "You're next up, we expect a table in about 10 minutes." This takes 15 seconds and dramatically reduces frustration.</li>
+      <li>If the wait extends beyond your original estimate, go to the guest, apologise briefly, and give a revised time. Never let them discover a delay on their own.</li>
+      <li>Offer a first round of drinks to be sent to the bar while they wait — this generates goodwill, starts the tab, and keeps them occupied.</li>
+    </ul>
+
+    <h3>When a guest refuses the wait</h3>
+    <p>Some guests will decline the wait and leave. Thank them genuinely for their visit and invite them back. "I completely understand — we'd love to have you another time. If you can make a reservation, we can guarantee a table." Never guilt, pressure, or make them feel bad for choosing not to wait. The exit experience matters for future visits.</p>
+
+    <h2>Managing reservations alongside walk-ins</h2>
+
+    <p>The most common floor management error hosts make is holding reserved tables too long while walk-in guests wait unnecessarily. The correct approach:</p>
+
+    <ul>
+      <li>Hold a reservation for 10–15 minutes past the booking time (or follow your venue's policy). After that, with the manager's approval, the table becomes available.</li>
+      <li>Never release a reservation to walk-ins without checking with the manager first.</li>
+      <li>Do not seat walk-ins at tables reserved for an incoming party within 30 minutes. Even if the tables are technically available, seating them creates a cascade problem when the reservation arrives.</li>
+      <li>Know your reservation book for the next two hours. Anticipate when tables will turn and when new reservations arrive so you can manage walk-in expectations accurately.</li>
+    </ul>
+
+    <h2>The farewell: closing the loop</h2>
+
+    <p>The guest's exit is the final impression — and the one they will most clearly remember when they write a review or tell a friend. A host who says goodbye with the same warmth as the greeting creates a complete experience.</p>
+
+    <ul>
+      <li>Acknowledge departing guests by name if you know it: "Good evening, Mr. and Mrs. Chen — we hope you had a wonderful time."</li>
+      <li>Ask one genuine question: "How was your evening?" and actually listen to the answer. If they express a complaint at the door, this is your last chance to recover it — get the manager if needed.</li>
+      <li>Offer assistance with coats, directions, taxis, or anything practical the guest might need on their way out.</li>
+      <li>An invitation to return: "We'd love to see you again — take care." Sincere, not scripted.</li>
+    </ul>
+
+    <h2>Building from host to server: what this role teaches you</h2>
+
+    <p>Many top servers and managers started as hosts. The host position teaches floor awareness, guest psychology, and operational thinking that cannot be learned behind a single section. If you are currently hosting and waiting to move to a server position, treat every shift as a masterclass in how a dining room functions as a whole — not just your corner of it. That systemic view is what will make you exceptional when you do get your own tables.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice guest-facing scenarios including hosting and first impressions with AI roleplay — start free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Train every front-of-house role with AI scenarios</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy covers hosting, greeting, seating, and all server skills through structured modules and AI roleplay practice. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/mastering-the-greeting" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Daily Service</p>
+        <p class="font-semibold text-white">Mastering the Greeting: The First 60 Seconds That Make or Break the Table</p>
+      </a>
+      <a href="/blog/silent-service" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Fine Dining</p>
+        <p class="font-semibold text-white">The Art of Silent Service: Reading Tables Without Interrupting</p>
+      </a>
+      <a href="/blog/special-occasions" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Guest Experience</p>
+        <p class="font-semibold text-white">Mastering Anniversary & Birthday Tables</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Confidentialité</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Conditions</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Centre de connaissances</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">Pour les gérants</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  (function(){
+    var saved = localStorage.getItem('sma-lang');
+    if (!saved) { localStorage.setItem('sma-lang','fr'); }
+  })();
+  function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
+  function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/hosting-seating-strategy';if(l==='es')window.location='/blog/es/hosting-seating-strategy';}
+  document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
+</script>
+  <script src="/js/blog-tts.js?v=10"></script>
+</body>
+</html>

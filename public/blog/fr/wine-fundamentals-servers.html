@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wine Fundamentals for Servers: Reading the List, Describing the Bottle, Nailing the Service – ServeMaster Academy</title>
+  <meta name="description" content="You don't need to be a sommelier to serve wine confidently. Here's everything a working server needs to know about wine fundamentals — from reading a list to describing a glass.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="Wine Fundamentals for Servers: Reading the List, Describing the Bottle, Nailing the Service – ServeMaster Academy">
+  <meta property="og:description" content="You don't need to be a sommelier to serve wine confidently. Here's everything a working server needs to know about wine fundamentals — from reading a list to describing a glass.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/fr/wine-fundamentals-servers">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/fr/wine-fundamentals-servers">
+  <meta name="blog-category" content="server-skills">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) { nav { flex-direction: column; padding: 1rem; } .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; } }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://servemasteracademy.ca/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Knowledge Centre",
+        "item": "https://servemasteracademy.ca/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Wine Fundamentals for Servers: Reading the List, Describing the Bottle, Nailing the Service",
+        "item": "https://servemasteracademy.ca/blog/fr/wine-fundamentals-servers"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Accueil</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Académie</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Jeu de rôle IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Tarifs</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Bourse</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">À propos</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Se connecter</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Commencer gratuitement</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Wine Service</span>
+      <span>11 <span data-i18n="blog_min_read">min de lecture</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">Wine Fundamentals for Servers: Reading the List, Describing the Bottle, Nailing the Service</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">You do not need to be a sommelier to serve wine with genuine confidence. What you need is a working vocabulary, a solid grasp of the major styles, and a service sequence you can execute every time. This article gives you all three.</p>
+  </div>
+
+  <div class="prose">
+
+    <h2>Why wine knowledge matters more than you think</h2>
+
+    <p>Wine sales typically represent 25–40% of total beverage revenue in a full-service restaurant. A server who can speak about wine with even moderate fluency — recommending a style, explaining a region, bridging to a pairing — earns measurably more per shift. Not because guests tip more for wine knowledge specifically, but because confidence in wine creates a halo effect: guests trust your recommendations across the board, spend more, and enjoy the experience more.</p>
+
+    <p>The baseline most servers need is not a sommelier certificate. It is the ability to orient a guest on a wine list, describe a glass accurately, and handle service mechanics without fumbling.</p>
+
+    <h2>How to read a wine list quickly</h2>
+
+    <p>Most restaurant wine lists are organized by style (red, white, rosé, sparkling, dessert) and then either by region or by weight — light to full-bodied. Learn how your restaurant's list is structured before service, and you can navigate it fluently even with limited wine knowledge.</p>
+
+    <h3>The four questions a wine list answers</h3>
+    <ul>
+      <li><strong>What grape or blend?</strong> — The varietal name (Chardonnay, Cabernet Sauvignon, Pinot Grigio) tells you the flavour family.</li>
+      <li><strong>Where is it from?</strong> — Region signals style. Burgundy = Pinot Noir (usually), Napa = Cabernet Sauvignon, Marlborough = Sauvignon Blanc. Old World tends toward earthier, less fruit-forward profiles; New World tends toward ripe, fruit-driven, higher alcohol.</li>
+      <li><strong>What vintage?</strong> — The year matters more for fine wines. For house pours and mid-range bottles, the producer and region matter more.</li>
+      <li><strong>What price point?</strong> — Most guests have a budget in mind. Never ask "how much do you want to spend?" — instead, point to a few options at different price points and let them guide you.</li>
+    </ul>
+
+    <blockquote>"A guest who opens a wine list and looks slightly uncertain is not asking you to be a sommelier. They are asking you to be a guide. Point to three options, say one thing about each, and let them choose."</blockquote>
+
+    <h2>The major grape varieties every server should know</h2>
+
+    <h3>White wines</h3>
+    <ul>
+      <li><strong>Chardonnay</strong> — The world's most popular white grape. Unoaked: crisp, citrusy, mineral. Oaked: creamy, buttery, vanilla notes. Serve at 10–12°C.</li>
+      <li><strong>Sauvignon Blanc</strong> — High acidity, herbaceous, grassy, often citrus-forward. New Zealand versions are intensely tropical. Great with seafood, goat cheese, salads. Serve well chilled at 8–10°C.</li>
+      <li><strong>Pinot Grigio / Pinot Gris</strong> — Italian Pinot Grigio is dry, light, and neutral. Alsatian Pinot Gris is richer, spicier, and more full-bodied. Both are food-friendly.</li>
+      <li><strong>Riesling</strong> — Ranges from bone-dry to intensely sweet. Always high in acidity. Pairs beautifully with spicy food because the acidity and slight sweetness cool the heat.</li>
+      <li><strong>Viognier</strong> — Aromatic, floral (peach, apricot, jasmine). Full-bodied for a white. Often seen on restaurant lists as a food-friendly alternative to Chardonnay.</li>
+    </ul>
+
+    <h3>Red wines</h3>
+    <ul>
+      <li><strong>Cabernet Sauvignon</strong> — The benchmark full-bodied red. Dark fruit (blackcurrant, plum), firm tannins, good structure. Ages well. Pairs with beef, lamb, hard cheeses.</li>
+      <li><strong>Merlot</strong> — Softer, rounder, lower tannin than Cabernet. Red fruit (cherry, plum), medium body. Accessible and widely appealing.</li>
+      <li><strong>Pinot Noir</strong> — Lighter body, high acidity, delicate red fruit (cherry, raspberry, strawberry). Earthy, sometimes mushroom or forest floor notes. The most food-versatile red wine.</li>
+      <li><strong>Syrah / Shiraz</strong> — Syrah (France) is more savoury, peppery, tannic. Shiraz (Australia) is riper, jammier, more full-bodied. Both pair with grilled and roasted meats.</li>
+      <li><strong>Malbec</strong> — Soft tannins, dark fruit, plummy. Argentine Malbec is the dominant style — smooth and approachable. Popular with guests who find Cabernet too tannic.</li>
+      <li><strong>Zinfandel / Primitivo</strong> — Jammy, high alcohol, bold fruit. Pairs well with barbecue, spiced dishes, and pizza-style food.</li>
+    </ul>
+
+    <h2>The service sequence: step by step</h2>
+
+    <p>Correct wine service is a visible signal of professionalism. Here is the sequence for a bottle of still wine:</p>
+
+    <ul>
+      <li><strong>Present the bottle</strong> — Show the label to the person who ordered it. Say the name and vintage: "Here is your 2021 Chateau Ste. Michelle Riesling." Wait for confirmation before opening.</li>
+      <li><strong>Cut the foil</strong> — Use a wine key or foil cutter. Cut below the second lip of the bottle, not above it. Remove the foil cleanly.</li>
+      <li><strong>Insert and extract the cork</strong> — Use a waiter's friend (lever corkscrew). Insert the worm into the center of the cork at a slight angle, then straighten. Lever the cork out with the fulcrum resting on the lip of the bottle. Extract the last centimetre by hand to avoid a pop.</li>
+      <li><strong>Present the cork</strong> — Place it on the table beside the host, not in their hand. The host may sniff the cork for fault — do not comment unless they ask.</li>
+      <li><strong>Pour a taste for the host</strong> — A small taste (approximately 30ml) for the person who ordered. Wait in silence while they evaluate.</li>
+      <li><strong>Pour for the table</strong> — Once approved, pour for women first (in fine dining tradition, though many restaurants have moved to clockwise service — follow your venue's standard), ending with the host. Fill glasses approximately one-third full for reds, slightly more for whites. Never pour to more than half full.</li>
+      <li><strong>Return the bottle</strong> — For whites and rosés, place in an ice bucket if provided. For reds, place on the table or on a wine coaster. Offer a second pour before glasses are empty.</li>
+    </ul>
+
+    <blockquote>"The most common wine service error is not fumbling the cork — it's failing to re-pour before a guest's glass is empty. Check in at natural breaks and offer without waiting to be asked."</blockquote>
+
+    <h2>Glassware: why it matters</h2>
+
+    <p>Glassware shape affects how a wine smells and tastes. This is not pretension — it is physics. The bowl size concentrates aromas; the rim shape directs the wine toward different parts of the mouth. As a working server, what you need to know is which glass your venue uses for which wine.</p>
+
+    <ul>
+      <li><strong>Large Bordeaux glass</strong> — Tall, wide bowl. Used for full-bodied reds (Cabernet, Merlot, Malbec). The large surface area allows tannins to soften.</li>
+      <li><strong>Burgundy glass</strong> — Wide, round bowl. Used for Pinot Noir. The wide bowl captures delicate aromatics.</li>
+      <li><strong>Standard white wine glass</strong> — Smaller bowl, narrower opening. Used for most whites. Keeps the wine cooler and concentrates delicate aromas.</li>
+      <li><strong>Flute</strong> — Narrow, elongated. Used for sparkling wine. The narrow shape preserves bubbles and directs aromas upward.</li>
+    </ul>
+
+    <p>Always hold the glass by the stem, never the bowl, when handling. Fingerprints on the bowl are visible at the table and look sloppy. When polishing glasses, use a lint-free cloth and hold the glass up to light to check for watermarks before service.</p>
+
+    <h2>How to describe a wine at the table</h2>
+
+    <p>Most guests do not want a lecture. They want three to five words that help them decide. The most useful framework is: <strong>body → fruit → finish</strong>.</p>
+
+    <ul>
+      <li><strong>Body</strong> — Light, medium, or full. This maps roughly to how heavy it feels in your mouth.</li>
+      <li><strong>Fruit</strong> — The dominant fruit note (citrus, red berries, dark fruit, tropical).</li>
+      <li><strong>Finish</strong> — One distinguishing characteristic: "dry finish," "hint of oak," "good acidity," "silky tannins."</li>
+    </ul>
+
+    <p>Example: "The Malbec is medium-to-full-bodied with dark plum and a smooth, soft finish — it's one of the most approachable reds on the list." That sentence is enough for most guests to say yes or redirect you.</p>
+
+    <h2>Common wine faults you should recognize</h2>
+
+    <p>Wine faults happen. A guest who receives a faulty bottle and sees you handle it with confidence will trust you completely.</p>
+
+    <ul>
+      <li><strong>Corked wine (TCA contamination)</strong> — Smells musty, damp, or like wet cardboard. This is the most common wine fault. The wine is not dangerous, just unpleasant. Replace the bottle without question.</li>
+      <li><strong>Oxidation</strong> — Smells flat, like sherry or vinegar. Usually indicates a faulty closure or a bottle that has been open too long. Replace it.</li>
+      <li><strong>Refermentation</strong> — The wine tastes slightly fizzy when it should not. Tiny bubbles in a still wine are a fault. Replace it.</li>
+      <li><strong>Excessive sulfur</strong> — Smells like struck matches or eggs. Can sometimes blow off with a few minutes in the glass. If it does not improve, replace the bottle.</li>
+    </ul>
+
+    <p>When a guest points out a potential fault: taste the wine yourself if protocol allows, confirm the issue, apologise briefly, and replace the bottle. Never argue that the wine is fine. Never make the guest feel they are wrong.</p>
+
+    <h2>Temperature and decanting basics</h2>
+
+    <p>Serving wine at the right temperature dramatically affects how it tastes. Most restaurants serve reds at room temperature — which in a warm dining room can be too warm.</p>
+
+    <ul>
+      <li><strong>Light reds (Pinot Noir, Beaujolais)</strong> — 12–14°C. Slightly chilled. A brief 15 minutes in an ice bucket can help.</li>
+      <li><strong>Medium and full reds (Cabernet, Malbec, Shiraz)</strong> — 16–18°C. Cellar temperature, not room temperature.</li>
+      <li><strong>White and rosé</strong> — 8–12°C. Well chilled, maintained in an ice bucket.</li>
+      <li><strong>Sparkling</strong> — 6–8°C. Fully chilled at all times.</li>
+    </ul>
+
+    <p>Decanting — pouring wine into a carafe before service — serves two purposes: it aerates the wine (softening tannins and opening aromatics) and separates it from any sediment in older bottles. If your venue decants, learn the correct sequence. If a guest asks whether a wine should be decanted, the honest answer is: "It would benefit from it — I'm happy to do that for you" is always the right offer for a young, tannic red.</p>
+
+    <h2>The questions guests ask most often</h2>
+
+    <ul>
+      <li><strong>"What do you recommend with the steak?"</strong> — "Our Malbec is the most popular pairing — it's smooth and full-bodied without being overpowering. The Cabernet is bolder if you prefer more structure."</li>
+      <li><strong>"Is this dry or sweet?"</strong> — Know the dryness level of every wine on your list. "Completely dry" vs. "off-dry" vs. "has a touch of sweetness" is usually all the distinction a guest needs.</li>
+      <li><strong>"What's the difference between these two reds?"</strong> — Body, fruit, and one distinguishing characteristic. "The Pinot is lighter and more delicate — red fruit, earthy. The Malbec is richer and plummier. Depends on whether you want something food-friendly or more bold."</li>
+      <li><strong>"I usually drink Merlot — what would I like on this list?"</strong> — Know which wines on your list share characteristics with common preferences. A Merlot drinker wants soft tannins and fruit-forward profiles — steer them toward your approachable reds.</li>
+    </ul>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice wine recommendations and service language with AI roleplay — start free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Build genuine wine confidence at the table</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy's beverage modules cover wine fundamentals, recommending styles, pairing principles, and handling service situations — with AI scenarios to practice your language. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/wine-service-tips" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Wine Service</p>
+        <p class="font-semibold text-white">How to Sell Wine Confidently Without Being Pushy</p>
+      </a>
+      <a href="/blog/coffee-non-alcoholic-beverages" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Beverage Service</p>
+        <p class="font-semibold text-white">Coffee & Non-Alcoholic Beverage Service: The Complete Server's Guide</p>
+      </a>
+      <a href="/blog/perfect-pairings-server" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+        <p class="font-semibold text-white">Perfect Pairings: How to Match Food and Drinks Without Being a Sommelier</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Confidentialité</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Conditions</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Centre de connaissances</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">Pour les gérants</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  (function(){
+    var saved = localStorage.getItem('sma-lang');
+    if (!saved) { localStorage.setItem('sma-lang','fr'); }
+  })();
+  function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
+  function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/wine-fundamentals-servers';if(l==='es')window.location='/blog/es/wine-fundamentals-servers';}
+  document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
+</script>
+  <script src="/js/blog-tts.js?v=10"></script>
+</body>
+</html>

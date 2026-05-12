@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+  <html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Running a Pre-Shift Meeting That Actually Sticks – ServeMaster Academy</title>
+    <meta name="description" content="How to run a pre-shift meeting that your team actually remembers. Structure, timing, and content that drives service excellence.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-management.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="Running a Pre-Shift Meeting That Actually Sticks – ServeMaster Academy">
+  <meta property="og:description" content="How to run a pre-shift meeting that your team actually remembers. Structure, timing, and content that drives service excellence.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/fr/pre-shift-meeting">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/fr/pre-shift-meeting">
+  <meta name="blog-category" content="management">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-management.png">
+    <link rel="stylesheet" href="/tailwind.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+      .heading { font-family: 'Playfair Display', serif; }
+      .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+      .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+      .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+      .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+      .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+      .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+
+      @media (max-width: 1024px) {
+        nav {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://servemasteracademy.ca/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Knowledge Centre",
+        "item": "https://servemasteracademy.ca/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Running a Pre-Shift Meeting That Actually Sticks",
+        "item": "https://servemasteracademy.ca/blog/fr/pre-shift-meeting"
+      }
+    ]
+  }
+  </script>
+</head>
+  <body>
+
+  <nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Accueil</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Académie</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Jeu de rôle IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Tarifs</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Bourse</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">À propos</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Se connecter</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Commencer gratuitement</a>
+    </div>
+  </div>
+</nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+
+    <div class="flex items-center gap-4 mb-8 flex-wrap">
+    <a href="/blog" class="text-amber-400 text-sm hover:underline">← Centre de connaissances</a>
+    <span class="text-zinc-700">|</span>
+    <a href="/blog/pre-shift-meeting" class="text-zinc-500 text-sm hover:text-zinc-300 transition-colors">🇨🇦 Read in English</a>
+  </div>
+
+    <div class="mt-8 mb-12">
+      <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_pre_shift_meeting_cat">Team Management</p>
+      <h1 class="heading text-4xl md:text-5xl font-black leading-tight mb-6">Running a Pre-Shift Meeting That Actually Sticks</h1>
+      <p class="text-zinc-400 text-lg">How to run a pre-shift meeting that your team actually remembers. Structure, timing, and content that drives service excellence.</p>
+      <div id="article-meta" class="flex items-center gap-3 mt-6 text-sm text-zinc-500">
+        <span>ServeMaster Academy</span>
+        <span>·</span>
+        <span>6 <span data-i18n="blog_min_read">min de lecture</span></span>
+      </div>
+    </div>
+
+    <div class="prose">
+  
+      <p>The pre-shift meeting is the single most underused tool in restaurant management. When done well, it takes five to ten minutes and sets the standard for the entire service. When done badly — or skipped — the team walks onto the floor without alignment, without energy, and without the information they need to serve well.</p>
+
+      <h2>Why most pre-shifts fail</h2>
+
+      <p>The typical pre-shift meeting sounds like this: "We have a party of twelve at seven, the halibut is the special, and please remember to upsell desserts. Any questions? No? Great."</p>
+
+      <p>That's an announcement, not a meeting. The team hears it, forgets 80% of it by the first table, and nothing changes. Pre-shifts fail because they're treated as information dumps instead of energy-building, skill-sharpening moments.</p>
+
+      <h2>The five-minute structure that works</h2>
+
+      <p>A great pre-shift has five components, each taking about one minute:</p>
+
+      <p><strong>1. Energy check (30 seconds).</strong> Start with something human. "How's everyone doing tonight?" Make eye contact. Read the room. If the team is flat, acknowledge it and set the tone: "I know it's been a long week. Let's make this a great one and get out clean tonight."</p>
+
+      <p><strong>2. Operational notes (60 seconds).</strong> Reservations, large parties, VIPs, anything 86'd, timing notes from the kitchen. Keep it factual and brief. Write it on a board if you have one — people remember what they see more than what they hear.</p>
+
+      <p><strong>3. Feature or special (60 seconds).</strong> Describe tonight's special or featured item in detail. Don't just name it — sell it to the team the way you want them to sell it to guests. Let them taste it if possible. If they can describe it with enthusiasm, they will.</p>
+
+      <p><strong>4. Skill focus (90 seconds).</strong> Pick one thing to improve tonight. Just one. "Tonight I want everyone to suggest a specific cocktail with every food order — not 'would you like a drink' but a named cocktail that pairs with what they ordered." Give them the language. Role-play it if time allows. One focus point per shift compounds over weeks.</p>
+
+      <p><strong>5. Recognition (30 seconds).</strong> Call out one person who did something well recently. "Maria handled a complaint last night that could have gone sideways — the table left happy and tipped 25%. That's the standard." Public recognition energises the whole team, not just the person named.</p>
+
+      <h2>The standing rule</h2>
+
+      <p>Pre-shift meetings should be conducted standing. Standing meetings are naturally shorter, more energetic, and feel more like a huddle than a lecture. The moment you let people sit down, the energy drops and the meeting stretches.</p>
+
+      <h2>Consistency beats content</h2>
+
+      <p>A mediocre pre-shift meeting every single day is more effective than an excellent one twice a week. Consistency creates a ritual — and rituals create culture. When the team knows there's a pre-shift every day, they arrive expecting to learn something, contribute something, and start the shift with intention.</p>
+
+      <p>Skip the pre-shift and you're telling the team that alignment doesn't matter. They'll act accordingly.</p>
+
+      <h2>The multiplier effect</h2>
+
+      <p>Here's the math that makes pre-shifts worth it: if your skill focus increases average check by just $3 per table, and your restaurant turns 60 tables in an evening, that's $180 in additional revenue. Per night. From a five-minute meeting. Over a month, that's $5,400. Over a year, it's $65,000 — from five minutes of intentional communication before every service.</p>
+
+      <p>The best restaurants in the world never skip pre-shift. It's not because they have more time. It's because they understand that five minutes of alignment creates hours of better service.</p>
+
+      <p><a href="/managers" class="text-amber-400 hover:underline">See how ServeMaster Academy supports daily team training</a>.</p>
+      <h2>Handling resistance from the team</h2>
+
+        <p>Not every server loves pre-shift meetings, especially if previous versions were poorly run. The most common complaints: they run too long, they're boring, and they repeat information everyone already knows. Address all three by keeping meetings to ten minutes maximum, varying the format (one day quiz-style, another day tasting, another day storytelling), and always including at least one piece of genuinely new information. When servers leave the huddle feeling more prepared than when they walked in, resistance disappears naturally.</p>
+
+        <p>Involve the team directly. Rotate who presents the "guest moment" of the day — a one-minute story about a service win from a recent shift. Let a server introduce the new dish after they've been coached on the tasting notes. When team members have an active role, they invest in the meeting's success rather than counting the minutes until it ends. Ownership transforms obligation into engagement, and that shift in energy is visible on the floor within the first hour of service.</p>
+
+      </div>
+
+    <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+      <h3 class="heading text-2xl font-bold mb-3" data-i18n="blog_pre_shift_meeting_cta_h">Give your team structured daily training</h3>
+      <p class="text-zinc-400 mb-6" data-i18n="blog_pre_shift_meeting_cta_p">ServeMaster Academy delivers bite-sized modules your staff can complete before every shift. Start your team trial.</p>
+      <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors" data-i18n="nav_cta">Commencer gratuitement</a>
+    </div>
+
+    <div class="mt-16 border-t border-zinc-800 pt-10">
+      <p class="text-zinc-500 text-sm mb-6" data-i18n="blog_more">Plus d'articles</p>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <a href="/blog/onboard-new-server" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">How to Onboard a New Server in Their First Week</p>
+        </a>
+      <a href="/blog/gamification-upsell" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">How Gamification Helps Your Team Hit Upsell Targets</p>
+        </a>
+      <a href="/blog/server-turnover-cost" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+          <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Team Management</p>
+          <p class="font-semibold text-white">The Real Cost of High Server Turnover (and How Training Fixes It)</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800 py-10 mt-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+      <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+      <div class="flex gap-6 flex-wrap justify-center">
+        <a href="/privacy" class="hover:text-zinc-300 transition-colors">Confidentialité</a>
+        <a href="/terms" class="hover:text-zinc-300 transition-colors">Conditions</a>
+        <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+        <a href="/blog" class="hover:text-zinc-300 transition-colors">Centre de connaissances</a>
+        <a href="/managers" class="hover:text-amber-400 transition-colors">Pour les gérants</a>
+      </div>
+    </div>
+  </footer>
+
+  
+<script>
+  (function(){
+    var saved = localStorage.getItem('sma-lang');
+    if (!saved) { localStorage.setItem('sma-lang','fr'); }
+  })();
+  function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
+  function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/pre-shift-meeting';if(l==='es')window.location='/blog/es/pre-shift-meeting';}
+  document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
+</script>
+  <script src="/js/blog-tts.js?v=10"></script>
+  </body>
+  </html>

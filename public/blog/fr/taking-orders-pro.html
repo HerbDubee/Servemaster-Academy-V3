@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Take Orders Like a Pro: Scripts, Shortcuts, and Common Pitfalls – ServeMaster Academy</title>
+  <meta name="description" content="Taking orders is one of the most error-prone moments in service. Scripts, sequencing strategies, and the mistakes that slow down your section and frustrate guests.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="How to Take Orders Like a Pro: Scripts, Shortcuts, and Common Pitfalls – ServeMaster Academy">
+  <meta property="og:description" content="Taking orders is one of the most error-prone moments in service. Scripts, sequencing strategies, and the mistakes that slow down your section and frustrate guests.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/fr/taking-orders-pro">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/fr/taking-orders-pro">
+  <meta name="blog-category" content="server-skills">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) {
+      nav { flex-direction: column; padding: 1rem; }
+      .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://servemasteracademy.ca/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Knowledge Centre",
+        "item": "https://servemasteracademy.ca/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "How to Take Orders Like a Pro: Scripts, Shortcuts, and Common Pitfalls",
+        "item": "https://servemasteracademy.ca/blog/fr/taking-orders-pro"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Accueil</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Académie</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Jeu de rôle IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Tarifs</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Bourse</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">À propos</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Se connecter</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Commencer gratuitement</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Daily Service</span>
+      <span>7 <span data-i18n="blog_min_read">min de lecture</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">How to Take Orders Like a Pro: Scripts, Shortcuts, and Common Pitfalls</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">Order-taking seems straightforward until you're juggling a four-top with modifications, a wine question, and two tables calling you at once. There is a craft to it — and a right way to do it.</p>
+  </div>
+
+  <div class="prose">
+
+    <p>The order-taking moment is one of the most error-prone in service. Mistakes here ripple forward: wrong dishes arriving, kitchen confusion, re-fires, and unhappy guests. But it's also one of the best upsell opportunities in the shift — a chance to guide the meal, increase the cheque, and demonstrate product knowledge. Done well, it's a performance. Done poorly, it's a liability.</p>
+
+    <h2>Positioning at the table</h2>
+
+    <p>Where you stand when you take orders matters more than most servers realize. Stand to the side of the table, not at the head — this avoids the power dynamic of hovering above seated guests. If it's a round table, find a natural gap. Keep your notepad at chest height, not pressed against your body, so you're not craning your neck down to write.</p>
+
+    <p>Make eye contact with the person you're currently writing for. Don't stare at your notepad. The guest should feel like you're listening, not transcribing.</p>
+
+    <h2>The order of taking orders</h2>
+
+    <p>Convention says: start with the guest to the left of the host. In practice, identify who seems ready — the person who has closed their menu and is looking at you. Start there and move clockwise or counterclockwise consistently so you track position without asking names.</p>
+
+    <p>Seat numbers or position codes (1 = closest to the window, 2 = next clockwise) let you write against a position rather than a person's description, which speeds up food running enormously. Develop a consistent system and use it every time.</p>
+
+    <h2>Clarifying questions that don't feel interrogative</h2>
+
+    <p>Every modification needs to be confirmed before it goes to the kitchen. But how you ask matters:</p>
+
+    <ul>
+      <li><strong>Instead of "Any allergies?"</strong> — "Are there any dietary needs I should flag to the kitchen for you?" The word "needs" is less clinical than "allergies" and opens the conversation more naturally.</li>
+      <li><strong>For temperature (steaks)</strong> — "How would you like that cooked?" followed by, if they say medium: "Perfect — I'll have the kitchen aim for a warm pink center." Confirming back in descriptive language avoids the confusion of what "medium" means to different people.</li>
+      <li><strong>For sauce or dressing</strong> — "Would you like the dressing on the side, or tossed?" Not "Do you want the dressing on the side?" — give them the option naturally, not as a default assumption.</li>
+    </ul>
+
+    <blockquote>"The most important skill in order-taking isn't writing fast — it's confirming back. Reading the order back to the table before you leave catches 90% of mistakes before they become problems."</blockquote>
+
+    <h2>Reading the order back</h2>
+
+    <p>Always read the order back before you leave the table. This is not optional for professional service. It takes 20 seconds and prevents re-fires, kitchen arguments, and upset guests. The format:</p>
+
+    <ul>
+      <li>State each dish by position (not name): "For the seat by the window — the pan-seared salmon, no cream sauce, vegetables on the side."</li>
+      <li>Note any modifications clearly: "And the 8-oz striploin, medium-rare, with the peppercorn jus."</li>
+      <li>Confirm wine or beverage timing: "And I'll bring the Pinot with your mains — does that work?"</li>
+    </ul>
+
+    <h2>The upsell window in the order-taking moment</h2>
+
+    <p>After the food order is taken and confirmed, there's a natural 10-second window for an upsell that doesn't feel pushy — because the guest is still in ordering mode:</p>
+
+    <ul>
+      <li>"Can I suggest a starter while you wait for your mains? The burrata tonight is exceptional."</li>
+      <li>"Would you like to add a side of truffle fries to share? They pair well with most of the mains."</li>
+      <li>"We have a lovely half-bottle of the Sancerre that would work beautifully with your fish — shall I bring a taste?"</li>
+    </ul>
+
+    <p>These land best when they feel like recommendations from someone who knows the menu, not a sales script being read from a cue card.</p>
+
+    <h2>Common order-taking mistakes</h2>
+
+    <ul>
+      <li><strong>Not writing it down</strong> — Some servers pride themselves on memory orders. For a two-top on a quiet night, fine. For a six-top during a rush with modifications, this is how wrong food gets served. Write everything.</li>
+      <li><strong>Interrupting the guest mid-order</strong> — If they're still thinking through their choice, don't jump in with suggestions. Let them finish the sentence first.</li>
+      <li><strong>Forgetting to ask about courses</strong> — "Are you thinking of starting with something, or going straight to mains?" gives the table the option to add a course they may not have considered.</li>
+      <li><strong>Disappearing immediately after taking the order</strong> — Top up water, take the menus, and confirm the timeline before you leave: "Starters should be about ten minutes. I'll be back to check in." That sentence alone prevents half the "where's our food?" moments.</li>
+    </ul>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice order-taking with AI scenarios — start free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Train every service skill with AI practice</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy's roleplay scenarios cover order-taking, upselling, difficult guests, and more — with AI that responds like a real guest. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/mastering-the-greeting" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Daily Service</p>
+        <p class="font-semibold text-white">Mastering the Greeting: First 30 Seconds That Set the Tone</p>
+      </a>
+      <a href="/blog/natural-upsell-language" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Upselling</p>
+        <p class="font-semibold text-white">Natural Upsell Language: Phrases That Feel Like Recommendations</p>
+      </a>
+      <a href="/blog/split-bills-allergies" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Skills & Technique</p>
+        <p class="font-semibold text-white">Splitting Bills, Allergies & Last-Minute Changes</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Confidentialité</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Conditions</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Centre de connaissances</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">Pour les gérants</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  (function(){
+    var saved = localStorage.getItem('sma-lang');
+    if (!saved) { localStorage.setItem('sma-lang','fr'); }
+  })();
+  function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
+  function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/taking-orders-pro';if(l==='es')window.location='/blog/es/taking-orders-pro';}
+  document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
+</script>
+  <script src="/js/blog-tts.js?v=10"></script>
+</body>
+</html>
