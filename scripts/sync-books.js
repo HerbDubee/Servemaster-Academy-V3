@@ -108,23 +108,24 @@ function parseFilename(file) {
   return { book_title: book_title || base, chapter_number, chapter_title: `Chapter ${chapter_number}` };
 }
 
-async function upsertChapter({ book_title, chapter_number, chapter_title, content, is_published }) {
+async function upsertChapter({ source_file, book_title, chapter_number, chapter_title, content, is_published }) {
+  // Use source_file as the unique key so each .md file gets its own row
   const existing = await db.query(
-    'SELECT id FROM book_chapters WHERE book_title = $1 AND chapter_number = $2',
-    [book_title, chapter_number]
+    'SELECT id FROM book_chapters WHERE source_file = $1',
+    [source_file]
   );
   if (existing.rows.length) {
     await db.query(
-      `UPDATE book_chapters SET chapter_title=$1, content=$2, is_published=$3, updated_at=NOW()
-       WHERE book_title=$4 AND chapter_number=$5`,
-      [chapter_title, content, is_published, book_title, chapter_number]
+      `UPDATE book_chapters SET book_title=$1, chapter_number=$2, chapter_title=$3, content=$4, is_published=$5, updated_at=NOW()
+       WHERE source_file=$6`,
+      [book_title, chapter_number, chapter_title, content, is_published, source_file]
     );
     return 'updated';
   } else {
     await db.query(
-      `INSERT INTO book_chapters (book_title, chapter_number, chapter_title, content, is_published)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [book_title, chapter_number, chapter_title, content, is_published]
+      `INSERT INTO book_chapters (source_file, book_title, chapter_number, chapter_title, content, is_published)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [source_file, book_title, chapter_number, chapter_title, content, is_published]
     );
     return 'inserted';
   }
@@ -198,8 +199,8 @@ async function syncBooks() {
       continue;
     }
 
-    const action = await upsertChapter({ book_title, chapter_number, chapter_title, content, is_published });
-    console.log(`  ${action.toUpperCase()} "${book_title}" Ch.${chapter_number} — ${chapter_title} (${content.trim().split(/\s+/).length.toLocaleString()} words)`);
+    const action = await upsertChapter({ source_file: file.name, book_title, chapter_number, chapter_title, content, is_published });
+    console.log(`  ${action.toUpperCase()} [${file.name}] "${book_title}" Ch.${chapter_number} — ${chapter_title} (${content.trim().split(/\s+/).length.toLocaleString()} words)`);
     if (action === 'inserted') inserted++; else updated++;
   }
 

@@ -4204,6 +4204,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     // ── Scenario branching pilot (#39): persist chosen branch path ──────────────
     await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_choice_id TEXT`);
     await db.query(`ALTER TABLE scenario_scores ADD COLUMN IF NOT EXISTS branch_recommended BOOLEAN`);
+    await db.query(`ALTER TABLE book_chapters ADD COLUMN IF NOT EXISTS source_file TEXT`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
 });
