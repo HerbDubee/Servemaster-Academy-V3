@@ -42,6 +42,24 @@ uri = "file://public/img/og/blog-article.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "jpBYiHGV-r_1ERJWcc2Hi"
+uri = "file://public/img/og/og-bartending.png"
+type = "image"
+title = "bartending og image"
+
+[[generated]]
+id = "Vi_5fO-8wOHcHhg72PlV9"
+uri = "file://public/img/og/og-server-skills.png"
+type = "image"
+title = "server skills og image"
+
+[[generated]]
+id = "tIJphiX4j9Jw0aWT1ACe9"
+uri = "file://public/img/og/og-management.png"
+type = "image"
+title = "management career og image"
+
 [[outputs]]
 id = "99VMEajBifp6iti1fNveZ"
 uri = "file://exports/instagram-post-1080x1350.png"
