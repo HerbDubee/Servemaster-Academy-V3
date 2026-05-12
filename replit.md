@@ -78,6 +78,25 @@ node scripts/check-blog-freshness.js
 
 It compares each article's declared date against the last `git log` commit date for its HTML file (stable across clones and CI — unlike filesystem mtime). It lists every article that needs a `dateModified` bump and exits with a non-zero code if any are found. Run it after any blog editing session.
 
+## Blog Post Categories & OG Images
+
+Every blog post in `public/blog/` must include a `<meta name="blog-category">` tag in its `<head>`. This drives the correct OG social-share image automatically — no manual map needed.
+
+**Available categories and their OG images:**
+
+| `content` value | OG image file | Use for |
+|---|---|---|
+| `server-skills` | `og-server-skills.png` | Front-of-house serving techniques, guest interaction, upselling, table management |
+| `bartending` | `og-bartending.png` | Bar craft, cocktails, spirits, bartending techniques and operations |
+| `management` | `og-management.png` | Leadership, hiring, scheduling, training, industry trends, career development |
+
+**Required tag format** (place after the `og:image:height` meta tag):
+```html
+<meta name="blog-category" content="server-skills">
+```
+
+When in doubt: if the post is about behind-the-bar craft → `bartending`; if it's about running a team or venue → `management`; everything else front-of-house → `server-skills`.
+
 ## Gotchas
 
 - **Tailwind CSS changes:** Always run `npm run build:css` after modifying `tailwind-input.css`.
