@@ -59,7 +59,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       </div>
     </div>
     <div class="flex items-center gap-4">
-      <span id="admin-name" class="text-zinc-400 text-sm"></span>
+      <span id="admin-name" class="text-zinc-400 text-sm hidden sm:inline"></span>
       <button onclick="doLogout()" class="text-zinc-500 hover:text-red-400 text-sm transition-colors">Sign out</button>
     </div>
   </header>
@@ -111,7 +111,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
     </div>
 
     <!-- Main content -->
-    <main class="flex-1 p-6 overflow-auto">
+    <main class="flex-1 p-3 sm:p-6 overflow-auto">
 
       <!-- OVERVIEW -->
       <div id="section-overview" class="section active">
@@ -163,7 +163,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h1 class="heading text-3xl font-bold">Operator Dashboard</h1>
+            <h1 class="heading text-2xl sm:text-3xl font-bold">Operator Dashboard</h1>
             <div id="dash-updated" class="text-zinc-500 text-xs mt-1">Loading…</div>
           </div>
           <button onclick="loadDashboard()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-xs font-medium px-4 py-2 rounded-xl transition-colors">↻ Refresh</button>
@@ -233,9 +233,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- USERS -->
       <div id="section-users" class="section">
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="heading text-3xl font-bold">Users</h1>
-          <input id="user-search" oninput="filterUsers()" type="text" placeholder="Search name or email..." class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-56">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h1 class="heading text-2xl sm:text-3xl font-bold">Users</h1>
+          <input id="user-search" oninput="filterUsers()" type="text" placeholder="Search name or email..." class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-full sm:w-56">
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
@@ -262,7 +262,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- MODULES -->
       <div id="section-modules" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Module Stats</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Module Stats</h1>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -284,7 +284,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- NEWSLETTER -->
       <div id="section-newsletter" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Newsletter Subscribers</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Newsletter Subscribers</h1>
         <div id="newsletter-count" class="text-zinc-400 text-sm mb-4"></div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
@@ -306,7 +306,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- RESTAURANTS -->
       <div id="section-restaurants" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Manager Accounts & Restaurants</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Manager Accounts & Restaurants</h1>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -329,7 +329,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- CONTACTS -->
       <div id="section-contacts" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Contact Messages</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Contact Messages</h1>
         <div id="contacts-list" class="space-y-4">
           <div class="text-zinc-500 text-sm">Loading...</div>
         </div>
@@ -338,7 +338,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <!-- TEAM TRIALS -->
       <div id="section-trials" class="section">
         <div class="flex flex-wrap items-start justify-between gap-4 mb-2">
-          <h1 class="heading text-3xl font-bold">Team Trial Requests</h1>
+          <h1 class="heading text-2xl sm:text-3xl font-bold">Team Trial Requests</h1>
           <div class="flex flex-col items-end gap-1">
             <button id="btn-kirk-digest" onclick="triggerKirkTrialDigest()"
               class="bg-orange-500 hover:bg-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
@@ -358,7 +358,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- INVITE CODES -->
       <div id="section-invites" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Invite Codes</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Invite Codes</h1>
 
         <!-- Generator card -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8 max-w-xl">
@@ -432,7 +432,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- REVENUE -->
       <div id="section-revenue" class="section">
-        <h1 class="heading text-3xl font-bold mb-8">Revenue</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-8">Revenue</h1>
         <div id="revenue-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-28"></div>
@@ -462,7 +462,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- OUTREACH -->
       <div id="section-outreach" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Email Outreach</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Email Outreach</h1>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-2xl mb-6">
           <h2 class="font-semibold mb-4">Send Bulk Campaign</h2>
           <div class="space-y-4">
@@ -501,7 +501,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- PAYMENTS -->
       <div id="section-payments" class="section">
-        <h1 class="heading text-3xl font-bold mb-6">Failed Payments</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Failed Payments</h1>
         <div id="payments-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
@@ -528,7 +528,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- SITE CONFIG -->
       <div id="section-siteconfig" class="section">
-        <h1 class="heading text-3xl font-bold mb-8">⚙️ Site Configuration</h1>
+        <h1 class="heading text-2xl sm:text-3xl font-bold mb-8">⚙️ Site Configuration</h1>
 
         <!-- Kirk Trial Digest Time -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6 max-w-xl">
@@ -600,9 +600,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- SCHOLARSHIPS -->
       <div id="section-scholarships" class="section">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 class="heading text-3xl font-bold">Scholarships</h1>
+            <h1 class="heading text-2xl sm:text-3xl font-bold">Scholarships</h1>
             <p class="text-zinc-400 text-sm mt-1">Career Launch Scholarship applications — review, approve, and track graduates.</p>
           </div>
           <a href="/scholarship" target="_blank" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">View Public Page</a>
@@ -634,7 +634,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div id="section-affiliates" class="section">
         <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 class="heading text-3xl font-bold">Partners</h1>
+            <h1 class="heading text-2xl sm:text-3xl font-bold">Partners</h1>
             <p class="text-zinc-400 text-sm mt-1">ServeMaster Partners Program — approve partners, track recurring commissions, and process payouts.</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
@@ -692,8 +692,8 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       </div>
 
       <!-- Mark Paid Modal -->
-      <div id="aff-markpaid-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeMarkPaidModal()">
-        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-md p-7">
+      <div id="aff-markpaid-modal" class="hidden fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeMarkPaidModal()">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-md p-4 sm:p-7 my-4 sm:my-0">
           <div class="flex items-start justify-between mb-5">
             <h3 class="heading text-xl font-bold text-white">Record Payout</h3>
             <button onclick="closeMarkPaidModal()" class="text-zinc-500 hover:text-white text-xl leading-none ml-4">&times;</button>
@@ -728,9 +728,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- TENANTS -->
       <div id="section-tenants" class="section">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 class="heading text-3xl font-bold">Tenants</h1>
+            <h1 class="heading text-2xl sm:text-3xl font-bold">Tenants</h1>
             <p class="text-zinc-400 text-sm mt-1">White-label enterprise restaurant accounts — enable, manage, and create tenants.</p>
           </div>
           <button onclick="openNewTenantModal()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Tenant</button>
@@ -759,9 +759,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- BOOKS -->
       <div id="section-books" class="section">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 class="heading text-3xl font-bold">Books & Manuscripts</h1>
+            <h1 class="heading text-2xl sm:text-3xl font-bold">Books & Manuscripts</h1>
             <p class="text-zinc-400 text-sm mt-1">Private repository for novels, textbooks, and workbooks. Only visible to admin.</p>
           </div>
           <div class="flex gap-2">
@@ -801,8 +801,8 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 </div>
 
 <!-- Book Chapter Editor Modal -->
-<div id="book-editor-modal" class="hidden fixed inset-0 bg-black/90 z-[200] flex items-start justify-center p-4 overflow-y-auto">
-  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-4xl shadow-2xl relative my-8">
+<div id="book-editor-modal" class="hidden fixed inset-0 bg-black/90 z-[200] flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4 sm:p-8 w-full max-w-4xl shadow-2xl relative my-4 sm:my-8">
     <button onclick="closeBookEditor()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
     <h2 id="book-editor-title" class="heading text-xl font-bold mb-6">New Chapter</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -855,8 +855,8 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 </div>
 
 <!-- New Tenant Modal -->
-<div id="new-tenant-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4">
-  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 w-full max-w-md shadow-2xl relative">
+<div id="new-tenant-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4 sm:p-8 w-full max-w-md shadow-2xl relative my-4 sm:my-0">
     <button onclick="closeNewTenantModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
     <h2 class="heading text-xl font-bold mb-1">New Enterprise Tenant</h2>
     <p class="text-zinc-400 text-sm mb-6">Creates a restaurant account with white-label pre-enabled, and sets up the manager user.</p>
@@ -2292,7 +2292,7 @@ async function loadAttribution() {
     wrap.innerHTML = `
       <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-          <h1 class="heading text-3xl font-bold">Attribution — Previous Week</h1>
+          <h1 class="heading text-2xl sm:text-3xl font-bold">Attribution — Previous Week</h1>
           <p class="text-zinc-500 text-xs mt-1">Mon–Sun ET: ${range} · prior week ${priorRange}</p>
         </div>
         <div class="flex gap-2">
