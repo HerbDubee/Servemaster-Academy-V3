@@ -141,6 +141,8 @@ const BRAND_LOGO_URL = process.env.BRAND_LOGO_URL || `${APP_URL}/logo.png`;
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
 
+let lastWebhookSigFailure = null;
+
 const PLAN_TIER_ORDER = ['free', 'premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise'];
 const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'individual', 'starter_team', 'pro_team', 'enterprise', 'active']);
 function highestPlan(a, b) {
@@ -458,7 +460,15 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     const stripe = await getUncachableStripeClient();
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    const failedAt = new Date().toISOString();
+    lastWebhookSigFailure = { at: failedAt, message: err.message };
+    console.warn(JSON.stringify({
+      level: 'WARN',
+      event: 'stripe_webhook_sig_failure',
+      message: 'Webhook signature verification failed — this is often caused by a rotated STRIPE_WEBHOOK_SECRET that has not been updated in the environment. Update the secret in Replit Secrets to match the current signing secret in the Stripe dashboard.',
+      stripe_error: err.message,
+      timestamp: failedAt,
+    }));
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
@@ -591,6 +601,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         break;
       }
     }
+    lastWebhookSigFailure = null;
     res.status(200).json({ received: true });
   } catch (err) {
     console.error('Webhook handler error:', err.message);
@@ -3654,6 +3665,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
         total_pending_cad: parseFloat(affiliateRes.rows[0].total_pending_cad) || 0,
         total_holding_cad: parseFloat(affiliateRes.rows[0].total_holding_cad) || 0,
       },
+      webhook_sig_failure: lastWebhookSigFailure,
       funnel: [
         { label: 'Signed Up', count: total, pct: 100 },
         { label: 'Started Trial', count: parseInt(trialStartedRes.rows[0].cnt), pct: Math.round(parseInt(trialStartedRes.rows[0].cnt) / total * 100) },

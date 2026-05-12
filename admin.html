@@ -121,6 +121,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           <button onclick="loadDashboard()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-xs font-medium px-4 py-2 rounded-xl transition-colors">↻ Refresh</button>
         </div>
 
+        <!-- System Alerts -->
+        <div id="system-alerts" class="mb-5 space-y-2"></div>
+
         <!-- KPI Cards -->
         <div id="kpi-cards" class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
           <div class="animate-pulse bg-zinc-800 rounded-2xl h-24"></div>
@@ -831,6 +834,23 @@ async function loadDashboard() {
     // Timestamp
     const updated = new Date(d.generated_at);
     document.getElementById('dash-updated').textContent = 'Last updated ' + updated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // System Alerts
+    const alerts = [];
+    if (d.webhook_sig_failure) {
+      const failedAt = new Date(d.webhook_sig_failure.at).toLocaleString();
+      alerts.push(`
+        <div class="flex items-start gap-3 bg-red-950/60 border border-red-700/60 rounded-xl px-4 py-3 text-sm">
+          <span class="text-red-400 text-base mt-0.5">⚠️</span>
+          <div>
+            <span class="font-semibold text-red-300">Stripe webhook signature failure detected</span>
+            <span class="text-red-400/80"> — ${failedAt}</span>
+            <p class="text-red-400/70 text-xs mt-1">This usually means <code class="bg-red-900/40 px-1 rounded">STRIPE_WEBHOOK_SECRET</code> was rotated in the Stripe dashboard but hasn't been updated here. Subscription activations and cancellations will not process until the secret is corrected in Replit Secrets.</p>
+          </div>
+        </div>
+      `);
+    }
+    document.getElementById('system-alerts').innerHTML = alerts.join('');
 
     // KPI Cards
     const plans = d.plans || {};
