@@ -475,6 +475,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
+  lastWebhookSigFailure = null;
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
