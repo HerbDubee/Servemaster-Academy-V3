@@ -551,7 +551,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
             class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">
             Save Digest Schedule
           </button>
-          <p id="digest-hour-save-msg" class="hidden text-green-400 text-xs mt-3 text-center">Schedule saved.</p>
+          <p id="digest-hour-save-msg" class="hidden text-green-400 text-xs mt-3 text-center"></p>
           <p id="digest-hour-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
         </div>
 
@@ -1828,8 +1828,18 @@ async function saveDigestHour() {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify({ key: 'kirk_trial_digest_hour_et', value: hour })
     });
-    if (res.ok) { msgEl.classList.remove('hidden'); setTimeout(() => msgEl.classList.add('hidden'), 3000); }
-    else { errEl.textContent = 'Failed to save schedule.'; errEl.classList.remove('hidden'); }
+    if (res.ok) {
+      const hourLabels = {
+        0:'12:00 AM',1:'1:00 AM',2:'2:00 AM',3:'3:00 AM',4:'4:00 AM',5:'5:00 AM',
+        6:'6:00 AM',7:'7:00 AM',8:'8:00 AM',9:'9:00 AM',10:'10:00 AM',11:'11:00 AM',
+        12:'12:00 PM',13:'1:00 PM',14:'2:00 PM',15:'3:00 PM',16:'4:00 PM',17:'5:00 PM',
+        18:'6:00 PM',19:'7:00 PM',20:'8:00 PM',21:'9:00 PM',22:'10:00 PM',23:'11:00 PM'
+      };
+      const label = hourLabels[parseInt(hour, 10)] || hour + ':00';
+      msgEl.textContent = 'Schedule reset — digest will fire at ' + label + ' ET';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 5000);
+    } else { errEl.textContent = 'Failed to save schedule.'; errEl.classList.remove('hidden'); }
   } catch (e) { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
 }
 
