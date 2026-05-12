@@ -327,11 +327,14 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div id="section-trials" class="section">
         <div class="flex flex-wrap items-start justify-between gap-4 mb-2">
           <h1 class="heading text-3xl font-bold">Team Trial Requests</h1>
-          <button id="btn-kirk-digest" onclick="triggerKirkTrialDigest()"
-            class="bg-orange-500 hover:bg-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
-            disabled>
-            📧 Send trial digest now
-          </button>
+          <div class="flex flex-col items-end gap-1">
+            <button id="btn-kirk-digest" onclick="triggerKirkTrialDigest()"
+              class="bg-orange-500 hover:bg-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+              disabled>
+              📧 Send trial digest now
+            </button>
+            <span id="kirk-digest-last-sent" class="text-xs text-zinc-500">Never sent</span>
+          </div>
         </div>
         <p class="text-zinc-400 text-sm mb-6">Restaurants that requested a free 30-day team trial. Mark each one as provisioned once you've sent the access code.</p>
         <div id="trials-summary" class="flex gap-4 mb-6"></div>
@@ -913,6 +916,7 @@ async function loadAll() {
   loadRevenue();
   loadAnalytics();
   loadFailedPayments();
+  loadSiteConfig();
 }
 
 async function checkBlogFreshness() {
@@ -1425,6 +1429,7 @@ async function triggerKirkTrialDigest() {
   } finally {
     if (btn) { btn.textContent = '📧 Send trial digest now'; }
     loadTrials();
+    loadSiteConfig();
   }
 }
 
@@ -1812,6 +1817,23 @@ async function loadSiteConfig() {
     if (sel) {
       const raw = parseInt(d.kirk_trial_digest_hour_et, 10);
       sel.value = String(!isNaN(raw) && raw >= 0 && raw <= 23 ? raw : 8);
+    }
+
+    // Show last-sent timestamp for the Kirk trial digest
+    const lastSentEl = document.getElementById('kirk-digest-last-sent');
+    if (lastSentEl) {
+      const ts = d.kirk_trial_digest_last_sent_at;
+      if (!ts || ts === '1970-01-01T00:00:00.000Z') {
+        lastSentEl.textContent = 'Never sent';
+      } else {
+        const d2 = new Date(ts);
+        lastSentEl.textContent = 'Last sent: ' + d2.toLocaleString('en-CA', {
+          timeZone: 'America/Toronto',
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit', hour12: true,
+          timeZoneName: 'short'
+        });
+      }
     }
   } catch (e) {}
 }

@@ -4298,8 +4298,14 @@ app.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res)
 });
 
 app.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, res) => {
-  try { const result = await sendKirkTrialDigest(); res.json({ success: true, ...result }); }
-  catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
+  try {
+    const result = await sendKirkTrialDigest();
+    await db.query(
+      `INSERT INTO site_settings (key, value) VALUES ('kirk_trial_digest_last_sent_at', $1) ON CONFLICT (key) DO UPDATE SET value = $1`,
+      [new Date().toISOString()]
+    );
+    res.json({ success: true, ...result });
+  } catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
 });
 
 // ── Admin: Stripe revenue ─────────────────────────────────────────────────────
