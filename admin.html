@@ -1110,13 +1110,29 @@ async function loadDashboard() {
     // System Alerts
     const alerts = [];
     if (d.webhook_sig_failure) {
-      const failedAt = new Date(d.webhook_sig_failure.at).toLocaleString();
+      const failedDate = new Date(d.webhook_sig_failure.at);
+      const now = new Date();
+      const diffMs = now - failedDate;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      let relativeTime;
+      if (diffMins < 1) {
+        relativeTime = 'just now';
+      } else if (diffMins < 60) {
+        relativeTime = diffMins === 1 ? '1 minute ago' : `${diffMins} minutes ago`;
+      } else if (diffHours < 24) {
+        relativeTime = diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+      } else {
+        relativeTime = diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
+      }
+      const formattedDate = failedDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       alerts.push(`
         <div class="flex items-start gap-3 bg-red-950/60 border border-red-700/60 rounded-xl px-4 py-3 text-sm">
           <span class="text-red-400 text-base mt-0.5">⚠️</span>
           <div class="flex-1">
             <span class="font-semibold text-red-300">Stripe webhook signature failure detected</span>
-            <span class="text-red-400/80"> — ${failedAt}</span>
+            <span class="text-red-400/80"> — Last failed: <span title="${formattedDate}">${relativeTime}</span> <span class="text-red-500/60 text-xs">(${formattedDate})</span></span>
             <p class="text-red-400/70 text-xs mt-1">This usually means <code class="bg-red-900/40 px-1 rounded">STRIPE_WEBHOOK_SECRET</code> was rotated in the Stripe dashboard but hasn't been updated here. Subscription activations and cancellations will not process until the secret is corrected in Replit Secrets.</p>
             <div class="mt-2 bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-xs text-red-300/80">
               <span class="font-semibold text-red-200">Zero-downtime rotation steps:</span>
