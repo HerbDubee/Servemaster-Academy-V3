@@ -94,6 +94,31 @@ function attachMockupWsProxy(httpServer) {
 
 if (!process.env.JWT_SECRET) throw new Error('FATAL: JWT_SECRET env var is not set. Server cannot start securely.');
 const JWT_SECRET = process.env.JWT_SECRET;
+
+(function smokeTestEnv() {
+  const critical = [
+    { key: 'GOOGLE_CLIENT_ID',              feature: 'Google sign-in' },
+    { key: 'GOOGLE_CLIENT_SECRET',          feature: 'Google sign-in' },
+    { key: 'STRIPE_PREMIUM_MONTHLY_ID',     feature: 'individual monthly checkout' },
+    { key: 'STRIPE_PREMIUM_ANNUAL_ID',      feature: 'individual annual checkout' },
+    { key: 'STRIPE_STARTER_TEAM_ANNUAL_ID', feature: 'Starter Team annual checkout' },
+    { key: 'STRIPE_PRO_TEAM_ANNUAL_ID',     feature: 'Pro Team annual checkout' },
+  ];
+  const missing = critical.filter(({ key }) => !String(process.env[key] || '').trim());
+  if (missing.length) {
+    console.warn('');
+    console.warn('⚠️  SMOKE-TEST WARNING — the following env vars are not set:');
+    missing.forEach(({ key, feature }) =>
+      console.warn(`   • ${key}  →  "${feature}" will be broken`)
+    );
+    console.warn('   Set these secrets before going live to avoid silent checkout / sign-in failures.');
+    console.warn('');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: Missing critical env vars in production — see warnings above. Server cannot start safely.');
+    }
+  }
+})();
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 
