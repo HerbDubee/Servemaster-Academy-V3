@@ -272,6 +272,15 @@ https://servemasteracademy.ca/signup?utm_source=tiktok&utm_medium=video&utm_camp
 ```
 https://servemasteracademy.ca/signup?utm_source=instagram&utm_medium=social&utm_campaign=track_certificate_2026_04&utm_content=post_01
 ```
+```
+https://servemasteracademy.ca/signup?utm_source=facebook&utm_medium=social&utm_campaign=career_tips_2026_04&utm_content=post_01
+```
+```
+https://servemasteracademy.ca/signup?utm_source=facebook&utm_medium=social&utm_campaign=upsell_techniques_2026_04&utm_content=post_01
+```
+```
+https://servemasteracademy.ca/signup?utm_source=facebook&utm_medium=video&utm_campaign=ai_roleplay_demo_2026_04&utm_content=reel_01
+```
 
 ### Manager / team plan CTAs — link to `/teams`
 
