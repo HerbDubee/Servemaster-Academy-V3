@@ -144,6 +144,15 @@ async function syncBooks() {
     return { inserted: 0, updated: 0, skipped: 0 };
   }
 
+  // Sort so base files come first, then variants (_v2, _Polished, etc.) come last.
+  // This ensures the latest revision wins when multiple files share the same chapter number.
+  files.sort((a, b) => {
+    const isVariant = f => /_v\d+|_polished|_rewrite|_revised/i.test(f.name);
+    if (isVariant(a) && !isVariant(b)) return 1;
+    if (!isVariant(a) && isVariant(b)) return -1;
+    return a.name.localeCompare(b.name);
+  });
+
   console.log(`Found ${files.length} .md file(s) in ${DIR}/ — syncing…`);
   let inserted = 0, updated = 0, skipped = 0;
 
