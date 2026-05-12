@@ -679,8 +679,8 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       </div>
 
       <!-- Monthly Summaries Modal -->
-      <div id="aff-summaries-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeSummariesModal()">
-        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-2xl p-7 max-h-[80vh] overflow-y-auto">
+      <div id="aff-summaries-modal" class="hidden fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto" style="background:rgba(0,0,0,0.8);" onclick="if(event.target===this)closeSummariesModal()">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl shadow-2xl w-full max-w-2xl p-4 sm:p-7 my-4 sm:my-0 max-h-none sm:max-h-[80vh] overflow-y-auto">
           <div class="flex items-start justify-between mb-5">
             <div>
               <h3 class="heading text-xl font-bold text-white">Monthly Summaries Preview</h3>
@@ -766,7 +766,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
             <h1 class="heading text-2xl sm:text-3xl font-bold">Books & Manuscripts</h1>
             <p class="text-zinc-400 text-sm mt-1">Private repository for novels, textbooks, and workbooks. Only visible to admin.</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <button onclick="syncBooksFromGit()" id="btn-sync-books" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2">⬇ Sync from Git</button>
             <button onclick="openBookEditor(null)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">+ New Chapter</button>
           </div>
