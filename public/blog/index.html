@@ -252,6 +252,21 @@
       html += '</div>';
       html += '<div class="grid md:grid-cols-2 gap-8 mb-6">';
 
+      var sectionCat = null;
+      var catKeys = ['bartending', 'management', 'server-skills'];
+      for (var ci = 0; ci < catKeys.length; ci++) {
+        if (CATEGORY_SECTIONS[catKeys[ci]](section.id)) { sectionCat = catKeys[ci]; break; }
+      }
+      var catCfg = sectionCat ? CATEGORY_CONFIG[sectionCat] : null;
+      var catBadgeLabel = '';
+      if (sectionCat && catCfg) {
+        catBadgeLabel = lang === 'fr'
+          ? (sectionCat === 'bartending' ? 'Barman' : sectionCat === 'server-skills' ? 'Serveur' : 'Direction')
+          : lang === 'es'
+          ? (sectionCat === 'bartending' ? 'Bartender' : sectionCat === 'server-skills' ? 'Mesero' : 'Gerencia')
+          : catCfg.label;
+      }
+
       section.slugs.forEach(function (slug) {
         var a = articleMap[slug];
         if (!a) return;
@@ -261,6 +276,9 @@
         var searchText = (aTitle + ' ' + aDesc + ' ' + aCat).toLowerCase();
 
         html += '<a href="/blog/' + slug + '" class="blog-card bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group" data-search-text="' + escHtml(searchText) + '">';
+        if (sectionCat && catCfg) {
+          html += '<span onclick="event.preventDefault();event.stopPropagation();window.setBlogCategory(\'' + sectionCat + '\')" style="display:inline-block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;padding:4px 11px;border-radius:9999px;border:1px solid ' + catCfg.color + ';color:' + catCfg.color + ';background:' + catCfg.bg + ';cursor:pointer;margin-bottom:0.75rem;text-decoration:none">' + escHtml(catBadgeLabel) + '</span>';
+        }
         html += '<p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">' + escHtml(aCat) + '</p>';
         html += '<h2 class="heading text-2xl font-bold mb-3 group-hover:text-amber-100 transition-colors">' + escHtml(aTitle) + '</h2>';
         html += '<p class="text-zinc-400 leading-relaxed">' + escHtml(aDesc) + '</p>';
