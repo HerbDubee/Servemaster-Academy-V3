@@ -77,14 +77,19 @@
               <button onclick="setMgrLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
             </div>
           </div>
-          <!-- Export dropdown -->
-          <div class="relative" id="export-selector">
-            <button onclick="toggleExportMenu()" class="bg-amber-400 hover:bg-amber-300 text-black px-5 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors">
-              <i class="fa-solid fa-download"></i> <span data-i18n="mgr_export_csv">Export CSV</span> <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+          <!-- Export: CSV primary, PDF secondary -->
+          <div class="flex items-center gap-1" id="export-selector">
+            <button onclick="exportReportFormat('csv')" class="bg-amber-400 hover:bg-amber-300 text-black px-4 py-2 rounded-l-xl font-semibold text-sm flex items-center gap-2 transition-colors">
+              <i class="fa-solid fa-download"></i> <span data-i18n="mgr_export_csv">Export CSV</span>
             </button>
-            <div id="export-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[150px]">
-              <button onclick="exportReportFormat('csv')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-csv mr-2"></i><span data-i18n="mgr_export_csv">Export CSV</span></button>
-              <button onclick="exportReportFormat('pdf')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-pdf mr-2"></i><span data-i18n="mgr_export_pdf">Export PDF</span></button>
+            <div class="relative">
+              <button onclick="toggleExportMenu()" class="bg-amber-400 hover:bg-amber-300 text-black px-2.5 py-2 rounded-r-xl font-semibold text-sm border-l border-amber-500 transition-colors" aria-label="More export options">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </button>
+              <div id="export-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[150px]">
+                <button onclick="exportReportFormat('csv')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-csv mr-2"></i><span data-i18n="mgr_export_csv">Export CSV</span></button>
+                <button onclick="exportReportFormat('pdf')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-file-pdf mr-2"></i><span data-i18n="mgr_export_pdf">Export PDF</span></button>
+              </div>
             </div>
           </div>
         </div>
@@ -247,7 +252,7 @@
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-lg">
             <h2 class="font-semibold text-lg mb-1" data-i18n="mgr_invite_title">Invite Link</h2>
             <p class="text-zinc-400 text-sm mb-4" data-i18n="mgr_invite_desc">Share this link with your staff to join your team on ServeMaster Academy.</p>
-            <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3" data-i18n-loading="mgr_loading">Loading…</div>
+            <div id="invite-display" class="bg-zinc-800 rounded-xl p-3 text-amber-400 font-mono text-sm break-all mb-3">Loading…</div>
             <button onclick="copyInviteCode()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-xl text-sm transition-colors" data-i18n="mgr_copy_invite">Copy Invite Link</button>
           </div>
 
@@ -347,12 +352,12 @@
     }
 
     function getMgrTitles() {
-      const lang = localStorage.getItem('sma-lang') || 'en';
       return {
-        en: { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' },
-        fr: { team: "Aperçu de l'équipe", certs: 'Certificats', reports: 'Rapports', settings: 'Paramètres' },
-        es: { team: 'Resumen del equipo', certs: 'Certificados', reports: 'Informes', settings: 'Configuración' }
-      }[lang] || { team: 'Team Overview', certs: 'Certificates', reports: 'Reports', settings: 'Settings' };
+        team:     t('mgr_tab_team',     'Team Overview'),
+        certs:    t('mgr_tab_certs',    'Certificates'),
+        reports:  t('mgr_tab_reports',  'Reports'),
+        settings: t('mgr_tab_settings', 'Settings')
+      };
     }
 
     function switchTab(name) {
@@ -665,7 +670,8 @@
 
     async function exportReportFormat(format) {
       document.getElementById('export-menu').classList.add('hidden');
-      const btn = document.querySelector('#export-selector button');
+      // Primary button is the first button in the export-selector (CSV button)
+      const btn = document.querySelector('#export-selector > button') || document.querySelector('#export-selector button');
       const origHTML = btn.innerHTML;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('mgr_generating','Generating…')}`;
       btn.disabled = true;

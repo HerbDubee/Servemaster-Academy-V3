@@ -788,6 +788,10 @@
       mgr_digest_disabled: 'Weekly digest disabled.',
       mgr_wl_color_invalid_primary: 'Primary colour must be #rrggbb format.',
       mgr_wl_color_invalid_accent: 'Accent colour must be #rrggbb format.',
+      mgr_tab_team: 'Team Overview',
+      mgr_tab_certs: 'Certificates',
+      mgr_tab_reports: 'Reports',
+      mgr_tab_settings: 'Settings',
     },
 
     fr: {
@@ -1571,6 +1575,10 @@
       mgr_digest_disabled: 'Résumé hebdomadaire désactivé.',
       mgr_wl_color_invalid_primary: 'La couleur principale doit être au format #rrggbb.',
       mgr_wl_color_invalid_accent: "La couleur d'accent doit être au format #rrggbb.",
+      mgr_tab_team: "Aperçu de l'équipe",
+      mgr_tab_certs: 'Certificats',
+      mgr_tab_reports: 'Rapports',
+      mgr_tab_settings: 'Paramètres',
     },
 
     es: {
@@ -2356,6 +2364,10 @@
       mgr_digest_disabled: 'Resumen semanal desactivado.',
       mgr_wl_color_invalid_primary: 'El color principal debe tener el formato #rrggbb.',
       mgr_wl_color_invalid_accent: 'El color de acento debe tener el formato #rrggbb.',
+      mgr_tab_team: 'Resumen del equipo',
+      mgr_tab_certs: 'Certificados',
+      mgr_tab_reports: 'Informes',
+      mgr_tab_settings: 'Configuración',
     }
   };
 

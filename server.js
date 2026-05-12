@@ -1362,13 +1362,23 @@ async function sendWeeklyManagerDigests() {
       const brandName = escapeHtml((wlActive && mgr.wl_brand_name) || mgr.restaurant_name);
       const brandColor = (wlActive && mgr.wl_primary_color) || '#d4af37';
 
-      // Newly certified in window
-      const newCertsR = await db.query(`
-        SELECT u.name FROM certificate_log cl
-        JOIN users u ON u.id = cl.user_id
-        JOIN restaurant_members rm ON rm.user_id = cl.user_id
-        WHERE rm.restaurant_id = $1 AND cl.issued_at >= $2 AND cl.issued_at < $3
-      `, [mgr.restaurant_id, lastMonday, thisMonday]);
+      // Newly certified in window (with prior-week count for WoW delta)
+      const [newCertsR, prevCertsR] = await Promise.all([
+        db.query(`
+          SELECT u.name FROM certificate_log cl
+          JOIN users u ON u.id = cl.user_id
+          JOIN restaurant_members rm ON rm.user_id = cl.user_id
+          WHERE rm.restaurant_id = $1 AND cl.issued_at >= $2 AND cl.issued_at < $3
+        `, [mgr.restaurant_id, lastMonday, thisMonday]),
+        db.query(`
+          SELECT COUNT(*) as cnt FROM certificate_log cl
+          JOIN restaurant_members rm ON rm.user_id = cl.user_id
+          WHERE rm.restaurant_id = $1 AND cl.issued_at >= $2 AND cl.issued_at < $3
+        `, [mgr.restaurant_id, prev2Monday, lastMonday])
+      ]);
+      const certWow  = newCertsR.rows.length - parseInt(prevCertsR.rows[0].cnt);
+      const certWowStr   = certWow > 0 ? `+${certWow}` : `${certWow}`;
+      const certWowColor = certWow > 0 ? '#34d399' : certWow < 0 ? '#f87171' : '#a3a3a3';
 
       const certsHtml = newCertsR.rows.length
         ? `<div style="margin:16px 0;padding:12px 16px;background:#064e3b;border-radius:8px;font-size:13px;color:#34d399;">🎓 <strong>New certifications this week:</strong> ${newCertsR.rows.map(r=>escapeHtml(r.name)).join(', ')}</div>`
@@ -1414,6 +1424,7 @@ async function sendWeeklyManagerDigests() {
             <td style="text-align:center;padding:12px 8px;">
               <div style="font-size:22px;font-weight:700;color:#34d399;">${newCertsR.rows.length}</div>
               <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">New Certs</div>
+              <div style="font-size:10px;color:${certWowColor};margin-top:1px;">${certWowStr} vs prior</div>
             </td>
           </tr></table>
           ${certsHtml}
