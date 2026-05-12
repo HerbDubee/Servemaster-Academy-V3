@@ -103,6 +103,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
     { key: 'STRIPE_PREMIUM_ANNUAL_ID',      feature: 'individual annual checkout' },
     { key: 'STRIPE_STARTER_TEAM_ANNUAL_ID', feature: 'Starter Team annual checkout' },
     { key: 'STRIPE_PRO_TEAM_ANNUAL_ID',     feature: 'Pro Team annual checkout' },
+    { key: 'STRIPE_WEBHOOK_SECRET',         feature: 'Stripe webhook payment events (subscription activations, cancellations, upgrades)' },
   ];
   const missing = critical.filter(({ key }) => !String(process.env[key] || '').trim());
   if (missing.length) {
