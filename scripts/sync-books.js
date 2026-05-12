@@ -153,6 +153,7 @@ async function syncBooks() {
     return a.name.localeCompare(b.name);
   });
 
+  console.log(`Syncing from https://github.com/${REPO}/tree/${BRANCH}/${DIR}`);
   console.log(`Found ${files.length} .md file(s) in ${DIR}/ — syncing…`);
   let inserted = 0, updated = 0, skipped = 0;
 

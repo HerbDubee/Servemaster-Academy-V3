@@ -3811,6 +3811,18 @@ app.get('/api/admin/books', adminMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Failed to load books' }); }
 });
 
+app.get('/api/admin/books-status', adminMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT book_title, COUNT(*) as chapters, bool_or(is_published) as any_published,
+       string_agg(chapter_number::text, ',' ORDER BY chapter_number) as chapter_numbers
+       FROM book_chapters GROUP BY book_title ORDER BY book_title`
+    );
+    const total = await db.query('SELECT COUNT(*) FROM book_chapters');
+    res.json({ total_rows: parseInt(total.rows[0].count), books: rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/admin/books/:id', adminMiddleware, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM book_chapters WHERE id = $1', [req.params.id]);
