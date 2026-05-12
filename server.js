@@ -3829,7 +3829,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
       usersRes, new7dRes, new30dRes, active7dRes, tierCountsRes,
       trialStartedRes, mod1Res, mod5Res, mod10Res, paidRes,
       scholarshipRes, affiliateRes, recentRes, newsletterRes, pendingTrialsRes,
-      webhookSigFailureRes
+      webhookSigFailureRes, pendingContactsRes
     ] = await Promise.all([
       db.query('SELECT COUNT(*) as cnt FROM users'),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '7 days'"),
@@ -3851,6 +3851,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
       db.query('SELECT COUNT(*) as cnt FROM email_subscribers WHERE active = TRUE'),
       db.query("SELECT COUNT(*) as cnt FROM contact_messages WHERE message LIKE '[TEAM TRIAL REQUEST]%' AND (provisioned IS NULL OR provisioned = FALSE)"),
       db.query("SELECT value FROM site_settings WHERE key = 'webhook_sig_failure'"),
+      db.query("SELECT COUNT(*) as cnt FROM contact_messages WHERE message NOT LIKE '[TEAM TRIAL REQUEST]%'"),
     ]);
 
     const byTier = {};
@@ -3904,6 +3905,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
       },
       webhook_sig_failure: (() => { try { return webhookSigFailureRes.rows.length > 0 ? JSON.parse(webhookSigFailureRes.rows[0].value) : null; } catch { return null; } })(),
       pending_trials: parseInt(pendingTrialsRes.rows[0].cnt) || 0,
+      pending_contacts: parseInt(pendingContactsRes.rows[0].cnt) || 0,
       funnel: [
         { label: 'Signed Up', count: total, pct: 100 },
         { label: 'Started Trial', count: parseInt(trialStartedRes.rows[0].cnt), pct: Math.round(parseInt(trialStartedRes.rows[0].cnt) / total * 100) },

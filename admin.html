@@ -75,7 +75,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('modules')" id="nav-modules">📚 Modules</div>
       <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
       <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
-      <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
+      <div class="nav-item flex items-center" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages<span id="contacts-nav-badge" class="hidden ml-auto text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1.5 py-0.5 leading-none"></span></div>
       <div class="nav-item flex items-center" onclick="showSection('trials')" id="nav-trials">🧪 Team Trials<span id="trials-nav-badge" class="hidden ml-auto text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1.5 py-0.5 leading-none"></span></div>
       <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
       <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
@@ -96,7 +96,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('modules')" class="nav-item whitespace-nowrap" id="mnav-modules">📚</button>
       <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
       <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
-      <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
+      <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap relative" id="mnav-contacts">✉️<span id="contacts-mnav-badge" class="hidden absolute -top-1 -right-1 text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1 leading-none" style="min-width:1.1rem;line-height:1.1rem;text-align:center;"></span></button>
       <button onclick="showSection('trials')" class="nav-item whitespace-nowrap relative" id="mnav-trials">🧪<span id="trials-mnav-badge" class="hidden absolute -top-1 -right-1 text-xs font-bold bg-amber-400 text-zinc-900 rounded-full px-1 leading-none" style="min-width:1.1rem;line-height:1.1rem;text-align:center;"></span></button>
       <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
       <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
@@ -1255,6 +1255,19 @@ async function loadDashboard() {
       </div>
       ${aff.affiliates_with_pending > 0 ? `<button onclick="showSection('affiliates')" class="mt-4 w-full text-center text-xs bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-900/40 rounded-xl py-2 transition-colors">View payout queue →</button>` : ''}
     `;
+
+    // Messages nav badge
+    const pendingContacts = d.pending_contacts || 0;
+    ['contacts-nav-badge', 'contacts-mnav-badge'].forEach(id => {
+      const badge = document.getElementById(id);
+      if (!badge) return;
+      if (pendingContacts > 0) {
+        badge.textContent = pendingContacts > 99 ? '99+' : pendingContacts;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
 
     // Team Trials block
     const pendingTrials = d.pending_trials || 0;
