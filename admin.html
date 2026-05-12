@@ -1533,6 +1533,7 @@ async function loadTrials() {
 
     if (!reqs.length) { container.innerHTML = '<div class="text-zinc-500 text-sm">No team trial requests yet.</div>'; return; }
 
+    const savedPlan = localStorage.getItem('kirk_trial_plan_default') || 'starter_team';
     container.innerHTML = reqs.map(r => {
       const msgBody = r.message.replace(/^\[TEAM TRIAL REQUEST\]\s*/, '');
       const parts = {};
@@ -1567,7 +1568,7 @@ async function loadTrials() {
             </div>
             <div class="flex-shrink-0 flex flex-col gap-2 items-end">
               <div class="flex items-center gap-1.5">
-                <select id="plan-select-${r.id}" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-amber-700">
+                <select id="plan-select-${r.id}" onchange="localStorage.setItem('kirk_trial_plan_default', this.value)" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-amber-700">
                   <option value="starter_team">Starter Team</option>
                   <option value="pro_team">Pro Team</option>
                 </select>
@@ -1585,6 +1586,10 @@ async function loadTrials() {
         </div>
       `;
     }).join('');
+    reqs.forEach(r => {
+      const sel = document.getElementById(`plan-select-${r.id}`);
+      if (sel) sel.value = savedPlan;
+    });
   } catch (e) { console.error(e); }
 }
 
