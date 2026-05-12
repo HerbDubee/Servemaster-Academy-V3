@@ -2324,6 +2324,72 @@ app.get('/api/payments/status', authMiddleware, async (req, res) => {
 });
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
+
+app.get('/api/admin/config-health', adminMiddleware, (req, res) => {
+  const critical = [
+    {
+      key: 'GOOGLE_CLIENT_ID',
+      feature: 'Google sign-in',
+      setting: 'Google OAuth',
+      href: 'https://console.cloud.google.com/apis/credentials',
+      section: null,
+    },
+    {
+      key: 'GOOGLE_CLIENT_SECRET',
+      feature: 'Google sign-in',
+      setting: 'Google OAuth',
+      href: 'https://console.cloud.google.com/apis/credentials',
+      section: null,
+    },
+    {
+      key: 'STRIPE_PREMIUM_MONTHLY_ID',
+      feature: 'individual monthly checkout',
+      setting: 'Stripe Price IDs',
+      href: 'https://dashboard.stripe.com/products',
+      section: null,
+    },
+    {
+      key: 'STRIPE_PREMIUM_ANNUAL_ID',
+      feature: 'individual annual checkout',
+      setting: 'Stripe Price IDs',
+      href: 'https://dashboard.stripe.com/products',
+      section: null,
+    },
+    {
+      key: 'STRIPE_STARTER_TEAM_ANNUAL_ID',
+      feature: 'Starter Team annual checkout',
+      setting: 'Stripe Price IDs',
+      href: 'https://dashboard.stripe.com/products',
+      section: null,
+    },
+    {
+      key: 'STRIPE_PRO_TEAM_ANNUAL_ID',
+      feature: 'Pro Team annual checkout',
+      setting: 'Stripe Price IDs',
+      href: 'https://dashboard.stripe.com/products',
+      section: null,
+    },
+    {
+      key: 'STRIPE_WEBHOOK_SECRET',
+      feature: 'Stripe payment confirmations',
+      setting: 'Stripe Webhooks',
+      href: 'https://dashboard.stripe.com/webhooks',
+      section: 'payments',
+    },
+    {
+      key: 'RESEND_API_KEY',
+      feature: 'transactional email delivery',
+      setting: 'Resend API Keys',
+      href: 'https://resend.com/api-keys',
+      section: null,
+    },
+  ];
+  const missing = critical
+    .filter(({ key }) => !String(process.env[key] || '').trim())
+    .map(({ key, feature, setting, href, section }) => ({ key, feature, setting, href, section }));
+  res.json({ ok: missing.length === 0, missing });
+});
+
 app.get('/api/admin/overview', adminMiddleware, async (req, res) => {
   try {
     const [users, new7d, new30d, active7d, tierCounts, teamCounts, subs, scenarios, modules, contacts] = await Promise.all([
