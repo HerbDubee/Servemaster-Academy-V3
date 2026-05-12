@@ -1,5 +1,40 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "FP3no0v1DpCxfcawQ2Ssd"
+uri = "file://public/img/og/home.png"
+type = "image"
+title = "home og image"
+
+[[generated]]
+id = "5PK1WD00jZWzjlAVESmlh"
+uri = "file://public/img/og/features.png"
+type = "image"
+title = "features og image"
+
+[[generated]]
+id = "0R4j-2iFUXhlXKlmKPdHt"
+uri = "file://public/img/og/pricing.png"
+type = "image"
+title = "pricing og image"
+
+[[generated]]
+id = "pdqN8M6Fkv7g7wuFT_9pI"
+uri = "file://public/img/og/managers.png"
+type = "image"
+title = "managers og image"
+
+[[generated]]
+id = "HyO9GYevmbtp5ULPRKibb"
+uri = "file://public/img/og/teams.png"
+type = "image"
+title = "teams og image"
+
+[[generated]]
+id = "o9eHwOyNNpGt33Bpu2O8z"
+uri = "file://public/img/og/blog.png"
+type = "image"
+title = "blog og image"
 
 [[outputs]]
 id = "99VMEajBifp6iti1fNveZ"
