@@ -777,6 +777,10 @@
       mgr_required: 'Required',
       mgr_module_required: 'Module marked as required.',
       mgr_module_unrequired: 'Module removed from required.',
+      mgr_back_training: 'Back to Training',
+      mgr_cert_intro: 'Issue certificates to staff who have completed all 30 modules. Each issuance is logged below.',
+      mgr_generating: 'Generating…',
+      mgr_export_failed: 'Export failed.',
     },
 
     fr: {
@@ -1549,6 +1553,10 @@
       mgr_required: 'Obligatoire',
       mgr_module_required: 'Module marqué comme obligatoire.',
       mgr_module_unrequired: 'Module retiré des obligatoires.',
+      mgr_back_training: 'Retour à la formation',
+      mgr_cert_intro: 'Émettez des certificats aux membres ayant complété les 30 modules. Chaque émission est journalisée ci-dessous.',
+      mgr_generating: 'Génération…',
+      mgr_export_failed: "Échec de l'export.",
     },
 
     es: {
@@ -2323,6 +2331,10 @@
       mgr_required: 'Obligatorio',
       mgr_module_required: 'Módulo marcado como obligatorio.',
       mgr_module_unrequired: 'Módulo eliminado de los obligatorios.',
+      mgr_back_training: 'Volver a la formación',
+      mgr_cert_intro: 'Emite certificados al personal que ha completado los 30 módulos. Cada emisión se registra a continuación.',
+      mgr_generating: 'Generando…',
+      mgr_export_failed: 'Error al exportar.',
     }
   };
 
