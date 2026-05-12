@@ -1098,6 +1098,8 @@ async function checkConfigHealth() {
   }
 }
 
+let _webhookFailingLastRender = false;
+
 async function loadDashboard() {
   checkConfigHealth();
   checkBlogFreshness();
@@ -1147,8 +1149,21 @@ async function loadDashboard() {
           </div>
         </div>
       `);
+      _webhookFailingLastRender = true;
+    } else if (_webhookFailingLastRender) {
+      // Failure just cleared — show a transient green confirmation (fail → healthy transition only)
+      _webhookFailingLastRender = false;
+      const toast = document.createElement('div');
+      toast.className = 'flex items-center gap-3 bg-emerald-950/60 border border-emerald-600/60 rounded-xl px-4 py-3 text-sm transition-opacity duration-700';
+      toast.innerHTML = `<span class="text-emerald-400 text-base">✓</span><span class="font-semibold text-emerald-300">Webhook signature verified — secret is working correctly.</span>`;
+      const systemAlerts = document.getElementById('system-alerts');
+      systemAlerts.innerHTML = '';
+      systemAlerts.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+      setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 4200);
+    } else {
+      document.getElementById('system-alerts').innerHTML = alerts.join('');
     }
-    document.getElementById('system-alerts').innerHTML = alerts.join('');
 
     // KPI Cards
     const plans = d.plans || {};
