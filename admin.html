@@ -322,7 +322,14 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
       <!-- TEAM TRIALS -->
       <div id="section-trials" class="section">
-        <h1 class="heading text-3xl font-bold mb-2">Team Trial Requests</h1>
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-2">
+          <h1 class="heading text-3xl font-bold">Team Trial Requests</h1>
+          <button id="btn-kirk-digest" onclick="triggerKirkTrialDigest()"
+            class="bg-orange-500 hover:bg-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+            disabled>
+            📧 Send trial digest now
+          </button>
+        </div>
         <p class="text-zinc-400 text-sm mb-6">Restaurants that requested a free 30-day team trial. Mark each one as provisioned once you've sent the access code.</p>
         <div id="trials-summary" class="flex gap-4 mb-6"></div>
         <div id="trials-list" class="space-y-4">
@@ -1273,6 +1280,12 @@ async function loadTrials() {
 
     const pending = reqs.filter(r => !r.provisioned).length;
     const done = reqs.filter(r => r.provisioned).length;
+    const unnotified = reqs.filter(r => !r.kirk_trial_digest_notified).length;
+    const digestBtn = document.getElementById('btn-kirk-digest');
+    if (digestBtn) {
+      digestBtn.disabled = unnotified === 0;
+      digestBtn.title = unnotified === 0 ? 'No un-notified requests to send' : `Send digest for ${unnotified} un-notified request${unnotified === 1 ? '' : 's'}`;
+    }
     summary.innerHTML = `
       <div class="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3 text-center">
         <div class="text-2xl font-bold text-amber-400">${pending}</div>
@@ -1327,6 +1340,31 @@ async function loadTrials() {
       `;
     }).join('');
   } catch (e) { console.error(e); }
+}
+
+async function triggerKirkTrialDigest() {
+  const btn = document.getElementById('btn-kirk-digest');
+  if (!confirm('Send the Kirk trial digest email now?')) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  try {
+    const res = await fetch('/api/admin/trigger-kirk-trial-digest', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert('Failed to send digest: ' + (data.error || res.status));
+      return;
+    }
+    const count = data.sent ?? 0;
+    alert(count > 0 ? `Digest sent — ${count} request${count === 1 ? '' : 's'} included.` : 'No un-notified requests to send.');
+  } catch (e) {
+    console.error(e);
+    alert('Network error sending digest.');
+  } finally {
+    if (btn) { btn.textContent = '📧 Send trial digest now'; }
+    loadTrials();
+  }
 }
 
 async function toggleTrialProvision(id, currentlyProvisioned) {

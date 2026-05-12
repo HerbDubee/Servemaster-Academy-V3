@@ -2581,7 +2581,7 @@ app.get('/api/admin/team-trial-requests', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT id, name, email, message, provisioned, created_at,
-              utm_source, utm_medium, utm_campaign
+              utm_source, utm_medium, utm_campaign, kirk_trial_digest_notified
        FROM contact_messages
        WHERE message LIKE '[TEAM TRIAL REQUEST]%'
        ORDER BY created_at DESC`
