@@ -1269,16 +1269,17 @@ async function sendDripEmailIfDue(userId, userEmail, userName) {
 async function sendWeeklyManagerDigests() {
   try {
     const now = new Date();
-    // Current week window: most recent Mon 00:00 ET → +7 days. Previous week: Mon-7d → Mon.
-    const weekStart = _mostRecentMondayMidnightET(now);
-    const weekEnd   = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const prevStart = new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weekLabel = `${weekStart.toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})} – ${new Date(weekEnd.getTime()-1000).toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})}`;
+    // Digest covers the previous Mon–Sun ET week (lastMonday 00:00 → thisMonday 00:00).
+    // WoW comparison covers the week before that (prev2Monday → lastMonday).
+    const thisMonday  = _mostRecentMondayMidnightET(now);
+    const lastMonday  = new Date(thisMonday.getTime()  - 7 * 24 * 60 * 60 * 1000);
+    const prev2Monday = new Date(lastMonday.getTime()  - 7 * 24 * 60 * 60 * 1000);
+    const weekLabel = `${lastMonday.toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})} – ${new Date(thisMonday.getTime()-1000).toLocaleDateString('en-CA',{month:'short',day:'numeric',timeZone:'America/Toronto'})}`;
 
     // Only paid, opted-in, not unsubscribed managers with a restaurant
     const managers = await db.query(`
       SELECT u.id, u.name, u.email, u.weekly_digest_enabled,
-             r.id as restaurant_id, r.name as restaurant_name
+             r.id as restaurant_id, r.name as restaurant_name, r.cert_logo_url
       FROM users u
       JOIN restaurants r ON r.manager_id = u.id
       WHERE u.is_unsubscribed IS NOT TRUE
@@ -1307,32 +1308,51 @@ async function sendWeeklyManagerDigests() {
       `, [mgr.restaurant_id]);
       if (!team.rows.length) { skipped++; continue; }
 
-      // Modules completed this week vs prev week (week-over-week)
-      const [thisWeekR, prevWeekR] = await Promise.all([
+      // Modules completed in window (prev Mon–Sun) and WoW delta
+      const [thisWeekR, prevWeekR, quizThisR, quizPrevR] = await Promise.all([
         db.query(`SELECT COUNT(*) as cnt FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.progress >= 100
             AND p.updated_at >= $2 AND p.updated_at < $3`,
-          [mgr.restaurant_id, weekStart, weekEnd]),
+          [mgr.restaurant_id, lastMonday, thisMonday]),
         db.query(`SELECT COUNT(*) as cnt FROM user_progress p
           JOIN restaurant_members rm ON rm.user_id = p.user_id
           WHERE rm.restaurant_id = $1 AND p.progress >= 100
             AND p.updated_at >= $2 AND p.updated_at < $3`,
-          [mgr.restaurant_id, prevStart, weekStart])
+          [mgr.restaurant_id, prev2Monday, lastMonday]),
+        db.query(`SELECT COALESCE(AVG(p.quiz_score),0) as avg FROM user_progress p
+          JOIN restaurant_members rm ON rm.user_id = p.user_id
+          WHERE rm.restaurant_id = $1 AND p.quiz_score IS NOT NULL
+            AND p.updated_at >= $2 AND p.updated_at < $3`,
+          [mgr.restaurant_id, lastMonday, thisMonday]),
+        db.query(`SELECT COALESCE(AVG(p.quiz_score),0) as avg FROM user_progress p
+          JOIN restaurant_members rm ON rm.user_id = p.user_id
+          WHERE rm.restaurant_id = $1 AND p.quiz_score IS NOT NULL
+            AND p.updated_at >= $2 AND p.updated_at < $3`,
+          [mgr.restaurant_id, prev2Monday, lastMonday])
       ]);
       const thisWeekCount = parseInt(thisWeekR.rows[0].cnt);
       const prevWeekCount = parseInt(prevWeekR.rows[0].cnt);
       const wow = thisWeekCount - prevWeekCount;
       const wowStr   = wow > 0 ? `+${wow}` : `${wow}`;
       const wowColor = wow > 0 ? '#34d399' : wow < 0 ? '#f87171' : '#a3a3a3';
+      const quizThis = Math.round(Number(quizThisR.rows[0].avg));
+      const quizPrev = Math.round(Number(quizPrevR.rows[0].avg));
+      const quizWow  = quizThis - quizPrev;
+      const quizWowStr   = quizWow > 0 ? `+${quizWow}` : `${quizWow}`;
+      const quizWowColor = quizWow > 0 ? '#34d399' : quizWow < 0 ? '#f87171' : '#a3a3a3';
 
-      // Newly certified this week
+      // White-label: use restaurant cert_logo_url if set, else SMA logo
+      const logoUrl = mgr.cert_logo_url || 'https://servemasteracademy.ca/logo.png';
+      const brandName = escapeHtml(mgr.restaurant_name);
+
+      // Newly certified in window
       const newCertsR = await db.query(`
         SELECT u.name FROM certificate_log cl
         JOIN users u ON u.id = cl.user_id
         JOIN restaurant_members rm ON rm.user_id = cl.user_id
         WHERE rm.restaurant_id = $1 AND cl.issued_at >= $2 AND cl.issued_at < $3
-      `, [mgr.restaurant_id, weekStart, weekEnd]);
+      `, [mgr.restaurant_id, lastMonday, thisMonday]);
 
       const certsHtml = newCertsR.rows.length
         ? `<div style="margin:16px 0;padding:12px 16px;background:#064e3b;border-radius:8px;font-size:13px;color:#34d399;">🎓 <strong>New certifications this week:</strong> ${newCertsR.rows.map(r=>escapeHtml(r.name)).join(', ')}</div>`
@@ -1350,29 +1370,40 @@ async function sendWeeklyManagerDigests() {
         to: mgr.email,
         subject: `Weekly Training Digest — ${mgr.restaurant_name} (${weekLabel})`,
         html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-          <h2 style="font-size:20px;color:#d4af37;margin-bottom:4px;">Weekly Team Digest</h2>
-          <p style="font-size:14px;color:#a3a3a3;margin-bottom:16px;">${escapeHtml(mgr.restaurant_name)} · ${weekLabel}</p>
-          <div style="background:#1a1a1a;border-radius:8px;padding:16px;margin-bottom:20px;display:flex;gap:0;">
-            <div style="text-align:center;flex:1;border-right:1px solid #333;">
+          <table style="width:100%;border-collapse:collapse;margin-bottom:24px;"><tr>
+            <td><img src="${logoUrl}" alt="${brandName}" style="width:48px;height:48px;border-radius:10px;object-fit:cover;"></td>
+            <td style="padding-left:12px;vertical-align:middle;">
+              <div style="font-size:18px;font-weight:700;color:#d4af37;">${brandName}</div>
+              <div style="font-size:11px;color:#a3a3a3;">Powered by ServeMaster Academy</div>
+            </td>
+          </tr></table>
+          <h2 style="font-size:18px;color:#f5f5f5;margin-bottom:4px;">Weekly Training Digest</h2>
+          <p style="font-size:13px;color:#a3a3a3;margin-bottom:20px;">${weekLabel}</p>
+          <table style="width:100%;border-collapse:collapse;background:#1a1a1a;border-radius:8px;margin-bottom:20px;"><tr>
+            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
               <div style="font-size:24px;font-weight:700;color:#d4af37;">${thisWeekCount}</div>
-              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">Modules This Week</div>
-            </div>
-            <div style="text-align:center;flex:1;border-right:1px solid #333;">
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Modules Completed</div>
+            </td>
+            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
               <div style="font-size:24px;font-weight:700;color:${wowColor};">${wowStr}</div>
-              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">vs Last Week</div>
-            </div>
-            <div style="text-align:center;flex:1;">
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">vs Prior Week</div>
+            </td>
+            <td style="text-align:center;padding:16px;border-right:1px solid #333;">
+              <div style="font-size:24px;font-weight:700;color:${quizWowColor};">${quizThis > 0 ? quizThis+'%' : '—'}</div>
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">Avg Quiz Score</div>
+              ${quizThis > 0 && quizPrev > 0 ? `<div style="font-size:10px;color:${quizWowColor};">${quizWowStr} vs prior</div>` : ''}
+            </td>
+            <td style="text-align:center;padding:16px;">
               <div style="font-size:24px;font-weight:700;color:#34d399;">${newCertsR.rows.length}</div>
-              <div style="font-size:11px;color:#a3a3a3;margin-top:2px;">New Certs</div>
-            </div>
-          </div>
+              <div style="font-size:10px;color:#a3a3a3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">New Certs</div>
+            </td>
+          </tr></table>
           ${certsHtml}
-          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
             <thead><tr style="background:#1a1a1a;">
-              <th style="padding:8px 12px;text-align:left;color:#a3a3a3;">Staff Member</th>
-              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Modules</th>
-              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;">Avg Quiz</th>
+              <th style="padding:8px 12px;text-align:left;color:#a3a3a3;font-size:10px;text-transform:uppercase;letter-spacing:.05em;">Staff Member</th>
+              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;font-size:10px;text-transform:uppercase;letter-spacing:.05em;">Modules</th>
+              <th style="padding:8px 12px;text-align:center;color:#a3a3a3;font-size:10px;text-transform:uppercase;letter-spacing:.05em;">Avg Quiz</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
@@ -3048,13 +3079,52 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
 
     // ── PDF export ─────────────────────────────────────────────────────────
     if (req.query.format === 'pdf') {
-      let rows = '';
+      // Restaurant info for branding + slug
+      const restRes = user.restaurant_id
+        ? await db.query('SELECT name, cert_logo_url FROM restaurants WHERE id = $1', [user.restaurant_id])
+        : { rows: [] };
+      const rest = restRes.rows[0] || {};
+      const restaurantName = rest.name || 'Team Report';
+      const restaurantSlug = restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const logoUrl = rest.cert_logo_url || 'https://servemasteracademy.ca/logo.png';
+
+      // Headline stats
+      const totalMembers = staffRes.rows.length;
+      const avgCompletion = totalMembers
+        ? Math.round(staffRes.rows.reduce((s, r) => s + Number(r.avg_progress), 0) / totalMembers)
+        : 0;
+      const certifiedCount = staffRes.rows.filter(r => Number(r.avg_progress) >= 100).length;
+      const needsAttention = staffRes.rows.filter(r => {
+        const s = calculateStatus([Math.round(Number(r.avg_progress))]);
+        return s === 'lagging' || s === 'overdue';
+      }).length;
+
+      // Completion distribution
+      const buckets = { '0–25%': 0, '26–50%': 0, '51–75%': 0, '76–99%': 0, '100%': 0 };
+      staffRes.rows.forEach(r => {
+        const p = Math.round(Number(r.avg_progress));
+        if (p >= 100) buckets['100%']++;
+        else if (p >= 76) buckets['76–99%']++;
+        else if (p >= 51) buckets['51–75%']++;
+        else if (p >= 26) buckets['26–50%']++;
+        else buckets['0–25%']++;
+      });
+      const maxBucket = Math.max(...Object.values(buckets), 1);
+      const distBars = Object.entries(buckets).map(([label, count]) => {
+        const w = Math.round((count / maxBucket) * 100);
+        const color = label === '100%' ? '#065f46' : label === '76–99%' ? '#14532d' : label === '51–75%' ? '#92400e' : label === '26–50%' ? '#9a3412' : '#7f1d1d';
+        return `<tr><td style="padding:4px 8px;font-size:11px;white-space:nowrap;">${label}</td><td style="padding:4px 8px;width:180px;"><div style="background:#e5e7eb;border-radius:3px;height:12px;"><div style="background:${color};width:${w}%;height:12px;border-radius:3px;"></div></div></td><td style="padding:4px 8px;font-size:11px;text-align:right;">${count}</td></tr>`;
+      }).join('');
+
+      // Staff table rows
+      let tableRows = '';
       for (const row of staffRes.rows) {
         const avg = Math.round(Number(row.avg_progress));
         const status = calculateStatus([avg]);
         const lastLogin = row.last_login ? new Date(row.last_login).toLocaleDateString('en-CA') : 'Never';
-        const badgeColor = { completed:'#d1fae5;color:#065f46', 'on-track':'#fef3c7;color:#92400e', lagging:'#ffedd5;color:#9a3412', overdue:'#fee2e2;color:#991b1b' }[status] || '#f3f4f6;color:#374151';
-        rows += `<tr>
+        const statusColors = { completed:'background:#d1fae5;color:#065f46', 'on-track':'background:#fef3c7;color:#92400e', lagging:'background:#ffedd5;color:#9a3412', overdue:'background:#fee2e2;color:#991b1b' };
+        const sc = statusColors[status] || 'background:#f3f4f6;color:#374151';
+        tableRows += `<tr>
           <td>${escapeHtml(row.name||'')}</td>
           <td>${escapeHtml(row.email)}</td>
           <td>${escapeHtml(row.experience_level||'—')}</td>
@@ -3062,34 +3132,75 @@ app.get('/api/export-report', managerMiddleware, async (req, res) => {
           <td style="text-align:center">${row.modules_completed}/30</td>
           <td style="text-align:center">${Math.round(Number(row.avg_quiz_score))}%</td>
           <td>${lastLogin}</td>
-          <td><span style="background:${badgeColor};padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;">${status}</span></td>
+          <td><span style="${sc};padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:600;">${status.replace('-',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span></td>
         </tr>`;
       }
+
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-        body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;padding:40px;font-size:12px;}
-        h1{font-size:20px;color:#0A4D68;margin-bottom:4px;}
-        h2{font-size:12px;color:#6b7280;margin-bottom:20px;font-weight:normal;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;padding:32px;font-size:11px;}
+        .header{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0A4D68;padding-bottom:16px;margin-bottom:20px;}
+        .brand{display:flex;align-items:center;gap:12px;}
+        .brand img{width:40px;height:40px;border-radius:8px;object-fit:cover;}
+        .brand-name{font-size:16px;font-weight:700;color:#0A4D68;}
+        .brand-sub{font-size:10px;color:#6b7280;}
+        .gen-date{font-size:10px;color:#6b7280;}
+        .stats{display:flex;gap:8px;margin-bottom:20px;}
+        .stat-box{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px 10px;text-align:center;}
+        .stat-val{font-size:22px;font-weight:700;color:#0A4D68;}
+        .stat-val.green{color:#065f46;}
+        .stat-val.red{color:#991b1b;}
+        .stat-val.amber{color:#92400e;}
+        .stat-lbl{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+        .two-col{display:flex;gap:16px;margin-bottom:20px;}
+        .two-col>div{flex:1;}
+        h3{font-size:11px;font-weight:700;color:#0A4D68;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px;}
         table{width:100%;border-collapse:collapse;}
-        th{background:#0A4D68;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;}
-        td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+        th{background:#0A4D68;color:#fff;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.04em;}
+        td{padding:6px 8px;border-bottom:1px solid #f3f4f6;vertical-align:middle;}
         tr:nth-child(even) td{background:#f9fafb;}
-        .footer{margin-top:24px;color:#9ca3af;font-size:10px;border-top:1px solid #e5e7eb;padding-top:10px;}
+        .footer{margin-top:20px;color:#9ca3af;font-size:9px;border-top:1px solid #e5e7eb;padding-top:8px;display:flex;justify-content:space-between;}
       </style></head><body>
-        <h1>ServeMaster Academy — Team Training Report</h1>
-        <h2>Generated ${today}</h2>
+        <div class="header">
+          <div class="brand">
+            <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(restaurantName)}" onerror="this.style.display='none'">
+            <div>
+              <div class="brand-name">${escapeHtml(restaurantName)}</div>
+              <div class="brand-sub">Powered by ServeMaster Academy</div>
+            </div>
+          </div>
+          <div class="gen-date">Team Training Report &mdash; ${today}</div>
+        </div>
+        <div class="stats">
+          <div class="stat-box"><div class="stat-val">${totalMembers}</div><div class="stat-lbl">Team Members</div></div>
+          <div class="stat-box"><div class="stat-val amber">${avgCompletion}%</div><div class="stat-lbl">Avg Completion</div></div>
+          <div class="stat-box"><div class="stat-val green">${certifiedCount}</div><div class="stat-lbl">Certified</div></div>
+          <div class="stat-box"><div class="stat-val red">${needsAttention}</div><div class="stat-lbl">Needs Attention</div></div>
+        </div>
+        <div class="two-col" style="margin-bottom:20px;">
+          <div>
+            <h3>Completion Distribution</h3>
+            <table>${distBars}</table>
+          </div>
+        </div>
+        <h3>Staff Progress</h3>
         <table>
           <thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Avg Progress</th><th>Modules</th><th>Avg Quiz</th><th>Last Login</th><th>Status</th></tr></thead>
-          <tbody>${rows}</tbody>
+          <tbody>${tableRows}</tbody>
         </table>
-        <div class="footer">ServeMaster Academy &mdash; servemasteracademy.ca &mdash; Confidential</div>
+        <div class="footer">
+          <span>ServeMaster Academy &mdash; servemasteracademy.ca</span>
+          <span>Confidential &mdash; ${today}</span>
+        </div>
       </body></html>`;
+
       const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox','--disable-gpu'] });
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
-      const pdf = await page.pdf({ format: 'A4', landscape: true, margin: { top:'15mm', bottom:'15mm', left:'12mm', right:'12mm' } });
+      const pdf = await page.pdf({ format: 'A4', landscape: false, margin: { top:'10mm', bottom:'10mm', left:'10mm', right:'10mm' } });
       await browser.close();
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="team-report-${today}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="team-report-${restaurantSlug}-${today}.pdf"`);
       return res.send(pdf);
     }
 

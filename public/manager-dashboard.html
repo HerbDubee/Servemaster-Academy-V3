@@ -117,20 +117,20 @@
           <!-- Team Table -->
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
-              <h2 class="font-semibold">Staff Progress</h2>
-              <input id="staff-search" oninput="filterStaff()" type="text" placeholder="Search staff…" class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-44">
+              <h2 class="font-semibold" data-i18n="mgr_staff_progress_title">Staff Progress</h2>
+              <input id="staff-search" oninput="filterStaff()" type="text" data-i18n-placeholder="mgr_search_placeholder" placeholder="Search staff…" class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 w-44">
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-zinc-800/60 text-zinc-400 text-xs uppercase tracking-wide">
                   <tr>
-                    <th class="px-5 py-3 text-left">Name</th>
-                    <th class="px-5 py-3 text-left">Progress</th>
-                    <th class="px-5 py-3 text-left">Modules</th>
-                    <th class="px-5 py-3 text-left">Scenarios</th>
-                    <th class="px-5 py-3 text-left">Badges</th>
-                    <th class="px-5 py-3 text-left">Status</th>
-                    <th class="px-5 py-3 text-left">Actions</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_name">Name</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_progress">Progress</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_modules">Modules</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_scenarios">Scenarios</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_badges">Badges</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_status">Status</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="team-table" class="divide-y divide-zinc-800"></tbody>
@@ -146,16 +146,16 @@
           </div>
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-zinc-800">
-              <h2 class="font-semibold">Certificate History</h2>
+              <h2 class="font-semibold" data-i18n="mgr_cert_history">Certificate History</h2>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-zinc-800/60 text-zinc-400 text-xs uppercase tracking-wide">
                   <tr>
-                    <th class="px-5 py-3 text-left">Staff Member</th>
-                    <th class="px-5 py-3 text-left">Issued By</th>
-                    <th class="px-5 py-3 text-left">Date Issued</th>
-                    <th class="px-5 py-3 text-left">Action</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_staff_member">Staff Member</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_issued_by">Issued By</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_date_issued">Date Issued</th>
+                    <th class="px-5 py-3 text-left" data-i18n="mgr_col_action">Action</th>
                   </tr>
                 </thead>
                 <tbody id="cert-history" class="divide-y divide-zinc-800">
@@ -170,16 +170,16 @@
         <div id="content-reports" class="tab-content space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h3 class="font-semibold mb-4">Team Completion Distribution</h3>
+              <h3 class="font-semibold mb-4" data-i18n="mgr_reports_completion">Team Completion Distribution</h3>
               <canvas id="completionChart" height="200"></canvas>
             </div>
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h3 class="font-semibold mb-4">Strongest Modules</h3>
+              <h3 class="font-semibold mb-4" data-i18n="mgr_reports_strongest">Strongest Modules</h3>
               <canvas id="moduleChart" height="200"></canvas>
             </div>
           </div>
           <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="font-semibold mb-4">Quiz Performance by Staff</h3>
+            <h3 class="font-semibold mb-4" data-i18n="mgr_reports_quiz_perf">Quiz Performance by Staff</h3>
             <div id="quiz-table" class="space-y-2"></div>
           </div>
         </div>
@@ -312,10 +312,10 @@
         </div>
         <div class="flex gap-2">
           <button id="modal-nudge-btn" onclick="nudgeStaff()" class="bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-            <i class="fa-solid fa-bell mr-1"></i> Send Nudge
+            <i class="fa-solid fa-bell mr-1"></i> <span data-i18n="mgr_send_nudge">Send Nudge</span>
           </button>
           <button id="modal-cert-btn" onclick="issueCertificate()" class="bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-            <i class="fa-solid fa-certificate mr-1"></i> Issue Certificate
+            <i class="fa-solid fa-certificate mr-1"></i> <span data-i18n="mgr_issue_cert">Issue Certificate</span>
           </button>
           <button onclick="closeStaffModal()" class="text-zinc-500 hover:text-white text-xl leading-none px-2">&times;</button>
         </div>
@@ -366,9 +366,17 @@
       if (name === 'settings') { loadSettings(); loadDigestPref(); setTimeout(() => { loadAssignedModules(); loadCertLogo(); }, 50); }
     }
 
+    function t(key, fallback) {
+      const lang = localStorage.getItem('sma-lang') || 'en';
+      if (typeof T !== 'undefined' && T[lang] && T[lang][key] !== undefined) return T[lang][key];
+      return fallback !== undefined ? fallback : key;
+    }
+
     function fmtDate(d) {
       if (!d) return '—';
-      return new Date(d).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+      const lang = localStorage.getItem('sma-lang') || 'en';
+      const locale = { en: 'en-CA', fr: 'fr-CA', es: 'es-MX' }[lang] || 'en-CA';
+      return new Date(d).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
     function statusClass(s) {
@@ -387,7 +395,7 @@
     function renderTable(data) {
       const tbody = document.getElementById('team-table');
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">No team members found.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">${t('mgr_no_members','No team members found.')}</td></tr>`;
         return;
       }
       tbody.innerHTML = data.map(m => `
@@ -403,12 +411,12 @@
           <td class="px-5 py-4 text-zinc-300 text-sm">${m.scenarios || 0}</td>
           <td class="px-5 py-4 text-zinc-300 text-sm">${m.badges || 0}</td>
           <td class="px-5 py-4">
-            <span class="px-2.5 py-1 text-xs rounded-full font-medium ${statusClass(m.status)}">${m.status.toUpperCase()}</span>
+            <span class="px-2.5 py-1 text-xs rounded-full font-medium ${statusClass(m.status)}">${t('mgr_status_'+m.status, m.status.replace('-',' ').replace(/\b\w/g,c=>c.toUpperCase()))}</span>
           </td>
           <td class="px-5 py-4" onclick="event.stopPropagation()">
             <div class="flex gap-1">
-              <button onclick="openStaffModal(${m.id})" class="px-3 py-1 rounded-lg text-xs bg-zinc-700 hover:bg-zinc-600 text-white transition-colors">View</button>
-              ${(m.status === 'lagging' || m.status === 'overdue') ? `<button onclick="quickNudge(${m.id}, '${esc(m.name)}')" class="px-3 py-1 rounded-lg text-xs bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">Nudge</button>` : ''}
+              <button onclick="openStaffModal(${m.id})" class="px-3 py-1 rounded-lg text-xs bg-zinc-700 hover:bg-zinc-600 text-white transition-colors">${t('mgr_view','View')}</button>
+              ${(m.status === 'lagging' || m.status === 'overdue') ? `<button onclick="quickNudge(${m.id}, '${esc(m.name)}')" class="px-3 py-1 rounded-lg text-xs bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition-colors">${t('mgr_nudge','Nudge')}</button>` : ''}
             </div>
           </td>
         </tr>
@@ -426,7 +434,7 @@
         document.getElementById('stat-avg').textContent = avg + '%';
         document.getElementById('stat-certified').textContent = certified;
         document.getElementById('stat-lagging').textContent = lagging;
-        document.getElementById('team-summary').textContent = `${allTeamData.length} staff · ${avg}% average completion`;
+        document.getElementById('team-summary').textContent = `${allTeamData.length} ${t('mgr_team_members','staff')} · ${avg}% ${t('mgr_avg_completion','average completion')}`;
         renderTable(allTeamData);
       } catch (e) { console.error(e); }
     }
@@ -458,32 +466,32 @@
         const badgeEmojis = { first_module: '📘', module_master: '🏆', first_scenario: '🎭', scenario_ace: '⭐', scenario_legend: '👑', week_warrior: '🔥', month_master: '💎', wine_expert: '🍷', perfect_scorer: '💯' };
         const badgeHtml = badges.length
           ? badges.map(b => `<span class="bg-zinc-800 px-2 py-1 rounded-lg text-xs flex items-center gap-1">${badgeEmojis[b.badge_id] || '🏅'} ${b.badge_id.replace(/_/g, ' ')}</span>`).join('')
-          : '<span class="text-zinc-600 text-sm">No badges yet</span>';
+          : `<span class="text-zinc-600 text-sm">${t('mgr_no_badges','No badges yet')}</span>`;
         const transcriptHtml = transcripts && transcripts.length
-          ? transcripts.map(t => `<div class="flex items-center justify-between py-2 border-b border-zinc-800"><span class="text-sm text-zinc-300">Scenario #${t.scenario_id}</span><span class="text-xs text-zinc-500">${fmtDate(t.completed_at)}</span>${t.verdict ? `<span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300">${t.verdict}</span>` : ''}</div>`).join('')
-          : '<div class="text-zinc-600 text-sm">No recent transcripts</div>';
+          ? transcripts.map(tr => `<div class="flex items-center justify-between py-2 border-b border-zinc-800"><span class="text-sm text-zinc-300">Scenario #${tr.scenario_id}</span><span class="text-xs text-zinc-500">${fmtDate(tr.completed_at)}</span>${tr.verdict ? `<span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300">${tr.verdict}</span>` : ''}</div>`).join('')
+          : `<div class="text-zinc-600 text-sm">${t('mgr_no_transcripts','No recent transcripts')}</div>`;
         document.getElementById('modal-content').innerHTML = `
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-amber-400">${completedModules}/30</div><div class="text-zinc-400 text-xs mt-1">Modules Done</div></div>
-            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${scenarios.length}</div><div class="text-zinc-400 text-xs mt-1">Scenarios</div></div>
-            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-emerald-400">${avgQuiz}%</div><div class="text-zinc-400 text-xs mt-1">Avg Quiz</div></div>
-            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${badges.length}</div><div class="text-zinc-400 text-xs mt-1">Badges</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-amber-400">${completedModules}/30</div><div class="text-zinc-400 text-xs mt-1">${t('mgr_modal_modules','Modules Done')}</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${scenarios.length}</div><div class="text-zinc-400 text-xs mt-1">${t('mgr_modal_scenarios','Scenarios')}</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold text-emerald-400">${avgQuiz}%</div><div class="text-zinc-400 text-xs mt-1">${t('mgr_modal_avg_quiz','Avg Quiz')}</div></div>
+            <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${badges.length}</div><div class="text-zinc-400 text-xs mt-1">${t('mgr_modal_badges','Badges')}</div></div>
           </div>
           <div>
-            <h3 class="font-semibold text-sm mb-3">Module Progress <span class="text-zinc-500 font-normal text-xs ml-1">(hover for name)</span></h3>
+            <h3 class="font-semibold text-sm mb-3">${t('mgr_modal_module_progress','Module Progress')} <span class="text-zinc-500 font-normal text-xs ml-1">(hover for name)</span></h3>
             <div class="grid grid-cols-10 gap-1">${modGrid}</div>
           </div>
           <div>
-            <h3 class="font-semibold text-sm mb-3">Badges Earned</h3>
+            <h3 class="font-semibold text-sm mb-3">${t('mgr_modal_badges_earned','Badges Earned')}</h3>
             <div class="flex flex-wrap gap-2">${badgeHtml}</div>
           </div>
           <div>
-            <h3 class="font-semibold text-sm mb-3">Recent Scenario Sessions</h3>
+            <h3 class="font-semibold text-sm mb-3">${t('mgr_modal_recent_sessions','Recent Scenario Sessions')}</h3>
             <div class="bg-zinc-800 rounded-xl p-4">${transcriptHtml}</div>
           </div>
-          <div class="text-xs text-zinc-500">Member since ${fmtDate(staff.created_at)} · Last login ${fmtDate(staff.last_login)}</div>
+          <div class="text-xs text-zinc-500">${t('mgr_modal_member_since','Member since')} ${fmtDate(staff.created_at)} · ${t('mgr_modal_last_login','Last login')} ${fmtDate(staff.last_login)}</div>
         `;
-      } catch (e) { document.getElementById('modal-content').innerHTML = `<div class="text-red-400 text-sm">Error loading staff data.</div>`; }
+      } catch (e) { document.getElementById('modal-content').innerHTML = `<div class="text-red-400 text-sm">${t('mgr_error_staff','Error loading staff data.')}</div>`; }
     }
 
     function closeStaffModal() {
@@ -532,7 +540,7 @@
         const tbody = document.getElementById('cert-history');
         const certs = data.certificates || [];
         if (!certs.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="px-5 py-8 text-center text-zinc-500">No certificates issued yet.</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-8 text-center text-zinc-500">${t('mgr_no_certs','No certificates issued yet.')}</td></tr>`;
           return;
         }
         tbody.innerHTML = certs.map(c => `
@@ -541,7 +549,7 @@
             <td class="px-5 py-4 text-zinc-400">${esc(c.issuer_name || 'System')}</td>
             <td class="px-5 py-4 text-zinc-400 text-sm">${fmtDate(c.issued_at)}</td>
             <td class="px-5 py-4">
-              <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-900 text-emerald-400">Issued</span>
+              <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-900 text-emerald-400">${t('mgr_certs_issued','Issued')}</span>
             </td>
           </tr>
         `).join('');
@@ -731,6 +739,8 @@
         const name = activeTab.id.replace('tab-', '');
         document.getElementById('tab-title').textContent = getMgrTitles()[name] || name;
       }
+      // Re-render table so JS-injected status labels and action buttons update
+      if (allTeamData.length) renderTable(allTeamData);
     }
 
     function toggleLangMenu() {
