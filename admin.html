@@ -67,7 +67,10 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
   <div class="flex flex-1">
     <!-- Sidebar nav -->
     <aside class="w-52 bg-zinc-950 border-r border-zinc-800 p-4 space-y-1 flex-shrink-0 hidden md:block">
-      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">📊 Overview</div>
+      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>📊 Overview</span>
+        <span id="config-health-badge" class="hidden ml-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center leading-none"></span>
+      </div>
       <div class="nav-item" onclick="showSection('users')" id="nav-users">👤 Users</div>
       <div class="nav-item" onclick="showSection('modules')" id="nav-modules">📚 Modules</div>
       <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
@@ -88,7 +91,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 
     <!-- Mobile nav -->
     <div class="md:hidden w-full overflow-x-auto border-b border-zinc-800 flex gap-1 px-3 py-2 bg-zinc-950">
-      <button onclick="showSection('overview')" class="nav-item active whitespace-nowrap" id="mnav-overview">📊</button>
+      <button onclick="showSection('overview')" class="nav-item active whitespace-nowrap" id="mnav-overview" style="position:relative;">📊<span id="config-health-badge-mobile" class="hidden absolute -top-1 -right-1 min-w-[1rem] h-4 px-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center leading-none"></span></button>
       <button onclick="showSection('users')" class="nav-item whitespace-nowrap" id="mnav-users">👤</button>
       <button onclick="showSection('modules')" class="nav-item whitespace-nowrap" id="mnav-modules">📚</button>
       <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
@@ -949,6 +952,8 @@ async function checkConfigHealth() {
     const data = await apiFetch('/api/admin/config-health');
     const banner = document.getElementById('config-health-banner');
     const list   = document.getElementById('config-health-list');
+    const badge  = document.getElementById('config-health-badge');
+    const badgeMobile = document.getElementById('config-health-badge-mobile');
     if (!data.ok && data.missing && data.missing.length) {
       const missingKeys = data.missing.map(m => m.key);
       const snoozeKey = _configHealthSnoozeKey(missingKeys);
@@ -973,6 +978,9 @@ async function checkConfigHealth() {
 
       banner.dataset.snoozeKey = snoozeKey;
       banner.classList.remove('hidden');
+      const count = data.missing.length;
+      if (badge) { badge.textContent = count; badge.classList.remove('hidden'); }
+      if (badgeMobile) { badgeMobile.textContent = count; badgeMobile.classList.remove('hidden'); }
     } else {
       banner.classList.add('hidden');
       for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -981,6 +989,8 @@ async function checkConfigHealth() {
           localStorage.removeItem(k);
         }
       }
+      if (badge) badge.classList.add('hidden');
+      if (badgeMobile) badgeMobile.classList.add('hidden');
     }
   } catch (e) {
     /* silently ignore — don't let a health-check failure break the rest of the dashboard */
