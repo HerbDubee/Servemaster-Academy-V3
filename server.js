@@ -2604,6 +2604,80 @@ app.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, async 
   } catch (err) { res.status(500).json({ error: 'Failed to update trial request' }); }
 });
 
+app.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
+
+    const row = await db.query(
+      `SELECT id, name, email, message FROM contact_messages WHERE id = $1 AND message LIKE '[TEAM TRIAL REQUEST]%'`,
+      [id]
+    );
+    if (!row.rows.length) return res.status(404).json({ error: 'Trial request not found' });
+
+    const { name, email, message } = row.rows[0];
+
+    const parts = {};
+    message.replace(/^\[TEAM TRIAL REQUEST\]\s*/, '').split('|').forEach(p => {
+      const [k, ...v] = p.split(':');
+      if (k && v.length) parts[k.trim()] = v.join(':').trim();
+    });
+    const restaurant = parts['Restaurant'] || '';
+
+    const { plan: rawPlan = 'starter_team' } = req.body;
+    const plan = rawPlan === 'pro_team' ? 'pro_team' : 'starter_team';
+    const planLabel = plan === 'pro_team' ? 'Pro Team' : 'Starter Team';
+
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const code = `SMA-${part()}-${part()}`;
+
+    await db.query(
+      'INSERT INTO invite_codes (code, plan, max_uses, expires_at, access_days, created_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [code, plan, 999999, null, 30, req.user.id]
+    );
+
+    try {
+      await resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: email,
+        subject: 'Your ServeMaster Academy team trial access code',
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(name)},</p>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 30-day ${escapeHtml(planLabel)} trial for <strong>${escapeHtml(restaurant || 'your restaurant')}</strong> is ready. Here's your access code — share it with your whole team so everyone can start training right away.</p>
+          <div style="background:#1a1a1a;border:2px solid #d4af37;border-radius:12px;padding:24px;text-align:center;margin:28px 0;">
+            <p style="font-size:12px;color:#a3a3a3;margin:0 0 8px;letter-spacing:0.08em;text-transform:uppercase;">Your Team Trial Access Code</p>
+            <p style="font-size:32px;font-weight:700;color:#d4af37;letter-spacing:0.1em;margin:0;">${escapeHtml(code)}</p>
+            <p style="font-size:12px;color:#a3a3a3;margin:12px 0 0;">Valid for 30 days &nbsp;·&nbsp; Unlimited team members</p>
+          </div>
+          <p style="font-size:15px;line-height:1.7;margin-bottom:20px;">To redeem, have each team member:</p>
+          <ol style="font-size:15px;line-height:1.9;color:#d4d4d4;padding-left:20px;margin-bottom:24px;">
+            <li>Create a free account at <a href="${APP_URL}/app" style="color:#d4af37;text-decoration:none;">servemasteracademy.ca/app</a></li>
+            <li>Go to <strong>Settings → Redeem Code</strong> and enter the code above</li>
+            <li>Start training immediately — all 30 modules, 150 AI scenarios, and voice practice unlocked</li>
+          </ol>
+          <p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:32px;">Any questions? Just reply to this email.<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+        </div>`
+      });
+    } catch (emailErr) {
+      console.error('send-code email failure, removing orphan code:', emailErr.message);
+      await db.query('DELETE FROM invite_codes WHERE code = $1', [code]).catch(() => {});
+      return res.status(500).json({ error: 'Failed to send email — please try again' });
+    }
+
+    await db.query(
+      `UPDATE contact_messages SET provisioned = TRUE WHERE id = $1`,
+      [id]
+    );
+
+    res.json({ ok: true, code, plan });
+  } catch (err) {
+    console.error('send-code error:', err.message);
+    res.status(500).json({ error: 'Failed to send access code' });
+  }
+});
+
 // ── Invite code admin routes ──────────────────────────────────────────────────
 app.post('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   try {

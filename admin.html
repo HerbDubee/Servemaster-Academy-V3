@@ -1329,9 +1329,19 @@ async function loadTrials() {
                 ${r.utm_source ? `<div><span class="text-zinc-500">Source</span><div class="text-zinc-200 font-medium">${esc(r.utm_source)}${r.utm_medium ? ' / ' + esc(r.utm_medium) : ''}</div></div>` : ''}
               </div>
             </div>
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 flex flex-col gap-2 items-end">
+              <div class="flex items-center gap-1.5">
+                <select id="plan-select-${r.id}" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-amber-700">
+                  <option value="starter_team">Starter Team</option>
+                  <option value="pro_team">Pro Team</option>
+                </select>
+                <button onclick="sendTrialCode(${r.id})" id="send-code-btn-${r.id}"
+                  class="text-xs px-3 py-1.5 rounded-lg border ${isProvisioned ? 'border-zinc-700 text-zinc-400 hover:border-amber-700 hover:text-amber-400' : 'border-amber-700 text-amber-400 hover:bg-amber-900/20'} transition-colors font-medium whitespace-nowrap">
+                  ${isProvisioned ? 'Resend Code' : 'Send Code'}
+                </button>
+              </div>
               <button onclick="toggleTrialProvision(${r.id}, ${isProvisioned})"
-                class="text-xs px-3 py-1.5 rounded-lg border transition-colors ${isProvisioned ? 'border-zinc-700 text-zinc-400 hover:border-red-800 hover:text-red-400' : 'border-emerald-800 text-emerald-400 hover:bg-emerald-900/20'}">
+                class="text-xs px-3 py-1.5 rounded-lg border transition-colors ${isProvisioned ? 'border-zinc-700 text-zinc-400 hover:border-red-800 hover:text-red-400' : 'border-zinc-700 text-zinc-400 hover:border-emerald-800 hover:text-emerald-400'}">
                 ${isProvisioned ? 'Mark pending' : 'Mark provisioned'}
               </button>
             </div>
@@ -1381,6 +1391,45 @@ async function toggleTrialProvision(id, currentlyProvisioned) {
     }
     loadTrials();
   } catch (e) { console.error(e); alert('Network error updating trial request.'); }
+}
+
+async function sendTrialCode(id) {
+  const btn = document.getElementById(`send-code-btn-${id}`);
+  const planSelect = document.getElementById(`plan-select-${id}`);
+  const plan = planSelect ? planSelect.value : 'starter_team';
+  const planLabel = plan === 'pro_team' ? 'Pro Team' : 'Starter Team';
+  const originalLabel = btn ? btn.textContent.trim() : 'Send Code';
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  if (planSelect) planSelect.disabled = true;
+  try {
+    const res = await fetch(`/api/admin/team-trial-requests/${id}/send-code`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+      if (planSelect) planSelect.disabled = false;
+      alert('Failed to send code: ' + (data.error || res.status));
+      return;
+    }
+    showTrialToast(`${planLabel} code sent (${data.code}) — trial marked provisioned.`);
+    loadTrials();
+  } catch (e) {
+    console.error(e);
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    if (planSelect) planSelect.disabled = false;
+    alert('Network error sending access code.');
+  }
+}
+
+function showTrialToast(msg) {
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#15803d;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);max-width:360px;line-height:1.4;';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 5000);
 }
 
 let lastGeneratedCode = '';
