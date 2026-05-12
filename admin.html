@@ -564,6 +564,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
           </button>
           <p id="digest-hour-save-msg" class="hidden text-green-400 text-xs mt-3 text-center"></p>
           <p id="digest-hour-save-err" class="hidden text-red-400 text-xs mt-3 text-center"></p>
+          <p id="digest-schedule-last-sent" class="text-zinc-500 text-xs mt-3 text-center"></p>
         </div>
 
         <!-- AI Chat -->
@@ -1938,21 +1939,23 @@ async function loadSiteConfig() {
     }
 
     // Show last-sent timestamp for the Kirk trial digest
-    const lastSentEl = document.getElementById('kirk-digest-last-sent');
-    if (lastSentEl) {
-      const ts = d.kirk_trial_digest_last_sent_at;
-      if (!ts || ts === '1970-01-01T00:00:00.000Z') {
-        lastSentEl.textContent = 'Never sent';
-      } else {
-        const d2 = new Date(ts);
-        lastSentEl.textContent = 'Last sent: ' + d2.toLocaleString('en-CA', {
-          timeZone: 'America/Toronto',
-          month: 'short', day: 'numeric', year: 'numeric',
-          hour: 'numeric', minute: '2-digit', hour12: true,
-          timeZoneName: 'short'
-        });
-      }
+    const ts = d.kirk_trial_digest_last_sent_at;
+    let lastSentText;
+    if (!ts || ts === '1970-01-01T00:00:00.000Z') {
+      lastSentText = 'Never sent';
+    } else {
+      const d2 = new Date(ts);
+      lastSentText = 'Last sent: ' + d2.toLocaleString('en-CA', {
+        timeZone: 'America/Toronto',
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZoneName: 'short'
+      });
     }
+    const lastSentEl = document.getElementById('kirk-digest-last-sent');
+    if (lastSentEl) lastSentEl.textContent = lastSentText;
+    const scheduleLastSentEl = document.getElementById('digest-schedule-last-sent');
+    if (scheduleLastSentEl) scheduleLastSentEl.textContent = lastSentText;
   } catch (e) {}
 }
 
