@@ -2425,4 +2425,5 @@
 
   window.setLang = setLang;
   window.toggleLangMenu = toggleLangMenu;
+  window.T = T;
 })();
