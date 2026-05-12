@@ -662,9 +662,9 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                   <th class="px-5 py-3 text-left">Book</th>
                   <th class="px-5 py-3 text-left">Ch.</th>
                   <th class="px-5 py-3 text-left">Chapter Title</th>
+                  <th class="px-5 py-3 text-left">File</th>
                   <th class="px-5 py-3 text-left">Words</th>
                   <th class="px-5 py-3 text-left">Status</th>
-                  <th class="px-5 py-3 text-left">Updated</th>
                   <th class="px-5 py-3 text-left">Actions</th>
                 </tr>
               </thead>
@@ -2283,21 +2283,26 @@ function renderBooksTable() {
   const tbody = document.getElementById('books-table');
   const chapters = bookFilter ? allChapters.filter(c => c.book_title === bookFilter) : allChapters;
   if (!chapters.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-8 text-center text-zinc-500">No chapters yet. Click "+ New Chapter" to add one.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-zinc-500">No chapters yet. Click "+ New Chapter" to add one.</td></tr>';
     return;
   }
   tbody.innerHTML = chapters.map(c => {
-    const updated = new Date(c.updated_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
     const statusBadge = c.is_published
       ? '<span class="bg-emerald-900/50 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full">Published</span>'
       : '<span class="bg-zinc-800 text-zinc-400 text-xs font-semibold px-2 py-0.5 rounded-full">Draft</span>';
+    const sf = c.source_file || '';
+    const isV2 = /_v\d+/i.test(sf);
+    const isPolished = /polished/i.test(sf);
+    const fileTag = sf
+      ? `<span class="font-mono text-xs ${isV2 ? 'text-amber-400' : isPolished ? 'text-sky-400' : 'text-zinc-500'}" title="${escHtml(sf)}">${escHtml(sf.replace(/\.md$/i,''))}</span>`
+      : '<span class="text-zinc-600 text-xs">—</span>';
     return `<tr class="hover:bg-zinc-800/40 transition-colors">
       <td class="px-5 py-3 font-medium text-white">${escHtml(c.book_title)}</td>
       <td class="px-5 py-3 text-zinc-400">${c.chapter_number}</td>
       <td class="px-5 py-3 text-zinc-300">${escHtml(c.chapter_title || '—')}</td>
+      <td class="px-5 py-3">${fileTag}</td>
       <td class="px-5 py-3 text-zinc-400" id="wc-${c.id}">—</td>
       <td class="px-5 py-3">${statusBadge}</td>
-      <td class="px-5 py-3 text-zinc-500">${updated}</td>
       <td class="px-5 py-3 flex gap-2">
         <button onclick="openBookEditor(${c.id})" class="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg text-white transition-colors">Edit</button>
         <button onclick="deleteChapter(${c.id})" class="text-xs bg-red-900/50 hover:bg-red-800 px-3 py-1 rounded-lg text-red-300 transition-colors">Delete</button>

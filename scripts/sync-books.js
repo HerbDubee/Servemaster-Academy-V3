@@ -156,6 +156,19 @@ async function syncBooks() {
 
   console.log(`Syncing from https://github.com/${REPO}/tree/${BRANCH}/${DIR}`);
   console.log(`Found ${files.length} .md file(s) in ${DIR}/ — syncing…`);
+
+  // Remove legacy rows with no source_file (pre-filename-keyed sync)
+  const legacy = await db.query('DELETE FROM book_chapters WHERE source_file IS NULL RETURNING id');
+  if (legacy.rowCount) console.log(`  Removed ${legacy.rowCount} legacy row(s) with no source_file.`);
+
+  // Remove rows whose source_file is no longer in the repo
+  const knownFiles = files.map(f => f.name);
+  const orphaned = await db.query(
+    'DELETE FROM book_chapters WHERE source_file IS NOT NULL AND source_file <> ALL($1) RETURNING source_file',
+    [knownFiles]
+  );
+  if (orphaned.rowCount) console.log(`  Removed ${orphaned.rowCount} orphaned row(s) not in repo.`);
+
   let inserted = 0, updated = 0, skipped = 0;
 
   for (const file of files) {
