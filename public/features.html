@@ -30,23 +30,63 @@
   "@type": "SoftwareApplication",
   "name": "ServeMaster Academy",
   "applicationCategory": "EducationApplication",
+  "applicationSubCategory": "Professional Training",
   "operatingSystem": "Web, iOS, Android",
   "url": "https://servemasteracademy.ca",
   "description": "Professional hospitality training platform with 30 modules, 150 AI role-play scenarios, voice practice, quizzes, gamification, and completion certificates. Free to start.",
   "featureList": [
-    "30 fine-dining training modules",
-    "150 AI role-play scenarios with voice transcription",
-    "Gamification with streaks, badges, and leaderboard",
-    "Completion certificate with custom restaurant logo",
-    "Manager dashboard with team progress tracking",
-    "Multilingual support: English, French, Spanish"
+    "30 fine-dining training modules covering etiquette, wine, cocktails, upselling, and more",
+    "150 AI role-play scenarios with real-time voice transcription and instant coaching feedback",
+    "Interactive quizzes after every lesson to reinforce retention",
+    "Tray simulator for hands-on service skills practice",
+    "Gamification with daily streaks, achievement badges, and global leaderboard",
+    "Completion certificate with optional custom restaurant logo",
+    "Manager dashboard with team progress tracking and assigned-module management",
+    "Weekly staff performance digests for managers",
+    "Multilingual support: English, French, Spanish",
+    "PWA offline mode — access module text without an internet connection",
+    "Referral program: earn Stripe credit for referring managers"
   ],
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "CAD",
-    "description": "Free tier includes 3 modules and 5 AI role-play scenarios. Premium plans start at $19.99/month CAD."
-  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Free",
+      "price": "0",
+      "priceCurrency": "CAD",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": 0,
+        "priceCurrency": "CAD"
+      },
+      "description": "Free tier — permanent access to 3 training modules and 5 AI role-play scenarios. No credit card required."
+    },
+    {
+      "@type": "Offer",
+      "name": "Premium Individual (Monthly)",
+      "price": "19.99",
+      "priceCurrency": "CAD",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": 19.99,
+        "priceCurrency": "CAD",
+        "unitCode": "MON"
+      },
+      "description": "Full access to all 30 modules, 150 AI role-plays, voice practice, and completion certificate. Billed monthly."
+    },
+    {
+      "@type": "Offer",
+      "name": "Premium Individual (Annual)",
+      "price": "149",
+      "priceCurrency": "CAD",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": 149,
+        "priceCurrency": "CAD",
+        "unitCode": "ANN"
+      },
+      "description": "Full access to all 30 modules, 150 AI role-plays, voice practice, and completion certificate. Billed annually — save 35%."
+    }
+  ],
   "publisher": {
     "@type": "Organization",
     "name": "ServeMaster Academy",
