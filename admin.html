@@ -342,6 +342,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
               📧 Send trial digest now
             </button>
             <span id="kirk-digest-last-sent" class="text-xs text-zinc-500">Never sent</span>
+            <span id="kirk-digest-next-scheduled" class="text-xs text-zinc-500"></span>
           </div>
         </div>
         <p class="text-zinc-400 text-sm mb-6">Restaurants that requested a free 30-day team trial. Mark each one as provisioned once you've sent the access code.</p>
@@ -1961,9 +1962,17 @@ async function loadSiteConfig() {
 
     // Populate the digest hour dropdown; guard against missing or invalid stored values
     const sel = document.getElementById('digest-hour-select');
+    const hourLabels = {
+      0:'12:00 AM',1:'1:00 AM',2:'2:00 AM',3:'3:00 AM',4:'4:00 AM',5:'5:00 AM',
+      6:'6:00 AM',7:'7:00 AM',8:'8:00 AM',9:'9:00 AM',10:'10:00 AM',11:'11:00 AM',
+      12:'12:00 PM',13:'1:00 PM',14:'2:00 PM',15:'3:00 PM',16:'4:00 PM',17:'5:00 PM',
+      18:'6:00 PM',19:'7:00 PM',20:'8:00 PM',21:'9:00 PM',22:'10:00 PM',23:'11:00 PM'
+    };
+    let activeHour = 8;
     if (sel) {
       const raw = parseInt(d.kirk_trial_digest_hour_et, 10);
-      sel.value = String(!isNaN(raw) && raw >= 0 && raw <= 23 ? raw : 8);
+      activeHour = (!isNaN(raw) && raw >= 0 && raw <= 23) ? raw : 8;
+      sel.value = String(activeHour);
     }
 
     // Show last-sent timestamp for the Kirk trial digest
@@ -1984,6 +1993,12 @@ async function loadSiteConfig() {
     if (lastSentEl) lastSentEl.textContent = lastSentText;
     const scheduleLastSentEl = document.getElementById('digest-schedule-last-sent');
     if (scheduleLastSentEl) scheduleLastSentEl.textContent = lastSentText;
+
+    // Show next-scheduled hour alongside the last-sent line
+    const nextSchedEl = document.getElementById('kirk-digest-next-scheduled');
+    if (nextSchedEl) {
+      nextSchedEl.textContent = 'Next scheduled: ' + (hourLabels[activeHour] || activeHour + ':00') + ' ET';
+    }
   } catch (e) {}
 }
 
@@ -2010,6 +2025,9 @@ async function saveDigestHour() {
       msgEl.textContent = 'Schedule reset — digest will fire at ' + label + ' ET';
       msgEl.classList.remove('hidden');
       setTimeout(() => msgEl.classList.add('hidden'), 5000);
+      // Keep the status line in sync without a page reload
+      const nextSchedEl = document.getElementById('kirk-digest-next-scheduled');
+      if (nextSchedEl) nextSchedEl.textContent = 'Next scheduled: ' + label + ' ET';
     } else { errEl.textContent = 'Failed to save schedule.'; errEl.classList.remove('hidden'); }
   } catch (e) { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
 }
