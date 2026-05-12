@@ -142,8 +142,17 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                 <p class="mt-2 text-xs text-red-500">Set these secrets in your environment / Replit Secrets to prevent broken flows for users.</p>
               </div>
             </div>
-            <button onclick="dismissConfigHealthBanner()"
-              class="text-red-500 hover:text-red-300 text-lg leading-none flex-shrink-0" title="Dismiss for 24 h">&times;</button>
+            <div class="relative flex-shrink-0" id="config-health-dismiss-wrap">
+              <button onclick="toggleSnoozePicker(event)"
+                class="flex items-center gap-0.5 text-red-500 hover:text-red-300 leading-none" title="Snooze…">
+                <span class="text-lg">&times;</span><span class="text-xs">▾</span>
+              </button>
+              <div id="snooze-picker" class="hidden absolute right-0 top-full mt-1 bg-zinc-900 border border-red-800 rounded-xl shadow-lg z-20 min-w-max">
+                <button onclick="dismissConfigHealthBanner(86400000)" class="block w-full text-left px-4 py-2 text-xs text-red-300 hover:bg-red-950 rounded-t-xl transition-colors">Snooze 24 h</button>
+                <button onclick="dismissConfigHealthBanner(604800000)" class="block w-full text-left px-4 py-2 text-xs text-red-300 hover:bg-red-950 transition-colors">Snooze 7 days</button>
+                <button onclick="dismissConfigHealthBanner(2592000000)" class="block w-full text-left px-4 py-2 text-xs text-red-300 hover:bg-red-950 rounded-b-xl transition-colors">Snooze 30 days</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1003,14 +1012,30 @@ function _configHealthSnoozeKey(missingKeys) {
   return 'config-health-snooze:' + missingKeys.slice().sort().join(',');
 }
 
-function dismissConfigHealthBanner() {
+function toggleSnoozePicker(event) {
+  event.stopPropagation();
+  const picker = document.getElementById('snooze-picker');
+  picker.classList.toggle('hidden');
+}
+
+function dismissConfigHealthBanner(durationMs) {
   const banner = document.getElementById('config-health-banner');
   const currentKey = banner.dataset.snoozeKey;
   if (currentKey) {
-    localStorage.setItem(currentKey, Date.now().toString());
+    const ms = durationMs || 86400000;
+    localStorage.setItem(currentKey, JSON.stringify({ at: Date.now(), ms }));
   }
+  document.getElementById('snooze-picker').classList.add('hidden');
   banner.classList.add('hidden');
 }
+
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('config-health-dismiss-wrap');
+  const picker = document.getElementById('snooze-picker');
+  if (wrap && picker && !wrap.contains(e.target)) {
+    picker.classList.add('hidden');
+  }
+});
 
 async function checkConfigHealth() {
   try {
@@ -1023,8 +1048,18 @@ async function checkConfigHealth() {
       const missingKeys = data.missing.map(m => m.key);
       const snoozeKey = _configHealthSnoozeKey(missingKeys);
 
-      const snoozedAt = localStorage.getItem(snoozeKey);
-      if (snoozedAt && (Date.now() - parseInt(snoozedAt, 10)) < 24 * 60 * 60 * 1000) {
+      const snoozeRaw = localStorage.getItem(snoozeKey);
+      let snoozedAt = null, snoozeDuration = 86400000;
+      if (snoozeRaw) {
+        try {
+          const parsed = JSON.parse(snoozeRaw);
+          snoozedAt = parsed.at;
+          snoozeDuration = parsed.ms || 86400000;
+        } catch (_) {
+          snoozedAt = parseInt(snoozeRaw, 10);
+        }
+      }
+      if (snoozedAt && (Date.now() - snoozedAt) < snoozeDuration) {
         banner.classList.add('hidden');
         return;
       }
