@@ -2526,6 +2526,33 @@ app.get('/api/admin/contacts', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch contacts' }); }
 });
 
+app.get('/api/admin/team-trial-requests', adminMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, name, email, message, provisioned, created_at,
+              utm_source, utm_medium, utm_campaign
+       FROM contact_messages
+       WHERE message LIKE '[TEAM TRIAL REQUEST]%'
+       ORDER BY created_at DESC`
+    );
+    res.json({ requests: result.rows });
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch team trial requests' }); }
+});
+
+app.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
+    const { provisioned } = req.body;
+    const result = await db.query(
+      `UPDATE contact_messages SET provisioned = $1 WHERE id = $2 AND message LIKE '[TEAM TRIAL REQUEST]%' RETURNING id`,
+      [provisioned !== false, id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Request not found' });
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to update trial request' }); }
+});
+
 // ── Invite code admin routes ──────────────────────────────────────────────────
 app.post('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
   try {
@@ -4478,6 +4505,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_content TEXT`);
     await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
+    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS provisioned BOOLEAN DEFAULT FALSE`);
     await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
       id SERIAL PRIMARY KEY,
       plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,

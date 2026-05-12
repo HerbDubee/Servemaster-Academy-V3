@@ -73,6 +73,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div class="nav-item" onclick="showSection('newsletter')" id="nav-newsletter">📬 Newsletter</div>
       <div class="nav-item" onclick="showSection('restaurants')" id="nav-restaurants">🏪 Restaurants</div>
       <div class="nav-item" onclick="showSection('contacts')" id="nav-contacts">✉️ Messages</div>
+      <div class="nav-item" onclick="showSection('trials')" id="nav-trials">🧪 Team Trials</div>
       <div class="nav-item" onclick="showSection('invites')" id="nav-invites">🔑 Invite Codes</div>
       <div class="nav-item" onclick="showSection('revenue')" id="nav-revenue">💰 Revenue</div>
       <div class="nav-item" onclick="showSection('outreach')" id="nav-outreach">📣 Outreach</div>
@@ -93,6 +94,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <button onclick="showSection('newsletter')" class="nav-item whitespace-nowrap" id="mnav-newsletter">📬</button>
       <button onclick="showSection('restaurants')" class="nav-item whitespace-nowrap" id="mnav-restaurants">🏪</button>
       <button onclick="showSection('contacts')" class="nav-item whitespace-nowrap" id="mnav-contacts">✉️</button>
+      <button onclick="showSection('trials')" class="nav-item whitespace-nowrap" id="mnav-trials">🧪</button>
       <button onclick="showSection('invites')" class="nav-item whitespace-nowrap" id="mnav-invites">🔑</button>
       <button onclick="showSection('revenue')" class="nav-item whitespace-nowrap" id="mnav-revenue">💰</button>
       <button onclick="showSection('outreach')" class="nav-item whitespace-nowrap" id="mnav-outreach">📣</button>
@@ -274,6 +276,16 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <div id="section-contacts" class="section">
         <h1 class="heading text-3xl font-bold mb-6">Contact Messages</h1>
         <div id="contacts-list" class="space-y-4">
+          <div class="text-zinc-500 text-sm">Loading...</div>
+        </div>
+      </div>
+
+      <!-- TEAM TRIALS -->
+      <div id="section-trials" class="section">
+        <h1 class="heading text-3xl font-bold mb-2">Team Trial Requests</h1>
+        <p class="text-zinc-400 text-sm mb-6">Restaurants that requested a free 30-day team trial. Mark each one as provisioned once you've sent the access code.</p>
+        <div id="trials-summary" class="flex gap-4 mb-6"></div>
+        <div id="trials-list" class="space-y-4">
           <div class="text-zinc-500 text-sm">Loading...</div>
         </div>
       </div>
@@ -805,6 +817,7 @@ async function loadAll() {
   loadNewsletter();
   loadRestaurants();
   loadContacts();
+  loadTrials();
   loadInvites();
   loadRevenue();
   loadAnalytics();
@@ -1082,6 +1095,87 @@ async function loadContacts() {
       </div>
     `).join('');
   } catch (e) { console.error(e); }
+}
+
+async function loadTrials() {
+  try {
+    const data = await apiFetch('/api/admin/team-trial-requests');
+    const reqs = data.requests || [];
+    const container = document.getElementById('trials-list');
+    const summary = document.getElementById('trials-summary');
+
+    const pending = reqs.filter(r => !r.provisioned).length;
+    const done = reqs.filter(r => r.provisioned).length;
+    summary.innerHTML = `
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3 text-center">
+        <div class="text-2xl font-bold text-amber-400">${pending}</div>
+        <div class="text-xs text-zinc-400 mt-0.5">Pending</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3 text-center">
+        <div class="text-2xl font-bold text-emerald-400">${done}</div>
+        <div class="text-xs text-zinc-400 mt-0.5">Provisioned</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3 text-center">
+        <div class="text-2xl font-bold text-zinc-300">${reqs.length}</div>
+        <div class="text-xs text-zinc-400 mt-0.5">Total</div>
+      </div>
+    `;
+
+    if (!reqs.length) { container.innerHTML = '<div class="text-zinc-500 text-sm">No team trial requests yet.</div>'; return; }
+
+    container.innerHTML = reqs.map(r => {
+      const msgBody = r.message.replace(/^\[TEAM TRIAL REQUEST\]\s*/, '');
+      const parts = {};
+      msgBody.split('|').forEach(p => {
+        const [k, ...v] = p.split(':');
+        if (k && v.length) parts[k.trim()] = v.join(':').trim();
+      });
+      const restaurant = parts['Restaurant'] || '—';
+      const staff = parts['Staff'] || '—';
+      const isProvisioned = !!r.provisioned;
+      return `
+        <div class="bg-zinc-900 border ${isProvisioned ? 'border-emerald-900/50' : 'border-zinc-800'} rounded-2xl p-5" id="trial-row-${r.id}">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <span class="font-semibold text-white">${esc(r.name)}</span>
+                <span class="text-zinc-500 text-sm">&lt;${esc(r.email)}&gt;</span>
+                ${isProvisioned ? '<span class="text-xs bg-emerald-900/40 text-emerald-400 border border-emerald-900/50 rounded-full px-2 py-0.5">Provisioned</span>' : '<span class="text-xs bg-amber-900/30 text-amber-400 border border-amber-900/40 rounded-full px-2 py-0.5">Pending</span>'}
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-sm mt-2">
+                <div><span class="text-zinc-500">Restaurant</span><div class="text-zinc-200 font-medium">${esc(restaurant)}</div></div>
+                <div><span class="text-zinc-500">Staff count</span><div class="text-zinc-200 font-medium">${esc(staff)}</div></div>
+                <div><span class="text-zinc-500">Requested</span><div class="text-zinc-200 font-medium">${fmtDate(r.created_at)}</div></div>
+                ${r.utm_source ? `<div><span class="text-zinc-500">Source</span><div class="text-zinc-200 font-medium">${esc(r.utm_source)}${r.utm_medium ? ' / ' + esc(r.utm_medium) : ''}</div></div>` : ''}
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              <button onclick="toggleTrialProvision(${r.id}, ${isProvisioned})"
+                class="text-xs px-3 py-1.5 rounded-lg border transition-colors ${isProvisioned ? 'border-zinc-700 text-zinc-400 hover:border-red-800 hover:text-red-400' : 'border-emerald-800 text-emerald-400 hover:bg-emerald-900/20'}">
+                ${isProvisioned ? 'Mark pending' : 'Mark provisioned'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function toggleTrialProvision(id, currentlyProvisioned) {
+  try {
+    const res = await fetch(`/api/admin/team-trial-requests/${id}/provision`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provisioned: !currentlyProvisioned })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Failed to update trial request: ' + (err.error || res.status));
+      return;
+    }
+    loadTrials();
+  } catch (e) { console.error(e); alert('Network error updating trial request.'); }
 }
 
 let lastGeneratedCode = '';
