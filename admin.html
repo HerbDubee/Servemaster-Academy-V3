@@ -26,6 +26,8 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
 .nav-item { cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #a1a1aa; transition: all 0.15s; }
 .nav-item:hover { background: #27272a; color: #fff; }
 .nav-item.active { background: #78350f; color: #fbbf24; }
+/* Collapse KPI grid to 1 column on phones narrower than 360px */
+@media (max-width: 359px) { #kpi-cards { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body class="min-h-screen">
