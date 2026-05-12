@@ -78,6 +78,14 @@ node scripts/check-blog-freshness.js
 
 It compares each article's declared date against the last `git log` commit date for its HTML file (stable across clones and CI — unlike filesystem mtime). It lists every article that needs a `dateModified` bump and exits with a non-zero code if any are found. Run it after any blog editing session.
 
+**Auto-fixing stale dates:** Instead of editing `content.js` by hand, run the companion fix script to update every stale `dateModified` in one command:
+
+```
+node scripts/fix-blog-freshness.js
+```
+
+It reads the same stale list as the check script and sets each article's `dateModified` to its last git-commit date. After running, verify with `node scripts/check-blog-freshness.js` (should exit 0 with no stale articles).
+
 ## Blog Post Categories & OG Images
 
 Every blog post in `public/blog/` must include a `<meta name="blog-category">` tag in its `<head>`. This drives the correct OG social-share image automatically — no manual map needed.
