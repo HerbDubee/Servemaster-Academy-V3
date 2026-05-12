@@ -271,6 +271,16 @@ Facebook example (server-facing reel):
 https://servemasteracademy.ca/?utm_source=facebook&utm_medium=social&utm_campaign=career_tips_2026_04&utm_content=reel_ai_demo
 ```
 
+Facebook example (static post — server career growth):
+```
+https://servemasteracademy.ca/?utm_source=facebook&utm_medium=social&utm_campaign=career_tips_2026_04&utm_content=post_career_tips
+```
+
+Facebook example (static post — completion certificate):
+```
+https://servemasteracademy.ca/?utm_source=facebook&utm_medium=social&utm_campaign=track_certificate_2026_04&utm_content=post_certification_value
+```
+
 ### Individual server CTAs — link to `/signup`
 
 For awareness content and individual server career content, CTA links go to `/signup`:
