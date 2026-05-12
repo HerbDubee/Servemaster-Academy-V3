@@ -122,7 +122,11 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
             <div class="flex items-start gap-3">
               <span class="text-amber-400 text-lg leading-none mt-0.5">📝</span>
               <div>
-                <div class="font-semibold text-amber-300 text-sm mb-1">Blog articles need a <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> update</div>
+                <div class="flex items-center gap-3 mb-1 flex-wrap">
+                  <div class="font-semibold text-amber-300 text-sm">Blog articles need a <code class="font-mono bg-amber-900/40 px-1 rounded">dateModified</code> update</div>
+                  <button id="mark-all-updated-btn" onclick="markAllBlogArticlesUpdated(this)"
+                    class="hidden text-xs bg-amber-700 hover:bg-amber-600 text-amber-100 px-2 py-0.5 rounded transition-colors flex-shrink-0">Mark all updated</button>
+                </div>
                 <ul id="blog-freshness-list" class="space-y-2 text-xs text-amber-400"></ul>
               </div>
             </div>
@@ -981,6 +985,12 @@ async function checkBlogFreshness() {
             class="ml-auto flex-shrink-0 text-xs bg-amber-700 hover:bg-amber-600 text-amber-100 px-2 py-0.5 rounded transition-colors">Mark updated</button>
         </li>`;
         }).join('');
+        const markAllBtn = document.getElementById('mark-all-updated-btn');
+        if (markAllBtn) {
+          markAllBtn.classList.toggle('hidden', visible.length <= 1);
+          markAllBtn.disabled = false;
+          markAllBtn.textContent = 'Mark all updated';
+        }
         banner.classList.remove('hidden');
       } else {
         banner.classList.add('hidden');
@@ -1002,6 +1012,28 @@ async function markBlogArticleUpdated(slug, btn) {
       await checkBlogFreshness();
     } else {
       btn.textContent = 'Error';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+    btn.disabled = false;
+  }
+}
+
+async function markAllBlogArticlesUpdated(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Updating…';
+  try {
+    const slugs = Array.from(
+      document.querySelectorAll('#blog-freshness-list code[data-slug]')
+    ).map(el => el.dataset.slug);
+    const results = await Promise.all(slugs.map(slug =>
+      apiFetch(`/api/admin/blog-freshness/${slug}`, { method: 'PATCH' })
+    ));
+    const anyFailed = results.some(r => !r.ok);
+    await checkBlogFreshness();
+    if (anyFailed) {
+      btn.textContent = 'Some failed';
       btn.disabled = false;
     }
   } catch (e) {
