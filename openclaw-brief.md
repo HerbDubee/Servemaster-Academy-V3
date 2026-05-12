@@ -291,9 +291,12 @@ Pick one row per post. Replace `_2026_04` with the current `_YYYY_MM`. Replace `
 |---|---|---|
 | Manager ROI / staff training cost | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=manager_roi_2026_04&utm_content=article_01` |
 | Manager ROI / staff training cost | LinkedIn organic post | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01` |
+| Manager ROI / staff training cost | Facebook | `https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=manager_roi_2026_04&utm_content=post_01` |
 | Staff retention / turnover | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=staff_retention_2026_04&utm_content=article_01` |
+| Staff retention / turnover | Facebook | `https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=staff_retention_2026_04&utm_content=post_01` |
 | Team challenges feature | Instagram | `https://servemasteracademy.ca/teams?utm_source=instagram&utm_medium=social&utm_campaign=team_challenge_2026_04&utm_content=post_01` |
 | Team challenges feature | Facebook | `https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=team_challenge_2026_04&utm_content=post_01` |
+| Custom module builder demo | Facebook | `https://servemasteracademy.ca/teams?utm_source=facebook&utm_medium=social&utm_campaign=custom_module_2026_04&utm_content=post_01` |
 | Custom AI guest personas | LinkedIn organic post | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=social&utm_campaign=custom_persona_2026_04&utm_content=post_01` |
 | Custom module builder demo | LinkedIn article | `https://servemasteracademy.ca/teams?utm_source=linkedin&utm_medium=article&utm_campaign=custom_module_2026_04&utm_content=article_01` |
 | Manager intelligence / weekly digest | Email newsletter | `https://servemasteracademy.ca/teams?utm_source=email&utm_medium=email&utm_campaign=manager_digest_2026_04&utm_content=cta_01` |
