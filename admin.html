@@ -2959,13 +2959,28 @@ async function toggleChapterTTS() {
       if (_ttsAbort) break;
       if (icon) icon.textContent = '⏹';
       if (label) label.textContent = chunks.length > 1 ? `Stop (${i+1}/${chunks.length})` : 'Stop';
-      // Step 2: point <audio> src at the streaming GET endpoint — playback starts immediately
-      await new Promise((resolve, reject) => {
-        _ttsAudio = new Audio('/api/admin/tts-stream?id=' + encodeURIComponent(id) + '&_t=' + encodeURIComponent(token));
-        _ttsAudio.oncanplay = () => _ttsAudio.play().catch(reject);
-        _ttsAudio.onended = resolve;
-        _ttsAudio.onerror = () => reject(new Error('Audio playback error'));
-        _ttsAudio.load();
+      // Step 2: pre-flight fetch to catch server-side errors before handing to <audio>
+      const streamUrl = '/api/admin/tts-stream?id=' + encodeURIComponent(id) + '&_t=' + encodeURIComponent(token);
+      await new Promise(async (resolve, reject) => {
+        let streamRes;
+        try {
+          streamRes = await fetch(streamUrl, { headers: { Authorization: 'Bearer ' + token } });
+        } catch (netErr) {
+          return reject(new Error('Network error: ' + netErr.message));
+        }
+        const ct = streamRes.headers.get('Content-Type') || '';
+        if (!ct.startsWith('audio/')) {
+          let errMsg = `TTS stream error (${streamRes.status})`;
+          try { const j = await streamRes.json(); errMsg = j.error || errMsg; } catch {}
+          return reject(new Error(errMsg));
+        }
+        // Valid audio — create blob URL so <audio> never sees a JSON response
+        const blob = await streamRes.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        _ttsAudio = new Audio(blobUrl);
+        _ttsAudio.onended = () => { URL.revokeObjectURL(blobUrl); resolve(); };
+        _ttsAudio.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error('Audio playback error')); };
+        _ttsAudio.play().catch(reject);
       });
     } catch (e) {
       if (!_ttsAbort) alert('Audio playback error: ' + e.message);

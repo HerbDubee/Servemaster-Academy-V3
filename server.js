@@ -4564,6 +4564,10 @@ app.get('/api/admin/tts-stream', adminMiddleware, async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'TTS token not found or expired' });
   _ttsTokens.delete(req.query.id);
   const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey || !apiKey.trim()) {
+    console.error('TTS stream: ELEVENLABS_API_KEY is not configured');
+    return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+  }
   try {
     const elRes = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
@@ -4578,9 +4582,16 @@ app.get('/api/admin/tts-stream', adminMiddleware, async (req, res) => {
       }
     );
     if (!elRes.ok) {
-      const err = await elRes.text();
-      console.error('ElevenLabs TTS error:', elRes.status, err.slice(0, 200));
-      return res.status(elRes.status).json({ error: 'TTS generation failed' });
+      let errDetail = '';
+      try {
+        const errBody = await elRes.json();
+        errDetail = errBody?.detail?.message || errBody?.detail || errBody?.message || '';
+      } catch { errDetail = await elRes.text().catch(() => ''); }
+      const msg = errDetail
+        ? `ElevenLabs error (${elRes.status}): ${String(errDetail).slice(0, 200)}`
+        : `ElevenLabs error (${elRes.status})`;
+      console.error('ElevenLabs TTS error:', msg);
+      return res.status(502).json({ error: msg });
     }
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
