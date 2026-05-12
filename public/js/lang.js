@@ -781,6 +781,8 @@
       mgr_cert_intro: 'Issue certificates to staff who have completed all 30 modules. Each issuance is logged below.',
       mgr_generating: 'Generating…',
       mgr_export_failed: 'Export failed.',
+      mgr_hover_for_name: '(hover for name)',
+      mgr_scenario_label: 'Scenario',
     },
 
     fr: {
@@ -1557,6 +1559,8 @@
       mgr_cert_intro: 'Émettez des certificats aux membres ayant complété les 30 modules. Chaque émission est journalisée ci-dessous.',
       mgr_generating: 'Génération…',
       mgr_export_failed: "Échec de l'export.",
+      mgr_hover_for_name: '(survoler pour le nom)',
+      mgr_scenario_label: 'Scénario',
     },
 
     es: {
@@ -2335,6 +2339,8 @@
       mgr_cert_intro: 'Emite certificados al personal que ha completado los 30 módulos. Cada emisión se registra a continuación.',
       mgr_generating: 'Generando…',
       mgr_export_failed: 'Error al exportar.',
+      mgr_hover_for_name: '(pasar el cursor para el nombre)',
+      mgr_scenario_label: 'Escenario',
     }
   };
 

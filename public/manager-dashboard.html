@@ -468,7 +468,7 @@
           ? badges.map(b => `<span class="bg-zinc-800 px-2 py-1 rounded-lg text-xs flex items-center gap-1">${badgeEmojis[b.badge_id] || '🏅'} ${b.badge_id.replace(/_/g, ' ')}</span>`).join('')
           : `<span class="text-zinc-600 text-sm">${t('mgr_no_badges','No badges yet')}</span>`;
         const transcriptHtml = transcripts && transcripts.length
-          ? transcripts.map(tr => `<div class="flex items-center justify-between py-2 border-b border-zinc-800"><span class="text-sm text-zinc-300">Scenario #${tr.scenario_id}</span><span class="text-xs text-zinc-500">${fmtDate(tr.completed_at)}</span>${tr.verdict ? `<span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300">${tr.verdict}</span>` : ''}</div>`).join('')
+          ? transcripts.map(tr => `<div class="flex items-center justify-between py-2 border-b border-zinc-800"><span class="text-sm text-zinc-300">${t('mgr_scenario_label','Scenario')} #${tr.scenario_id}</span><span class="text-xs text-zinc-500">${fmtDate(tr.completed_at)}</span>${tr.verdict ? `<span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300">${tr.verdict}</span>` : ''}</div>`).join('')
           : `<div class="text-zinc-600 text-sm">${t('mgr_no_transcripts','No recent transcripts')}</div>`;
         document.getElementById('modal-content').innerHTML = `
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -478,7 +478,7 @@
             <div class="bg-zinc-800 rounded-xl p-3 text-center"><div class="text-2xl font-bold">${badges.length}</div><div class="text-zinc-400 text-xs mt-1">${t('mgr_modal_badges','Badges')}</div></div>
           </div>
           <div>
-            <h3 class="font-semibold text-sm mb-3">${t('mgr_modal_module_progress','Module Progress')} <span class="text-zinc-500 font-normal text-xs ml-1">(hover for name)</span></h3>
+            <h3 class="font-semibold text-sm mb-3">${t('mgr_modal_module_progress','Module Progress')} <span class="text-zinc-500 font-normal text-xs ml-1">${t('mgr_hover_for_name','(hover for name)')}</span></h3>
             <div class="grid grid-cols-10 gap-1">${modGrid}</div>
           </div>
           <div>
@@ -789,11 +789,15 @@
     });
 
     window.onload = function() {
-      // Apply saved lang on load
+      // Apply saved lang on load — also set tab-title from active language immediately
       const savedLang = localStorage.getItem('sma-lang') || 'en';
       const labels = { en: 'EN', fr: 'FR', es: 'ES' };
       document.getElementById('lang-btn').textContent = labels[savedLang] || 'EN';
       if (typeof applyLang === 'function') applyLang(savedLang);
+      // Derive tab-title from active language (not hardcoded "Team Overview")
+      const activeTab = document.querySelector('.tab-btn.active');
+      const activeTabName = activeTab ? activeTab.id.replace('tab-', '') : 'team';
+      document.getElementById('tab-title').textContent = getMgrTitles()[activeTabName] || activeTabName;
       loadTeam();
     };
 
