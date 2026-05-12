@@ -761,10 +761,20 @@ app.get('/sitemap.xml', (req, res) => {
     const fs = require('fs');
     const blogDir = path.join(__dirname, 'public', 'blog');
     const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.html') && f !== 'index.html' && f !== 'article.html');
-    blogUrls = files.map(f => {
+    const enUrls = files.map(f => {
       const slug = f.replace('.html', '');
       return `  <url><loc>${base}/blog/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`;
-    }).join('\n');
+    });
+    const frDir = path.join(blogDir, 'fr');
+    let frUrls = [];
+    try {
+      const frFiles = fs.readdirSync(frDir).filter(f => f.endsWith('.html'));
+      frUrls = frFiles.map(f => {
+        const slug = f.replace('.html', '');
+        return `  <url><loc>${base}/blog/fr/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
+      });
+    } catch (fe) { /* skip */ }
+    blogUrls = [...enUrls, ...frUrls].join('\n');
   } catch (e) { /* skip */ }
   const staticUrls = staticPages.map(([p, pri, freq]) =>
     `  <url><loc>${base}${p}</loc><lastmod>${today}</lastmod><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
@@ -783,6 +793,47 @@ app.get('/app/training', requirePaidAccess, (req, res) => res.sendFile(path.join
 app.get('/manager-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html')));
 app.get('/blog', (req, res) => res.sendFile(path.join(__dirname, 'public', 'blog', 'index.html')));
 app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
+app.get('/blog/fr/:slug', (req, res, next) => {
+  const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
+  const filePath = path.join(__dirname, 'public', 'blog', 'fr', slug + '.html');
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) { res.redirect('/blog/' + slug); return; }
+    fs.stat(filePath, (statErr, stats) => {
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+      const pageDesc = descMatch ? descMatch[1] : '';
+      const articleUrl = 'https://servemasteracademy.ca/blog/fr/' + slug;
+      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: pageTitle,
+        description: pageDesc,
+        url: articleUrl,
+        image: 'https://servemasteracademy.ca/logo.png',
+        datePublished: '2025-01-01',
+        dateModified,
+        author: {
+          '@type': 'Person',
+          name: 'Kirk Adamson',
+          url: 'https://ca.linkedin.com/in/kirk-adamson-6372a7193'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'ServeMaster Academy',
+          url: 'https://servemasteracademy.ca',
+          logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
+        }
+      };
+      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+      const injected = html.replace('</head>', schemaTag + '</head>');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(injected);
+    });
+  });
+});
 app.get('/blog/es/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', 'es', slug + '.html');

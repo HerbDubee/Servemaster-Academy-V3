@@ -275,7 +275,8 @@
         var aCat = lang === 'fr' && a.categoryFr ? a.categoryFr : lang === 'es' && a.categoryEs ? a.categoryEs : a.category;
         var searchText = (aTitle + ' ' + aDesc + ' ' + aCat).toLowerCase();
 
-        html += '<a href="/blog/' + slug + '" class="blog-card bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group" data-search-text="' + escHtml(searchText) + '">';
+        var articleHref = lang === 'fr' ? '/blog/fr/' + slug : lang === 'es' ? '/blog/es/' + slug : '/blog/' + slug;
+        html += '<a href="' + articleHref + '" class="blog-card bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group" data-search-text="' + escHtml(searchText) + '">';
         if (sectionCat && catCfg) {
           html += '<span onclick="event.preventDefault();event.stopPropagation();window.setBlogCategory(\'' + sectionCat + '\')" style="display:inline-block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;padding:4px 11px;border-radius:9999px;border:1px solid ' + catCfg.color + ';color:' + catCfg.color + ';background:' + catCfg.bg + ';cursor:pointer;margin-bottom:0.75rem;text-decoration:none">' + escHtml(catBadgeLabel) + '</span>';
         }
