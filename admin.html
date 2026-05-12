@@ -1009,6 +1009,7 @@ async function markBlogArticleUpdated(slug, btn) {
   try {
     const data = await apiFetch(`/api/admin/blog-freshness/${slug}`, { method: 'PATCH' });
     if (data.ok) {
+      showTrialToast(`✓ ${data.slug || slug} updated to ${data.dateModified}`, 3000);
       await checkBlogFreshness();
     } else {
       btn.textContent = 'Error';
@@ -1660,12 +1661,12 @@ async function sendTrialCode(id) {
   }
 }
 
-function showTrialToast(msg) {
+function showTrialToast(msg, duration = 5000) {
   const el = document.createElement('div');
   el.textContent = msg;
   el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#15803d;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);max-width:360px;line-height:1.4;';
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 5000);
+  setTimeout(() => el.remove(), duration);
 }
 
 let lastGeneratedCode = '';
