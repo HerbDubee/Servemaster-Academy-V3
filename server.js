@@ -141,7 +141,6 @@ const BRAND_LOGO_URL = process.env.BRAND_LOGO_URL || `${APP_URL}/logo.png`;
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
 
-let lastWebhookSigFailure = null;
 
 const PLAN_TIER_ORDER = ['free', 'premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise'];
 const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'individual', 'starter_team', 'pro_team', 'enterprise', 'active']);
@@ -461,7 +460,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
     const failedAt = new Date().toISOString();
-    lastWebhookSigFailure = { at: failedAt, message: err.message };
+    db.query(
+      `INSERT INTO site_settings (key, value, updated_at) VALUES ('webhook_sig_failure', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [JSON.stringify({ at: failedAt, message: err.message })]
+    ).catch(e => console.error('Failed to persist webhook sig failure:', e.message));
     console.warn(JSON.stringify({
       level: 'WARN',
       event: 'stripe_webhook_sig_failure',
@@ -601,7 +604,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         break;
       }
     }
-    lastWebhookSigFailure = null;
+    db.query(`DELETE FROM site_settings WHERE key = 'webhook_sig_failure'`)
+      .catch(e => console.error('Failed to clear webhook sig failure:', e.message));
     res.status(200).json({ received: true });
   } catch (err) {
     console.error('Webhook handler error:', err.message);
@@ -3744,7 +3748,8 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
     const [
       usersRes, new7dRes, new30dRes, active7dRes, tierCountsRes,
       trialStartedRes, mod1Res, mod5Res, mod10Res, paidRes,
-      scholarshipRes, affiliateRes, recentRes, newsletterRes, pendingTrialsRes
+      scholarshipRes, affiliateRes, recentRes, newsletterRes, pendingTrialsRes,
+      webhookSigFailureRes
     ] = await Promise.all([
       db.query('SELECT COUNT(*) as cnt FROM users'),
       db.query("SELECT COUNT(*) as cnt FROM users WHERE created_at > NOW() - INTERVAL '7 days'"),
@@ -3765,6 +3770,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
       db.query('SELECT id, name, email, subscription_status, created_at FROM users ORDER BY created_at DESC LIMIT 6'),
       db.query('SELECT COUNT(*) as cnt FROM email_subscribers WHERE active = TRUE'),
       db.query("SELECT COUNT(*) as cnt FROM contact_messages WHERE message LIKE '[TEAM TRIAL REQUEST]%' AND (provisioned IS NULL OR provisioned = FALSE)"),
+      db.query("SELECT value FROM site_settings WHERE key = 'webhook_sig_failure'"),
     ]);
 
     const byTier = {};
@@ -3816,7 +3822,7 @@ app.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
         total_pending_cad: parseFloat(affiliateRes.rows[0].total_pending_cad) || 0,
         total_holding_cad: parseFloat(affiliateRes.rows[0].total_holding_cad) || 0,
       },
-      webhook_sig_failure: lastWebhookSigFailure,
+      webhook_sig_failure: (() => { try { return webhookSigFailureRes.rows.length > 0 ? JSON.parse(webhookSigFailureRes.rows[0].value) : null; } catch { return null; } })(),
       pending_trials: parseInt(pendingTrialsRes.rows[0].cnt) || 0,
       funnel: [
         { label: 'Signed Up', count: total, pct: 100 },
