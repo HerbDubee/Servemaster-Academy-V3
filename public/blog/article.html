@@ -113,11 +113,40 @@
   document.title = title + ' – ServeMaster Academy';
   document.getElementById('page-title').textContent = title + ' – ServeMaster Academy';
   document.getElementById('page-desc').setAttribute('content', desc);
-  var articleUrl = 'https://servemasteracademy.ca/blog?article=' + (article.slug || '');
+  var articleUrl = 'https://servemasteracademy.ca/blog/' + (article.slug || '');
   var ogUrl = document.getElementById('og-url'); if (ogUrl) ogUrl.setAttribute('content', articleUrl);
   var ogTitle = document.getElementById('og-title'); if (ogTitle) ogTitle.setAttribute('content', title + ' — ServeMaster Academy');
   var ogDesc = document.getElementById('og-desc'); if (ogDesc) ogDesc.setAttribute('content', desc);
   var canonEl = document.getElementById('canonical-link'); if (canonEl) canonEl.setAttribute('href', articleUrl);
+
+  var articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": title,
+    "description": desc,
+    "url": articleUrl,
+    "image": "https://servemasteracademy.ca/logo.png",
+    "datePublished": article.datePublished || "2025-01-01",
+    "dateModified": article.dateModified || article.datePublished || "2025-01-01",
+    "author": {
+      "@type": "Person",
+      "name": "Kirk Adamson",
+      "url": "https://ca.linkedin.com/in/kirk-adamson-6372a7193"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ServeMaster Academy",
+      "url": "https://servemasteracademy.ca",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://servemasteracademy.ca/logo.png"
+      }
+    }
+  };
+  var schemaScript = document.createElement('script');
+  schemaScript.type = 'application/ld+json';
+  schemaScript.text = JSON.stringify(articleSchema);
+  document.head.appendChild(schemaScript);
 
   var backLabel = lang === 'fr' ? '← Retour au Centre de Connaissances' : lang === 'es' ? '← Volver al Centro de Conocimiento' : '← Back to Knowledge Centre';
   var minRead = lang === 'fr' ? 'min de lecture' : lang === 'es' ? 'min de lectura' : 'min read';

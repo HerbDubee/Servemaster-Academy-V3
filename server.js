@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -742,18 +743,87 @@ app.get('/knowledge-center', (req, res) => res.redirect(301, '/blog'));
 app.get('/blog/es/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', 'es', slug + '.html');
-  res.sendFile(filePath, (err) => {
-    if (err) res.redirect('/blog/' + slug);
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) { res.redirect('/blog/' + slug); return; }
+    fs.stat(filePath, (statErr, stats) => {
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+      const pageDesc = descMatch ? descMatch[1] : '';
+      const articleUrl = 'https://servemasteracademy.ca/blog/es/' + slug;
+      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: pageTitle,
+        description: pageDesc,
+        url: articleUrl,
+        image: 'https://servemasteracademy.ca/logo.png',
+        datePublished: '2025-01-01',
+        dateModified,
+        author: {
+          '@type': 'Person',
+          name: 'Kirk Adamson',
+          url: 'https://ca.linkedin.com/in/kirk-adamson-6372a7193'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'ServeMaster Academy',
+          url: 'https://servemasteracademy.ca',
+          logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
+        }
+      };
+      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+      const injected = html.replace('</head>', schemaTag + '</head>');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(injected);
+    });
   });
 });
 app.get('/blog/:slug', (req, res, next) => {
   const slug = req.params.slug.replace(/[^a-z0-9-]/gi, '');
   const filePath = path.join(__dirname, 'public', 'blog', slug + '.html');
-  res.sendFile(filePath, (err) => {
+  fs.readFile(filePath, 'utf8', (err, html) => {
     if (err) {
       const templatePath = path.join(__dirname, 'public', 'blog', 'article.html');
       res.sendFile(templatePath, (err2) => { if (err2) next(); });
+      return;
     }
+    fs.stat(filePath, (statErr, stats) => {
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+      const pageDesc = descMatch ? descMatch[1] : '';
+      const articleUrl = 'https://servemasteracademy.ca/blog/' + slug;
+      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: pageTitle,
+        description: pageDesc,
+        url: articleUrl,
+        image: 'https://servemasteracademy.ca/logo.png',
+        datePublished: '2025-01-01',
+        dateModified,
+        author: {
+          '@type': 'Person',
+          name: 'Kirk Adamson',
+          url: 'https://ca.linkedin.com/in/kirk-adamson-6372a7193'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'ServeMaster Academy',
+          url: 'https://servemasteracademy.ca',
+          logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
+        }
+      };
+      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+      const injected = html.replace('</head>', schemaTag + '</head>');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(injected);
+    });
   });
 });
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
