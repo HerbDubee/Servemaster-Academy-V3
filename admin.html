@@ -126,7 +126,7 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                 <ul id="blog-freshness-list" class="space-y-2 text-xs text-amber-400"></ul>
               </div>
             </div>
-            <button onclick="document.getElementById('blog-freshness-banner').classList.add('hidden')"
+            <button onclick="dismissBlogFreshnessBanner()"
               class="text-amber-500 hover:text-amber-300 text-lg leading-none flex-shrink-0" title="Dismiss">&times;</button>
           </div>
         </div>
@@ -922,22 +922,57 @@ async function loadAll() {
   loadSiteConfig();
 }
 
+const FRESHNESS_DISMISS_KEY = 'blog-freshness-dismissed';
+const FRESHNESS_DISMISS_TTL_DAYS = 7;
+
+function _getFreshnessDismissed() {
+  try {
+    return JSON.parse(localStorage.getItem(FRESHNESS_DISMISS_KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function _isSlugDismissed(dismissed, slug) {
+  const ts = dismissed[slug];
+  if (!ts) return false;
+  const age = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+  return age < FRESHNESS_DISMISS_TTL_DAYS;
+}
+
+function dismissBlogFreshnessBanner() {
+  const banner = document.getElementById('blog-freshness-banner');
+  const dismissed = _getFreshnessDismissed();
+  const now = Date.now();
+  banner.querySelectorAll('code[data-slug]').forEach(el => {
+    dismissed[el.dataset.slug] = now;
+  });
+  localStorage.setItem(FRESHNESS_DISMISS_KEY, JSON.stringify(dismissed));
+  banner.classList.add('hidden');
+}
+
 async function checkBlogFreshness() {
   try {
     const data = await apiFetch('/api/admin/blog-freshness');
     const banner = document.getElementById('blog-freshness-banner');
     const list   = document.getElementById('blog-freshness-list');
     if (data.stale && data.stale.length) {
-      list.innerHTML = data.stale.map(({ slug, fileLastCommit, declaredDateModified, usingFallback }) => {
-        const note = usingFallback ? ' <span class="text-amber-600">(no dateModified set)</span>' : '';
-        return `<li class="flex items-center gap-2 flex-wrap">
-          <code class="font-mono bg-amber-900/40 px-1 rounded">${slug}</code>
+      const dismissed = _getFreshnessDismissed();
+      const visible = data.stale.filter(({ slug }) => !_isSlugDismissed(dismissed, slug));
+      if (visible.length) {
+        list.innerHTML = visible.map(({ slug, fileLastCommit, declaredDateModified, usingFallback }) => {
+          const note = usingFallback ? ' <span class="text-amber-600">(no dateModified set)</span>' : '';
+          return `<li class="flex items-center gap-2 flex-wrap">
+          <code class="font-mono bg-amber-900/40 px-1 rounded" data-slug="${slug}">${slug}</code>
           <span class="text-amber-500">committed ${fileLastCommit}, declared ${declaredDateModified}${note}</span>
           <button onclick="markBlogArticleUpdated('${slug}', this)"
             class="ml-auto flex-shrink-0 text-xs bg-amber-700 hover:bg-amber-600 text-amber-100 px-2 py-0.5 rounded transition-colors">Mark updated</button>
         </li>`;
-      }).join('');
-      banner.classList.remove('hidden');
+        }).join('');
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
     } else {
       banner.classList.add('hidden');
     }
