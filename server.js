@@ -4105,7 +4105,13 @@ async function maybeRunKirkTrialDigestCron() {
       timeZone: 'America/Toronto', hour: 'numeric', hour12: false
     }).formatToParts(new Date()).reduce((a, p) => ({ ...a, [p.type]: p.value }), {});
     const hour = parseInt(torontoFmt.hour, 10);
-    if (hour < 8 || hour >= 9) return;
+
+    // Read the configured digest hour (default 8 ET); clamp to valid range [0,23]
+    const hourSettingRes = await db.query(`SELECT value FROM site_settings WHERE key = 'kirk_trial_digest_hour_et'`);
+    const parsedHour = hourSettingRes.rows.length ? parseInt(hourSettingRes.rows[0].value, 10) : NaN;
+    const targetHour = (!isNaN(parsedHour) && parsedHour >= 0 && parsedHour <= 23) ? parsedHour : 8;
+
+    if (hour < targetHour || hour >= targetHour + 1) return;
 
     const key = 'kirk_trial_digest_last_sent_at';
     const settingRes = await db.query(`SELECT value FROM site_settings WHERE key = $1`, [key]);
@@ -5154,6 +5160,13 @@ app.post('/api/admin/site-settings', adminMiddleware, async (req, res) => {
   try {
     const { key, value } = req.body;
     if (!key) return res.status(400).json({ error: 'key required' });
+
+    // Per-key validation
+    if (key === 'kirk_trial_digest_hour_et') {
+      const h = Number(value);
+      if (!Number.isInteger(h) || h < 0 || h > 23) return res.status(400).json({ error: 'kirk_trial_digest_hour_et must be an integer 0–23' });
+    }
+
     await db.query(
       `INSERT INTO site_settings (key, value, updated_at) VALUES ($1,$2,NOW()) ON CONFLICT (key) DO UPDATE SET value=$2, updated_at=NOW()`,
       [key, String(value)]
