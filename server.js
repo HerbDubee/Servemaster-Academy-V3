@@ -14,6 +14,17 @@ const { getUncachableStripeClient, getStripePublishableKey, getStripeSync } = re
 const { Resend } = require('resend');
 const puppeteer = require('puppeteer');
 const db = require('./db');
+const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
+
+// Build a slug → { datePublished, dateModified } map once at startup.
+// Used by the sitemap and blog JSON-LD routes so dates are always accurate.
+let _blogDateMap = {};
+try {
+  const _contentSrc = fs.readFileSync(path.join(__dirname, 'public/js/content.js'), 'utf8');
+  _parseBlogArticles(_contentSrc).forEach(({ slug, datePublished, dateModified }) => {
+    _blogDateMap[slug] = { datePublished, dateModified };
+  });
+} catch (_e) { /* non-fatal: dates fall back gracefully */ }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -53,6 +64,16 @@ app.use(function (req, res, next) {
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+// Normalise trailing slashes: redirect /foo/ → /foo (301) so canonical URLs
+// are consistent and express.static doesn't create a redirect chain for
+// directory-mapped routes like /blog → /blog/.
+app.use((req, res, next) => {
+  if (req.path.length > 1 && req.path.endsWith('/')) {
+    const qs = req.url.slice(req.path.length);
+    return res.redirect(301, req.path.slice(0, -1) + qs);
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Proxy /__mockup/ to the mockup sandbox Vite dev server on port 23636
@@ -743,27 +764,28 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.htm
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
 app.get('/sitemap.xml', (req, res) => {
   const base = APP_URL;
-  const today = new Date().toISOString().split('T')[0];
+  // Static marketing pages — lastmod reflects actual content age, not today.
+  // Using "today" on every request erodes Google's freshness trust.
   const staticPages = [
-    ['/', '1.0', 'weekly'],
-    ['/features', '0.9', 'monthly'],
-    ['/pricing', '0.9', 'monthly'],
-    ['/about', '0.7', 'monthly'],
-    ['/contact', '0.6', 'monthly'],
-    ['/ai-roleplay', '0.8', 'monthly'],
-    ['/managers', '0.8', 'monthly'],
-    ['/teams', '0.8', 'monthly'],
-    ['/scholarship', '0.8', 'monthly'],
-    ['/blog', '0.8', 'weekly'],
+    ['/', '2026-05-01', '1.0', 'weekly'],
+    ['/features', '2026-04-01', '0.9', 'monthly'],
+    ['/pricing', '2026-04-01', '0.9', 'monthly'],
+    ['/about', '2026-01-01', '0.7', 'monthly'],
+    ['/contact', '2026-01-01', '0.6', 'monthly'],
+    ['/ai-roleplay', '2026-03-01', '0.8', 'monthly'],
+    ['/managers', '2026-03-01', '0.8', 'monthly'],
+    ['/teams', '2026-03-01', '0.8', 'monthly'],
+    ['/scholarship', '2026-02-01', '0.8', 'monthly'],
+    ['/blog', '2026-05-01', '0.8', 'weekly'],
   ];
   let blogUrls = '';
   try {
-    const fs = require('fs');
     const blogDir = path.join(__dirname, 'public', 'blog');
     const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.html') && f !== 'index.html' && f !== 'article.html');
     const enUrls = files.map(f => {
       const slug = f.replace('.html', '');
-      return `  <url><loc>${base}/blog/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`;
+      const lastmod = (_blogDateMap[slug] && _blogDateMap[slug].dateModified) || '2025-01-01';
+      return `  <url><loc>${base}/blog/${slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`;
     });
     const frDir = path.join(blogDir, 'fr');
     let frUrls = [];
@@ -771,7 +793,8 @@ app.get('/sitemap.xml', (req, res) => {
       const frFiles = fs.readdirSync(frDir).filter(f => f.endsWith('.html'));
       frUrls = frFiles.map(f => {
         const slug = f.replace('.html', '');
-        return `  <url><loc>${base}/blog/fr/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
+        const lastmod = (_blogDateMap[slug] && _blogDateMap[slug].dateModified) || '2025-01-01';
+        return `  <url><loc>${base}/blog/fr/${slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
       });
     } catch (fe) { /* skip */ }
     const esDir = path.join(__dirname, 'public', 'blog', 'es');
@@ -780,13 +803,14 @@ app.get('/sitemap.xml', (req, res) => {
       const esFiles = fs.readdirSync(esDir).filter(f => f.endsWith('.html'));
       esUrls = esFiles.map(f => {
         const slug = f.replace('.html', '');
-        return `  <url><loc>${base}/blog/es/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
+        const lastmod = (_blogDateMap[slug] && _blogDateMap[slug].dateModified) || '2025-01-01';
+        return `  <url><loc>${base}/blog/es/${slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>`;
       });
     } catch (ee) { /* skip */ }
     blogUrls = [...enUrls, ...frUrls, ...esUrls].join('\n');
   } catch (e) { /* skip */ }
-  const staticUrls = staticPages.map(([p, pri, freq]) =>
-    `  <url><loc>${base}${p}</loc><lastmod>${today}</lastmod><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
+  const staticUrls = staticPages.map(([p, lastmod, pri, freq]) =>
+    `  <url><loc>${base}${p}</loc><lastmod>${lastmod}</lastmod><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`
   ).join('\n');
   res.setHeader('Content-Type', 'application/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticUrls}\n${blogUrls}\n</urlset>`);
@@ -807,23 +831,24 @@ app.get('/blog/fr/:slug', (req, res, next) => {
   const filePath = path.join(__dirname, 'public', 'blog', 'fr', slug + '.html');
   fs.readFile(filePath, 'utf8', (err, html) => {
     if (err) { res.redirect('/blog/' + slug); return; }
-    fs.stat(filePath, (statErr, stats) => {
-      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
-        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
-      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
-      const pageDesc = descMatch ? descMatch[1] : '';
-      const articleUrl = 'https://servemasteracademy.ca/blog/fr/' + slug;
-      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: pageTitle,
-        description: pageDesc,
-        url: articleUrl,
-        image: 'https://servemasteracademy.ca/logo.png',
-        datePublished: '2025-01-01',
-        dateModified,
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+    const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+    const pageDesc = descMatch ? descMatch[1] : '';
+    const articleUrl = 'https://servemasteracademy.ca/blog/fr/' + slug;
+    const _dates = _blogDateMap[slug];
+    const datePublished = (_dates && _dates.datePublished) || '2025-01-01';
+    const dateModified  = (_dates && _dates.dateModified)  || datePublished;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: pageTitle,
+      description: pageDesc,
+      url: articleUrl,
+      image: 'https://servemasteracademy.ca/logo.png',
+      datePublished,
+      dateModified,
         author: {
           '@type': 'Person',
           name: 'Kirk Adamson',
@@ -836,11 +861,10 @@ app.get('/blog/fr/:slug', (req, res, next) => {
           logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
         }
       };
-      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
-      const injected = html.replace('</head>', schemaTag + '</head>');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.send(injected);
-    });
+    const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+    const injected = html.replace('</head>', schemaTag + '</head>');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
   });
 });
 app.get('/blog/es/:slug', (req, res, next) => {
@@ -848,23 +872,24 @@ app.get('/blog/es/:slug', (req, res, next) => {
   const filePath = path.join(__dirname, 'public', 'blog', 'es', slug + '.html');
   fs.readFile(filePath, 'utf8', (err, html) => {
     if (err) { res.redirect('/blog/' + slug); return; }
-    fs.stat(filePath, (statErr, stats) => {
-      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
-        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
-      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
-      const pageDesc = descMatch ? descMatch[1] : '';
-      const articleUrl = 'https://servemasteracademy.ca/blog/es/' + slug;
-      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: pageTitle,
-        description: pageDesc,
-        url: articleUrl,
-        image: 'https://servemasteracademy.ca/logo.png',
-        datePublished: '2025-01-01',
-        dateModified,
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+    const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+    const pageDesc = descMatch ? descMatch[1] : '';
+    const articleUrl = 'https://servemasteracademy.ca/blog/es/' + slug;
+    const _dates = _blogDateMap[slug];
+    const datePublished = (_dates && _dates.datePublished) || '2025-01-01';
+    const dateModified  = (_dates && _dates.dateModified)  || datePublished;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: pageTitle,
+      description: pageDesc,
+      url: articleUrl,
+      image: 'https://servemasteracademy.ca/logo.png',
+      datePublished,
+      dateModified,
         author: {
           '@type': 'Person',
           name: 'Kirk Adamson',
@@ -877,11 +902,10 @@ app.get('/blog/es/:slug', (req, res, next) => {
           logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
         }
       };
-      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
-      const injected = html.replace('</head>', schemaTag + '</head>');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.send(injected);
-    });
+    const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+    const injected = html.replace('</head>', schemaTag + '</head>');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
   });
 });
 app.get('/blog/:slug', (req, res, next) => {
@@ -893,23 +917,24 @@ app.get('/blog/:slug', (req, res, next) => {
       res.sendFile(templatePath, (err2) => { if (err2) next(); });
       return;
     }
-    fs.stat(filePath, (statErr, stats) => {
-      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
-        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
-      const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
-      const pageDesc = descMatch ? descMatch[1] : '';
-      const articleUrl = 'https://servemasteracademy.ca/blog/' + slug;
-      const dateModified = (!statErr && stats.mtime) ? stats.mtime.toISOString().slice(0, 10) : '2025-01-01';
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: pageTitle,
-        description: pageDesc,
-        url: articleUrl,
-        image: 'https://servemasteracademy.ca/logo.png',
-        datePublished: '2025-01-01',
-        dateModified,
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+    const pageTitle = titleMatch ? titleMatch[1].replace(/ [–—-] ServeMaster Academy$/, '').trim() : 'ServeMaster Academy';
+    const pageDesc = descMatch ? descMatch[1] : '';
+    const articleUrl = 'https://servemasteracademy.ca/blog/' + slug;
+    const _dates = _blogDateMap[slug];
+    const datePublished = (_dates && _dates.datePublished) || '2025-01-01';
+    const dateModified  = (_dates && _dates.dateModified)  || datePublished;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: pageTitle,
+      description: pageDesc,
+      url: articleUrl,
+      image: 'https://servemasteracademy.ca/logo.png',
+      datePublished,
+      dateModified,
         author: {
           '@type': 'Person',
           name: 'Kirk Adamson',
@@ -922,11 +947,10 @@ app.get('/blog/:slug', (req, res, next) => {
           logo: { '@type': 'ImageObject', url: 'https://servemasteracademy.ca/logo.png' }
         }
       };
-      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
-      const injected = html.replace('</head>', schemaTag + '</head>');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.send(injected);
-    });
+    const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
+    const injected = html.replace('</head>', schemaTag + '</head>');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
   });
 });
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'public', 'contact.html')));
