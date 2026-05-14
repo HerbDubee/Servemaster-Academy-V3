@@ -3012,12 +3012,22 @@ function openBookEditor(id) {
       document.getElementById('bk-published').checked = !!chapter.is_published;
       document.getElementById('bk-content').value = '';
       document.getElementById('bk-notes').value = '';
+      const ttsBtn = document.getElementById('bk-tts-btn');
+      const ttsLabel = document.getElementById('bk-tts-label');
+      if (ttsBtn) { ttsBtn.disabled = true; ttsBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
+      if (ttsLabel) ttsLabel.textContent = 'Loading…';
       fetch('/api/admin/books/' + id, { headers: { Authorization: 'Bearer ' + token } })
         .then(r => r.json())
         .then(data => {
           document.getElementById('bk-content').value = data.content || '';
           document.getElementById('bk-notes').value = data.notes || '';
           updateBookWordCount();
+          if (ttsBtn) { ttsBtn.disabled = false; ttsBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+          if (ttsLabel) ttsLabel.textContent = 'Listen';
+        })
+        .catch(() => {
+          if (ttsBtn) { ttsBtn.disabled = false; ttsBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+          if (ttsLabel) ttsLabel.textContent = 'Listen';
         });
     }
   } else {
