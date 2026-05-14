@@ -3097,6 +3097,14 @@ async function toggleChapterTTS() {
   const icon = document.getElementById('bk-tts-icon');
   const label = document.getElementById('bk-tts-label');
   if (btn) btn.classList.add('border-amber-400', 'text-amber-400');
+
+  // Create the Audio element NOW, synchronously inside the user gesture handler.
+  // Mobile browsers only allow play() on an element that was created or first
+  // played within a direct user gesture. Reusing the same element for every
+  // chunk keeps that trust alive across the async loop.
+  const audio = new Audio();
+  _ttsAudio = audio;
+
   for (let i = 0; i < chunks.length; i++) {
     if (_ttsAbort) break;
     if (icon) icon.textContent = '⏳';
@@ -3118,32 +3126,34 @@ async function toggleChapterTTS() {
       if (_ttsAbort) break;
       if (icon) icon.textContent = '⏹';
       if (label) label.textContent = chunks.length > 1 ? `Stop (${i+1}/${chunks.length})` : 'Stop';
-      // Step 2: pre-flight fetch to catch server-side errors before handing to <audio>
+      // Step 2: fetch audio, build blob URL, assign to the persistent Audio element
       const streamUrl = '/api/admin/tts-stream?id=' + encodeURIComponent(id) + '&_t=' + encodeURIComponent(token);
-      await (async () => {
-        let streamRes;
-        try {
-          streamRes = await fetch(streamUrl, { headers: { Authorization: 'Bearer ' + token } });
-        } catch (netErr) {
-          throw new Error('Network error: ' + netErr.message);
-        }
-        const ct = streamRes.headers.get('Content-Type') || '';
-        if (!ct.startsWith('audio/')) {
-          let errMsg = `TTS stream error (${streamRes.status})`;
-          try { const j = await streamRes.json(); errMsg = j.error || errMsg; } catch {}
-          throw new Error(errMsg);
-        }
-        // Valid audio — create blob URL so <audio> never sees a JSON response
-        const blob = await streamRes.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        _ttsBlobUrl = blobUrl;
-        await new Promise((resolve, reject) => {
-          _ttsAudio = new Audio(blobUrl);
-          _ttsAudio.onended = () => { URL.revokeObjectURL(blobUrl); _ttsBlobUrl = null; resolve(); };
-          _ttsAudio.onerror = () => { URL.revokeObjectURL(blobUrl); _ttsBlobUrl = null; reject(new Error('Audio playback error')); };
-          _ttsAudio.play().catch(reject);
-        });
-      })();
+      let streamRes;
+      try {
+        streamRes = await fetch(streamUrl, { headers: { Authorization: 'Bearer ' + token } });
+      } catch (netErr) {
+        throw new Error('Network error: ' + netErr.message);
+      }
+      const ct = streamRes.headers.get('Content-Type') || '';
+      if (!ct.startsWith('audio/')) {
+        let errMsg = `TTS stream error (${streamRes.status})`;
+        try { const j = await streamRes.json(); errMsg = j.error || errMsg; } catch {}
+        throw new Error(errMsg);
+      }
+      const blob = await streamRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      if (_ttsAbort) { URL.revokeObjectURL(blobUrl); break; }
+      _ttsBlobUrl = blobUrl;
+      // Swap src on the same element — retains user-gesture trust on mobile
+      audio.src = blobUrl;
+      await new Promise((resolve, reject) => {
+        const onEnded = () => { cleanup(); URL.revokeObjectURL(blobUrl); _ttsBlobUrl = null; resolve(); };
+        const onError = () => { cleanup(); URL.revokeObjectURL(blobUrl); _ttsBlobUrl = null; reject(new Error('Audio playback error')); };
+        function cleanup() { audio.removeEventListener('ended', onEnded); audio.removeEventListener('error', onError); }
+        audio.addEventListener('ended', onEnded, { once: true });
+        audio.addEventListener('error', onError, { once: true });
+        audio.play().catch(e => { cleanup(); URL.revokeObjectURL(blobUrl); _ttsBlobUrl = null; reject(e); });
+      });
     } catch (e) {
       if (!_ttsAbort) alert('Audio playback error: ' + e.message);
       break;
