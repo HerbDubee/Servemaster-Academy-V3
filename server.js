@@ -4588,7 +4588,7 @@ app.post('/api/admin/tts', adminMiddleware, express.json(), (req, res) => {
   const { text, speed = 1.0 } = req.body || {};
   if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided' });
   const id = require('crypto').randomUUID();
-  _ttsTokens.set(id, { text: text.slice(0, 4900), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.25), 4.0), expires: Date.now() + 120000 });
+  _ttsTokens.set(id, { text: text.slice(0, 4000), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.25), 4.0), expires: Date.now() + 120000 });
   res.json({ id });
 });
 

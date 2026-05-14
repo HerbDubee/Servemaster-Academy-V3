@@ -3054,7 +3054,7 @@ let _ttsBlobUrl = null;
 let _ttsSpeaking = false;
 let _ttsAbort = false;
 
-function _ttsChunks(text, maxLen = 4800) {
+function _ttsChunks(text, maxLen = 4000) {
   const paras = text.split(/\n\n+/);
   const chunks = [];
   let current = '';
