@@ -74,7 +74,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { redirect: false }));
 
 // Proxy /__mockup/ to the mockup sandbox Vite dev server on port 23636
 app.use('/__mockup', (req, res) => {
@@ -776,6 +776,7 @@ app.get('/sitemap.xml', (req, res) => {
     ['/managers', '2026-03-01', '0.8', 'monthly'],
     ['/teams', '2026-03-01', '0.8', 'monthly'],
     ['/scholarship', '2026-02-01', '0.8', 'monthly'],
+    ['/affiliates', '2026-03-01', '0.7', 'monthly'],
     ['/blog', '2026-05-01', '0.8', 'weekly'],
   ];
   let blogUrls = '';
