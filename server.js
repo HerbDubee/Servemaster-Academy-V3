@@ -1929,10 +1929,14 @@ app.get('/api/leaderboard', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
-  const { email, firstName } = req.body;
+  const { email, firstName, source } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
+  const safeSource = (source || 'newsletter').toString().slice(0, 64);
   try {
-    await db.query('INSERT INTO email_subscribers (email, first_name) VALUES ($1, $2) ON CONFLICT (email) DO UPDATE SET active = TRUE', [email.toLowerCase(), firstName || '']);
+    await db.query(
+      'INSERT INTO email_subscribers (email, first_name, source) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET active = TRUE, source = COALESCE(EXCLUDED.source, email_subscribers.source)',
+      [email.toLowerCase(), firstName || '', safeSource]
+    );
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Subscription failed' }); }
 });
@@ -2680,9 +2684,30 @@ app.get('/api/admin/modules', adminMiddleware, async (req, res) => {
 
 app.get('/api/admin/newsletter', adminMiddleware, async (req, res) => {
   try {
-    const result = await db.query('SELECT email, first_name, created_at FROM email_subscribers WHERE active = TRUE ORDER BY created_at DESC');
+    const { source } = req.query;
+    const params = [];
+    let where = 'WHERE active = TRUE';
+    if (source) { params.push(source); where += ` AND source = $${params.length}`; }
+    const result = await db.query(`SELECT email, first_name, source, created_at FROM email_subscribers ${where} ORDER BY created_at DESC`, params);
     res.json({ subscribers: result.rows });
   } catch (err) { res.status(500).json({ error: 'Failed to fetch newsletter' }); }
+});
+
+app.get('/api/admin/newsletter/export.csv', adminMiddleware, async (req, res) => {
+  try {
+    const { source } = req.query;
+    const params = [];
+    let where = 'WHERE active = TRUE';
+    if (source) { params.push(source); where += ` AND source = $${params.length}`; }
+    const result = await db.query(`SELECT email, first_name, source, created_at FROM email_subscribers ${where} ORDER BY created_at DESC`, params);
+    const rows = result.rows;
+    const csv = ['email,first_name,source,subscribed_at', ...rows.map(r =>
+      [r.email, r.first_name || '', r.source || 'newsletter', r.created_at ? new Date(r.created_at).toISOString() : ''].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+    )].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="newsletter-subscribers${source ? '-' + source : ''}.csv"`);
+    res.send(csv);
+  } catch (err) { res.status(500).json({ error: 'Failed to export newsletter' }); }
 });
 
 app.get('/api/admin/restaurants', adminMiddleware, async (req, res) => {
@@ -5261,6 +5286,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_workbook_purchases_token ON workbook_purchases(download_token)`);
+    // ── Email subscriber source tagging ───────────────────────────────────────
+    await db.query(`ALTER TABLE email_subscribers ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'newsletter'`);
     // ── Team Challenges ───────────────────────────────────────────────────────────
     await db.query(`CREATE TABLE IF NOT EXISTS team_challenges (
       id SERIAL PRIMARY KEY,

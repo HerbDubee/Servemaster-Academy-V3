@@ -287,7 +287,15 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <!-- NEWSLETTER -->
       <div id="section-newsletter" class="section">
         <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Newsletter Subscribers</h1>
-        <div id="newsletter-count" class="text-zinc-400 text-sm mb-4"></div>
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <div id="newsletter-count" class="text-zinc-400 text-sm flex-1"></div>
+          <select id="newsletter-source-filter" onchange="loadNewsletter()" class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-3 py-2 focus:outline-none">
+            <option value="">All sources</option>
+            <option value="newsletter">newsletter</option>
+            <option value="covers-series">covers-series (book notifications)</option>
+          </select>
+          <a id="newsletter-export-btn" href="/api/admin/newsletter/export.csv" target="_blank" class="bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">⬇ Export CSV</a>
+        </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -295,11 +303,12 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                 <tr>
                   <th class="px-4 py-3 text-left">Email</th>
                   <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Source</th>
                   <th class="px-4 py-3 text-left">Subscribed</th>
                 </tr>
               </thead>
               <tbody id="newsletter-tbody" class="divide-y divide-zinc-800">
-                <tr><td colspan="3" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
+                <tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1452,18 +1461,28 @@ async function loadModules() {
 
 async function loadNewsletter() {
   try {
-    const data = await apiFetch('/api/admin/newsletter');
+    const filterEl = document.getElementById('newsletter-source-filter');
+    const source = filterEl ? filterEl.value : '';
+    const qs = source ? `?source=${encodeURIComponent(source)}` : '';
+    const exportBtn = document.getElementById('newsletter-export-btn');
+    if (exportBtn) exportBtn.href = `/api/admin/newsletter/export.csv${qs}`;
+    const data = await apiFetch(`/api/admin/newsletter${qs}`);
     const subs = data.subscribers || [];
-    document.getElementById('newsletter-count').textContent = `${subs.length} active subscriber${subs.length !== 1 ? 's' : ''}`;
+    document.getElementById('newsletter-count').textContent = `${subs.length} active subscriber${subs.length !== 1 ? 's' : ''}${source ? ' (filtered)' : ''}`;
     const tbody = document.getElementById('newsletter-tbody');
-    if (!subs.length) { tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-zinc-500">No subscribers yet.</td></tr>'; return; }
-    tbody.innerHTML = subs.map(s => `
-      <tr class="hover:bg-zinc-800/50 transition-colors">
-        <td class="px-4 py-3">${esc(s.email)}</td>
-        <td class="px-4 py-3 text-zinc-400">${esc(s.first_name || '—')}</td>
-        <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(s.created_at)}</td>
-      </tr>
-    `).join('');
+    if (!subs.length) { tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">No subscribers yet.</td></tr>'; return; }
+    tbody.innerHTML = subs.map(s => {
+      const srcLabel = s.source === 'covers-series'
+        ? '<span class="bg-amber-400/10 text-amber-400 border border-amber-400/20 text-xs px-2 py-0.5 rounded-full">📚 covers-series</span>'
+        : `<span class="text-zinc-500 text-xs">${esc(s.source || 'newsletter')}</span>`;
+      return `
+        <tr class="hover:bg-zinc-800/50 transition-colors">
+          <td class="px-4 py-3">${esc(s.email)}</td>
+          <td class="px-4 py-3 text-zinc-400">${esc(s.first_name || '—')}</td>
+          <td class="px-4 py-3">${srcLabel}</td>
+          <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(s.created_at)}</td>
+        </tr>`;
+    }).join('');
   } catch (e) { console.error(e); }
 }
 

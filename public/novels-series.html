@@ -249,6 +249,64 @@
   </div>
 </section>
 
+<!-- BOOK LAUNCH NOTIFICATION SIGNUP -->
+<section class="max-w-2xl mx-auto px-4 pb-16">
+  <div id="book-notify-box" class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+    <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">Don't Miss the Drop</p>
+    <h2 class="heading text-2xl font-black mb-2">Notify me when Book 2 drops</h2>
+    <p class="text-zinc-400 text-sm leading-relaxed mb-6">Enter your email and we'll let you know the moment <em>Eastern Sparks</em> is ready — no spam, just one email when it launches.</p>
+    <form id="book-notify-form" class="flex flex-col sm:flex-row gap-3 justify-center" onsubmit="submitBookNotify(event)">
+      <input
+        id="book-notify-email"
+        type="email"
+        required
+        placeholder="your@email.com"
+        class="flex-1 bg-zinc-800 border border-zinc-600 text-white placeholder-zinc-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+      >
+      <button
+        type="submit"
+        id="book-notify-btn"
+        class="bg-amber-400 hover:bg-amber-300 text-zinc-900 font-bold px-6 py-3 rounded-xl text-sm transition-colors whitespace-nowrap"
+      >Notify Me</button>
+    </form>
+    <p id="book-notify-msg" class="hidden mt-4 text-sm font-medium"></p>
+    <p class="text-zinc-600 text-xs mt-4">We'll email you when <em>Eastern Sparks</em> is ready. Unsubscribe any time.</p>
+  </div>
+</section>
+<script>
+async function submitBookNotify(e) {
+  e.preventDefault();
+  const btn = document.getElementById('book-notify-btn');
+  const msgEl = document.getElementById('book-notify-msg');
+  const email = document.getElementById('book-notify-email').value.trim();
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const res = await fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'covers-series' })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      document.getElementById('book-notify-form').classList.add('hidden');
+      msgEl.textContent = "We'll email you when Eastern Sparks is ready.";
+      msgEl.className = 'mt-4 text-sm font-medium text-amber-400';
+    } else {
+      msgEl.textContent = data.error || 'Something went wrong. Please try again.';
+      msgEl.className = 'mt-4 text-sm font-medium text-red-400';
+      btn.disabled = false;
+      btn.textContent = 'Notify Me';
+    }
+  } catch {
+    msgEl.textContent = 'Network error. Please try again.';
+    msgEl.className = 'mt-4 text-sm font-medium text-red-400';
+    btn.disabled = false;
+    btn.textContent = 'Notify Me';
+  }
+}
+</script>
+
 <!-- ABOUT THE SERIES -->
 <section class="border-t border-zinc-800 py-16">
   <div class="max-w-2xl mx-auto px-4 text-center">
