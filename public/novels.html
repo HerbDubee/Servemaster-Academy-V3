@@ -390,21 +390,33 @@ document.addEventListener('DOMContentLoaded', () => {
 function buildChapterList() {
   const list = document.getElementById('chapter-list');
   list.innerHTML = CHAPTERS.map(ch => `
-    <button class="chapter-item w-full text-left px-4 py-3 border-l-2 border-transparent"
-            id="ch-item-${ch.key}" onclick="selectChapter('${ch.key}', false)">
-      <div class="flex items-center justify-between gap-2">
-        <div class="min-w-0">
-          <div class="text-zinc-500 text-xs mb-0.5">Chapter ${ch.num}</div>
-          <div class="text-white text-sm font-medium leading-snug">${ch.title}</div>
-        </div>
-      </div>
-    </button>
+    <div class="chapter-item border-l-2 border-transparent flex items-center gap-2 pr-3"
+         id="ch-item-${ch.key}">
+      <button class="flex-1 text-left px-4 py-3 min-w-0"
+              onclick="selectChapter('${ch.key}', false)">
+        <div class="text-zinc-500 text-xs mb-0.5">Chapter ${ch.num}</div>
+        <div class="text-white text-sm font-medium leading-snug">${ch.title}</div>
+      </button>
+      <button onclick="listenChapter('${ch.key}')"
+        title="Listen to chapter"
+        class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-amber-400 hover:text-zinc-900 text-zinc-400 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
   `).join('');
+}
+
+async function listenChapter(key) {
+  const alreadyLoaded = key === currentKey;
+  await selectChapter(key, true);
+  if (alreadyLoaded) {
+    document.getElementById('reader-text').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ── Select & load chapter text ────────────────────────────────────────────────
 async function selectChapter(key, autoPlay) {
-  if (key === currentKey && audioState !== 'idle') return;
+  if (key === currentKey && audioState !== 'idle' && !autoPlay) return;
 
   // Stop any existing audio
   if (currentKey && currentKey !== key) {
