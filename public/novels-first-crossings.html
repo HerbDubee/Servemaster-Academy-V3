@@ -698,6 +698,7 @@ function revealNotifySection(scroll) {
   const section = document.getElementById('fc-notify-section');
   if (!section || section.style.display !== 'none') return;
   section.style.display = '';
+  try { localStorage.setItem('fc_finished', '1'); } catch (e) {}
   if (scroll) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -761,6 +762,14 @@ if (new URLSearchParams(window.location.search).get('workbook') === 'success') {
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadChapterList();
 checkPdfExists();
+
+// Restore notify widget for readers who already reached the last chapter
+try {
+  if (localStorage.getItem('fc_finished') === '1') {
+    const section = document.getElementById('fc-notify-section');
+    if (section) section.style.display = '';
+  }
+} catch (e) {}
 
 // ── Book 2 notification signup ────────────────────────────────────────────────
 async function submitFcNotify(e) {
