@@ -60,6 +60,12 @@ uri = "file://public/img/og/og-management.png"
 type = "image"
 title = "management career og image"
 
+[[generated]]
+id = "kG6riESoul-AhXzmyTtb2"
+uri = "file://public/images/first-crossings-cover.png"
+type = "image"
+title = "first crossings book cover"
+
 [[outputs]]
 id = "99VMEajBifp6iti1fNveZ"
 uri = "file://exports/instagram-post-1080x1350.png"
