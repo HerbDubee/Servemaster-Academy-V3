@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async defer src="https://t.contentsquare.net/uxa/2e14c5cc7ec76.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1BPWXRYVXS"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-1BPWXRYVXS');</script>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#FF5E3A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ServeMaster">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novels & Workbooks — First Crossings | ServeMaster Academy</title>
+  <meta name="description" content="Read and listen to First Crossings, a novel about two young servers finding their way through the kitchens and dining rooms of Europe. Narrated by AI voices Sofia and Luca.">
+  <link rel="canonical" href="https://servemasteracademy.ca/novels">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <meta property="og:url" content="https://servemasteracademy.ca/novels">
+  <meta property="og:title" content="Novels & Workbooks — First Crossings">
+  <meta property="og:description" content="Read and listen to First Crossings — a novel about two servers navigating the finest dining rooms of Europe.">
+  <meta property="og:image" content="https://servemasteracademy.ca/logo.png">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+    .prose-reader { font-family: 'Lora', Georgia, serif; }
+    .chapter-item { transition: background 0.15s, border-color 0.15s; }
+    .chapter-item.active { background: rgba(251,191,36,0.08); border-left-color: #fbbf24; }
+    .chapter-item:hover:not(.active) { background: rgba(255,255,255,0.04); }
+    .badge-sofia { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+    .badge-luca  { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+    #audio-player { transition: transform 0.3s ease; }
+    #audio-player.hidden-player { transform: translateY(100%); }
+    #seek-bar::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; }
+    #seek-bar::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; border: none; }
+    #seek-bar { accent-color: #fbbf24; }
+    .reader-text p { margin-bottom: 1.25em; }
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="pb-32">
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;">🎓 Scholarship</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/affiliates" class="hover:text-white transition-colors">Affiliates</a>
+      <a href="/novels" class="text-white transition-colors">Novels</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
+      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
+      <div class="relative" id="lang-selector">
+        <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button>
+        <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
+          <button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
+          <button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
+          <button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
+        </div>
+      </div>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">AI Role-Play</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <a href="/affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
+      <a href="/novels" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Novels</a>
+      <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
+      <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
+      <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
+<script src="/js/nav-auth.js"></script>
+
+<!-- HERO -->
+<section style="background: linear-gradient(135deg, #0e1a2e 0%, #141c2e 50%, #09090b 100%);" class="py-16">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex flex-col lg:flex-row gap-12 items-start">
+
+      <!-- Cover + actions -->
+      <div class="lg:w-64 flex-shrink-0 w-full">
+        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl aspect-[2/3] flex items-center justify-center mb-4 overflow-hidden">
+          <div class="text-center px-6">
+            <div class="text-5xl mb-3">📖</div>
+            <div class="text-white font-bold text-lg leading-tight">First Crossings</div>
+            <div class="text-zinc-400 text-sm mt-1">Book 1</div>
+          </div>
+        </div>
+        <!-- PDF Download -->
+        <a id="pdf-download-btn" href="/books/Novel1.pdf" download
+           class="flex items-center justify-center gap-2 w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors mb-3"
+           onclick="return checkPdfAvailable(event)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          Download PDF
+        </a>
+        <p id="pdf-unavailable" class="hidden text-center text-zinc-500 text-xs mb-3">PDF coming soon</p>
+        <!-- Voice legend -->
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-2">
+          <p class="text-zinc-500 text-xs uppercase tracking-widest mb-2">Narrators</p>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="badge-sofia text-xs px-2 py-0.5 rounded-full font-semibold">Sofia</span>
+            <span class="text-zinc-400">POV chapters</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="badge-luca text-xs px-2 py-0.5 rounded-full font-semibold">Luca</span>
+            <span class="text-zinc-400">POV chapters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Book info -->
+      <div class="flex-1 min-w-0">
+        <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-2">ServeMaster Fiction</p>
+        <h1 class="heading text-4xl md:text-5xl font-black mb-3">First <span class="text-amber-400">Crossings</span></h1>
+        <p class="text-zinc-400 text-sm uppercase tracking-wider mb-4">Book 1 &nbsp;·&nbsp; 12 Chapters</p>
+        <p class="text-zinc-300 text-lg leading-relaxed mb-4 max-w-2xl">Two young servers. Twelve chapters. The finest dining rooms of Europe. <em>First Crossings</em> follows Sofia Vale and Luca Voss as they navigate the unforgiving floor of Michelin-starred kitchens — and slowly discover that the best service is a language anyone can learn.</p>
+        <p class="text-zinc-500 text-sm leading-relaxed max-w-2xl mb-6">Each chapter is narrated by the character whose point of view it follows — Sofia voiced by one narrator, Luca by another — so the reading and listening experience mirrors the story itself.</p>
+
+        <!-- YouTube embed placeholder -->
+        <div id="yt-section" class="mb-6">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div id="yt-placeholder" class="aspect-video flex flex-col items-center justify-center gap-3 text-zinc-500">
+              <svg class="w-12 h-12 opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              <p class="text-sm font-medium">YouTube trailer coming soon</p>
+              <p class="text-xs opacity-60">Video will appear here once published</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chapter count / quick stats -->
+        <div class="flex flex-wrap gap-4 text-sm text-zinc-400">
+          <div class="flex items-center gap-1.5"><span class="text-white font-semibold">12</span> chapters</div>
+          <div class="text-zinc-700">·</div>
+          <div class="flex items-center gap-1.5"><span class="text-pink-400 font-semibold">5</span> Sofia chapters</div>
+          <div class="text-zinc-700">·</div>
+          <div class="flex items-center gap-1.5"><span class="text-blue-400 font-semibold">7</span> Luca chapters</div>
+          <div class="text-zinc-700">·</div>
+          <div class="flex items-center gap-1.5">~<span class="text-white font-semibold">37,000</span> words</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKBOOKS PLACEHOLDER -->
+<section class="border-t border-zinc-800 py-6">
+  <div class="max-w-6xl mx-auto px-4 flex items-center gap-4 text-sm text-zinc-500">
+    <span class="bg-zinc-800 border border-zinc-700 text-zinc-400 text-xs font-semibold px-3 py-1 rounded-full">Coming Soon</span>
+    <span>Companion workbooks — exercises, wine pairings, and service scenarios drawn from each chapter</span>
+  </div>
+</section>
+
+<!-- MAIN READER -->
+<main class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex flex-col lg:flex-row gap-6">
+
+    <!-- Chapter list -->
+    <aside class="lg:w-72 flex-shrink-0">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden sticky top-20">
+        <div class="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+          <h2 class="font-semibold text-sm text-white">Chapters</h2>
+          <span class="text-zinc-500 text-xs" id="progress-label"></span>
+        </div>
+        <div id="chapter-list" class="divide-y divide-zinc-800/50 max-h-[70vh] overflow-y-auto">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Reader panel -->
+    <div class="flex-1 min-w-0">
+      <!-- Empty state -->
+      <div id="reader-empty" class="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
+        <div class="text-5xl mb-4">📖</div>
+        <h3 class="heading text-2xl font-bold mb-2">Choose a chapter</h3>
+        <p class="text-zinc-400">Select any chapter from the list to start reading.<br>Each chapter also has a listen button for AI narration.</p>
+      </div>
+
+      <!-- Chapter content -->
+      <div id="reader-content" class="hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <!-- Chapter header -->
+          <div class="px-6 py-5 border-b border-zinc-800 flex items-start justify-between gap-4">
+            <div>
+              <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1" id="reader-ch-num"></p>
+              <h2 class="heading text-xl font-bold" id="reader-ch-title"></h2>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <span id="reader-voice-badge" class="text-xs px-2 py-1 rounded-full font-semibold"></span>
+              <button id="listen-btn" onclick="toggleAudio()"
+                class="flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+                <svg id="listen-icon-play" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                <svg id="listen-icon-pause" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+                <svg id="listen-icon-spin" class="w-4 h-4 hidden spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span id="listen-label">Listen</span>
+              </button>
+            </div>
+          </div>
+          <!-- Text -->
+          <div class="px-6 py-8 prose-reader">
+            <div id="reader-text" class="reader-text text-zinc-200 leading-relaxed text-lg max-w-none space-y-0"></div>
+          </div>
+        </div>
+
+        <!-- Chapter navigation -->
+        <div class="flex gap-3 mt-4">
+          <button id="prev-ch-btn" onclick="navigateChapter(-1)"
+            class="flex-1 flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium py-3 px-4 rounded-xl text-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Previous
+          </button>
+          <button id="next-ch-btn" onclick="navigateChapter(1)"
+            class="flex-1 flex items-center justify-end gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium py-3 px-4 rounded-xl text-sm transition-colors">
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="reader-loading" class="hidden bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
+        <div class="spinner w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p class="text-zinc-400">Loading chapter…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="reader-error" class="hidden bg-zinc-900 border border-red-900/40 rounded-2xl p-8 text-center">
+        <p class="text-red-400 font-semibold mb-2">Could not load chapter</p>
+        <p class="text-zinc-500 text-sm" id="reader-error-msg"></p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- STICKY AUDIO PLAYER -->
+<div id="audio-player" class="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 px-4 py-3 hidden-player">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center gap-4">
+      <!-- Play/Pause -->
+      <button id="player-play-btn" onclick="toggleAudio()"
+        class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-amber-400 hover:bg-amber-300 text-black rounded-full transition-colors">
+        <svg id="player-icon-play" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+        <svg id="player-icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+        <svg id="player-icon-spin" class="w-5 h-5 hidden spinner" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
+
+      <!-- Info + progress -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <span id="player-voice-badge" class="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"></span>
+          <span id="player-chapter-title" class="text-white text-sm font-medium truncate"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="player-time-current" class="text-zinc-500 text-xs w-10 flex-shrink-0">0:00</span>
+          <input id="seek-bar" type="range" min="0" max="100" value="0" step="0.1"
+            class="flex-1 h-1 bg-zinc-700 rounded-full appearance-none cursor-pointer"
+            oninput="onSeekInput(this.value)" onchange="onSeekChange(this.value)">
+          <span id="player-time-total" class="text-zinc-500 text-xs w-10 flex-shrink-0 text-right">—</span>
+        </div>
+      </div>
+
+      <!-- Close player -->
+      <button onclick="closePlayer()" class="flex-shrink-0 text-zinc-500 hover:text-white transition-colors p-1" aria-label="Close player">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="border-t border-zinc-800 py-12 mt-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-6">
+      <p class="text-zinc-400 text-sm">&copy; 2026 ServeMaster Academy | Elevating Canadian Hospitality with AI Training</p>
+    </div>
+    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-500 mb-8">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/signup" class="hover:text-white transition-colors font-semibold" style="color:#FF5E3A;">Start Free</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/contact" class="hover:text-white transition-colors">Contact Us</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
+      <span class="text-zinc-700">|</span>
+      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+    </div>
+    <div class="flex gap-3 justify-center">
+      <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+      <span class="text-zinc-700 self-center">|</span>
+      <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+      <span class="text-zinc-700 self-center">|</span>
+      <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js?v=6"></script>
+<script src="/js/chat-widget.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
+<script src="/js/pwa-nav.js"></script>
+
+<script>
+// ── Chapter data (mirrors server voice-map) ──────────────────────────────────
+const CHAPTERS = [
+  { key:'book1-ch01', num:1,  title:'The City That Starts Without You', voice:'sofia', voiceName:'Sofia' },
+  { key:'book1-ch02', num:2,  title:'Paris Precision',                  voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch03', num:3,  title:'The Near Miss',                    voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch04', num:4,  title:'Florence Rhythm',                  voice:'sofia', voiceName:'Sofia' },
+  { key:'book1-ch05', num:5,  title:'Paris Deepening',                  voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch06', num:6,  title:'The City That Shouts',             voice:'sofia', voiceName:'Sofia' },
+  { key:'book1-ch07', num:7,  title:'Millimeter Work',                  voice:'sofia', voiceName:'Sofia' },
+  { key:'book1-ch08', num:8,  title:"The Widower's Wine",               voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch09', num:9,  title:'London Borough Market',            voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch10', num:10, title:'Barcelona Farewell',               voice:'sofia', voiceName:'Sofia' },
+  { key:'book1-ch11', num:11, title:'London Ikoyi',                     voice:'luca',  voiceName:'Luca'  },
+  { key:'book1-ch12', num:12, title:'The Almost',                       voice:'luca',  voiceName:'Luca'  },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'sma_book1_position';
+let currentKey = null;
+let audioState = 'idle'; // idle | loading | playing | paused | error
+let saveThrottle = null;
+
+const audio = new Audio();
+audio.preload = 'none';
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildChapterList();
+  const saved = loadPosition();
+  if (saved && saved.key) {
+    selectChapter(saved.key, false).then(() => {
+      if (saved.time > 0) {
+        audio.addEventListener('canplay', () => {
+          audio.currentTime = Math.min(saved.time, audio.duration || saved.time);
+        }, { once: true });
+      }
+    });
+  }
+  checkPdfExists();
+});
+
+// ── Chapter list render ───────────────────────────────────────────────────────
+function buildChapterList() {
+  const list = document.getElementById('chapter-list');
+  list.innerHTML = CHAPTERS.map(ch => `
+    <button class="chapter-item w-full text-left px-4 py-3 border-l-2 border-transparent"
+            id="ch-item-${ch.key}" onclick="selectChapter('${ch.key}', false)">
+      <div class="flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="text-zinc-500 text-xs mb-0.5">Chapter ${ch.num}</div>
+          <div class="text-white text-sm font-medium leading-snug">${ch.title}</div>
+        </div>
+        <span class="badge-${ch.voice} text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0">${ch.voiceName}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+// ── Select & load chapter text ────────────────────────────────────────────────
+async function selectChapter(key, autoPlay) {
+  if (key === currentKey && audioState !== 'idle') return;
+
+  // Stop any existing audio
+  if (currentKey && currentKey !== key) {
+    stopAudio();
+  }
+
+  currentKey = key;
+  setActiveChapterItem(key);
+  showReaderState('loading');
+
+  try {
+    const res = await fetch(`/api/books/chapter/${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    const data = await res.json();
+    renderChapter(data);
+    showReaderState('content');
+    updateNavButtons();
+    if (autoPlay) startAudio(key);
+  } catch (err) {
+    showReaderState('error', err.message || 'Failed to load chapter');
+  }
+}
+
+function renderChapter(data) {
+  const ch = CHAPTERS.find(c => c.key === data.chapterKey) || {};
+  document.getElementById('reader-ch-num').textContent = `Chapter ${ch.num || ''}`;
+  document.getElementById('reader-ch-title').textContent = data.title || ch.title;
+
+  const badgeEl = document.getElementById('reader-voice-badge');
+  badgeEl.textContent = data.voiceName || ch.voiceName;
+  badgeEl.className = `text-xs px-2 py-1 rounded-full font-semibold badge-${ch.voice}`;
+
+  // Render paragraphs
+  const textEl = document.getElementById('reader-text');
+  const paras = (data.text || '').split(/\n\n+/).filter(p => p.trim());
+  textEl.innerHTML = paras.map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
+  textEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setActiveChapterItem(key) {
+  document.querySelectorAll('.chapter-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`ch-item-${key}`);
+  if (el) {
+    el.classList.add('active');
+    el.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function updateNavButtons() {
+  const idx = CHAPTERS.findIndex(c => c.key === currentKey);
+  const prev = document.getElementById('prev-ch-btn');
+  const next = document.getElementById('next-ch-btn');
+  if (prev) prev.disabled = idx <= 0;
+  if (next) next.disabled = idx >= CHAPTERS.length - 1;
+  if (prev) prev.style.opacity = idx <= 0 ? '0.3' : '1';
+  if (next) next.style.opacity = idx >= CHAPTERS.length - 1 ? '0.3' : '1';
+  document.getElementById('progress-label').textContent = `${idx + 1} / ${CHAPTERS.length}`;
+}
+
+function navigateChapter(dir) {
+  const idx = CHAPTERS.findIndex(c => c.key === currentKey);
+  const newIdx = idx + dir;
+  if (newIdx >= 0 && newIdx < CHAPTERS.length) {
+    selectChapter(CHAPTERS[newIdx].key, false);
+  }
+}
+
+// ── Audio playback ────────────────────────────────────────────────────────────
+function startAudio(key) {
+  const ch = CHAPTERS.find(c => c.key === key);
+  if (!ch) return;
+
+  setAudioState('loading');
+  showPlayer(ch);
+
+  // Set src — browser streams the MP3 natively
+  audio.src = `/api/books/tts/${encodeURIComponent(key)}`;
+  audio.load();
+  audio.play().catch(err => {
+    console.error('Audio play error:', err);
+    setAudioState('error');
+  });
+}
+
+function stopAudio() {
+  audio.pause();
+  audio.src = '';
+  setAudioState('idle');
+  hidePlayer();
+}
+
+function toggleAudio() {
+  if (!currentKey) return;
+  if (audioState === 'idle') {
+    startAudio(currentKey);
+  } else if (audioState === 'loading') {
+    stopAudio();
+  } else if (audioState === 'playing') {
+    audio.pause();
+  } else if (audioState === 'paused') {
+    audio.play().catch(() => {});
+  } else if (audioState === 'error') {
+    startAudio(currentKey);
+  }
+}
+
+function closePlayer() {
+  stopAudio();
+}
+
+// ── Audio element events ──────────────────────────────────────────────────────
+audio.addEventListener('playing', () => setAudioState('playing'));
+audio.addEventListener('pause',   () => { setAudioState('paused'); savePosition(); });
+audio.addEventListener('ended',   () => {
+  setAudioState('idle');
+  savePosition();
+  // Auto-advance to next chapter
+  const idx = CHAPTERS.findIndex(c => c.key === currentKey);
+  if (idx < CHAPTERS.length - 1) {
+    setTimeout(() => selectChapter(CHAPTERS[idx + 1].key, true), 1500);
+  }
+});
+audio.addEventListener('error',   () => setAudioState('error'));
+audio.addEventListener('waiting', () => setAudioState('loading'));
+audio.addEventListener('canplay', () => {
+  if (audioState === 'loading') setAudioState('playing');
+});
+
+audio.addEventListener('timeupdate', () => {
+  updateSeekBar();
+  // Throttled position save
+  if (!saveThrottle) {
+    saveThrottle = setTimeout(() => { saveThrottle = null; savePosition(); }, 2000);
+  }
+});
+
+audio.addEventListener('durationchange', () => {
+  const dur = audio.duration;
+  document.getElementById('player-time-total').textContent = isFinite(dur) ? formatTime(dur) : '—';
+  document.getElementById('seek-bar').max = isFinite(dur) ? dur : 100;
+});
+
+// ── Seek bar ──────────────────────────────────────────────────────────────────
+let isSeeking = false;
+function onSeekInput(val) { isSeeking = true; document.getElementById('player-time-current').textContent = formatTime(val); }
+function onSeekChange(val) { isSeeking = false; if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
+function updateSeekBar() {
+  if (isSeeking) return;
+  const bar = document.getElementById('seek-bar');
+  const cur = audio.currentTime || 0;
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
+  bar.value = cur;
+  if (dur > 0) bar.max = dur;
+  document.getElementById('player-time-current').textContent = formatTime(cur);
+  // Update progress fill via CSS custom property
+  const pct = dur > 0 ? (cur / dur) * 100 : 0;
+  bar.style.background = `linear-gradient(to right, #fbbf24 ${pct}%, #3f3f46 ${pct}%)`;
+}
+
+// ── Player UI ─────────────────────────────────────────────────────────────────
+function showPlayer(ch) {
+  const player = document.getElementById('audio-player');
+  player.classList.remove('hidden-player');
+  document.getElementById('player-chapter-title').textContent = `Ch ${ch.num}: ${ch.title}`;
+  const badge = document.getElementById('player-voice-badge');
+  badge.textContent = ch.voiceName;
+  badge.className = `text-xs px-2 py-0.5 rounded-full font-semibold badge-${ch.voice}`;
+}
+
+function hidePlayer() {
+  document.getElementById('audio-player').classList.add('hidden-player');
+}
+
+function setAudioState(state) {
+  audioState = state;
+  const playI  = (id) => document.getElementById(id);
+  const isLoad = state === 'loading';
+  const isPlay = state === 'playing';
+
+  // Reader button
+  playI('listen-icon-play').classList.toggle('hidden',  isPlay || isLoad);
+  playI('listen-icon-pause').classList.toggle('hidden', !isPlay);
+  playI('listen-icon-spin').classList.toggle('hidden',  !isLoad);
+  playI('listen-label').textContent = isLoad ? 'Loading…' : isPlay ? 'Pause' : 'Listen';
+
+  // Player button
+  playI('player-icon-play').classList.toggle('hidden',  isPlay || isLoad);
+  playI('player-icon-pause').classList.toggle('hidden', !isPlay);
+  playI('player-icon-spin').classList.toggle('hidden',  !isLoad);
+}
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function savePosition() {
+  if (!currentKey) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ key: currentKey, time: audio.currentTime || 0 }));
+  } catch (e) {}
+}
+
+function loadPosition() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; } catch { return null; }
+}
+
+// ── Reader states ─────────────────────────────────────────────────────────────
+function showReaderState(state, msg) {
+  ['reader-empty','reader-content','reader-loading','reader-error'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById(`reader-${state}`).classList.remove('hidden');
+  if (state === 'error' && msg) document.getElementById('reader-error-msg').textContent = msg;
+}
+
+// ── PDF availability check ────────────────────────────────────────────────────
+async function checkPdfExists() {
+  try {
+    const res = await fetch('/books/Novel1.pdf', { method: 'HEAD' });
+    if (!res.ok) showPdfUnavailable();
+  } catch { showPdfUnavailable(); }
+}
+
+function showPdfUnavailable() {
+  document.getElementById('pdf-download-btn').classList.add('hidden');
+  document.getElementById('pdf-unavailable').classList.remove('hidden');
+}
+
+function checkPdfAvailable(e) {
+  // Let the anchor work normally; checkPdfExists() hides it if unavailable
+  return true;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function formatTime(secs) {
+  const s = Math.floor(secs);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

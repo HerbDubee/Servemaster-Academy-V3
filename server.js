@@ -15,6 +15,8 @@ const { Resend } = require('resend');
 const puppeteer = require('puppeteer');
 const db = require('./db');
 const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
+const { getChapter, getAllChapters } = require('./books/voice-map');
+const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
 
 // Build a slug → { datePublished, dateModified } map once at startup.
 // Used by the sitemap and blog JSON-LD routes so dates are always accurate.
@@ -777,6 +779,7 @@ app.get('/sitemap.xml', (req, res) => {
     ['/teams', '2026-03-01', '0.8', 'monthly'],
     ['/scholarship', '2026-02-01', '0.8', 'monthly'],
     ['/affiliates', '2026-03-01', '0.7', 'monthly'],
+    ['/novels', '2026-05-20', '0.8', 'monthly'],
     ['/blog', '2026-05-01', '0.8', 'weekly'],
   ];
   let blogUrls = '';
@@ -817,6 +820,12 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticUrls}\n${blogUrls}\n</urlset>`);
 });
 
+app.get('/novels', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels.html')));
+app.get('/books/Novel1.pdf', (req, res) => {
+  const pdfPath = path.join(__dirname, 'books', 'Novel1.pdf');
+  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
+  res.sendFile(pdfPath);
+});
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
@@ -4556,6 +4565,107 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
 });
 
 // ── GitHub Webhook: auto-sync books branch → DB ───────────────────────────────
+// ── Public Books: per-IP rate limiter (10 req/min) ───────────────────────────
+const _booksTtsRateLimit = new Map();
+setInterval(() => { const now = Date.now(); for (const [k,v] of _booksTtsRateLimit) { if (v.resetAt < now) _booksTtsRateLimit.delete(k); } }, 60000);
+function _checkBooksTtsRate(ip) {
+  const now = Date.now();
+  const e = _booksTtsRateLimit.get(ip);
+  if (!e || e.resetAt < now) { _booksTtsRateLimit.set(ip, { count: 1, resetAt: now + 60000 }); return true; }
+  if (e.count >= 10) return false;
+  e.count++;
+  return true;
+}
+
+// ── Public Books: chapter text ────────────────────────────────────────────────
+app.get('/api/books/chapter/:key', (req, res) => {
+  let ch;
+  try { ch = getChapter(req.params.key); } catch (e) {
+    return res.status(404).json({ error: e.message });
+  }
+  const filePath = path.join(__dirname, 'books', ch.file);
+  let markdown;
+  try { markdown = fs.readFileSync(filePath, 'utf8'); } catch {
+    return res.status(500).json({ error: 'Chapter file not found on disk' });
+  }
+  let text;
+  try { text = cleanForTTS(markdown); } catch (e) {
+    return res.status(500).json({ error: `Text processing failed: ${e.message}` });
+  }
+  res.json({ chapterKey: ch.key, title: ch.title, voiceName: ch.voiceName, voiceRole: ch.voice, text });
+});
+
+// ── Public Books: ElevenLabs TTS streaming ────────────────────────────────────
+app.get('/api/books/tts/:key', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!_checkBooksTtsRate(ip)) {
+    return res.status(429).json({ error: 'Too many requests — please wait a minute.' });
+  }
+  let ch;
+  try { ch = getChapter(req.params.key); } catch (e) {
+    return res.status(404).json({ error: e.message });
+  }
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+  const filePath = path.join(__dirname, 'books', ch.file);
+  let markdown;
+  try { markdown = fs.readFileSync(filePath, 'utf8'); } catch {
+    return res.status(500).json({ error: 'Chapter file not found on disk' });
+  }
+  let chunks;
+  try {
+    const clean = cleanForTTS(markdown);
+    chunks = chunkForTTS(clean);
+  } catch (e) {
+    return res.status(500).json({ error: `Text processing failed: ${e.message}` });
+  }
+  res.setHeader('Content-Type', 'audio/mpeg');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Chapter-Key', ch.key);
+  res.setHeader('X-Voice-Name', ch.voiceName);
+  for (const chunk of chunks) {
+    if (res.writableEnded) break;
+    let elRes;
+    try {
+      elRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ch.voiceId}/stream`, {
+        method: 'POST',
+        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: chunk,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true },
+        }),
+      });
+    } catch (fetchErr) {
+      console.error('ElevenLabs fetch error:', fetchErr.message);
+      if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs unreachable' });
+      else if (!res.writableEnded) res.end();
+      return;
+    }
+    if (!elRes.ok) {
+      const errBody = await elRes.text().catch(() => '');
+      console.error(`ElevenLabs TTS error ${elRes.status}:`, errBody.slice(0, 200));
+      if (!res.headersSent) res.status(502).json({ error: `ElevenLabs error: ${elRes.status}` });
+      else if (!res.writableEnded) res.end();
+      return;
+    }
+    const ct = elRes.headers.get('content-type') || '';
+    if (!ct.startsWith('audio/')) {
+      console.error('ElevenLabs returned non-audio content-type:', ct);
+      if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs returned non-audio response' });
+      else if (!res.writableEnded) res.end();
+      return;
+    }
+    const reader = elRes.body.getReader();
+    while (!res.writableEnded) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+  }
+  if (!res.writableEnded) res.end();
+});
+
 app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, res) => {
   const secret = process.env.BOOKS_WEBHOOK_SECRET;
   if (secret) {
