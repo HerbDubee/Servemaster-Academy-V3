@@ -2,7 +2,7 @@
 
 const VOICES = {
   sofia: { id: 'dAlhI9qAHVIjXuVppzhW', name: 'Sofia' },
-  luca:  { id: 'j57KDF72L6gxbLk4sOo5', name: 'Luca'  },
+  luca:  { id: 'BNgbHR0DNeZixGQVzloa', name: 'Luca'  },
 };
 
 const BOOK1_CHAPTERS = [
