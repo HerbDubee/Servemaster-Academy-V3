@@ -338,7 +338,7 @@
 </div>
 
 <!-- BOOK 2 NOTIFICATION SIGNUP -->
-<section class="max-w-2xl mx-auto px-4 pb-16 mt-8">
+<section id="fc-notify-section" class="max-w-2xl mx-auto px-4 pb-16 mt-8" style="display:none">
   <div id="fc-notify-box" class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
     <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">Don't Miss the Drop</p>
     <h2 class="heading text-2xl font-black mb-2">Notify me when Book 2 drops</h2>
@@ -472,6 +472,9 @@ async function selectChapter(key, scroll) {
   const idx = CHAPTERS.findIndex(c => c.key === key);
   document.getElementById('prev-ch-btn').style.visibility = idx > 0 ? 'visible' : 'hidden';
   document.getElementById('next-ch-btn').style.visibility = idx < CHAPTERS.length - 1 ? 'visible' : 'hidden';
+
+  // Reveal Book 2 notify widget when reader reaches the last chapter
+  if (idx === CHAPTERS.length - 1) revealNotifySection(true);
 
   showReaderState('loading');
   document.getElementById('reader-ch-num').textContent = `Chapter ${ch.num}`;
@@ -689,6 +692,20 @@ function listenNow() {
   selectChapter(first.key, true);
   document.getElementById('reader-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── Notify widget reveal ──────────────────────────────────────────────────────
+function revealNotifySection(scroll) {
+  const section = document.getElementById('fc-notify-section');
+  if (!section || section.style.display !== 'none') return;
+  section.style.display = '';
+  if (scroll) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener('scroll', function onPageScroll() {
+  const threshold = 100;
+  const nearBottom = window.scrollY + window.innerHeight >= document.body.scrollHeight - threshold;
+  if (nearBottom) revealNotifySection(false);
+}, { passive: true });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatTime(secs) {
