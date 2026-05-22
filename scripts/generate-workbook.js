@@ -189,242 +189,234 @@ const CHAPTERS = [
   },
 ];
 
-//  Build PDF 
+//  Build PDF
 const doc = new PDFDocument({
   size: 'LETTER',
-  margins: { top: 64, bottom: 64, left: 72, right: 72 },
+  margins: { top: 56, bottom: 56, left: 72, right: 72 },
   info: {
-    Title: 'First Crossings  -  Companion Workbook',
+    Title: 'First Crossings - Companion Workbook',
     Author: 'ServeMaster Academy',
     Subject: 'Hospitality training companion to First Crossings (Book 1)',
   },
   autoFirstPage: false,
+  bufferPages: false,
 });
 
 const stream = fs.createWriteStream(OUT_FILE);
 doc.pipe(stream);
 
 const W = 612 - 144;
-const BOTTOM = 792 - 64 - 20;
 
-//  Page helpers 
-let currentBg = C.bg;
-
-function newPage(bg) {
-  currentBg = bg || C.bg;
-  doc.addPage();
+// pageAdded fires on every addPage() AND every auto-overflow page break.
+// Setting currentBg before adding a page guarantees every page gets its background.
+let currentBg = C.black;
+doc.on('pageAdded', () => {
+  doc.save();
   doc.rect(0, 0, 612, 792).fill(currentBg);
+  doc.restore();
+});
+
+function setBg(bg) { currentBg = bg; }
+
+function addPage(bg) {
+  if (bg) setBg(bg);
+  doc.addPage();
 }
 
-function needSpace(h) {
-  if (doc.y + h > BOTTOM) {
-    newPage(currentBg);
-  }
+function hRule(color) {
+  const y = doc.y;
+  doc.save().moveTo(72, y).lineTo(540, y)
+     .strokeColor(color || C.rule).lineWidth(0.4).stroke().restore();
 }
 
-function rule() {
-  doc.save().moveTo(72, doc.y).lineTo(540, doc.y)
-     .strokeColor(C.rule).lineWidth(0.4).stroke().restore();
-}
-
-function sectionLabel(text) {
-  needSpace(32);
-  doc.y += 10;
+function sectionLabel(text, lightBg) {
+  doc.moveDown(0.55);
   doc.fontSize(7).fillColor(C.gold).font('Helvetica-Bold')
-     .text(text.toUpperCase(), 72, doc.y, { characterSpacing: 1.8 });
-  doc.y += 4;
+     .text(text.toUpperCase(), { characterSpacing: 1.8 });
+  doc.moveDown(0.15);
 }
 
-//  Cover 
-newPage(C.black);
+// ── Cover ─────────────────────────────────────────────────────────────────────
+addPage(C.black);
 
 doc.fillColor(C.gold).fontSize(9).font('Helvetica-Bold')
    .text('ServeMaster Academy', 72, 72);
 doc.fillColor(C.white).fontSize(44).font('Helvetica-Bold')
-   .text('First', 72, 155);
+   .text('First', 72, 150);
 doc.fillColor(C.white).fontSize(44).font('Helvetica-Bold')
-   .text('Crossings', 72, 200);
+   .text('Crossings', 72, 195);
 doc.fillColor(C.gold).fontSize(13).font('Helvetica')
-   .text('Companion Workbook', 72, 256);
-doc.moveTo(72, 282).lineTo(200, 282).strokeColor(C.gold).lineWidth(1).stroke();
+   .text('Companion Workbook', 72, 250);
+doc.moveTo(72, 272).lineTo(200, 272).strokeColor(C.gold).lineWidth(1).stroke();
 doc.fillColor(C.muted).fontSize(9.5).font('Helvetica')
-   .text('Exercises, wine pairings, and service scenarios\ndrawn from each of the twelve chapters.', 72, 296, { lineGap: 4 });
+   .text('Exercises, wine pairings, and service scenarios\ndrawn from each of the twelve chapters.', 72, 286, { lineGap: 3 });
 doc.fillColor(C.muted).fontSize(8.5).font('Helvetica')
-   .text('Answers at the back.', 72, 344);
+   .text('Answers at the back.', 72, 330);
 doc.fillColor('#444').fontSize(8).font('Helvetica')
    .text('servemasteracademy.ca', 72, 714, { characterSpacing: 0.5 });
 
-//  How to use 
-newPage();
+// ── How to use ────────────────────────────────────────────────────────────────
+addPage(C.bg);
 
 doc.fillColor(C.gold).fontSize(8).font('Helvetica-Bold')
-   .text('HOW TO USE THIS WORKBOOK', 72, 72, { characterSpacing: 1.5 });
-doc.y = 86;
-rule();
-doc.y += 12;
+   .text('HOW TO USE THIS WORKBOOK', 72, 60, { characterSpacing: 1.5 });
+doc.y = 74; hRule(); doc.moveDown(0.8);
 
-doc.fontSize(10).fillColor(C.ink).font('Helvetica-Bold').text('Each chapter has three parts:', 72);
-doc.y += 8;
+// Supplemental note box
+const noteTop = doc.y;
+doc.save()
+   .rect(72, noteTop, W, 52)
+   .fillColor('#ede7d5').fill()
+   .restore();
+doc.fillColor(C.gold).fontSize(7.5).font('Helvetica-Bold')
+   .text('SUPPLEMENTAL MATERIAL', 78, noteTop + 7, { characterSpacing: 1.2 });
+doc.fillColor(C.ink).fontSize(9).font('Helvetica')
+   .text(
+     'First Crossings and this workbook are supplemental to the ServeMaster Academy ' +
+     'course and app. The novel brings the skills to life through story; the app is ' +
+     'where you practise, certify, and track your progress. Use both together for the ' +
+     'full experience.',
+     78, noteTop + 20, { width: W - 12, lineGap: 2 }
+   );
+doc.y = noteTop + 60;
+
+doc.moveDown(0.6);
+doc.fontSize(9.5).fillColor(C.ink).font('Helvetica-Bold')
+   .text('Each chapter has three parts:');
+doc.moveDown(0.4);
 
 const parts = [
-  ['Knowledge Check', 'Four multiple-choice questions on wine, service technique, and the chapter setting. One best answer  -  the others represent common mistakes or partial truths.'],
-  ['Scenario Prompt', "An open-ended situation drawn from the chapter's key service moment. Write freely, then review against your own experience."],
-  ['Skills Checklist', 'Five statements about the chapter\'s core skills. Tick what you own, circle what you\'re working on. Return after your next shift.'],
+  ['Knowledge Check',
+   'Four multiple-choice questions on wine, service technique, and the chapter setting. ' +
+   'One best answer - the others represent common mistakes or partial truths.'],
+  ['Service Scenario',
+   "An open-ended situation drawn from the chapter's key service moment. " +
+   'Write freely, then review against your own experience.'],
+  ['Skills Checklist',
+   "Five statements about the chapter's core skills. Tick what you own, circle what " +
+   "you're working on. Return after your next shift."],
 ];
 for (const [title, desc] of parts) {
-  needSpace(44);
-  doc.fontSize(9.5).fillColor(C.gold).font('Helvetica-Bold').text(` ${title}`, 72, doc.y);
-  doc.y += 2;
+  doc.fontSize(9.5).fillColor(C.gold).font('Helvetica-Bold').text('  ' + title);
   doc.fontSize(9.5).fillColor(C.ink).font('Helvetica')
-     .text(desc, 84, doc.y, { width: W - 12, lineGap: 3 });
-  doc.y += 10;
+     .text(desc, { indent: 12, lineGap: 2 });
+  doc.moveDown(0.35);
 }
 
-doc.y += 6;
-rule();
-doc.y += 10;
-doc.fontSize(9.5).fillColor(C.ink).font('Helvetica')
-   .text('Answers to the Knowledge Check are in the Answer Key at the back, with a brief explanation of why each answer is correct  -  and what makes the wrong answers wrong.', 72, doc.y, { width: W, lineGap: 3 });
+doc.moveDown(0.4); hRule(); doc.moveDown(0.5);
+doc.fontSize(9).fillColor(C.ink).font('Helvetica')
+   .text(
+     'Answers to the Knowledge Check are in the Answer Key at the back, with a brief ' +
+     'explanation of why each answer is correct and what makes the wrong answers wrong.',
+     { lineGap: 2 }
+   );
 
-//  Chapters 
+// ── Chapters ──────────────────────────────────────────────────────────────────
 const LABELS = ['A', 'B', 'C', 'D'];
 
 for (const ch of CHAPTERS) {
-  newPage();
+  addPage(C.bg);
 
-  // Header
-  doc.fillColor(C.gold).fontSize(8).font('Helvetica-Bold')
-     .text(`CHAPTER ${ch.num}`, 72, 68, { characterSpacing: 1.5 });
-  doc.fillColor(C.ink).fontSize(17).font('Helvetica-Bold')
-     .text(ch.title, 72, 82, { width: W });
-  doc.y += 2;
-  doc.fillColor(C.muted).fontSize(8).font('Helvetica').text(ch.location, 72, doc.y);
-  doc.y += 6;
-  rule();
-  doc.y += 2;
+  // Chapter header - fixed position at top
+  doc.fillColor(C.gold).fontSize(7.5).font('Helvetica-Bold')
+     .text('CHAPTER ' + ch.num, 72, 60, { characterSpacing: 1.5 });
+  doc.fillColor(C.ink).fontSize(16).font('Helvetica-Bold')
+     .text(ch.title, 72, 73, { width: W });
+  doc.fillColor(C.muted).fontSize(8).font('Helvetica')
+     .text(ch.location, { lineGap: 0 });
+  doc.moveDown(0.3); hRule(); doc.moveDown(0.1);
 
   // Summary
   sectionLabel('Chapter Summary');
-  doc.fontSize(9.5).fillColor(C.ink).font('Helvetica')
-     .text(ch.summary, 72, doc.y, { width: W, lineGap: 3 });
+  doc.fontSize(9).fillColor(C.ink).font('Helvetica')
+     .text(ch.summary, { width: W, lineGap: 2 });
 
-  // MC
+  // Knowledge Check
   sectionLabel('Knowledge Check');
 
   for (let qi = 0; qi < ch.mc.length; qi++) {
     const q = ch.mc[qi];
-    const qHeight = doc.heightOfString(`${qi + 1}.  ${q.q}`, { width: W, fontSize: 9.5 });
-    const optsHeight = q.opts.reduce((sum, o) => sum + doc.heightOfString(`${LABELS[qi]})  ${o}`, { width: W - 16, fontSize: 9.5 }) + 2, 0);
-    needSpace(qHeight + optsHeight + 16);
-
-    doc.fontSize(9.5).fillColor(C.ink).font('Helvetica-Bold')
-       .text(`${qi + 1}.  ${q.q}`, 72, doc.y, { width: W, lineGap: 2 });
-    doc.y += 3;
+    doc.fontSize(9).fillColor(C.ink).font('Helvetica-Bold')
+       .text((qi + 1) + '.  ' + q.q, { width: W, lineGap: 1 });
     for (let oi = 0; oi < q.opts.length; oi++) {
-      doc.fontSize(9.5).fillColor(C.ink).font('Helvetica')
-         .text(`${LABELS[oi]})  ${q.opts[oi]}`, 88, doc.y, { width: W - 16, lineGap: 2 });
+      doc.fontSize(9).fillColor(C.ink).font('Helvetica')
+         .text(LABELS[oi] + ')  ' + q.opts[oi], { indent: 14, width: W - 14, lineGap: 1 });
     }
-    doc.y += 8;
+    doc.moveDown(0.45);
   }
 
   // Scenario
   sectionLabel('Service Scenario');
-  needSpace(doc.heightOfString(ch.scenario, { width: W, fontSize: 9.5 }) + 10);
-  doc.fontSize(9.5).fillColor(C.ink).font('Helvetica-Bold')
-     .text(ch.scenario, 72, doc.y, { width: W, lineGap: 3 });
-  doc.y += 8;
+  doc.fontSize(9).fillColor(C.ink).font('Helvetica-Bold')
+     .text(ch.scenario, { width: W, lineGap: 2 });
+  doc.moveDown(0.5);
 
-  // Response lines
-  for (let i = 0; i < 7; i++) {
-    if (doc.y + 14 > BOTTOM) break;
-    doc.moveTo(72, doc.y + 2).lineTo(540, doc.y + 2)
-       .strokeColor(C.rule).lineWidth(0.35).stroke();
-    doc.y += 14;
+  // Response lines - 5 lines
+  for (let i = 0; i < 5; i++) {
+    const ly = doc.y + 2;
+    if (ly + 14 > 792 - 56 - 8) break;
+    doc.moveTo(72, ly).lineTo(540, ly).strokeColor(C.rule).lineWidth(0.35).stroke();
+    doc.y = ly + 13;
   }
 
   // Checklist
   sectionLabel('Skills Checklist');
-  needSpace(20);
-  doc.fontSize(8).fillColor(C.muted).font('Helvetica')
-     .text("Tick what you own  .  Circle what you're working on  .  Leave blank what you haven't started", 72, doc.y, { width: W });
-  doc.y += 8;
+  doc.fontSize(7.5).fillColor(C.muted).font('Helvetica')
+     .text("Tick what you own  -  Circle what you're working on  -  Leave blank what you haven't started",
+           { width: W, lineGap: 1 });
+  doc.moveDown(0.3);
 
   for (const item of ch.checklist) {
-    needSpace(16);
     const cy = doc.y;
-    doc.save().rect(72, cy, 9, 9).strokeColor(C.rule).lineWidth(0.7).stroke().restore();
+    doc.save().rect(72, cy + 1, 8, 8).strokeColor(C.rule).lineWidth(0.6).stroke().restore();
     doc.fontSize(9).fillColor(C.ink).font('Helvetica')
-       .text(item, 88, cy, { width: W - 16, lineGap: 2 });
-    doc.y += 4;
+       .text(item, 86, cy, { width: W - 14, lineGap: 1 });
+    doc.moveDown(0.2);
   }
-
-  // Page footer
-  doc.fontSize(7.5).fillColor(C.muted).font('Helvetica')
-     .text(`Chapter ${ch.num}  .  First Crossings Companion Workbook  .  servemasteracademy.ca`,
-            72, 758, { align: 'center', width: W });
 }
 
-//  Answer Key 
-newPage(C.black);
+// ── Answer Key ────────────────────────────────────────────────────────────────
+addPage(C.black);
 
 doc.fillColor(C.gold).fontSize(8).font('Helvetica-Bold')
-   .text('ANSWER KEY', 72, 68, { characterSpacing: 2 });
-doc.fillColor(C.white).fontSize(22).font('Helvetica-Bold')
-   .text('Knowledge Check Answers', 72, 84, { lineGap: 4 });
-doc.fillColor(C.muted).fontSize(9).font('Helvetica').text('With explanations.', 72, 118);
-doc.moveTo(72, 134).lineTo(220, 134).strokeColor(C.gold).lineWidth(1).stroke();
-
-doc.y = 150;
+   .text('ANSWER KEY', 72, 60, { characterSpacing: 2 });
+doc.fillColor(C.white).fontSize(20).font('Helvetica-Bold')
+   .text('Knowledge Check Answers', 72, 74);
+doc.fillColor(C.muted).fontSize(9).font('Helvetica')
+   .text('With explanations.', 72, 100);
+doc.moveTo(72, 116).lineTo(220, 116).strokeColor(C.gold).lineWidth(1).stroke();
+doc.y = 128;
 
 for (const ch of CHAPTERS) {
-  // Estimate block height
-  let blockH = 16; // chapter label
-  for (const q of ch.mc) {
-    const ansLine = `${LABELS[q.ans]})  ${q.opts[q.ans]}`;
-    blockH += 12 + doc.heightOfString(ansLine, { width: W, fontSize: 8.5 }) +
-              doc.heightOfString(q.explain, { width: W - 8, fontSize: 8 }) + 10;
-  }
-  blockH += 10;
-
-  if (doc.y + blockH > BOTTOM + 30) {
-    newPage(C.black);
-    doc.y = 72;
-  }
-
-  // Chapter label
+  doc.moveDown(0.3);
   doc.fillColor(C.gold).fontSize(7.5).font('Helvetica-Bold')
-     .text(`Ch. ${ch.num}  -  ${ch.title.toUpperCase()}`, 72, doc.y, { width: W, characterSpacing: 0.5 });
-  doc.y += 13;
+     .text('Ch. ' + ch.num + ' - ' + ch.title.toUpperCase(),
+           { width: W, characterSpacing: 0.4 });
+  doc.moveDown(0.15);
 
   for (let qi = 0; qi < ch.mc.length; qi++) {
     const q = ch.mc[qi];
-    const correct = LABELS[q.ans];
-    const ansLabel = `${qi + 1}.  Answer: ${correct})  ${q.opts[q.ans]}`;
-
-    needSpace(doc.heightOfString(ansLabel, { width: W, fontSize: 8.5 }) +
-              doc.heightOfString(q.explain, { width: W - 8, fontSize: 8 }) + 12);
-
+    const ansLabel = (qi + 1) + '.  Answer: ' + LABELS[q.ans] + ')  ' + q.opts[q.ans];
     doc.fillColor(C.white).fontSize(8.5).font('Helvetica-Bold')
-       .text(ansLabel, 72, doc.y, { width: W, lineGap: 1 });
-    doc.y += 2;
-    doc.fillColor('#aaa').fontSize(8).font('Helvetica')
-       .text(q.explain, 80, doc.y, { width: W - 8, lineGap: 1 });
-    doc.y += 10;
+       .text(ansLabel, { width: W, lineGap: 1 });
+    doc.fillColor('#999').fontSize(8).font('Helvetica')
+       .text(q.explain, { indent: 8, width: W - 8, lineGap: 1 });
+    doc.moveDown(0.3);
   }
-  doc.y += 6;
 }
 
-//  Back cover 
-newPage(C.black);
+// ── Back cover ────────────────────────────────────────────────────────────────
+addPage(C.black);
 doc.fillColor(C.gold).fontSize(28).font('Helvetica-Bold').text('Keep going.', 72, 310);
 doc.fillColor(C.muted).fontSize(10).font('Helvetica')
-   .text('ServeMaster Academy  -  Training the next generation\nof hospitality professionals.', 72, 352, { lineGap: 5 });
+   .text('ServeMaster Academy - Training the next generation\nof hospitality professionals.',
+         72, 350, { lineGap: 4 });
 doc.fillColor('#444').fontSize(8).font('Helvetica')
    .text('servemasteracademy.ca', 72, 714, { characterSpacing: 0.5 });
 
 doc.end();
 stream.on('finish', () => {
   const kb = (fs.statSync(OUT_FILE).size / 1024).toFixed(0);
-  console.log(`  ${OUT_FILE}  (${kb} KB)`);
+  console.log('  ' + OUT_FILE + '  (' + kb + ' KB)');
 });
 stream.on('error', err => { console.error(err); process.exit(1); });
