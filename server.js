@@ -2731,6 +2731,74 @@ app.get('/api/admin/newsletter/export.csv', adminMiddleware, async (req, res) =>
   } catch (err) { res.status(500).json({ error: 'Failed to export newsletter' }); }
 });
 
+app.get('/api/admin/newsletter/book-launch-status', adminMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series') AS total,
+        COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NULL) AS unsent,
+        COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NOT NULL) AS sent
+      FROM email_subscribers
+    `);
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch book launch status' }); }
+});
+
+app.post('/api/admin/newsletter/send-book-launch', adminMiddleware, async (req, res) => {
+  try {
+    const subscribers = await db.query(`
+      SELECT email, first_name FROM email_subscribers
+      WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NULL
+    `);
+    if (!subscribers.rows.length) {
+      return res.json({ sent: 0, message: 'No unsent subscribers.' });
+    }
+    const appUrl = process.env.APP_URL || 'https://servemasteracademy.ca';
+    const errors = [];
+    let sentCount = 0;
+    for (const sub of subscribers.rows) {
+      const firstName = sub.first_name ? sub.first_name.split(' ')[0] : null;
+      const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : 'Hi,';
+      try {
+        await resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: sub.email,
+          subject: 'Eastern Sparks is here — Book 2 of the Covers series is now live',
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+  <img src="${appUrl}/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:28px;">
+  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${greeting}</p>
+  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">You asked us to let you know — so here it is.</p>
+  <div style="background:#1c1a14;border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:28px;margin:28px 0;text-align:center;">
+    <p style="font-size:11px;color:#a3a3a3;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">Book 2 of the Covers Series</p>
+    <h1 style="font-size:36px;font-weight:900;color:#fbbf24;margin:0 0 6px;font-family:'Montserrat',Georgia,sans-serif;letter-spacing:-0.02em;">Eastern <span style="color:#f5f5f5;">Sparks</span></h1>
+    <p style="font-size:13px;color:#a3a3a3;margin:0 0 20px;">Tokyo &nbsp;·&nbsp; Bangkok &nbsp;·&nbsp; Singapore</p>
+    <p style="font-size:15px;color:#d4d4d4;line-height:1.75;margin:0 0 24px;font-style:italic;">In Tokyo, Bangkok, and Singapore, Luca and Sofia finally speak — and the slow-burn romance ignites. But just as something real begins, life pulls them apart again.</p>
+    <a href="${appUrl}/novels" style="display:inline-block;background:#fbbf24;color:#09090b;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none;">Read Eastern Sparks →</a>
+  </div>
+  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:16px;">If you haven't finished <em>First Crossings</em> yet, you can <a href="${appUrl}/novels/first-crossings" style="color:#fbbf24;text-decoration:none;">catch up here</a> before diving into Book 2.</p>
+  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:32px;">Enjoy the read.</p>
+  <p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#fbbf24;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+  <hr style="border:none;border-top:1px solid #27272a;margin:32px 0 20px;">
+  <p style="font-size:11px;color:#52525b;line-height:1.6;">You're receiving this because you signed up for book launch notifications at servemasteracademy.ca. <a href="${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#52525b;">Unsubscribe</a></p>
+</div>`
+        });
+        await db.query(
+          `UPDATE email_subscribers SET book_launch_sent_at = NOW() WHERE email = $1`,
+          [sub.email]
+        );
+        sentCount++;
+      } catch (emailErr) {
+        console.error(`Book launch email error for ${sub.email}:`, emailErr.message);
+        errors.push(sub.email);
+      }
+    }
+    res.json({ sent: sentCount, errors: errors.length, failed: errors });
+  } catch (err) {
+    console.error('Send book launch error:', err.message);
+    res.status(500).json({ error: 'Failed to send book launch emails' });
+  }
+});
+
 app.get('/api/admin/restaurants', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
@@ -5327,6 +5395,8 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_workbook_purchases_token ON workbook_purchases(download_token)`);
     // ── Email subscriber source tagging ───────────────────────────────────────
     await db.query(`ALTER TABLE email_subscribers ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'newsletter'`);
+    // ── Book launch email tracking ────────────────────────────────────────────
+    await db.query(`ALTER TABLE email_subscribers ADD COLUMN IF NOT EXISTS book_launch_sent_at TIMESTAMPTZ`);
     // ── Team Challenges ───────────────────────────────────────────────────────────
     await db.query(`CREATE TABLE IF NOT EXISTS team_challenges (
       id SERIAL PRIMARY KEY,

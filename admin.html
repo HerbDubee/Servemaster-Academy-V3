@@ -287,6 +287,25 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
       <!-- NEWSLETTER -->
       <div id="section-newsletter" class="section">
         <h1 class="heading text-2xl sm:text-3xl font-bold mb-6">Newsletter Subscribers</h1>
+
+        <!-- Eastern Sparks Launch Email Panel -->
+        <div id="book-launch-panel" class="bg-zinc-900 border border-amber-500/30 rounded-2xl p-5 mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-amber-400 text-xs font-semibold uppercase tracking-widest">Book 2 — Eastern Sparks</span>
+                <span id="book-launch-badge" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">All sent</span>
+              </div>
+              <p class="text-white font-semibold text-sm mb-0.5">Launch email to book notification subscribers</p>
+              <p id="book-launch-status" class="text-zinc-400 text-xs">Loading subscriber counts…</p>
+            </div>
+            <button id="btn-book-launch" onclick="sendBookLaunchEmail()" disabled
+              class="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-900 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+              📖 Send Launch Email
+            </button>
+          </div>
+        </div>
+
         <div class="flex flex-wrap items-center gap-3 mb-4">
           <div id="newsletter-count" class="text-zinc-400 text-sm flex-1"></div>
           <select id="newsletter-source-filter" onchange="loadNewsletter()" class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-3 py-2 focus:outline-none">
@@ -939,6 +958,7 @@ async function loadAll() {
   loadUsers();
   loadModules();
   loadNewsletter();
+  loadBookLaunchStatus();
   loadRestaurants();
   loadContacts();
   loadTrials();
@@ -1484,6 +1504,57 @@ async function loadNewsletter() {
         </tr>`;
     }).join('');
   } catch (e) { console.error(e); }
+}
+
+async function loadBookLaunchStatus() {
+  try {
+    const data = await apiFetch('/api/admin/newsletter/book-launch-status');
+    const unsent = parseInt(data.unsent || 0);
+    const sent = parseInt(data.sent || 0);
+    const total = parseInt(data.total || 0);
+    const statusEl = document.getElementById('book-launch-status');
+    const btn = document.getElementById('btn-book-launch');
+    const badge = document.getElementById('book-launch-badge');
+    if (total === 0) {
+      statusEl.textContent = 'No book notification subscribers yet.';
+      btn.disabled = true;
+    } else if (unsent === 0) {
+      statusEl.textContent = `Launch email already sent to all ${sent} subscriber${sent !== 1 ? 's' : ''}.`;
+      btn.disabled = true;
+      badge.classList.remove('hidden');
+    } else {
+      statusEl.textContent = `${unsent} subscriber${unsent !== 1 ? 's' : ''} will receive the launch email${sent > 0 ? ` · ${sent} already sent` : ''}.`;
+      btn.disabled = false;
+    }
+  } catch (e) {
+    document.getElementById('book-launch-status').textContent = 'Could not load status.';
+  }
+}
+
+async function sendBookLaunchEmail() {
+  const btn = document.getElementById('btn-book-launch');
+  const statusEl = document.getElementById('book-launch-status');
+  if (!confirm('Send the Eastern Sparks launch email now? This will email all book notification subscribers who haven\'t received it yet.')) return;
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  statusEl.textContent = 'Sending emails…';
+  try {
+    const data = await apiFetch('/api/admin/newsletter/send-book-launch', { method: 'POST' });
+    if (data.error) {
+      statusEl.textContent = `Error: ${data.error}`;
+      btn.textContent = '📖 Send Launch Email';
+      btn.disabled = false;
+    } else {
+      const errNote = data.errors > 0 ? ` (${data.errors} failed)` : '';
+      statusEl.textContent = `✓ Sent to ${data.sent} subscriber${data.sent !== 1 ? 's' : ''}${errNote}.`;
+      btn.textContent = '📖 Send Launch Email';
+      await loadBookLaunchStatus();
+    }
+  } catch (e) {
+    statusEl.textContent = 'Network error. Please try again.';
+    btn.textContent = '📖 Send Launch Email';
+    btn.disabled = false;
+  }
 }
 
 async function loadRestaurants() {
