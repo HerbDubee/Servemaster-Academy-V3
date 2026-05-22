@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-title" content="ServeMaster">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Novels & Workbooks — First Crossings | ServeMaster Academy</title>
-  <meta name="description" content="Read and listen to First Crossings, a novel about two young servers finding their way through the kitchens and dining rooms of Europe. Narrated by AI voices Sofia and Luca.">
+  <meta name="description" content="Read and listen to First Crossings, a novel about two young servers finding their way through the kitchens and dining rooms of Europe.">
   <link rel="canonical" href="https://servemasteracademy.ca/novels">
   <link rel="stylesheet" href="/tailwind.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -37,8 +37,6 @@
     .chapter-item { transition: background 0.15s, border-color 0.15s; }
     .chapter-item.active { background: rgba(251,191,36,0.08); border-left-color: #fbbf24; }
     .chapter-item:hover:not(.active) { background: rgba(255,255,255,0.04); }
-    .badge-sofia { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
-    .badge-luca  { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
     #audio-player { transition: transform 0.3s ease; }
     #audio-player.hidden-player { transform: translateY(100%); }
     #seek-bar::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; }
@@ -226,7 +224,6 @@
               <h2 class="heading text-xl font-bold" id="reader-ch-title"></h2>
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
-              <span id="reader-voice-badge" class="text-xs px-2 py-1 rounded-full font-semibold"></span>
               <button id="listen-btn" onclick="toggleAudio()"
                 class="flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">
                 <svg id="listen-icon-play" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
@@ -287,7 +284,6 @@
       <!-- Info + progress -->
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1">
-          <span id="player-voice-badge" class="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"></span>
           <span id="player-chapter-title" class="text-white text-sm font-medium truncate"></span>
         </div>
         <div class="flex items-center gap-2">
@@ -401,7 +397,6 @@ function buildChapterList() {
           <div class="text-zinc-500 text-xs mb-0.5">Chapter ${ch.num}</div>
           <div class="text-white text-sm font-medium leading-snug">${ch.title}</div>
         </div>
-        <span class="badge-${ch.voice} text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0">${ch.voiceName}</span>
       </div>
     </button>
   `).join('');
@@ -437,10 +432,6 @@ function renderChapter(data) {
   const ch = CHAPTERS.find(c => c.key === data.chapterKey) || {};
   document.getElementById('reader-ch-num').textContent = `Chapter ${ch.num || ''}`;
   document.getElementById('reader-ch-title').textContent = data.title || ch.title;
-
-  const badgeEl = document.getElementById('reader-voice-badge');
-  badgeEl.textContent = data.voiceName || ch.voiceName;
-  badgeEl.className = `text-xs px-2 py-1 rounded-full font-semibold badge-${ch.voice}`;
 
   // Render paragraphs
   const textEl = document.getElementById('reader-text');
@@ -574,9 +565,6 @@ function showPlayer(ch) {
   const player = document.getElementById('audio-player');
   player.classList.remove('hidden-player');
   document.getElementById('player-chapter-title').textContent = `Ch ${ch.num}: ${ch.title}`;
-  const badge = document.getElementById('player-voice-badge');
-  badge.textContent = ch.voiceName;
-  badge.className = `text-xs px-2 py-0.5 rounded-full font-semibold badge-${ch.voice}`;
 }
 
 function hidePlayer() {
