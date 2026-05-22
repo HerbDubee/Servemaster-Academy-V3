@@ -39,9 +39,9 @@
     .chapter-item:hover:not(.active) { background: rgba(255,255,255,0.04); }
     #audio-player { transition: transform 0.3s ease; }
     #audio-player.hidden-player { transform: translateY(100%); }
-    #seek-bar::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; }
-    #seek-bar::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; border: none; }
-    #seek-bar { accent-color: #fbbf24; }
+    #seek-bar::-webkit-slider-thumb, #reader-seek-bar::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; }
+    #seek-bar::-moz-range-thumb, #reader-seek-bar::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; cursor: pointer; border: none; }
+    #seek-bar, #reader-seek-bar { accent-color: #fbbf24; }
     .reader-text p { margin-bottom: 1.25em; }
     .spinner { animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -140,7 +140,8 @@
       <!-- Book info -->
       <div class="flex-1 min-w-0">
         <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-2">Covers Series &nbsp;·&nbsp; Book 2</p>
-        <h1 class="heading text-4xl md:text-5xl font-black mb-3">Eastern <span class="text-amber-400">Sparks</span></h1>
+        <h1 class="heading text-4xl md:text-5xl font-black mb-2">Eastern <span class="text-amber-400">Sparks</span></h1>
+        <p class="text-zinc-400 text-sm mb-4">by Kirk Adamson</p>
         <p class="text-zinc-400 text-sm uppercase tracking-wider mb-4">Tokyo &nbsp;·&nbsp; Bangkok &nbsp;·&nbsp; Singapore</p>
         <p class="text-zinc-300 text-lg leading-relaxed mb-4 max-w-2xl">In Tokyo, Bangkok, and Singapore, Luca and Sofia finally speak — and the slow-burn romance ignites. Working side by side across the finest restaurants of Asia, they discover that real connection, like flawless service, requires practice, presence, and courage.</p>
 
@@ -251,19 +252,28 @@
       <!-- Chapter content -->
       <div id="reader-content" class="hidden">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-          <div class="px-6 py-5 border-b border-zinc-800 flex items-start justify-between gap-4">
-            <div>
-              <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1" id="reader-ch-num"></p>
-              <h2 class="heading text-xl font-bold" id="reader-ch-title"></h2>
+          <div class="px-6 py-5 border-b border-zinc-800">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1" id="reader-ch-num"></p>
+                <h2 class="heading text-xl font-bold" id="reader-ch-title"></h2>
+              </div>
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <button id="listen-btn" onclick="toggleAudio()"
+                  class="flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+                  <svg id="listen-icon-play" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                  <svg id="listen-icon-pause" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+                  <svg id="listen-icon-spin" class="w-4 h-4 hidden spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span id="listen-label">Listen</span>
+                </button>
+              </div>
             </div>
-            <div class="flex items-center gap-3 flex-shrink-0">
-              <button id="listen-btn" onclick="toggleAudio()"
-                class="flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl text-sm transition-colors">
-                <svg id="listen-icon-play" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                <svg id="listen-icon-pause" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
-                <svg id="listen-icon-spin" class="w-4 h-4 hidden spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span id="listen-label">Listen</span>
-              </button>
+            <div id="reader-progress-row" class="hidden flex items-center gap-2 mt-3">
+              <span id="reader-time-current" class="text-zinc-500 text-xs w-10 flex-shrink-0">0:00</span>
+              <input id="reader-seek-bar" type="range" min="0" max="100" value="0" step="0.1"
+                class="flex-1 h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer"
+                oninput="onReaderSeekInput(this.value)" onchange="onReaderSeekChange(this.value)">
+              <span id="reader-time-total" class="text-zinc-500 text-xs w-10 flex-shrink-0 text-right">—</span>
             </div>
           </div>
           <div class="px-6 py-8 prose-reader">
@@ -328,6 +338,23 @@
     </div>
   </div>
 </div>
+
+<section id="fc-notify-section" class="max-w-2xl mx-auto px-4 pb-16 mt-8" style="display:none">
+  <div id="fc-notify-box" class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+    <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">What's Next</p>
+    <h3 class="heading text-2xl font-black mb-3">Coming: <span class="text-amber-400">Southern Flames</span></h3>
+    <p class="text-zinc-400 leading-relaxed mb-6">Buenos Aires. Sydney. Melbourne. The story continues — be the first to know when Book 3 drops.</p>
+    <form id="fc-notify-form" class="flex flex-col sm:flex-row gap-3 justify-center" onsubmit="submitFcNotify(event)">
+      <input type="email" placeholder="your@email.com" required id="fc-notify-email"
+        class="flex-1 max-w-xs bg-zinc-800 border border-zinc-600 text-white placeholder-zinc-500 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-amber-400">
+      <button type="submit" id="fc-notify-btn"
+        class="bg-amber-400 hover:bg-amber-300 text-zinc-900 font-bold px-6 py-3 rounded-xl text-sm transition-colors whitespace-nowrap">
+        Notify Me
+      </button>
+    </form>
+    <p id="fc-notify-msg" class="hidden mt-4 text-sm font-medium"></p>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer class="border-t border-zinc-800 py-12 mt-8">
@@ -458,6 +485,7 @@ async function selectChapter(key, scroll) {
   const idx = CHAPTERS.findIndex(c => c.key === key);
   document.getElementById('prev-ch-btn').style.visibility = idx > 0 ? 'visible' : 'hidden';
   document.getElementById('next-ch-btn').style.visibility = idx < CHAPTERS.length - 1 ? 'visible' : 'hidden';
+  if (idx === CHAPTERS.length - 1) revealNotifySection(true);
   showReaderState('loading');
   document.getElementById('reader-ch-num').textContent = `Chapter ${ch.num}`;
   document.getElementById('reader-ch-title').textContent = ch.title;
@@ -523,23 +551,32 @@ audio.addEventListener('timeupdate', () => {
 });
 audio.addEventListener('durationchange', () => {
   const dur = audio.duration;
-  document.getElementById('player-time-total').textContent = isFinite(dur) ? formatTime(dur) : '—';
-  document.getElementById('seek-bar').max = isFinite(dur) ? dur : 100;
+  const fmt = isFinite(dur) ? formatTime(dur) : '—';
+  const max = isFinite(dur) ? dur : 100;
+  document.getElementById('player-time-total').textContent = fmt;
+  document.getElementById('seek-bar').max = max;
+  document.getElementById('reader-time-total').textContent = fmt;
+  document.getElementById('reader-seek-bar').max = max;
 });
 
 let isSeeking = false;
 function onSeekInput(val) { isSeeking = true; document.getElementById('player-time-current').textContent = formatTime(val); }
 function onSeekChange(val) { isSeeking = false; if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
+function onReaderSeekInput(val) { isSeeking = true; document.getElementById('reader-time-current').textContent = formatTime(val); }
+function onReaderSeekChange(val) { isSeeking = false; if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
 function updateSeekBar() {
   if (isSeeking) return;
-  const bar = document.getElementById('seek-bar');
   const cur = audio.currentTime || 0;
   const dur = isFinite(audio.duration) ? audio.duration : 0;
-  bar.value = cur;
-  if (dur > 0) bar.max = dur;
-  document.getElementById('player-time-current').textContent = formatTime(cur);
   const pct = dur > 0 ? (cur / dur) * 100 : 0;
-  bar.style.background = `linear-gradient(to right, #fbbf24 ${pct}%, #3f3f46 ${pct}%)`;
+  const fill = `linear-gradient(to right, #fbbf24 ${pct}%, #3f3f46 ${pct}%)`;
+  const timeStr = formatTime(cur);
+  const bar = document.getElementById('seek-bar');
+  bar.value = cur; if (dur > 0) bar.max = dur; bar.style.background = fill;
+  document.getElementById('player-time-current').textContent = timeStr;
+  const rbar = document.getElementById('reader-seek-bar');
+  rbar.value = cur; if (dur > 0) rbar.max = dur; rbar.style.background = fill;
+  document.getElementById('reader-time-current').textContent = timeStr;
 }
 
 function showPlayer(ch) {
@@ -559,6 +596,8 @@ function setAudioState(state) {
   });
   const lbl = document.getElementById('listen-label');
   if (lbl) lbl.textContent = labels[state] || 'Listen';
+  const row = document.getElementById('reader-progress-row');
+  if (row) row.classList.toggle('hidden', state !== 'loading' && state !== 'playing' && state !== 'paused');
 }
 
 function showReaderState(state, msg) {
@@ -622,6 +661,39 @@ if (window.location.search.includes('workbook=success')) {
 
 loadChapterList();
 checkWorkbookStatus();
+function revealNotifySection(scroll) {
+  const section = document.getElementById('fc-notify-section');
+  if (!section || section.style.display !== 'none') return;
+  section.style.display = '';
+  if (scroll) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+window.addEventListener('scroll', () => {
+  if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 100) revealNotifySection(false);
+}, { passive: true });
+async function submitFcNotify(e) {
+  e.preventDefault();
+  const btn = document.getElementById('fc-notify-btn');
+  const msgEl = document.getElementById('fc-notify-msg');
+  const email = document.getElementById('fc-notify-email').value.trim();
+  btn.disabled = true; btn.textContent = 'Sending…'; msgEl.classList.add('hidden');
+  try {
+    const res = await fetch('/api/newsletter/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, source: 'covers-series' }) });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('fc-notify-form').classList.add('hidden');
+      msgEl.textContent = "We'll email you when the next book is ready.";
+      msgEl.style.color = '#fbbf24'; msgEl.classList.remove('hidden');
+    } else {
+      msgEl.textContent = data.error || 'Something went wrong.';
+      msgEl.style.color = '#f87171'; msgEl.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Notify Me';
+    }
+  } catch(err) {
+    msgEl.textContent = 'Network error. Please try again.';
+    msgEl.style.color = '#f87171'; msgEl.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Notify Me';
+  }
+}
 </script>
 </body>
 </html>
