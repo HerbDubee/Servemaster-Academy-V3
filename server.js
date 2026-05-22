@@ -785,7 +785,8 @@ app.get('/sitemap.xml', (req, res) => {
     ['/teams', '2026-03-01', '0.8', 'monthly'],
     ['/scholarship', '2026-02-01', '0.8', 'monthly'],
     ['/affiliates', '2026-03-01', '0.7', 'monthly'],
-    ['/novels', '2026-05-20', '0.8', 'monthly'],
+    ['/novels', '2026-05-22', '0.8', 'monthly'],
+    ['/novels/first-crossings', '2026-05-22', '0.8', 'monthly'],
     ['/blog', '2026-05-01', '0.8', 'weekly'],
   ];
   let blogUrls = '';
@@ -826,7 +827,9 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticUrls}\n${blogUrls}\n</urlset>`);
 });
 
-app.get('/novels', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels.html')));
+app.get('/novels', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-series.html')));
+app.get('/novels/first-crossings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-first-crossings.html')));
+app.get('/novels/book-1', (req, res) => res.redirect(301, '/novels/first-crossings'));
 app.get('/books/Novel1.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel1.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
@@ -4645,8 +4648,8 @@ app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
         quantity: 1,
       }],
       metadata: { type: 'workbook', bookId, email },
-      success_url: `${APP_URL}/novels?workbook=success`,
-      cancel_url:  `${APP_URL}/novels`,
+      success_url: `${APP_URL}/novels/first-crossings?workbook=success`,
+      cancel_url:  `${APP_URL}/novels/first-crossings`,
     });
     res.json({ url: session.url });
   } catch (e) {
