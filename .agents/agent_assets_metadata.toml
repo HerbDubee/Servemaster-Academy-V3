@@ -66,6 +66,24 @@ uri = "file://public/images/first-crossings-cover.png"
 type = "image"
 title = "first crossings book cover"
 
+[[generated]]
+id = "vAhPSZ0OpEiIv2iqXNeSa"
+uri = "file://public/images/eastern-sparks-cover.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "qcuUwxOMJg3XlawuVu_6r"
+uri = "file://public/images/southern-flames-cover.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "YBk5B1IzYQOTXeEmym5kj"
+uri = "file://public/images/the-table-we-built-cover.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "99VMEajBifp6iti1fNveZ"
 uri = "file://exports/instagram-post-1080x1350.png"

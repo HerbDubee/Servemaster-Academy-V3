@@ -830,8 +830,29 @@ app.get('/sitemap.xml', (req, res) => {
 app.get('/novels', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-series.html')));
 app.get('/novels/first-crossings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-first-crossings.html')));
 app.get('/novels/book-1', (req, res) => res.redirect(301, '/novels/first-crossings'));
+app.get('/novels/eastern-sparks', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-eastern-sparks.html')));
+app.get('/novels/book-2', (req, res) => res.redirect(301, '/novels/eastern-sparks'));
+app.get('/novels/southern-flames', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-southern-flames.html')));
+app.get('/novels/book-3', (req, res) => res.redirect(301, '/novels/southern-flames'));
+app.get('/novels/the-table-we-built', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-the-table-we-built.html')));
+app.get('/novels/book-4', (req, res) => res.redirect(301, '/novels/the-table-we-built'));
 app.get('/books/Novel1.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel1.pdf');
+  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
+  res.sendFile(pdfPath);
+});
+app.get('/books/Novel2.pdf', (req, res) => {
+  const pdfPath = path.join(__dirname, 'books', 'Novel2.pdf');
+  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
+  res.sendFile(pdfPath);
+});
+app.get('/books/Novel3.pdf', (req, res) => {
+  const pdfPath = path.join(__dirname, 'books', 'Novel3.pdf');
+  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
+  res.sendFile(pdfPath);
+});
+app.get('/books/Novel4.pdf', (req, res) => {
+  const pdfPath = path.join(__dirname, 'books', 'Novel4.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
   res.sendFile(pdfPath);
 });
@@ -4600,7 +4621,10 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
 
 // ── Workbook purchases ────────────────────────────────────────────────────────
 const WORKBOOK_CATALOG = {
-  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'book1-workbook.pdf' },
+  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'book1-workbook.pdf', slug: 'first-crossings' },
+  book2: { name: 'Eastern Sparks — Companion Workbook', amount: 199, currency: 'cad', file: 'book2-workbook.pdf', slug: 'eastern-sparks' },
+  book3: { name: 'Southern Flames — Companion Workbook', amount: 199, currency: 'cad', file: 'book3-workbook.pdf', slug: 'southern-flames' },
+  book4: { name: 'The Table We Built — Companion Workbook', amount: 199, currency: 'cad', file: 'book4-workbook.pdf', slug: 'the-table-we-built' },
 };
 
 async function handleWorkbookPurchase(session) {
@@ -4649,6 +4673,13 @@ async function handleWorkbookPurchase(session) {
   }
 }
 
+app.get('/api/workbooks/status/:bookId', (req, res) => {
+  const book = WORKBOOK_CATALOG[req.params.bookId];
+  if (!book) return res.status(400).json({ error: 'Unknown book ID' });
+  const pdfPath = path.join(__dirname, 'books', 'workbooks', book.file);
+  res.json({ bookId: req.params.bookId, available: fs.existsSync(pdfPath) });
+});
+
 app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
   const { email, bookId = 'book1' } = req.body || {};
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
@@ -4656,6 +4687,10 @@ app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
   }
   const book = WORKBOOK_CATALOG[bookId];
   if (!book) return res.status(400).json({ error: 'Unknown book ID' });
+  const workbookPdfPath = path.join(__dirname, 'books', 'workbooks', book.file);
+  if (!fs.existsSync(workbookPdfPath)) {
+    return res.status(503).json({ error: 'This workbook is not yet available for purchase. Please check back soon.' });
+  }
   try {
     const stripe = await getUncachableStripeClient();
     const session = await stripe.checkout.sessions.create({
@@ -4673,8 +4708,8 @@ app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
         quantity: 1,
       }],
       metadata: { type: 'workbook', bookId, email },
-      success_url: `${APP_URL}/novels/first-crossings?workbook=success`,
-      cancel_url:  `${APP_URL}/novels/first-crossings`,
+      success_url: `${APP_URL}/novels/${book.slug}?workbook=success`,
+      cancel_url:  `${APP_URL}/novels/${book.slug}`,
     });
     res.json({ url: session.url });
   } catch (e) {
@@ -4737,6 +4772,10 @@ function _checkBooksTtsRate(ip) {
 
 // ── Public Books: chapter list (source of truth for client) ──────────────────
 app.get('/api/books/chapters', (req, res) => {
+  const book = (req.query.book || 'book1').toLowerCase();
+  if (book !== 'book1') {
+    return res.json([]);
+  }
   res.json(getAllChapters().map(ch => ({
     key: ch.key, num: ch.num, title: ch.title, voice: ch.voice, voiceName: ch.voiceName,
   })));
