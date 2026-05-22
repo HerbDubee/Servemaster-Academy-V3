@@ -238,8 +238,8 @@ function sectionLabel(text) {
 // ── Cover ─────────────────────────────────────────────────────────────────────
 newPage(C.black);
 
-doc.fillColor(C.gold).fontSize(8.5).font('Helvetica-Bold')
-   .text('SERVEMASTER ACADEMY', 72, 72, { characterSpacing: 3 });
+doc.fillColor(C.gold).fontSize(9).font('Helvetica-Bold')
+   .text('ServeMaster Academy', 72, 72);
 doc.fillColor(C.white).fontSize(44).font('Helvetica-Bold')
    .text('First', 72, 155);
 doc.fillColor(C.white).fontSize(44).font('Helvetica-Bold')
