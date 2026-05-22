@@ -116,16 +116,23 @@
           <img src="/images/first-crossings-cover.png" alt="First Crossings — Book 1 cover" class="w-full h-full object-cover rounded-2xl">
         </div>
         <!-- PDF Download -->
-        <a id="pdf-download-btn" href="/books/Novel1.pdf" download
+        <a id="pdf-download-btn" href="/books/Novel1.pdf" download="First Crossings.pdf"
            class="flex items-center justify-center gap-2 w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors mb-3"
            onclick="return checkPdfAvailable(event)">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
           Download PDF
         </a>
         <p id="pdf-unavailable" class="hidden text-center text-zinc-500 text-xs mb-3">PDF coming soon</p>
-        <!-- Voice legend -->
+        <!-- Voice legend + Listen Now -->
         <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 space-y-2">
-          <p class="text-zinc-500 text-xs uppercase tracking-widest mb-2">Narrators</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-zinc-500 text-xs uppercase tracking-widest">Narrators</p>
+            <button onclick="listenNow()"
+              class="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-zinc-900 font-bold text-xs px-3 py-1.5 rounded-full transition-colors">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Listen Now
+            </button>
+          </div>
           <div class="flex items-center gap-2 text-sm">
             <span class="badge-sofia text-xs px-2 py-0.5 rounded-full font-semibold">Sofia</span>
             <span class="text-zinc-400">POV chapters</span>
@@ -198,7 +205,7 @@
 </section>
 
 <!-- MAIN READER -->
-<main class="max-w-6xl mx-auto px-4 py-8">
+<main id="reader-section" class="max-w-6xl mx-auto px-4 py-8">
   <div class="flex flex-col lg:flex-row gap-6">
 
     <!-- Chapter list -->
@@ -645,6 +652,13 @@ function showPdfUnavailable() {
 function checkPdfAvailable(e) {
   // Let the anchor work normally; checkPdfExists() hides it if unavailable
   return true;
+}
+
+function listenNow() {
+  if (!CHAPTERS.length) return;
+  const first = CHAPTERS[0];
+  selectChapter(first.key, true);
+  document.getElementById('reader-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
