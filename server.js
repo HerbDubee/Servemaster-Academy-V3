@@ -504,6 +504,12 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
+        if (session.metadata?.type === 'workbook') {
+          if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
+            await handleWorkbookPurchase(session).catch(e => console.error('Workbook purchase handler error:', e.message));
+          }
+          break;
+        }
         if (session.payment_status === 'paid' || session.status === 'complete') {
           const customerId = session.customer;
           const plan = session.metadata?.plan || 'premium';
@@ -4564,6 +4570,130 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed to fetch user progress' }); }
 });
 
+// ── Workbook purchases ────────────────────────────────────────────────────────
+const WORKBOOK_CATALOG = {
+  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'book1-workbook.pdf' },
+};
+
+async function handleWorkbookPurchase(session) {
+  const token = require('crypto').randomUUID();
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const email = session.customer_details?.email || session.metadata?.email || '';
+  const bookId = session.metadata?.bookId || 'book1';
+  const paymentIntent = session.payment_intent || null;
+  const bookName = WORKBOOK_CATALOG[bookId]?.name || bookId;
+
+  try {
+    const existing = await db.query('SELECT download_token FROM workbook_purchases WHERE stripe_session_id = $1', [session.id]);
+    if (existing.rows.length > 0) return;
+    await db.query(
+      `INSERT INTO workbook_purchases (email, book_id, stripe_session_id, stripe_payment_intent_id, download_token, token_expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [email, bookId, session.id, paymentIntent, token, expires]
+    );
+  } catch (e) {
+    console.error('Workbook purchase DB error:', e.message);
+    return;
+  }
+
+  const downloadUrl = `${APP_URL}/api/workbooks/download/${token}`;
+  try {
+    await resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: email,
+      subject: `Your ${bookName} is ready to download`,
+      html: `
+        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">${escapeHtml(bookName)}</h2>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Thank you for your purchase. Click below to download your PDF workbook:</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${downloadUrl}" style="background:#fbbf24;color:#000;padding:14px 32px;border-radius:9999px;text-decoration:none;font-weight:700;font-size:16px;">Download Workbook PDF</a>
+          </div>
+          <p style="font-size:13px;color:#a3a3a3;line-height:1.6;margin-top:24px;">This link is valid for <strong style="color:#f5f5f5;">7 days</strong> and can be used up to <strong style="color:#f5f5f5;">5 times</strong>. If you need it re-sent after that, just reply to this email.</p>
+          <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
+          <p style="font-size:13px;color:#71717a;">ServeMaster Academy &nbsp;·&nbsp; <a href="https://servemasteracademy.ca" style="color:#71717a;">servemasteracademy.ca</a></p>
+        </div>
+      `,
+    });
+  } catch (e) {
+    console.error('Workbook email error:', e.message);
+  }
+}
+
+app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
+  const { email, bookId = 'book1' } = req.body || {};
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+    return res.status(400).json({ error: 'Valid email is required' });
+  }
+  const book = WORKBOOK_CATALOG[bookId];
+  if (!book) return res.status(400).json({ error: 'Unknown book ID' });
+  try {
+    const stripe = await getUncachableStripeClient();
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer_email: email,
+      line_items: [{
+        price_data: {
+          currency: book.currency,
+          product_data: {
+            name: book.name,
+            description: 'PDF workbook — exercises, wine pairings, and service scenarios',
+          },
+          unit_amount: book.amount,
+        },
+        quantity: 1,
+      }],
+      metadata: { type: 'workbook', bookId, email },
+      success_url: `${APP_URL}/novels?workbook=success`,
+      cancel_url:  `${APP_URL}/novels`,
+    });
+    res.json({ url: session.url });
+  } catch (e) {
+    console.error('Workbook checkout error:', e.message);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+app.get('/api/workbooks/download/:token', async (req, res) => {
+  const token = req.params.token;
+  if (!token || !/^[0-9a-f-]{32,36}$/i.test(token)) {
+    return res.status(400).type('text').send('Invalid token');
+  }
+  try {
+    const result = await db.query('SELECT * FROM workbook_purchases WHERE download_token = $1', [token]);
+    if (!result.rows.length) {
+      return res.status(404).type('text').send('Download link not found — please check your email.');
+    }
+    const p = result.rows[0];
+    if (new Date() > new Date(p.token_expires_at)) {
+      return res.status(410).type('text').send('This download link has expired (7-day limit). Please reply to your purchase email for a new one.');
+    }
+    if (p.download_count >= p.max_downloads) {
+      return res.status(410).type('text').send('This download link has reached its limit (5 downloads). Please reply to your purchase email for a new one.');
+    }
+    const pdfPath = path.join(__dirname, 'books', 'workbooks', WORKBOOK_CATALOG[p.book_id]?.file || `${p.book_id}-workbook.pdf`);
+    if (!fs.existsSync(pdfPath)) {
+      return res.status(503).type('html').send(`
+        <html><head><meta charset="utf-8"></head>
+        <body style="font-family:Georgia,serif;text-align:center;padding:60px 24px;background:#0a0a0a;color:#f5f5f5;">
+          <img src="https://servemasteracademy.ca/logo.png" style="width:48px;margin-bottom:24px;border-radius:10px;">
+          <h2 style="color:#fbbf24;">Your workbook is on its way!</h2>
+          <p style="color:#a3a3a3;max-width:440px;margin:12px auto 0;">We're putting the finishing touches on it. A fresh download link will arrive in your inbox within 24 hours.</p>
+          <p style="margin-top:32px;font-size:13px;color:#52525b;"><a href="https://servemasteracademy.ca" style="color:#52525b;">servemasteracademy.ca</a></p>
+        </body></html>
+      `);
+    }
+    await db.query('UPDATE workbook_purchases SET download_count = download_count + 1 WHERE id = $1', [p.id]);
+    res.setHeader('Content-Disposition', 'attachment; filename="First-Crossings-Companion-Workbook.pdf"');
+    res.setHeader('Content-Type', 'application/pdf');
+    fs.createReadStream(pdfPath).pipe(res);
+  } catch (e) {
+    console.error('Workbook download error:', e.message);
+    res.status(500).type('text').send('Download error — please try again.');
+  }
+});
+
 // ── GitHub Webhook: auto-sync books branch → DB ───────────────────────────────
 // ── Public Books: per-IP rate limiter (10 req/min) ───────────────────────────
 const _booksTtsRateLimit = new Map();
@@ -5114,6 +5244,20 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_book_chapters_book ON book_chapters(book_title, chapter_number)`);
+    // ── Workbook purchases ────────────────────────────────────────────────────────
+    await db.query(`CREATE TABLE IF NOT EXISTS workbook_purchases (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      book_id TEXT NOT NULL DEFAULT 'book1',
+      stripe_session_id TEXT UNIQUE NOT NULL,
+      stripe_payment_intent_id TEXT,
+      download_token TEXT UNIQUE NOT NULL,
+      token_expires_at TIMESTAMPTZ NOT NULL,
+      download_count INTEGER DEFAULT 0,
+      max_downloads INTEGER DEFAULT 5,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_workbook_purchases_token ON workbook_purchases(download_token)`);
     // ── Team Challenges ───────────────────────────────────────────────────────────
     await db.query(`CREATE TABLE IF NOT EXISTS team_challenges (
       id SERIAL PRIMARY KEY,
