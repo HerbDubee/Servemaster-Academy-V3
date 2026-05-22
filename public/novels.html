@@ -335,21 +335,32 @@
 <script src="/js/pwa-nav.js"></script>
 
 <script>
-// ── Chapter data (mirrors server voice-map) ──────────────────────────────────
-const CHAPTERS = [
-  { key:'book1-ch01', num:1,  title:'The City That Starts Without You', voice:'sofia', voiceName:'Sofia' },
-  { key:'book1-ch02', num:2,  title:'Paris Precision',                  voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch03', num:3,  title:'The Near Miss',                    voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch04', num:4,  title:'Florence Rhythm',                  voice:'sofia', voiceName:'Sofia' },
-  { key:'book1-ch05', num:5,  title:'Paris Deepening',                  voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch06', num:6,  title:'The City That Shouts',             voice:'sofia', voiceName:'Sofia' },
-  { key:'book1-ch07', num:7,  title:'Millimeter Work',                  voice:'sofia', voiceName:'Sofia' },
-  { key:'book1-ch08', num:8,  title:"The Widower's Wine",               voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch09', num:9,  title:'London Borough Market',            voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch10', num:10, title:'Barcelona Farewell',               voice:'sofia', voiceName:'Sofia' },
-  { key:'book1-ch11', num:11, title:'London Ikoyi',                     voice:'luca',  voiceName:'Luca'  },
-  { key:'book1-ch12', num:12, title:'The Almost',                       voice:'luca',  voiceName:'Luca'  },
-];
+// ── Chapter data — loaded from server (voice-map is the single source of truth)
+let CHAPTERS = [];
+
+async function loadChapterList() {
+  try {
+    const res = await fetch('/api/books/chapters');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    CHAPTERS = await res.json();
+    buildChapterList();
+    // Restore saved position after chapters are known
+    const saved = loadPosition();
+    if (saved && saved.key && CHAPTERS.find(c => c.key === saved.key)) {
+      selectChapter(saved.key, false).then(() => {
+        if (saved.time > 0) {
+          audio.addEventListener('canplay', () => {
+            audio.currentTime = Math.min(saved.time, audio.duration || saved.time);
+          }, { once: true });
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Failed to load chapter list:', err);
+    document.getElementById('chapter-list').innerHTML =
+      '<p class="text-red-400 text-sm px-4 py-3">Could not load chapters. Please refresh.</p>';
+  }
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'sma_book1_position';
@@ -362,17 +373,7 @@ audio.preload = 'none';
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  buildChapterList();
-  const saved = loadPosition();
-  if (saved && saved.key) {
-    selectChapter(saved.key, false).then(() => {
-      if (saved.time > 0) {
-        audio.addEventListener('canplay', () => {
-          audio.currentTime = Math.min(saved.time, audio.duration || saved.time);
-        }, { once: true });
-      }
-    });
-  }
+  loadChapterList();
   checkPdfExists();
 });
 

@@ -4577,6 +4577,13 @@ function _checkBooksTtsRate(ip) {
   return true;
 }
 
+// ── Public Books: chapter list (source of truth for client) ──────────────────
+app.get('/api/books/chapters', (req, res) => {
+  res.json(getAllChapters().map(ch => ({
+    key: ch.key, num: ch.num, title: ch.title, voice: ch.voice, voiceName: ch.voiceName,
+  })));
+});
+
 // ── Public Books: chapter text ────────────────────────────────────────────────
 app.get('/api/books/chapter/:key', (req, res) => {
   let ch;
@@ -4592,17 +4599,17 @@ app.get('/api/books/chapter/:key', (req, res) => {
   try { text = cleanForTTS(markdown); } catch (e) {
     return res.status(500).json({ error: `Text processing failed: ${e.message}` });
   }
-  res.json({ chapterKey: ch.key, title: ch.title, voiceName: ch.voiceName, voiceRole: ch.voice, text });
+  res.json({ chapterKey: ch.key, title: ch.title, voice: ch.voice, voiceName: ch.voiceName, text });
 });
 
 // ── Public Books: ElevenLabs TTS streaming ────────────────────────────────────
-app.get('/api/books/tts/:key', async (req, res) => {
-  const ip = req.ip || 'unknown';
+// Shared handler used by both GET (browser <audio src>) and POST (programmatic)
+async function _streamBooksTTS(chapterKey, ip, res) {
   if (!_checkBooksTtsRate(ip)) {
     return res.status(429).json({ error: 'Too many requests — please wait a minute.' });
   }
   let ch;
-  try { ch = getChapter(req.params.key); } catch (e) {
+  try { ch = getChapter(chapterKey); } catch (e) {
     return res.status(404).json({ error: e.message });
   }
   const apiKey = process.env.ELEVENLABS_API_KEY;
@@ -4664,6 +4671,20 @@ app.get('/api/books/tts/:key', async (req, res) => {
     }
   }
   if (!res.writableEnded) res.end();
+}
+
+// GET variant: browser <audio src="/api/books/tts/book1-ch01"> streams natively
+app.get('/api/books/tts/:key', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  return _streamBooksTTS(req.params.key, ip, res);
+});
+
+// POST variant: programmatic — body { chapterKey }
+app.post('/api/books/tts', express.json(), async (req, res) => {
+  const ip = req.ip || 'unknown';
+  const { chapterKey } = req.body || {};
+  if (!chapterKey) return res.status(400).json({ error: 'chapterKey is required' });
+  return _streamBooksTTS(chapterKey, ip, res);
 });
 
 app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, res) => {
