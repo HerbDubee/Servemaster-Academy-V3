@@ -465,7 +465,7 @@ async function selectChapter(key, scroll) {
     const res = await fetch(`/api/books/chapter/${encodeURIComponent(key)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const html = data.content.split(/\n\n+/).map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
+    const html = (data.content || '').split(/\n\n+/).filter(p => p.trim()).map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
     document.getElementById('reader-text').innerHTML = html;
     showReaderState('content');
     savePosition();
