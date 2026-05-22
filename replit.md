@@ -61,6 +61,13 @@ ServeMaster Academy is a professional hospitality training platform offering mul
 
 - _Populate as you build_
 
+## First Crossings — Novels & TTS
+
+- **Single narrator:** All 12 chapters use one ElevenLabs voice — `dAlhI9qAHVIjXuVppzhW`. Both `sofia` and `luca` entries in `books/voice-map.js` point to this ID. The POV labels (Sofia / Luca) are kept for UI display only.
+- **Voice source:** https://elevenlabs.io/app/voice-lab/share/c4cfee2ad0d3d272176a36b773ddbf8df48c457a5aa7664dd8523f6dcdfbb76b/dAlhI9qAHVIjXuVppzhW
+- **To swap voice:** change both `sofia.id` and `luca.id` in `books/voice-map.js` and restart the server.
+- **YouTube upload tool:** `node scripts/upload-to-youtube.js` — uploads video, polls processing, writes JSON manifest to `/data/.openclaw/workspace/shared-memory/youtube-uploads/`. Run once for OAuth (browser prompt), then non-interactive. Token stored at `~/.config/sma-yt/token.json`.
+
 ## Blog article freshness convention
 
 Each entry in the `blogArticles` array in `public/js/content.js` has two date fields:
