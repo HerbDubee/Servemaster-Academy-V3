@@ -221,7 +221,12 @@
       <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden sticky top-20">
         <div class="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
           <h2 class="font-semibold text-sm text-white">Chapters</h2>
-          <span class="text-zinc-500 text-xs" id="progress-label"></span>
+          <div class="flex items-center gap-2">
+            <span class="text-zinc-500 text-xs" id="progress-label"></span>
+            <button id="reset-progress-btn" onclick="resetProgress()"
+              class="hidden text-zinc-600 hover:text-zinc-400 text-xs underline transition-colors"
+              title="Clear saved position">Reset</button>
+          </div>
         </div>
         <div id="chapter-list" class="divide-y divide-zinc-800/50 max-h-[70vh] overflow-y-auto">
           <!-- Populated by JS -->
@@ -443,10 +448,26 @@ function buildChapterList() {
 
 function updateProgress() {
   const saved = loadPosition();
-  if (!saved || !CHAPTERS.length) return;
+  const btn = document.getElementById('reset-progress-btn');
+  if (!saved || !CHAPTERS.length) {
+    if (btn) btn.classList.add('hidden');
+    return;
+  }
   const idx = CHAPTERS.findIndex(c => c.key === saved.key);
   if (idx < 0) return;
   document.getElementById('progress-label').textContent = `${idx + 1} / ${CHAPTERS.length}`;
+  if (btn) btn.classList.remove('hidden');
+}
+
+function resetProgress() {
+  clearPosition();
+  currentKey = null;
+  document.getElementById('progress-label').textContent = '';
+  const btn = document.getElementById('reset-progress-btn');
+  if (btn) btn.classList.add('hidden');
+  document.querySelectorAll('.chapter-item').forEach(el => el.classList.remove('active'));
+  if (audioState !== 'idle') stopAudio();
+  showReaderState('empty');
 }
 
 let currentKey = null;
@@ -660,6 +681,15 @@ function loadPosition() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; } catch { return null; }
 }
 
+function clearPosition() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('fc_finished');
+    const section = document.getElementById('fc-notify-section');
+    if (section) section.style.display = 'none';
+  } catch (e) {}
+}
+
 // ── Reader states ─────────────────────────────────────────────────────────────
 function showReaderState(state, msg) {
   ['reader-empty','reader-content','reader-loading','reader-error'].forEach(id => {
@@ -705,7 +735,8 @@ function revealNotifySection(scroll) {
 window.addEventListener('scroll', function onPageScroll() {
   const threshold = 100;
   const nearBottom = window.scrollY + window.innerHeight >= document.body.scrollHeight - threshold;
-  if (nearBottom) revealNotifySection(false);
+  const onLastChapter = CHAPTERS.length > 0 && currentKey === CHAPTERS[CHAPTERS.length - 1].key;
+  if (nearBottom && onLastChapter) revealNotifySection(false);
 }, { passive: true });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
