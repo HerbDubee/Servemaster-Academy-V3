@@ -54,18 +54,12 @@
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
-      <a href="/" class="hover:text-white transition-colors">Home</a>
-      <a href="/features" class="hover:text-white transition-colors">Academy</a>
-      <a href="/blog" class="hover:text-white transition-colors">Knowledge Centre</a>
-      <a href="/ai-roleplay" class="hover:text-white transition-colors">AI Role-Play</a>
-      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
-      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;">🎓 Scholarship</a>
-      <a href="/about" class="hover:text-white transition-colors">About</a>
-      <a href="/affiliates" class="hover:text-white transition-colors">Affiliates</a>
-      <a href="/novels" class="text-white transition-colors">Novels</a>
+      <a href="/novels" class="flex items-center gap-1.5 hover:text-white transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        Covers Series
+      </a>
     </div>
     <div class="flex items-center gap-3">
-      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
       <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
       <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
       <div class="relative" id="lang-selector">
@@ -85,16 +79,7 @@
   </div>
   <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
     <div class="flex flex-col px-4 py-2">
-      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
-      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
-      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
-      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">AI Role-Play</a>
-      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
-      <a href="/scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
-      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
-      <a href="/novels" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Novels</a>
-      <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
+      <a href="/novels" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">← Covers Series</a>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
     </div>
@@ -507,7 +492,7 @@ audio.addEventListener('pause', () => { setAudioState('paused'); savePosition();
 audio.addEventListener('ended', () => {
   setAudioState('idle'); savePosition();
   const idx = CHAPTERS.findIndex(c => c.key === currentKey);
-  if (idx < CHAPTERS.length - 1) setTimeout(() => selectChapter(CHAPTERS[idx + 1].key, true), 1500);
+  if (idx < CHAPTERS.length - 1) setTimeout(() => { selectChapter(CHAPTERS[idx + 1].key, true); setTimeout(toggleAudio, 600); }, 1500);
 });
 audio.addEventListener('error', () => setAudioState('error'));
 audio.addEventListener('waiting', () => setAudioState('loading'));
