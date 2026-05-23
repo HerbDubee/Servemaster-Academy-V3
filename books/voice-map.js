@@ -21,8 +21,9 @@ const BOOK1_CHAPTERS = [
 ];
 
 const BOOK2_CHAPTERS = [
-  { key: 'book2-ch01', file: 'Book2_Ch1.md', num: 1, title: 'The City That Asks Everything', voice: 'sofia' },
+  { key: 'book2-ch01', file: 'Book2_Ch1.md', num: 1, title: 'The City That Asks Everything',   voice: 'sofia' },
   { key: 'book2-ch02', file: 'Book2_Ch2.md', num: 2, title: 'The Weight of Getting It Right',  voice: 'luca'  },
+  { key: 'book2-ch03', file: 'Book2_Ch3.md', num: 3, title: 'The Shape of the Room',           voice: 'sofia' },
 ];
 
 const _byKey = {};
