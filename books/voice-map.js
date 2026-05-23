@@ -20,8 +20,13 @@ const BOOK1_CHAPTERS = [
   { key: 'book1-ch12', file: 'Book1_Ch12_v2.md',               num: 12, title: 'The Almost',                       voice: 'luca'  },
 ];
 
+const BOOK2_CHAPTERS = [
+  { key: 'book2-ch01', file: 'Book2_Ch1.md', num: 1, title: 'The City That Asks Everything', voice: 'sofia' },
+  { key: 'book2-ch02', file: 'Book2_Ch2.md', num: 2, title: 'The Weight of Getting It Right',  voice: 'luca'  },
+];
+
 const _byKey = {};
-for (const ch of BOOK1_CHAPTERS) {
+for (const ch of [...BOOK1_CHAPTERS, ...BOOK2_CHAPTERS]) {
   if (_byKey[ch.key]) throw new Error(`Duplicate chapter key in voice-map: ${ch.key}`);
   _byKey[ch.key] = ch;
 }
@@ -32,12 +37,13 @@ function getChapter(key) {
   return { ...ch, voiceId: VOICES[ch.voice].id, voiceName: VOICES[ch.voice].name };
 }
 
-function getAllChapters() {
-  return BOOK1_CHAPTERS.map(ch => ({
+function getAllChapters(book) {
+  const source = book === 'book2' ? BOOK2_CHAPTERS : BOOK1_CHAPTERS;
+  return source.map(ch => ({
     ...ch,
     voiceId: VOICES[ch.voice].id,
     voiceName: VOICES[ch.voice].name,
   }));
 }
 
-module.exports = { getChapter, getAllChapters, VOICES };
+module.exports = { getChapter, getAllChapters, VOICES, BOOK2_CHAPTERS };

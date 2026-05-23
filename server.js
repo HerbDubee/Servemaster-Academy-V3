@@ -4841,10 +4841,10 @@ function _checkBooksTtsRate(ip) {
 // ── Public Books: chapter list (source of truth for client) ──────────────────
 app.get('/api/books/chapters', (req, res) => {
   const book = (req.query.book || 'book1').toLowerCase();
-  if (book !== 'book1') {
+  if (book !== 'book1' && book !== 'book2') {
     return res.json([]);
   }
-  res.json(getAllChapters().map(ch => ({
+  res.json(getAllChapters(book).map(ch => ({
     key: ch.key, num: ch.num, title: ch.title, voice: ch.voice, voiceName: ch.voiceName,
   })));
 });
