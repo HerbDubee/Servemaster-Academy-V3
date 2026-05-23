@@ -4869,6 +4869,10 @@ app.get('/api/books/chapter/:key', (req, res) => {
 
 // ── Public Books: ElevenLabs TTS streaming ────────────────────────────────────
 // Shared handler used by both GET (browser <audio src>) and POST (programmatic)
+// Disk cache: books/audio-cache/<key>.mp3 — generated once, served instantly after.
+const _AUDIO_CACHE_DIR = path.join(__dirname, 'books', 'audio-cache');
+fs.mkdirSync(_AUDIO_CACHE_DIR, { recursive: true });
+
 async function _streamBooksTTS(chapterKey, ip, res) {
   if (!_checkBooksTtsRate(ip)) {
     return res.status(429).json({ error: 'Too many requests — please wait a minute.' });
@@ -4877,6 +4881,21 @@ async function _streamBooksTTS(chapterKey, ip, res) {
   try { ch = getChapter(chapterKey); } catch (e) {
     return res.status(404).json({ error: e.message });
   }
+
+  // ── Serve from disk cache if available ────────────────────────────────────
+  const cachePath = path.join(_AUDIO_CACHE_DIR, `${ch.key}.mp3`);
+  if (fs.existsSync(cachePath)) {
+    const stat = fs.statSync(cachePath);
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', stat.size);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('X-Chapter-Key', ch.key);
+    res.setHeader('X-Voice-Name', ch.voiceName);
+    res.setHeader('X-Served-From', 'cache');
+    fs.createReadStream(cachePath).pipe(res);
+    return;
+  }
+
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ElevenLabs API key not configured' });
   const filePath = path.join(__dirname, 'books', ch.file);
@@ -4887,14 +4906,20 @@ async function _streamBooksTTS(chapterKey, ip, res) {
   let chunks;
   try {
     const clean = cleanForTTS(markdown);
-    chunks = chunkForTTS(clean);
+    chunks = chunkForTTS(clean, 5000);
   } catch (e) {
     return res.status(500).json({ error: `Text processing failed: ${e.message}` });
   }
+
   res.setHeader('Content-Type', 'audio/mpeg');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Chapter-Key', ch.key);
   res.setHeader('X-Voice-Name', ch.voiceName);
+
+  // Write to a temp file in parallel so the result is cached for next play
+  const tmpPath = cachePath + '.tmp';
+  const writeStream = fs.createWriteStream(tmpPath);
+
   for (const chunk of chunks) {
     if (res.writableEnded) break;
     let elRes;
@@ -4904,12 +4929,14 @@ async function _streamBooksTTS(chapterKey, ip, res) {
         headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: chunk,
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_turbo_v2_5',
           voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true },
+          optimize_streaming_latency: 4,
         }),
       });
     } catch (fetchErr) {
       console.error('ElevenLabs fetch error:', fetchErr.message);
+      writeStream.destroy(); fs.unlink(tmpPath, () => {});
       if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs unreachable' });
       else if (!res.writableEnded) res.end();
       return;
@@ -4917,6 +4944,7 @@ async function _streamBooksTTS(chapterKey, ip, res) {
     if (!elRes.ok) {
       const errBody = await elRes.text().catch(() => '');
       console.error(`ElevenLabs TTS error ${elRes.status}:`, errBody.slice(0, 200));
+      writeStream.destroy(); fs.unlink(tmpPath, () => {});
       if (!res.headersSent) res.status(502).json({ error: `ElevenLabs error: ${elRes.status}` });
       else if (!res.writableEnded) res.end();
       return;
@@ -4924,6 +4952,7 @@ async function _streamBooksTTS(chapterKey, ip, res) {
     const ct = elRes.headers.get('content-type') || '';
     if (!ct.startsWith('audio/')) {
       console.error('ElevenLabs returned non-audio content-type:', ct);
+      writeStream.destroy(); fs.unlink(tmpPath, () => {});
       if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs returned non-audio response' });
       else if (!res.writableEnded) res.end();
       return;
@@ -4933,9 +4962,13 @@ async function _streamBooksTTS(chapterKey, ip, res) {
       const { done, value } = await reader.read();
       if (done) break;
       res.write(value);
+      writeStream.write(value);
     }
   }
   if (!res.writableEnded) res.end();
+  writeStream.end();
+  writeStream.on('finish', () => fs.rename(tmpPath, cachePath, err => { if (err) fs.unlink(tmpPath, () => {}); }));
+  writeStream.on('error',  () => fs.unlink(tmpPath, () => {}));
 }
 
 // GET variant: browser <audio src="/api/books/tts/book1-ch01"> streams natively
