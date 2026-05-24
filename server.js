@@ -1997,6 +1997,20 @@ app.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
   <p style="font-size:11px;color:#555;margin-top:32px;border-top:1px solid #222;padding-top:16px;">You're receiving this because you requested the checklist at servemasteracademy.ca/checklist. <a href="https://servemasteracademy.ca/unsubscribe?email=${encodeURIComponent(email.toLowerCase())}" style="color:#555;">Unsubscribe</a>.</p>
 </div>`
       }).catch(err => console.error('Checklist email send error:', err.message));
+      const checklistInternalTo = ADMIN_EMAIL || 'kirk_adamson@servemasteracademy.ca';
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: checklistInternalTo,
+        subject: `New checklist signup — ${firstName ? escapeHtml(firstName) : email.toLowerCase()}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f9f9f9;border-radius:8px;">
+          <h2 style="font-size:18px;margin-bottom:16px;color:#111;">New Checklist Signup</h2>
+          <table style="font-size:14px;border-collapse:collapse;width:100%;">
+            <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Name</strong></td><td style="padding:6px 0;">${firstName ? escapeHtml(firstName) : '—'}</td></tr>
+            <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Email</strong></td><td style="padding:6px 0;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+            <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Role</strong></td><td style="padding:6px 0;">${role ? escapeHtml(role) : '—'}</td></tr>
+          </table>
+        </div>`
+      }).catch(err => console.error('Checklist internal notification error:', err.message));
     }
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Subscription failed' }); }
@@ -2042,6 +2056,21 @@ app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
         <p style="font-size:15px;color:#a3a3a3;margin-top:32px;">Any questions? Just reply to this email.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
       </div>`
     });
+    const internalTo = ADMIN_EMAIL || 'kirk_adamson@servemasteracademy.ca';
+    resend.emails.send({
+      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+      to: internalTo,
+      subject: `New demo request — ${escapeHtml(name)} (${escapeHtml(restName)})`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f9f9f9;border-radius:8px;">
+        <h2 style="font-size:18px;margin-bottom:16px;color:#111;">New Team Trial Request</h2>
+        <table style="font-size:14px;border-collapse:collapse;width:100%;">
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Name</strong></td><td style="padding:6px 0;">${escapeHtml(name)}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Email</strong></td><td style="padding:6px 0;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Restaurant</strong></td><td style="padding:6px 0;">${escapeHtml(restName)}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Team size</strong></td><td style="padding:6px 0;">${staffCount ? escapeHtml(String(staffCount)) : '—'}</td></tr>
+        </table>
+      </div>`
+    }).catch(e => console.error('Demo request internal notification error:', e.message));
     res.json({ success: true });
   } catch (err) {
     console.error('Team trial request error:', err.message);
