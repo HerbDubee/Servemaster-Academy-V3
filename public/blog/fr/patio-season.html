@@ -93,6 +93,26 @@
       <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
       <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Se connecter</a>
       <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Commencer gratuitement</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Accueil</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Académie</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Jeu de rôle IA</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Tarifs</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">À propos</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Réserver une démo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Liste gratuite</a>
+      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pour les gestionnaires</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Se connecter</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Commencer gratuitement</a>
     </div>
   </div>
 </nav>
@@ -218,7 +238,7 @@
     var saved = localStorage.getItem('sma-lang');
     if (!saved) { localStorage.setItem('sma-lang','fr'); }
   })();
-  function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
+  function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}
   function setLang(l){localStorage.setItem('sma-lang',l);document.getElementById('lang-menu').classList.add('hidden');document.getElementById('lang-btn').textContent=l.toUpperCase();if(l==='en')window.location='/blog/patio-season';if(l==='es')window.location='/blog/es/patio-season';}
   document.addEventListener('click',function(e){var m=document.getElementById('lang-menu');if(!m.classList.contains('hidden')&&!e.target.closest('#lang-selector'))m.classList.add('hidden');});
 </script>
