@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centre de connaissances – ServeMaster Academy</title>
+  <meta name="description" content="Conseils professionnels, techniques et conseils de carrière pour les serveurs de restaurant et les professionnels de l'hôtellerie.">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/fr">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/fr">
+  <meta property="og:title" content="Centre de connaissances — ServeMaster Academy">
+  <meta property="og:description" content="Conseils professionnels, techniques et conseils de carrière pour les serveurs de restaurant et les professionnels de l'hôtellerie.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/blog.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Centre de connaissances — ServeMaster Academy">
+  <meta name="twitter:description" content="Conseils professionnels, techniques et conseils de carrière pour les serveurs de restaurant et les professionnels de l'hôtellerie.">
+  <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/blog.png">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+    @media (max-width: 1024px) {
+      nav { flex-direction: column; padding: 1rem; }
+      .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
+    }
+    #blog-filter-bar {
+      position: sticky;
+      top: 72px;
+      z-index: 40;
+      background: #09090b;
+      padding: 14px 0 12px;
+      margin-bottom: 28px;
+    }
+    #blog-search {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 9999px;
+      padding: 10px 16px 10px 42px;
+      color: #fafafa;
+      font-size: 0.9rem;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    #blog-search:focus { border-color: #71717a; box-shadow: 0 0 0 2px rgba(251,191,36,0.35); }
+    #blog-search::placeholder { color: #52525b; }
+    .blog-pill {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid #3f3f46;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+    .blog-pill:hover:not(.active) { border-color: #71717a; color: #d4d4d8; }
+    .blog-pill.active { border-color: #FF5E3A; background: rgba(255,94,58,0.12); color: #FF5E3A; }
+    .blog-section { border-top: none; padding-top: 0; }
+    #blog-filter-wrap div::-webkit-scrollbar { display: none; }
+    #blog-filter-wrap div { scrollbar-width: none; -ms-overflow-style: none; }
+  </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "https://servemasteracademy.ca/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Centre de connaissances",
+      "item": "https://servemasteracademy.ca/blog/fr"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Accueil</a>
+      <a href="/features" class="hover:text-white transition-colors">Académie</a>
+      <a href="/blog" class="text-white">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors">Jeu de rôle IA</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Tarifs</a>
+      <a href="/about" class="hover:text-white transition-colors">À propos</a>
+      <a href="/demo" class="hover:text-white transition-colors">Réserver une démo</a>
+      <a href="/checklist" class="hover:text-white transition-colors">Liste gratuite</a>
+      <a href="/managers" class="hover:text-white transition-colors">Pour les gestionnaires</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector">
+        <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">FR</button>
+        <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
+          <button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
+          <button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
+          <button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
+        </div>
+      </div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Se connecter</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Commencer gratuitement</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Accueil</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Académie</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Jeu de rôle IA</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Tarifs</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">À propos</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Réserver une démo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Liste gratuite</a>
+      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pour les gestionnaires</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Se connecter</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Commencer gratuitement</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('hidden');}document.addEventListener('click',function(e){var s=document.getElementById('lang-selector');if(s&&!s.contains(e.target)){var m=document.getElementById('lang-menu');if(m)m.classList.add('hidden');}});</script>
+
+<section style="background: linear-gradient(135deg, #071a26 0%, #0c2d3d 40%, #09090b 100%);" class="py-20">
+  <div class="max-w-5xl mx-auto px-4 text-center">
+    <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4">Ressources</p>
+    <h1 class="heading text-5xl font-black mb-4">Centre de connaissances</h1>
+    <p class="text-zinc-400 text-xl max-w-xl mx-auto">Conseils professionnels, techniques et conseils de carrière pour les serveurs de restaurant et les professionnels de l'hôtellerie.</p>
+  </div>
+</section>
+
+<main id="main-content" class="max-w-5xl mx-auto px-4 pt-6 pb-16">
+
+  <div id="blog-filter-wrap"></div>
+
+  <div id="blog-sections-container">
+    <div class="text-center py-10 text-zinc-500">Chargement des articles…</div>
+  </div>
+
+  <div class="mt-4 mb-4 bg-zinc-900 border border-zinc-700 rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-6">
+    <div class="text-4xl">📋</div>
+    <div class="flex-1 text-center sm:text-left">
+      <h2 class="heading text-xl font-bold mb-1">Liste de contrôle gratuite pour la formation des serveurs</h2>
+      <p class="text-zinc-400 text-sm">Téléchargez notre liste d'une page couvrant les compétences essentielles que chaque serveur de restaurant devrait maîtriser.</p>
+    </div>
+    <a href="/checklist" class="shrink-0 inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-4 rounded-2xl text-sm transition-colors whitespace-nowrap">Obtenir la liste gratuite →</a>
+  </div>
+
+  <div class="bg-zinc-900 border border-amber-900 rounded-3xl p-12 text-center">
+    <h2 class="heading text-3xl font-bold mb-3">Mettez-le en pratique</h2>
+    <p class="text-zinc-400 text-lg mb-8 max-w-xl mx-auto">ServeMaster Academy transforme les connaissances en compétences grâce à des modules structurés, des jeux de rôle IA et de la pratique vocale. Gratuit pour commencer.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-12 py-5 rounded-3xl text-lg transition-colors">Commencer gratuitement</a>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2">
+      <img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover">
+      <span class="font-semibold text-zinc-400">ServeMaster Academy</span>
+      <span>© 2026</span>
+    </div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Confidentialité</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Conditions</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Centre de connaissances</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">Pour les gestionnaires</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/content.js"></script>
+<script src="/js/lang.js"></script>
+<script>
+(function () {
+  var CATEGORY_SECTIONS = {
+    bartending:    function (id) { return id.indexOf('bar-') === 0; },
+    management:    function (id) { return id === 'team-management' || id === 'career' || id === 'tech'; },
+    'server-skills': function (id) { return id.indexOf('bar-') !== 0 && id !== 'team-management' && id !== 'career' && id !== 'tech'; }
+  };
+
+  var CATEGORY_CONFIG = {
+    bartending:    { label: 'Barman',     color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
+    'server-skills': { label: 'Serveur',  color: '#34d399', bg: 'rgba(52,211,153,0.12)'  },
+    management:    { label: 'Direction',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  }
+  };
+
+  var filterState = { section: 'all', query: '', category: null };
+
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function shortLabel(sectionId, title) {
+    if (sectionId.indexOf('bar-') === 0) {
+      var dash = title.indexOf(' \u2014 ');
+      if (dash !== -1) return title.slice(dash + 3);
+      dash = title.indexOf(' - ');
+      if (dash !== -1) return title.slice(dash + 3);
+    }
+    return title;
+  }
+
+  function renderFilterBar(sections) {
+    var html = '<div id="blog-filter-bar">';
+    html += '<div style="position:relative;margin-bottom:12px">';
+    html += '<svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#52525b;pointer-events:none;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+    html += '<input id="blog-search" type="text" autocomplete="off" value="" placeholder="Rechercher des articles\u2026">';
+    html += '</div>';
+    html += '<div style="display:flex;flex-wrap:nowrap;gap:7px;padding-bottom:14px;border-bottom:1px solid #27272a;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">';
+    html += '<button class="blog-pill active" data-pill-id="all" onclick="window.setBlogSection(\'all\')">Tous</button>';
+    var catOrder = ['bartending', 'server-skills', 'management'];
+    catOrder.forEach(function (catKey) {
+      var cfg = CATEGORY_CONFIG[catKey];
+      html += '<button class="blog-pill" data-pill-id="cat-' + catKey + '" onclick="window.setBlogCategory(\'' + catKey + '\')">' + escHtml(cfg.label) + '</button>';
+    });
+    html += '<span style="color:#3f3f46;align-self:center;flex-shrink:0;font-size:0.85rem;padding:0 2px">|</span>';
+    sections.forEach(function (section) {
+      var sTitle = section.titleFr || section.title;
+      var label = shortLabel(section.id, sTitle);
+      html += '<button class="blog-pill" data-pill-id="' + escHtml(section.id) + '" onclick="window.setBlogSection(\'' + escHtml(section.id) + '\')">' + escHtml(label) + '</button>';
+    });
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderSections(sections, articleMap) {
+    var html = '';
+    sections.forEach(function (section) {
+      var sTitle = section.titleFr || section.title;
+      var sSub = section.subFr || section.sub;
+      html += '<div class="blog-section" data-section-id="' + escHtml(section.id) + '">';
+      html += '<div class="mb-4">';
+      html += '<h2 class="heading text-2xl font-bold text-white">' + escHtml(sTitle) + '</h2>';
+      if (sSub) html += '<p class="text-zinc-500 text-sm mt-1">' + escHtml(sSub) + '</p>';
+      html += '</div>';
+      html += '<div class="grid md:grid-cols-2 gap-8 mb-6">';
+      var sectionCat = null;
+      var catKeys = ['bartending', 'management', 'server-skills'];
+      for (var ci = 0; ci < catKeys.length; ci++) {
+        if (CATEGORY_SECTIONS[catKeys[ci]](section.id)) { sectionCat = catKeys[ci]; break; }
+      }
+      var catCfg = sectionCat ? CATEGORY_CONFIG[sectionCat] : null;
+      section.slugs.forEach(function (slug) {
+        var a = articleMap[slug];
+        if (!a) return;
+        var aTitle = a.titleFr || a.title;
+        var aDesc = a.desc || '';
+        var aCat = a.categoryFr || a.category;
+        var searchText = (aTitle + ' ' + aDesc + ' ' + aCat).toLowerCase();
+        html += '<a href="/blog/fr/' + slug + '" class="blog-card bg-zinc-900 border border-zinc-800 hover:border-amber-900 rounded-3xl p-8 block transition-colors group" data-search-text="' + escHtml(searchText) + '">';
+        if (sectionCat && catCfg) {
+          html += '<span onclick="event.preventDefault();event.stopPropagation();window.setBlogCategory(\'' + sectionCat + '\')" onmouseover="this.style.opacity=\'0.7\'" onmouseout="this.style.opacity=\'1\'" style="display:inline-block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;padding:4px 11px;border-radius:9999px;border:1px solid ' + catCfg.color + ';color:' + catCfg.color + ';background:' + catCfg.bg + ';cursor:pointer;margin-bottom:0.75rem;text-decoration:none;transition:opacity 0.15s">' + escHtml(catCfg.label) + '</span>';
+        }
+        html += '<p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">' + escHtml(aCat) + '</p>';
+        html += '<h2 class="heading text-2xl font-bold mb-3 group-hover:text-amber-100 transition-colors">' + escHtml(aTitle) + '</h2>';
+        html += '<p class="text-zinc-400 leading-relaxed">' + escHtml(aDesc) + '</p>';
+        html += '<p class="text-amber-400 text-sm mt-6">Lire l\'article \u2192</p>';
+        html += '</a>';
+      });
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '<div id="blog-no-results" style="display:none;text-align:center;padding:3rem 0 1rem;color:#71717a;font-size:0.95rem">Aucun article trouv\u00e9.</div>';
+    return html;
+  }
+
+  function applyFilter() {
+    var query = filterState.query.trim().toLowerCase();
+    var sectionId = filterState.section;
+    var cat = filterState.category;
+    var catFn = cat ? CATEGORY_SECTIONS[cat] : null;
+    var sections = document.querySelectorAll('.blog-section');
+    var totalVisible = 0;
+    var visibleSections = [];
+    sections.forEach(function (sectionEl) {
+      var sid = sectionEl.getAttribute('data-section-id');
+      if (catFn) {
+        if (!catFn(sid)) { sectionEl.style.display = 'none'; return; }
+      } else if (sectionId !== 'all' && sectionId !== sid) {
+        sectionEl.style.display = 'none';
+        return;
+      }
+      var cards = sectionEl.querySelectorAll('.blog-card');
+      var visibleCount = 0;
+      if (query) {
+        cards.forEach(function (card) {
+          var text = card.getAttribute('data-search-text') || '';
+          var show = text.indexOf(query) !== -1;
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
+        });
+      } else {
+        cards.forEach(function (card) { card.style.display = ''; });
+        visibleCount = cards.length;
+      }
+      if (visibleCount > 0) {
+        sectionEl.style.display = '';
+        visibleSections.push(sectionEl);
+      } else {
+        sectionEl.style.display = 'none';
+      }
+      totalVisible += visibleCount;
+    });
+    visibleSections.forEach(function (sectionEl, i) {
+      if (i === 0) {
+        sectionEl.style.borderTop = 'none';
+        sectionEl.style.paddingTop = '0';
+        sectionEl.style.marginTop = '0';
+      } else {
+        sectionEl.style.borderTop = '1px solid #27272a';
+        sectionEl.style.paddingTop = '3rem';
+        sectionEl.style.marginTop = '1rem';
+      }
+    });
+    var noResults = document.getElementById('blog-no-results');
+    if (noResults) noResults.style.display = totalVisible === 0 ? 'block' : 'none';
+  }
+
+  window.setBlogCategory = function (cat) {
+    filterState.category = cat;
+    filterState.section = 'all';
+    var cfg = CATEGORY_CONFIG[cat] || {};
+    var pills = document.querySelectorAll('.blog-pill');
+    pills.forEach(function (pill) {
+      var pid = pill.getAttribute('data-pill-id');
+      pill.classList.remove('active');
+      pill.removeAttribute('style');
+      if (pid === 'cat-' + cat) {
+        pill.classList.add('active');
+        pill.style.borderColor = cfg.color || '';
+        pill.style.color = cfg.color || '';
+        pill.style.background = cfg.bg || '';
+      }
+    });
+    applyFilter();
+    var target = document.getElementById('blog-sections-container');
+    if (target) {
+      var navH = 72;
+      var fb = document.getElementById('blog-filter-bar');
+      var fbH = fb ? fb.offsetHeight : 0;
+      var offset = target.getBoundingClientRect().top + window.pageYOffset - navH - fbH - 12;
+      window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+    }
+  };
+
+  window.setBlogSection = function (id) {
+    filterState.section = id;
+    filterState.category = null;
+    var pills = document.querySelectorAll('.blog-pill');
+    pills.forEach(function (pill) {
+      var pid = pill.getAttribute('data-pill-id');
+      pill.removeAttribute('style');
+      if (pid === id) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+    applyFilter();
+    var target = document.getElementById('blog-sections-container');
+    if (target) {
+      var navHeight = 72;
+      var filterBar = document.getElementById('blog-filter-bar');
+      var filterHeight = filterBar ? filterBar.offsetHeight : 0;
+      var offset = target.getBoundingClientRect().top + window.pageYOffset - navHeight - filterHeight - 12;
+      window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+    }
+  };
+
+  function hookSearch() {
+    var el = document.getElementById('blog-search');
+    if (!el) return;
+    el.addEventListener('input', function () {
+      filterState.query = this.value;
+      applyFilter();
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        filterState.query = '';
+        this.value = '';
+        applyFilter();
+      }
+    });
+  }
+
+  function renderBlog() {
+    var SMA = window.SMAContent;
+    if (!SMA) return;
+    var articles = SMA.blogArticles;
+    var sections = SMA.blogSections;
+    var articleMap = {};
+    articles.forEach(function (a) {
+      if (!articleMap[a.slug]) articleMap[a.slug] = a;
+    });
+    document.getElementById('blog-filter-wrap').innerHTML = renderFilterBar(sections);
+    document.getElementById('blog-sections-container').innerHTML = renderSections(sections, articleMap);
+    hookSearch();
+    applyFilter();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderBlog);
+  } else {
+    renderBlog();
+  }
+})();
+</script>
+</body>
+</html>
