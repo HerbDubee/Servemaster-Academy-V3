@@ -3,15 +3,15 @@
  * scripts/sync-blog-mobile-nav.js
  *
  * Stamps the canonical mobile nav (#mobile-menu block) into every
- * FR and ES blog article page so they stay in sync with the desktop
- * nav on those pages.
+ * EN, FR, and ES blog article page so they stay in sync with the
+ * desktop nav on those pages.
  *
  * Run after any nav change:
  *   node scripts/sync-blog-mobile-nav.js
  *
- * Index pages (fr/index.html, es/index.html) are skipped — they have
- * a slightly different link set (no Scholarship link) and are managed
- * separately.
+ * Index pages (index.html, fr/index.html, es/index.html) are skipped —
+ * they have a slightly different link set and are managed separately.
+ * article.html (the generic template shell) is also skipped.
  */
 
 const fs   = require('fs');
@@ -21,6 +21,22 @@ const path = require('path');
 // Canonical mobile nav blocks
 // Keep these in sync with the desktop nav in the article pages.
 // ---------------------------------------------------------------------------
+
+const EN_MOBILE_NAV = `  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_home">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_features">Academy</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_blog">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_roleplay">Roleplay Training</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_pricing">Pricing</a>
+      <a href="/scholarship" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_scholarship">🎓 Scholarship</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_about">About</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_login">Log in</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+  </div>`;
 
 const FR_MOBILE_NAV = `  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
     <div class="flex flex-col px-4 py-2">
@@ -68,16 +84,17 @@ const ES_MOBILE_NAV = `  <div id="mobile-menu" class="hidden md:hidden border-t 
 function replaceMobileMenu(html, canonicalBlock) {
   // Matches the entire mobile-menu div, however it was previously formatted.
   // Uses [\s\S]*? (non-greedy) and relies on the unique closing pattern.
-  const pattern = /<div id="mobile-menu"[\s\S]*?<\/div>\s*<\/div>/;
+  const pattern = /[ \t]*<div id="mobile-menu"[\s\S]*?<\/div>\s*<\/div>/;
   if (!pattern.test(html)) {
     return null; // no mobile menu found — skip file
   }
   return html.replace(pattern, canonicalBlock);
 }
 
-function processDir(dir, canonicalBlock, label) {
+function processDir(dir, canonicalBlock, label, exclude = []) {
+  const skipSet = new Set(['index.html', ...exclude]);
   const files = fs.readdirSync(dir)
-    .filter(f => f.endsWith('.html') && f !== 'index.html');
+    .filter(f => f.endsWith('.html') && !skipSet.has(f));
 
   let updated = 0;
   let skipped = 0;
@@ -113,10 +130,13 @@ function processDir(dir, canonicalBlock, label) {
 
 const blogRoot = path.join(__dirname, '..', 'public', 'blog');
 
+console.log('Syncing mobile nav in EN article pages…');
+const enUpdated = processDir(blogRoot, EN_MOBILE_NAV, 'en', ['article.html']);
+
 console.log('Syncing mobile nav in FR article pages…');
 const frUpdated = processDir(path.join(blogRoot, 'fr'), FR_MOBILE_NAV, 'fr');
 
 console.log('Syncing mobile nav in ES article pages…');
 const esUpdated = processDir(path.join(blogRoot, 'es'), ES_MOBILE_NAV, 'es');
 
-console.log(`\nDone — ${frUpdated + esUpdated} files updated total.`);
+console.log(`\nDone — ${enUpdated + frUpdated + esUpdated} files updated total.`);
