@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+/**
+ * scripts/sync-blog-mobile-nav.js
+ *
+ * Stamps the canonical mobile nav (#mobile-menu block) into every
+ * FR and ES blog article page so they stay in sync with the desktop
+ * nav on those pages.
+ *
+ * Run after any nav change:
+ *   node scripts/sync-blog-mobile-nav.js
+ *
+ * Index pages (fr/index.html, es/index.html) are skipped — they have
+ * a slightly different link set (no Scholarship link) and are managed
+ * separately.
+ */
+
+const fs   = require('fs');
+const path = require('path');
+
+// ---------------------------------------------------------------------------
+// Canonical mobile nav blocks
+// Keep these in sync with the desktop nav in the article pages.
+// ---------------------------------------------------------------------------
+
+const FR_MOBILE_NAV = `  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Accueil</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Académie</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Centre de connaissances</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Jeu de rôle IA</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Tarifs</a>
+      <a href="/scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-90" style="color:#7dd3fc;">🎓 Bourse</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">À propos</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Réserver une démo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Liste de contrôle gratuite</a>
+      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pour les gestionnaires</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Se connecter</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Commencer gratuitement</a>
+    </div>
+  </div>`;
+
+const ES_MOBILE_NAV = `  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Inicio</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academia</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Centro de conocimiento</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Juego de Rol IA</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Precios</a>
+      <a href="/scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-90" style="color:#7dd3fc;">🎓 Beca</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Acerca de</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Reservar una demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Lista de verificación gratis</a>
+      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Para gerentes</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Iniciar sesión</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Empieza gratis</a>
+    </div>
+  </div>`;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Replace the #mobile-menu div in `html` with `canonicalBlock`.
+ * The regex matches from <div id="mobile-menu"…> through its closing </div>
+ * (the two-level nesting: outer wrapper + inner flex column).
+ */
+function replaceMobileMenu(html, canonicalBlock) {
+  // Matches the entire mobile-menu div, however it was previously formatted.
+  // Uses [\s\S]*? (non-greedy) and relies on the unique closing pattern.
+  const pattern = /<div id="mobile-menu"[\s\S]*?<\/div>\s*<\/div>/;
+  if (!pattern.test(html)) {
+    return null; // no mobile menu found — skip file
+  }
+  return html.replace(pattern, canonicalBlock);
+}
+
+function processDir(dir, canonicalBlock, label) {
+  const files = fs.readdirSync(dir)
+    .filter(f => f.endsWith('.html') && f !== 'index.html');
+
+  let updated = 0;
+  let skipped = 0;
+  let unchanged = 0;
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const original = fs.readFileSync(filePath, 'utf8');
+    const result   = replaceMobileMenu(original, canonicalBlock);
+
+    if (result === null) {
+      console.warn(`  [SKIP] ${label}/${file} — no #mobile-menu found`);
+      skipped++;
+      continue;
+    }
+
+    if (result === original) {
+      unchanged++;
+      continue;
+    }
+
+    fs.writeFileSync(filePath, result, 'utf8');
+    updated++;
+  }
+
+  console.log(`${label}: ${updated} updated, ${unchanged} already correct, ${skipped} skipped`);
+  return updated;
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+const blogRoot = path.join(__dirname, '..', 'public', 'blog');
+
+console.log('Syncing mobile nav in FR article pages…');
+const frUpdated = processDir(path.join(blogRoot, 'fr'), FR_MOBILE_NAV, 'fr');
+
+console.log('Syncing mobile nav in ES article pages…');
+const esUpdated = processDir(path.join(blogRoot, 'es'), ES_MOBILE_NAV, 'es');
+
+console.log(`\nDone — ${frUpdated + esUpdated} files updated total.`);
