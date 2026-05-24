@@ -1,0 +1,105 @@
+Use this in Replit:
+
+---
+
+Create **2 simple landing pages** for ServeMaster Academy.
+
+## 1. Demo Page
+**Purpose:** convert restaurant managers / owners / operators into team-demo or team-info leads.
+
+### Requirements
+Build a clean, mobile-friendly page with:
+
+- **Headline** focused on team training
+- **Short subheadline** about:
+  - faster onboarding
+  - more consistent service
+  - less manager time spent repeating training
+- **3 to 5 benefit bullets**
+- **Lead form** with:
+  - name
+  - email
+  - restaurant/company
+  - team size
+- **Primary CTA button**
+  - “Book a Demo”
+  - or “Request Team Info”
+- Optional proof section mentioning:
+  - 30 interactive modules
+  - 150+ scenarios
+  - AI role-play
+  - certificate path
+
+### Suggested headline
+**Train your team faster without adding more manager workload**
+
+### Tone
+- practical
+- operator-focused
+- clear
+- not hypey
+
+### Goal
+This page should feel built for:
+- restaurant owners
+- managers
+- operators
+- team-training decision makers
+
+---
+
+## 2. Checklist Page
+**Purpose:** capture warmer leads who are interested but not ready for a trial or demo yet.
+
+### Requirements
+Build a clean, mobile-friendly page with:
+
+- **Headline** for one specific lead magnet
+- **Short explanation** of what the checklist gives them
+- **Simple lead form** with:
+  - name
+  - email
+  - optional buyer type
+- **CTA button**
+  - “Get the Checklist”
+
+### Recommended lead magnet
+**Restaurant Training Consistency Checklist**
+
+### Alternate options if needed
+- New Server Onboarding Checklist
+- Manager Shift-Coaching Checklist
+- Reduce Turnover Through Better Training Checklist
+
+### Tone
+- useful
+- direct
+- practical
+- hospitality/operator oriented
+
+### Goal
+This page should capture leads who want help now but are not ready to buy immediately.
+
+---
+
+## General instructions
+- Keep both pages **simple and conversion-focused**
+- Make them look consistent with **ServeMaster Academy**
+- Optimize for **mobile first**
+- Use clear CTA buttons
+- Avoid clutter
+- Prioritize lead capture over long explanation
+
+## Deliverables
+- one **Demo page**
+- one **Checklist page**
+- reusable structure/components if possible
+
+## Recommendation
+Start with:
+- **Demo page** for manager/team leads
+- **Checklist page** for **Restaurant Training Consistency Checklist**
+
+---
+
+If you want, I can also turn this into a **single pasted Replit prompt** with tighter UI/spec instructions.
