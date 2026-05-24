@@ -783,6 +783,8 @@ app.get('/sitemap.xml', (req, res) => {
     ['/ai-roleplay', '2026-03-01', '0.8', 'monthly'],
     ['/managers', '2026-03-01', '0.8', 'monthly'],
     ['/teams', '2026-03-01', '0.8', 'monthly'],
+    ['/demo', '2026-05-24', '0.8', 'monthly'],
+    ['/checklist', '2026-05-24', '0.8', 'monthly'],
     ['/scholarship', '2026-02-01', '0.8', 'monthly'],
     ['/affiliates', '2026-03-01', '0.7', 'monthly'],
     ['/novels', '2026-05-22', '0.8', 'monthly'],
@@ -860,6 +862,8 @@ app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
 app.get('/teams', (req, res) => res.sendFile(path.join(__dirname, 'public', 'teams.html')));
+app.get('/demo', (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo.html')));
+app.get('/checklist', (req, res) => res.sendFile(path.join(__dirname, 'public', 'checklist.html')));
 app.get('/ai-roleplay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ai-roleplay.html')));
 app.get('/training', (req, res) => res.sendFile(path.join(__dirname, 'public', 'training.html')));
 app.get('/app/training', requirePaidAccess, (req, res) => res.sendFile(path.join(__dirname, 'public', 'app-training.html')));
@@ -1950,7 +1954,7 @@ app.get('/api/leaderboard', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
-  const { email, firstName, source } = req.body;
+  const { email, firstName, source, role } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
   const safeSource = (source || 'newsletter').toString().slice(0, 64);
   try {
@@ -1958,6 +1962,42 @@ app.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
       'INSERT INTO email_subscribers (email, first_name, source) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET active = TRUE, source = COALESCE(EXCLUDED.source, email_subscribers.source)',
       [email.toLowerCase(), firstName || '', safeSource]
     );
+    if (safeSource === 'checklist') {
+      const greeting = firstName ? escapeHtml(firstName) : 'there';
+      await resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: email.toLowerCase(),
+        subject: 'Your Restaurant Training Consistency Checklist',
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+  <p style="font-size:16px;line-height:1.7;">Hi ${greeting},</p>
+  <p style="font-size:16px;line-height:1.7;">Here's your <strong>Restaurant Training Consistency Checklist</strong> — 15 practical checkpoints to run through before putting any new server on the floor.</p>
+  <div style="background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:28px;margin:28px 0;">
+    <p style="font-size:13px;font-weight:bold;color:#FBBF24;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 20px;">Restaurant Training Consistency Checklist</p>
+    <ol style="font-size:15px;line-height:2;color:#e5e5e5;padding-left:20px;margin:0;">
+      <li>New hire orientation completed in person before first floor shift</li>
+      <li>Table section, station layout, and side work responsibilities clearly communicated</li>
+      <li>Menu knowledge test passed — dishes, allergens, and dietary substitutions covered</li>
+      <li>Beverage and wine pairing basics reviewed with the new hire</li>
+      <li>POS system walk-through completed and confirmed</li>
+      <li>Table set-up and reset standards demonstrated and observed</li>
+      <li>Specials, features, and 86'd items briefed every shift (pre-shift ritual established)</li>
+      <li>Upselling and suggestive-selling language reviewed before service</li>
+      <li>Guest complaint handling procedure reviewed and confirmed understood</li>
+      <li>End-of-shift side work assignments posted and checked by manager</li>
+      <li>Allergy and dietary restriction escalation protocol reviewed and signed off</li>
+      <li>Peer coaching or buddy system assigned for the first two weeks</li>
+      <li>Shift debrief held after every close — at least for the first month</li>
+      <li>Module completion tracked weekly via manager dashboard</li>
+      <li>Certification pathway communicated to every new hire on day one</li>
+    </ol>
+  </div>
+  <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Print it out, stick it in your onboarding folder, and run through it before every new hire hits the floor.</p>
+  <p style="font-size:15px;line-height:1.7;color:#a3a3a3;">If you want to put this checklist on autopilot — automated training, progress tracking, and certifications for your whole team — <a href="https://servemasteracademy.ca/managers" style="color:#FBBF24;text-decoration:none;">take a look at what ServeMaster Academy does for managers</a>.</p>
+  <p style="font-size:15px;color:#a3a3a3;margin-top:32px;">Any questions? Just reply here.<br><strong style="color:#f5f5f5;">Kirk</strong><br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#FF5E3A;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+  <p style="font-size:11px;color:#555;margin-top:32px;border-top:1px solid #222;padding-top:16px;">You're receiving this because you requested the checklist at servemasteracademy.ca/checklist. <a href="https://servemasteracademy.ca/unsubscribe?email=${encodeURIComponent(email.toLowerCase())}" style="color:#555;">Unsubscribe</a>.</p>
+</div>`
+      }).catch(err => console.error('Checklist email send error:', err.message));
+    }
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Subscription failed' }); }
 });
