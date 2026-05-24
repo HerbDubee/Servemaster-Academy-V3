@@ -263,7 +263,7 @@ details[open] summary::after { content: '−'; }
       <a href="/" class="hover:text-white transition-colors">Home</a>
       <a href="/features" data-i18n="nav_features" class="hover:text-white transition-colors">Academy</a>
       <a href="/blog" data-i18n="nav_blog" class="hover:text-white transition-colors">Knowledge Centre</a>
-      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="hover:text-white transition-colors">AI Role-Play</a>
+      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="hover:text-white transition-colors">Roleplay Training</a>
       <a href="/pricing" data-i18n="nav_pricing" class="text-white">Pricing</a>
       <a href="/scholarship" data-i18n="nav_scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;">🎓 Scholarship</a>
       <a href="/about" data-i18n="nav_about" class="hover:text-white transition-colors">About</a>
@@ -286,7 +286,7 @@ details[open] summary::after { content: '−'; }
       <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
       <a href="/features" data-i18n="nav_features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
       <a href="/blog" data-i18n="nav_blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
-      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">AI Role-Play</a>
+      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
       <a href="/pricing" data-i18n="nav_pricing" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Pricing</a>
       <a href="/scholarship" data-i18n="nav_scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
       <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
@@ -555,6 +555,112 @@ details[open] summary::after { content: '−'; }
   <!-- Plan comparison note -->
   <div class="mt-8 text-center">
     <p class="text-zinc-500 text-sm"><span data-i18n="pricing_comparison_note">Team plans are billed per location. Choose Starter Team for up to 10 staff at one location, or Pro Team for up to 30 staff at one location.</span> <a href="/contact" data-i18n="pricing_team_link" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
+  </div>
+
+  <!-- Free vs Team Comparison Table -->
+  <div class="mt-20 mb-4">
+    <h2 class="heading text-3xl font-bold text-center mb-3">Free vs. Team — what's included</h2>
+    <p class="text-zinc-400 text-center text-sm mb-10 max-w-xl mx-auto">See exactly what each plan covers. Start free, upgrade your individual plan, or train your whole team for one flat rate.</p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="text-zinc-400">
+            <th class="text-left py-3 pr-4 pl-2 font-semibold text-zinc-300 w-1/3">Feature</th>
+            <th class="text-center py-3 px-3 font-semibold text-zinc-400">Free</th>
+            <th class="text-center py-3 px-3 font-semibold" style="color:#f59e0b;">Premium</th>
+            <th class="text-center py-3 px-3 font-semibold text-emerald-400">Starter Team</th>
+            <th class="text-center py-3 px-3 font-semibold text-blue-400">Pro Team</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Training modules</td>
+            <td class="py-3 px-3 text-center text-zinc-400">3 of 30</td>
+            <td class="py-3 px-3 text-center font-semibold" style="color:#f59e0b;">All 30</td>
+            <td class="py-3 px-3 text-center text-emerald-400 font-semibold">All 30</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-semibold">All 30</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">AI roleplay scenarios</td>
+            <td class="py-3 px-3 text-center text-zinc-400">5 of 150</td>
+            <td class="py-3 px-3 text-center font-semibold" style="color:#f59e0b;">All 150</td>
+            <td class="py-3 px-3 text-center text-emerald-400 font-semibold">All 150</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-semibold">All 150</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Voice practice</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center" style="color:#f59e0b;">✓</td>
+            <td class="py-3 px-3 text-center text-emerald-400">✓</td>
+            <td class="py-3 px-3 text-center text-blue-400">✓</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Completion certificate</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center" style="color:#f59e0b;">✓</td>
+            <td class="py-3 px-3 text-center text-emerald-400">✓</td>
+            <td class="py-3 px-3 text-center text-blue-400">✓</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Language support</td>
+            <td class="py-3 px-3 text-center text-zinc-400">EN only</td>
+            <td class="py-3 px-3 text-center font-medium" style="color:#f59e0b;">EN / FR / ES</td>
+            <td class="py-3 px-3 text-center text-emerald-400 font-medium">EN / FR / ES</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-medium">EN / FR / ES</td>
+          </tr>
+          <tr class="bg-zinc-900/30 hover:bg-zinc-900/60 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300 font-semibold">Manager dashboard</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-emerald-400 font-bold">✓</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-bold">✓</td>
+          </tr>
+          <tr class="bg-zinc-900/30 hover:bg-zinc-900/60 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Staff accounts</td>
+            <td class="py-3 px-3 text-center text-zinc-400">1</td>
+            <td class="py-3 px-3 text-center text-zinc-400">1</td>
+            <td class="py-3 px-3 text-center text-emerald-400 font-semibold">Up to 10</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-semibold">Up to 30</td>
+          </tr>
+          <tr class="bg-zinc-900/30 hover:bg-zinc-900/60 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Assign required modules</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-emerald-400">✓</td>
+            <td class="py-3 px-3 text-center text-blue-400">✓</td>
+          </tr>
+          <tr class="bg-zinc-900/30 hover:bg-zinc-900/60 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Weekly team digest</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-emerald-400">✓</td>
+            <td class="py-3 px-3 text-center text-blue-400">✓</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Custom AI scenarios</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-bold">✓</td>
+          </tr>
+          <tr class="hover:bg-zinc-900/40 transition-colors">
+            <td class="py-3 pr-4 pl-2 text-zinc-300">Advanced analytics + CSV</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-zinc-600">—</td>
+            <td class="py-3 px-3 text-center text-blue-400 font-bold">✓</td>
+          </tr>
+          <tr class="border-t-2 border-zinc-700">
+            <td class="py-4 pr-4 pl-2 text-zinc-300 font-bold">Price</td>
+            <td class="py-4 px-3 text-center text-zinc-300 font-bold">Free</td>
+            <td class="py-4 px-3 text-center font-black text-lg" style="color:#f59e0b;">$19.99<span class="text-xs font-normal text-zinc-400">/mo</span></td>
+            <td class="py-4 px-3 text-center text-emerald-400 font-black text-lg">$99<span class="text-xs font-normal text-zinc-400">/mo</span></td>
+            <td class="py-4 px-3 text-center text-blue-400 font-black text-lg">$199<span class="text-xs font-normal text-zinc-400">/mo</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-zinc-600 text-xs text-center mt-4">All prices in CAD. Annual plans available at a discount. <a href="/pricing#team-cta-section" class="text-amber-400 hover:underline">See annual pricing ↑</a></p>
   </div>
 
   <!-- Testimonials -->
