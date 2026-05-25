@@ -21,12 +21,18 @@ const BOOK1_CHAPTERS = [
 ];
 
 const BOOK2_CHAPTERS = [
-  { key: 'book2-ch01', file: 'Book2_Ch1.md', num: 1, title: 'The City That Asks Everything',   voice: 'sofia' },
-  { key: 'book2-ch02', file: 'Book2_Ch2.md', num: 2, title: 'The Weight of Getting It Right',  voice: 'luca'  },
-  { key: 'book2-ch03', file: 'Book2_Ch3.md', num: 3, title: 'The Shape of the Room',           voice: 'sofia' },
-  { key: 'book2-ch04', file: 'Book2_Ch4.md', num: 4, title: 'The Temperature of the Room',     voice: 'luca'  },
-  { key: 'book2-ch05', file: 'Book2_Ch5.md', num: 5, title: 'What the Heat Asks For',          voice: 'sofia' },
-  { key: 'book2-ch06', file: 'Book2_Ch6.md', num: 6, title: 'Evidence',                        voice: 'luca'  },
+  { key: 'book2-ch01', file: 'Book2_Ch1.md',  num: 1,  title: 'Tokyo / Separate Mastery',                     voice: 'sofia' },
+  { key: 'book2-ch02', file: 'Book2_Ch2.md',  num: 2,  title: 'Bangkok / Heat, Tempo, Orbit',                 voice: 'luca'  },
+  { key: 'book2-ch03', file: 'Book2_Ch3.md',  num: 3,  title: 'Yaowarat / Evidence',                          voice: 'luca'  },
+  { key: 'book2-ch04', file: 'Book2_Ch4.md',  num: 4,  title: 'After Evidence / Daily Contact',               voice: 'sofia' },
+  { key: 'book2-ch05', file: 'Book2_Ch5.md',  num: 5,  title: 'The Story Points to Her',                      voice: 'luca'  },
+  { key: 'book2-ch06', file: 'Book2_Ch6.md',  num: 6,  title: 'The Faster Rhythm',                            voice: 'sofia' },
+  { key: 'book2-ch07', file: 'Book2_Ch7.md',  num: 7,  title: 'Pressure Becomes Real',                        voice: 'luca'  },
+  { key: 'book2-ch08', file: 'Book2_Ch8.md',  num: 8,  title: 'Futures That May Split Them',                  voice: 'sofia' },
+  { key: 'book2-ch09', file: 'Book2_Ch9.md',  num: 9,  title: 'The Room Under Strain',                        voice: 'sofia' },
+  { key: 'book2-ch10', file: 'Book2_Ch10.md', num: 10, title: 'Decision Cutoff / Final Singapore Evenings',   voice: 'luca'  },
+  { key: 'book2-ch11', file: 'Book2_Ch11.md', num: 11, title: 'Marina Bay / First Kiss',                      voice: 'sofia' },
+  { key: 'book2-ch12', file: 'Book2_Ch12.md', num: 12, title: 'Opposite Terminals',                           voice: 'sofia' },
 ];
 
 const _byKey = {};
