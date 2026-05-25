@@ -841,22 +841,22 @@ app.get('/novels/book-4', (req, res) => res.redirect(301, '/novels/the-table-we-
 app.get('/books/Novel1.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel1.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.sendFile(pdfPath);
+  res.download(pdfPath, 'First-Crossings.pdf');
 });
 app.get('/books/Novel2.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel2.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.sendFile(pdfPath);
+  res.download(pdfPath, 'Eastern-Sparks.pdf');
 });
 app.get('/books/Novel3.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel3.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.sendFile(pdfPath);
+  res.download(pdfPath, 'Southern-Flames.pdf');
 });
 app.get('/books/Novel4.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel4.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.sendFile(pdfPath);
+  res.download(pdfPath, 'The-Table-We-Built.pdf');
 });
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
