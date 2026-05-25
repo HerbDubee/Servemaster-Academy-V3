@@ -846,7 +846,7 @@ app.get('/books/Novel1.pdf', (req, res) => {
 app.get('/books/Novel2.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel2.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Eastern-Sparks.pdf');
+  res.download(pdfPath, 'Eastern Sparks.pdf');
 });
 app.get('/books/Novel3.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel3.pdf');
