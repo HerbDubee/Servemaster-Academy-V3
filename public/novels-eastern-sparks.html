@@ -395,8 +395,8 @@ async function loadChapterList() {
     buildChapterList();
     const saved = loadPosition();
     if (saved && saved.key) {
+      pendingSeek = saved.time || 0;
       selectChapter(saved.key, false);
-      if (saved.time > 0) audio.currentTime = saved.time;
     }
   } catch (e) {
     console.error('Failed to load chapters:', e);
@@ -437,7 +437,7 @@ function buildChapterList() {
   list.innerHTML = CHAPTERS.map(ch => `
     <div class="chapter-item flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 border-transparent"
          id="chapter-item-${ch.key}"
-         onclick="selectChapter('${ch.key}', true)">
+         onclick="selectAndPlay('${ch.key}')">
       <span class="text-zinc-500 text-xs w-6 flex-shrink-0 text-right">${ch.num}</span>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium text-zinc-200 truncate">${escapeHtml(ch.title)}</p>
@@ -486,6 +486,16 @@ async function selectChapter(key, scroll) {
   } catch (e) { showReaderState('error', e.message); }
 }
 
+function selectAndPlay(key) {
+  if (currentKey === key) {
+    if (audioState === 'idle' || audioState === 'error') startAudio(key);
+    else if (audioState === 'paused') audio.play().catch(() => {});
+    return;
+  }
+  selectChapter(key, true);
+  startAudio(key);
+}
+
 function navigateChapter(dir) {
   if (!currentKey) return;
   const idx = CHAPTERS.findIndex(c => c.key === currentKey);
@@ -496,6 +506,7 @@ function navigateChapter(dir) {
 const audio = new Audio();
 let audioState = 'idle';
 let saveThrottle = null;
+let pendingSeek = 0;
 
 function startAudio(key) {
   const ch = CHAPTERS.find(c => c.key === key);
@@ -529,7 +540,12 @@ audio.addEventListener('ended', () => {
 });
 audio.addEventListener('error', () => setAudioState('error'));
 audio.addEventListener('waiting', () => setAudioState('loading'));
-audio.addEventListener('canplay', () => { if (audioState === 'loading') setAudioState('playing'); });
+audio.addEventListener('seeking', () => { isSeeking = true; });
+audio.addEventListener('seeked', () => { isSeeking = false; });
+audio.addEventListener('canplay', () => {
+  if (pendingSeek > 0) { audio.currentTime = pendingSeek; pendingSeek = 0; }
+  if (audioState === 'loading') setAudioState('playing');
+});
 audio.addEventListener('timeupdate', () => {
   updateSeekBar();
   if (!saveThrottle) saveThrottle = setTimeout(() => { saveThrottle = null; savePosition(); }, 2000);
@@ -546,9 +562,9 @@ audio.addEventListener('durationchange', () => {
 
 let isSeeking = false;
 function onSeekInput(val) { isSeeking = true; document.getElementById('player-time-current').textContent = formatTime(val); }
-function onSeekChange(val) { isSeeking = false; if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
+function onSeekChange(val) { if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
 function onReaderSeekInput(val) { isSeeking = true; document.getElementById('reader-time-current').textContent = formatTime(val); }
-function onReaderSeekChange(val) { isSeeking = false; if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
+function onReaderSeekChange(val) { if (isFinite(audio.duration)) audio.currentTime = parseFloat(val); }
 function updateSeekBar() {
   if (isSeeking) return;
   const cur = audio.currentTime || 0;
