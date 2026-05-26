@@ -481,7 +481,7 @@ async function selectChapter(key, scroll) {
     const html = (data.content || '').split(/\n\n+/).filter(p => p.trim()).map(p => `<p>${escapeHtml(p.trim())}</p>`).join('');
     document.getElementById('reader-text').innerHTML = html;
     showReaderState('content');
-    savePosition();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ key: currentKey, time: 0 })); } catch(e){}
     updateProgress();
   } catch (e) { showReaderState('error', e.message); }
 }
@@ -536,7 +536,7 @@ audio.addEventListener('pause', () => { setAudioState('paused'); savePosition();
 audio.addEventListener('ended', () => {
   setAudioState('idle'); savePosition();
   const idx = CHAPTERS.findIndex(c => c.key === currentKey);
-  if (idx < CHAPTERS.length - 1) setTimeout(() => { selectChapter(CHAPTERS[idx + 1].key, true); setTimeout(toggleAudio, 600); }, 1500);
+  if (idx < CHAPTERS.length - 1) setTimeout(() => selectAndPlay(CHAPTERS[idx + 1].key), 1500);
 });
 audio.addEventListener('error', () => setAudioState('error'));
 audio.addEventListener('waiting', () => setAudioState('loading'));

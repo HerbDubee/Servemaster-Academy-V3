@@ -4904,7 +4904,7 @@ function _checkBooksTtsRate(ip) {
   const now = Date.now();
   const e = _booksTtsRateLimit.get(ip);
   if (!e || e.resetAt < now) { _booksTtsRateLimit.set(ip, { count: 1, resetAt: now + 60000 }); return true; }
-  if (e.count >= 10) return false;
+  if (e.count >= 25) return false;
   e.count++;
   return true;
 }
