@@ -35,8 +35,23 @@ const BOOK2_CHAPTERS = [
   { key: 'book2-ch12', file: 'Book2_Ch12.md', num: 12, title: 'Opposite Terminals',                           voice: 'sofia' },
 ];
 
+const BOOK3_CHAPTERS = [
+  { key: 'book3-ch01', file: 'Book3_Ch1.md',  num: 1,  title: 'The Heat Returns',                  voice: 'luca'  },
+  { key: 'book3-ch02', file: 'Book3_Ch2.md',  num: 2,  title: 'Don Julio',                          voice: 'sofia' },
+  { key: 'book3-ch03', file: 'Book3_Ch3.md',  num: 3,  title: 'The First Night',                    voice: 'sofia' },
+  { key: 'book3-ch04', file: 'Book3_Ch4.md',  num: 4,  title: 'What We\'re Building',               voice: 'luca'  },
+  { key: 'book3-ch05', file: 'Book3_Ch5.md',  num: 5,  title: 'A Day in the City',                  voice: 'luca'  },
+  { key: 'book3-ch06', file: 'Book3_Ch6.md',  num: 6,  title: 'The Visa Question',                  voice: 'sofia' },
+  { key: 'book3-ch07', file: 'Book3_Ch7.md',  num: 7,  title: 'Sydney',                             voice: 'luca'  },
+  { key: 'book3-ch08', file: 'Book3_Ch8.md',  num: 8,  title: 'The Harbour',                        voice: 'sofia' },
+  { key: 'book3-ch09', file: 'Book3_Ch9.md',  num: 9,  title: 'Melbourne',                          voice: 'sofia' },
+  { key: 'book3-ch10', file: 'Book3_Ch10.md', num: 10, title: 'The Table We Want',                  voice: 'luca'  },
+  { key: 'book3-ch11', file: 'Book3_Ch11.md', num: 11, title: 'The Parting',                        voice: 'luca'  },
+  { key: 'book3-ch12', file: 'Book3_Ch12.md', num: 12, title: 'The Seed',                           voice: 'luca'  },
+];
+
 const _byKey = {};
-for (const ch of [...BOOK1_CHAPTERS, ...BOOK2_CHAPTERS]) {
+for (const ch of [...BOOK1_CHAPTERS, ...BOOK2_CHAPTERS, ...BOOK3_CHAPTERS]) {
   if (_byKey[ch.key]) throw new Error(`Duplicate chapter key in voice-map: ${ch.key}`);
   _byKey[ch.key] = ch;
 }
@@ -48,7 +63,7 @@ function getChapter(key) {
 }
 
 function getAllChapters(book) {
-  const source = book === 'book2' ? BOOK2_CHAPTERS : BOOK1_CHAPTERS;
+  const source = book === 'book3' ? BOOK3_CHAPTERS : book === 'book2' ? BOOK2_CHAPTERS : BOOK1_CHAPTERS;
   return source.map(ch => ({
     ...ch,
     voiceId: VOICES[ch.voice].id,
@@ -56,4 +71,4 @@ function getAllChapters(book) {
   }));
 }
 
-module.exports = { getChapter, getAllChapters, VOICES, BOOK2_CHAPTERS };
+module.exports = { getChapter, getAllChapters, VOICES, BOOK2_CHAPTERS, BOOK3_CHAPTERS };

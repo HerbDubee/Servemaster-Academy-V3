@@ -4912,7 +4912,7 @@ function _checkBooksTtsRate(ip) {
 // ── Public Books: chapter list (source of truth for client) ──────────────────
 app.get('/api/books/chapters', (req, res) => {
   const book = (req.query.book || 'book1').toLowerCase();
-  if (book !== 'book1' && book !== 'book2') {
+  if (book !== 'book1' && book !== 'book2' && book !== 'book3') {
     return res.json([]);
   }
   res.json(getAllChapters(book).map(ch => ({
@@ -4935,7 +4935,7 @@ app.get('/api/books/chapter/:key', (req, res) => {
   try { text = cleanForTTS(markdown); } catch (e) {
     return res.status(500).json({ error: `Text processing failed: ${e.message}` });
   }
-  res.json({ chapterKey: ch.key, title: ch.title, voice: ch.voice, voiceName: ch.voiceName, text });
+  res.json({ chapterKey: ch.key, title: ch.title, voice: ch.voice, voiceName: ch.voiceName, content: text, text });
 });
 
 // ── Public Books: ElevenLabs TTS streaming ────────────────────────────────────
