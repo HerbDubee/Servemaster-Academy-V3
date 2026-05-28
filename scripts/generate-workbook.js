@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const OUT_DIR  = path.join(__dirname, '../books/workbooks');
-const OUT_FILE = path.join(OUT_DIR, 'book1-workbook.pdf');
+const OUT_FILE = path.join(OUT_DIR, 'Covers - First Crossings Workbook.pdf');
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const C = {

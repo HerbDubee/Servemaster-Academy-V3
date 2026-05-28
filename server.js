@@ -839,19 +839,19 @@ app.get('/novels/book-3', (req, res) => res.redirect(301, '/novels/southern-flam
 app.get('/novels/the-table-we-built', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-the-table-we-built.html')));
 app.get('/novels/book-4', (req, res) => res.redirect(301, '/novels/the-table-we-built'));
 app.get('/books/Novel1.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Novel1.pdf');
+  const pdfPath = path.join(__dirname, 'books', 'Covers - First Crossings.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'First-Crossings.pdf');
+  res.download(pdfPath, 'Covers - First Crossings.pdf');
 });
 app.get('/books/Novel2.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Novel2.pdf');
+  const pdfPath = path.join(__dirname, 'books', 'Covers - Eastern Sparks.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Eastern Sparks.pdf');
+  res.download(pdfPath, 'Covers - Eastern Sparks.pdf');
 });
 app.get('/books/Novel3.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Novel3.pdf');
+  const pdfPath = path.join(__dirname, 'books', 'Covers - Southern Flames.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Southern-Flames.pdf');
+  res.download(pdfPath, 'Covers - Southern Flames.pdf');
 });
 app.get('/books/Novel4.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'books', 'Novel4.pdf');
@@ -4760,7 +4760,7 @@ app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
 
 // ── Workbook purchases ────────────────────────────────────────────────────────
 const WORKBOOK_CATALOG = {
-  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'book1-workbook.pdf', slug: 'first-crossings' },
+  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'Covers - First Crossings Workbook.pdf', slug: 'first-crossings' },
   book2: { name: 'Eastern Sparks — Companion Workbook', amount: 199, currency: 'cad', file: 'book2-workbook.pdf', slug: 'eastern-sparks' },
   book3: { name: 'Southern Flames — Companion Workbook', amount: 199, currency: 'cad', file: 'book3-workbook.pdf', slug: 'southern-flames' },
   book4: { name: 'The Table We Built — Companion Workbook', amount: 199, currency: 'cad', file: 'book4-workbook.pdf', slug: 'the-table-we-built' },
