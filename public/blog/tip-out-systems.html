@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Tip-Out Systems Actually Work (And What Servers Should Know) – ServeMaster Academy</title>
+  <meta name="description" content="Tip-outs quietly shape your real take-home pay. How the most common tip-out models work, what the law says in the U.S. and Canada, and the questions every server should ask before accepting a new position.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="How Tip-Out Systems Actually Work (And What Servers Should Know) – ServeMaster Academy">
+  <meta property="og:description" content="Tip-outs quietly shape your real take-home pay. How the most common tip-out models work, what the law says in the U.S. and Canada, and the questions every server should ask before accepting a new position.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/tip-out-systems">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/tip-out-systems">
+  <meta name="blog-category" content="server-skills">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta name="twitter:title" content="How Tip-Out Systems Actually Work (And What Servers Should Know) – ServeMaster Academy">
+  <meta name="twitter:description" content="Tip-outs quietly shape your real take-home pay. How the most common tip-out models work, what the law says in the U.S. and Canada, and the questions every server should ask before accepting a new position.">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    .tip-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .tip-table th { background: #18181b; color: #fbbf24; text-align: left; padding: 0.75rem 1rem; border-bottom: 2px solid #3f3f46; }
+    .tip-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #27272a; color: #d4d4d8; vertical-align: top; }
+    .tip-table tr:last-child td { border-bottom: none; }
+    @media (max-width: 1024px) {
+      nav { flex-direction: column; padding: 1rem; }
+      .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Home</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Academy</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Roleplay Training</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Pricing</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">🎓 Scholarship</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">About</a>
+      <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
+      <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Log in</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Get Started Free</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_home">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_features">Academy</a>
+      <a href="/blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_blog">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_roleplay">Roleplay Training</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_pricing">Pricing</a>
+      <a href="/scholarship" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_scholarship">🎓 Scholarship</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_about">About</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
+      <a href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white" data-i18n="nav_login">Log in</a>
+      <a href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Career Development</span>
+      <span>7 <span data-i18n="blog_min_read">min read</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">How Tip-Out Systems Actually Work (And What Servers Should Know)</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">Tip sharing is one of the most common and least understood parts of working in a restaurant. A poorly designed tip-out system can quietly reduce your real take-home pay — here's how to understand it.</p>
+  </div>
+
+  <div class="prose">
+
+    <p>While many servers know that a portion of their tips goes to other staff, few truly understand how these systems are structured — or how they can quietly reduce what you actually take home. Understanding the mechanics is the first step toward making smarter decisions about where you work and how you track your earnings.</p>
+
+    <h2>What Is a Tip-Out?</h2>
+
+    <p>A tip-out is when servers are required to share a portion of their tips with other team members — bussers, hosts, bartenders, or kitchen staff. This practice is legal in most jurisdictions, but the rules, percentages, and fairness of these systems can vary significantly from one restaurant to another.</p>
+
+    <p>Tip-outs are meant to recognize the team effort that goes into serving guests. When the system is well-designed, it reflects that reality. When it isn't, it creates financial strain for servers and resentment across the team.</p>
+
+    <h2>Common Types of Tip-Out Systems</h2>
+
+    <p>Here are the four most common models you'll encounter:</p>
+
+    <table class="tip-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>How It Usually Works</th>
+          <th>Potential Impact on Servers</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Percentage of Tips</strong></td>
+          <td>You give a set % of your total tips (e.g. 15–25%)</td>
+          <td>More fair — your tip-out scales with what you actually earned</td>
+        </tr>
+        <tr>
+          <td><strong>Percentage of Sales</strong></td>
+          <td>You tip out based on your total sales, not your tips</td>
+          <td>Can be costly on slow nights or when tables don't tip well</td>
+        </tr>
+        <tr>
+          <td><strong>Fixed Amount</strong></td>
+          <td>You pay a set dollar amount per shift</td>
+          <td>Simple but can feel unfair on low-earning shifts</td>
+        </tr>
+        <tr>
+          <td><strong>Hybrid Systems</strong></td>
+          <td>A mix of the above</td>
+          <td>Can be complex and difficult to track accurately</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The most controversial model is <strong>percentage of sales</strong>, because you can end up paying out more than you take in if a table doesn't tip well. A server who gets stiffed on a $500 table could still owe tip-out on that $500 in sales — meaning they effectively lose money on that table.</p>
+
+    <h2>Tip Pooling Laws in the USA and Canada</h2>
+
+    <p>Laws around tip pooling vary significantly between the two countries — and often vary further at the state or provincial level.</p>
+
+    <h3>United States</h3>
+
+    <p>In the U.S., tip pooling is governed at the federal level by the <strong>Fair Labor Standards Act (FLSA)</strong>, though many states have enacted stricter rules.</p>
+
+    <ul>
+      <li>Employers are not allowed to keep any portion of tips for themselves.</li>
+      <li>Only employees who "customarily and regularly receive tips" can be included in a mandatory tip pool.</li>
+      <li>Since 2021, the U.S. Department of Labor updated its rules to allow back-of-house workers (cooks, dishwashers) to participate in tip pools — but only if the employer does not take a tip credit.</li>
+      <li>States such as California, New York, and Massachusetts have stronger protections and generally prohibit mandatory tip pooling with non-tipped employees.</li>
+    </ul>
+
+    <p>For the authoritative source, refer to the <strong>U.S. Department of Labor — Tip Regulations</strong> at dol.gov.</p>
+
+    <h3>Canada</h3>
+
+    <p>In Canada, there is no single federal law governing tip pooling. Rules are set at the provincial and territorial level.</p>
+
+    <ul>
+      <li>Employers are generally prohibited from taking any portion of tips or gratuities for themselves.</li>
+      <li>Some provinces require employers to maintain a clear, written tip pooling policy.</li>
+      <li>The rules differ meaningfully by province — what applies in Ontario may not apply in Alberta or British Columbia.</li>
+    </ul>
+
+    <p>For Ontario-specific rules, refer to the Ontario Ministry of Labour's guidance on Tips and Gratuities. For other provinces, check your provincial Ministry of Labour website directly.</p>
+
+    <h2>Why This Matters to Your Real Income</h2>
+
+    <p>Tip-outs directly affect your real hourly wage. A server who appears to be making strong money on paper can take home significantly less after tip-outs are calculated. Over time, this gap creates resentment — especially when the system feels unbalanced or when certain positions receive tip-outs without contributing equally to the service that generated them.</p>
+
+    <p>Understanding how your restaurant's system works helps you:</p>
+
+    <ul>
+      <li>Make better-informed decisions about where you work</li>
+      <li>Track your actual earnings more accurately — not just your gross tips</li>
+      <li>Identify red flags before accepting a new position</li>
+      <li>Recognize when a system is legally compliant versus when it might not be</li>
+    </ul>
+
+    <h2>Questions Worth Asking Before You Accept a Job</h2>
+
+    <p>Before starting at a new restaurant, ask directly:</p>
+
+    <ul>
+      <li>Is the tip-out calculated on total tips or total sales?</li>
+      <li>What percentage goes to each position?</li>
+      <li>Are there any positions that receive tip-outs even when they're not actively on the floor?</li>
+      <li>How often does management review or change the tip-out structure?</li>
+      <li>Is the policy written down anywhere, or is it informal?</li>
+    </ul>
+
+    <p>A reluctance to answer these questions clearly is itself useful information.</p>
+
+    <blockquote>"The restaurants that retain good servers long-term tend to have transparent, fair systems. The ones that don't see high turnover — and wonder why."</blockquote>
+
+    <h2>The Bottom Line</h2>
+
+    <p>Tip-out systems aren't going away, but understanding how they work puts you in a stronger position — whether you're evaluating a new job, tracking your real earnings, or having a conversation with management about fairness.</p>
+
+    <p>At ServeMaster Academy, we believe that great service includes understanding the full reality of the job — not just the guest-facing skills. Being informed about how compensation actually works is part of becoming a more professional and sustainable server.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Build the professional knowledge that makes hospitality a sustainable career — start free</a>.</p>
+
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Know the job inside and out</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy covers the guest-facing skills and the behind-the-scenes knowledge that makes hospitality a real career. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/canadian-tipping-culture" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Career Development</p>
+        <p class="font-semibold text-white">Canadian Tipping Culture: What Guests Expect and How to Earn More</p>
+      </a>
+      <a href="/blog/bouncing-back-bad-tips" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Mindset &amp; Longevity</p>
+        <p class="font-semibold text-white">Bouncing Back from Bad Tips: Mindset Shifts to Avoid Spiralling</p>
+      </a>
+      <a href="/blog/serving-as-a-career" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Career Development</p>
+        <p class="font-semibold text-white">From "Just a Job" to Career: Pathways for Long-Term Serving Success</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-zinc-800 py-10 mt-20">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2"><img src="/logo.png" alt="ServeMaster Academy" class="w-7 h-7 rounded-lg object-cover"><span class="font-semibold text-zinc-400">ServeMaster Academy</span><span>© 2026</span></div>
+    <div class="flex gap-6 flex-wrap justify-center">
+      <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a>
+      <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a>
+      <a href="/contact" class="hover:text-zinc-300 transition-colors">Contact</a>
+      <a href="/blog" class="hover:text-zinc-300 transition-colors">Knowledge Centre</a>
+      <a href="/managers" class="hover:text-amber-400 transition-colors">For Managers</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/lang.js"></script>
+<script src="/js/blog-category-badge.js"></script>
+<script src="/js/blog-tts.js?v=10"></script>
+</body>
+</html>
