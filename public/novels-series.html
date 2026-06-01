@@ -169,13 +169,13 @@
       </div>
     </div>
 
-    <!-- BOOK 2: Second Crossings — Available -->
+    <!-- BOOK 2: Eastern Sparks — Available -->
     <div class="book-card bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
       <div class="flex flex-col md:flex-row gap-0">
         <!-- Cover -->
         <div class="md:w-48 flex-shrink-0">
           <div class="aspect-[2/3] md:aspect-auto md:h-full overflow-hidden">
-            <img src="/images/eastern-sparks-cover.png" alt="Second Crossings — Book 2 cover"
+            <img src="/images/eastern-sparks-cover.png" alt="Eastern Sparks — Book 2 cover"
                  class="w-full h-full object-cover">
           </div>
         </div>
@@ -288,7 +288,7 @@
   <div id="book-notify-box" class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
     <p class="text-amber-400 text-xs font-semibold uppercase tracking-widest mb-3">Don't Miss the Drop</p>
     <h2 class="heading text-2xl font-black mb-2">Notify me when Book 2 drops</h2>
-    <p class="text-zinc-400 text-sm leading-relaxed mb-6">Enter your email and we'll let you know the moment <em>Second Crossings</em> is ready — no spam, just one email when it launches.</p>
+    <p class="text-zinc-400 text-sm leading-relaxed mb-6">Enter your email and we'll let you know the moment <em>Eastern Sparks</em> is ready — no spam, just one email when it launches.</p>
     <form id="book-notify-form" class="flex flex-col sm:flex-row gap-3 justify-center" onsubmit="submitBookNotify(event)">
       <input
         id="book-notify-email"
@@ -304,7 +304,7 @@
       >Notify Me</button>
     </form>
     <p id="book-notify-msg" class="hidden mt-4 text-sm font-medium"></p>
-    <p class="text-zinc-600 text-xs mt-4">We'll email you when <em>Second Crossings</em> is ready. Unsubscribe any time.</p>
+    <p class="text-zinc-600 text-xs mt-4">We'll email you when <em>Eastern Sparks</em> is ready. Unsubscribe any time.</p>
   </div>
 </section>
 <script>
@@ -324,7 +324,7 @@ async function submitBookNotify(e) {
     const data = await res.json();
     if (res.ok && data.success) {
       document.getElementById('book-notify-form').classList.add('hidden');
-      msgEl.textContent = "We'll email you when Second Crossings is ready.";
+      msgEl.textContent = "We'll email you when Eastern Sparks is ready.";
       msgEl.className = 'mt-4 text-sm font-medium text-amber-400';
     } else {
       msgEl.textContent = data.error || 'Something went wrong. Please try again.';
