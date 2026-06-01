@@ -32,7 +32,7 @@ She walked past the Uffizi — tourists in a long patient queue, cameras raised 
 
 Marco, chef de salle, had a handshake that expected to find something. Mid-forties, unhurried, silver at his temples.
 
-"Sofia Vale." He said it like he was confirming a reservation he already trusted. "Brazil, Luca's recommendation, stage application in four parts."
+"Sofia Vale." He said it like he was confirming a reservation he already trusted. "Brazil, stage application in four parts."
 
 "Five," she said. "I added a cover letter."
 
