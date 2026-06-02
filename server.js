@@ -5147,11 +5147,13 @@ app.delete('/api/manager/assign/:moduleId', authMiddleware, async (req, res) => 
 // GET assigned modules for a member (used in app.html)
 app.get('/api/user/assigned-modules', authMiddleware, async (req, res) => {
   try {
-    const memRes = await db.query('SELECT restaurant_id FROM restaurant_members WHERE user_id = $1', [req.user.id]);
-    if (!memRes.rows.length) return res.json({ modules: [] });
-    const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [memRes.rows[0].restaurant_id]);
+    // restaurant_id lives directly on the users table — no separate restaurant_members table
+    const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
+    const restaurantId = userRes.rows[0]?.restaurant_id;
+    if (!restaurantId) return res.json({ modules: [] });
+    const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [restaurantId]);
     res.json({ modules: r.rows.map(x => x.module_id) });
-  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+  } catch (e) { console.error('assigned-modules error:', e.message); res.status(500).json({ error: 'Server error' }); }
 });
 
 // ── Training plans routes ───────────────────────────────────────────────────────
