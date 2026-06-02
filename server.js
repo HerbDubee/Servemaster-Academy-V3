@@ -4479,6 +4479,8 @@ app.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, re
   } catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
 });
 
+(async () => {
+  try {
     await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
       id SERIAL PRIMARY KEY,
       plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,
@@ -4680,7 +4682,7 @@ app.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, re
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_digest_enabled BOOLEAN DEFAULT TRUE`);
     console.log('Schema additions complete');
   } catch (e) { console.error('Schema additions error:', e.message); }
-});
+})();
 // ── Roleplays API ────────────────────────────────────────────────────────────────
 app.get('/api/roleplays', async (req, res) => {
   try {
@@ -6212,5 +6214,8 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
   setTimeout(runMonthlyAffiliateEmails, 30000);
 })();
 
+const server = app.listen(process.env.PORT || 5000, () => {
+  console.log(`Server running on port ${process.env.PORT || 5000}`);
+});
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
