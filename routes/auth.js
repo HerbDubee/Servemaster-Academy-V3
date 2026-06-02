@@ -13,6 +13,7 @@ const { signToken, COOKIE_OPTS } = require('../lib/auth');
 const db = require('../db');
 
 const router = express.Router();
+router.use(express.json()); // body parsing is self-contained — mount order in server.js doesn't matter
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 

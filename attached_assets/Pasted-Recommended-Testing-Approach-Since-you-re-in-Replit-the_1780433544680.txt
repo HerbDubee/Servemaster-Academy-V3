@@ -1,0 +1,115 @@
+Recommended Testing Approach
+Since you're in Replit, the most effective way is a combination of:
+
+Browser testing (for the frontend flow)
+Thunder Client or Postman (for API testing)
+Replit Console / Logs (to debug)
+
+
+Step-by-Step Testing Plan
+Step 1: Restart the Repl
+Always start with a clean restart after code changes:
+
+Click Stop
+Click Run again
+Wait until you see the server is fully running
+
+
+Step 2: Test the New Google Login Flow
+Use Thunder Client (built into Replit) or Postman:
+Test Endpoint:
+
+Method: POST
+URL: https://your-repl-name.repl.co/auth/google
+Body (JSON):JSON{
+  "credential": "PASTE_GOOGLE_CREDENTIAL_HERE"
+}
+
+How to get a Google credential:
+
+Go to your app’s login page in the browser.
+Open Developer Tools → Network tab.
+Try logging in with Google.
+Look for a request to https://accounts.google.com or similar.
+Copy the credential value from the request payload.
+
+What to verify after login:
+
+You get a 200 response with success: true
+A cookie named token is set in the browser
+A new user is created in the database (or existing user is updated)
+
+
+Step 3: Test Logout
+
+Method: POST
+URL: https://your-repl-name.repl.co/auth/logout
+Should return { "success": true }
+The token cookie should be cleared
+
+
+Step 4: Test Protected Routes
+Try accessing routes that require authentication (like /app or admin routes).
+What to check:
+
+Without a valid token → Should get 401 Unauthorized
+With a valid token (from Step 2) → Should allow access
+
+
+Step 5: Check Logs
+While testing, keep an eye on the Replit Console (bottom panel) for errors, especially:
+
+Google auth errors
+JWT verification failures
+Database errors
+
+
+Quick Testing Checklist
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TestToolExpected ResultStatusGoogle Login (/auth/google)Thunder ClientReturns user data + sets cookie⬜Logout (/auth/logout)Thunder ClientClears cookie⬜Protected route without tokenBrowser401 Unauthorized⬜Protected route with tokenBrowserAccess granted⬜New user is created in DBDatabase / LogsNew row in users table⬜Existing user name updatesDatabaseName is updated if changed in Google⬜
