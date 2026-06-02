@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inclusive Service & Modern Guest Expectations – ServeMaster Academy</title>
+  <meta name="description" content="How to serve diverse guests with respect, handle pronouns, accessibility needs, and modern expectations without awkwardness or assumptions. Practical, professional guidance for today’s restaurants.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="Inclusive Service & Modern Guest Expectations – ServeMaster Academy">
+  <meta property="og:description" content="How to serve diverse guests with respect, handle pronouns, accessibility needs, and modern expectations without awkwardness or assumptions. Practical, professional guidance for today’s restaurants.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/inclusive-service-modern-guests">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/inclusive-service-modern-guests">
+  <meta name="blog-category" content="guest-interaction">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta name="twitter:title" content="Inclusive Service & Modern Guest Expectations – ServeMaster Academy">
+  <meta name="twitter:description" content="How to serve diverse guests with respect, handle pronouns, accessibility needs, and modern expectations without awkwardness or assumptions. Practical, professional guidance for today’s restaurants.">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/blog" class="text-white">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors">Roleplay Training</a>
+      <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;">Scholarship</a>
+      <a href="/about" class="hover:text-white transition-colors">About</a>
+      <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
+      <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector">
+        <button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button>
+        <div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]">
+          <button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button>
+          <button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button>
+          <button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button>
+        </div>
+      </div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/blog" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/scholarship" class="text-sky-400 py-4 border-b border-zinc-800 text-sm font-semibold">Scholarship</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 text-sm font-medium hover:text-white">Free Checklist</a>
+      <div class="pt-4 flex gap-3">
+        <a href="/login" class="flex-1 text-center text-zinc-400 hover:text-white text-sm font-medium py-3 border border-zinc-700 rounded-2xl">Log in</a>
+        <a href="/signup" class="flex-1 text-center font-bold text-sm py-3 rounded-2xl" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Guest Interaction</span>
+      <span>7 <span data-i18n="blog_min_read">min read</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">Inclusive Service & Modern Guest Expectations</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">Today’s guests expect more than good service — they expect to feel respected and seen. Here’s how to handle pronouns, accessibility needs, diverse backgrounds, and modern expectations with professionalism and warmth.</p>
+  </div>
+
+  <div class="prose">
+    <p>Inclusive service isn’t about being politically correct. It’s about reducing friction and making every guest feel welcome without making assumptions about who they are or what they need.</p>
+
+    <h2>Core principles of inclusive service</h2>
+
+    <h3>1. Don’t assume — ask respectfully when needed</h3>
+    <p>Instead of guessing someone’s gender or making assumptions about their relationship to the person they’re dining with, use neutral language until you have clarity.</p>
+    <p><strong>Good phrasing:</strong> “What name would you like me to use?” or “How would you like me to refer to you?”</p>
+
+    <h3>2. Use the language the guest uses</h3>
+    <p>If a guest tells you their pronouns or preferred name, use them consistently. If you make a mistake, correct it quickly and move on without making a big deal out of it.</p>
+
+    <h3>3. Make accessibility feel normal, not special</h3>
+    <p>Offer assistance proactively but not intrusively. “Would you like me to bring the menu in a larger font?” or “Let me know if you need any help with the steps or the menu descriptions.”</p>
+
+    <h3>4. Avoid “othering” language</h3>
+    <p>Phrases like “for your kind of people” or “I don’t usually get customers like you” are well-intentioned but often land poorly. Treat every guest as an individual, not a representative of a group.</p>
+
+    <blockquote>“The goal of inclusive service is simple: make every guest feel like they belong here — without drawing unnecessary attention to their differences.”</blockquote>
+
+    <h2>Practical situations you’ll encounter</h2>
+    <ul>
+      <li>Guests who use they/them or neopronouns</li>
+      <li>Guests with service animals (know the legal rules — you can only ask two specific questions)</li>
+      <li>Guests who need modifications for mobility, vision, or hearing</li>
+      <li>Guests from cultures with different dining customs</li>
+      <li>Guests who are non-binary or transgender</li>
+    </ul>
+
+    <h2>The bottom line</h2>
+    <p>Inclusive service is really just good service with fewer assumptions. The servers who do this well don’t have to be perfect — they just have to be willing to learn, listen, and adjust without defensiveness.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice inclusive service scenarios with Roleplay Training — start free</a>.</p>
+  </div>
+
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Modern service for modern guests</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy includes training on inclusive service, accessibility, pronouns, and serving diverse guests with confidence and professionalism. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/personal-safety-harassment" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Personal Safety</p>
+        <p class="font-semibold text-white">Personal Safety & Dealing with Harassment as a Server</p>
+      </a>
+      <a href="/blog/server-burnout-resilience" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Career & Wellbeing</p>
+        <p class="font-semibold text-white">Mental Health, Burnout & Resilience for Servers</p>
+      </a>
+      <a href="/blog/handling-guest-allergies" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Guest Safety</p>
+        <p class="font-semibold text-white">Handling Guest Allergies & Dietary Restrictions: A Server’s Practical Guide</p>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer class="border-t border-zinc-800 mt-20">
+  <div class="max-w-7xl mx-auto px-4 py-12 text-sm text-zinc-500">
+    <div class="flex flex-col md:flex-row justify-between gap-8">
+      <div>
+        <p class="font-semibold text-white mb-2">ServeMaster Academy</p>
+        <p>AI-powered training for modern restaurant teams.</p>
+      </div>
+      <div class="flex flex-wrap gap-x-8 gap-y-2">
+        <a href="/about" class="hover:text-white">About</a>
+        <a href="/pricing" class="hover:text-white">Pricing</a>
+        <a href="/blog" class="hover:text-white">Knowledge Centre</a>
+        <a href="/ai-roleplay" class="hover:text-white">Roleplay Training</a>
+        <a href="/scholarship" class="hover:text-white">Scholarship</a>
+        <a href="/demo" class="hover:text-white">Book a Demo</a>
+      </div>
+    </div>
+    <div class="mt-12 pt-8 border-t border-zinc-800 text-xs flex flex-col md:flex-row justify-between gap-4">
+      <p>© 2026 ServeMaster Academy. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="/privacy" class="hover:text-white">Privacy</a>
+        <a href="/terms" class="hover:text-white">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  }
+  function toggleLangMenu() {
+    const menu = document.getElementById('lang-menu');
+    menu.classList.toggle('hidden');
+  }
+  function setLang(lang) {
+    document.getElementById('lang-menu').classList.add('hidden');
+    console.log('Language set to:', lang);
+  }
+</script>
+</body>
+</html>
