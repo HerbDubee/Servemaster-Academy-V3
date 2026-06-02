@@ -2,6 +2,9 @@
  * Authentication routes.
  * Handles Google OAuth login and logout.
  * Uses db.query() to stay consistent with the existing codebase.
+ *
+ * NOTE: cookieParser middleware must remain in server.js (app-level).
+ * This router relies on it being applied before these routes are hit.
  */
 
 const express = require('express');
@@ -56,6 +59,11 @@ router.post('/google', async (req, res) => {
       }
     }
 
+    // Defensive check — should never happen given the logic above
+    if (!user) {
+      return res.status(500).json({ error: 'Failed to create or retrieve user' });
+    }
+
     const token = signToken({
       id: user.id,
       email: user.email,
@@ -73,7 +81,7 @@ router.post('/google', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Google auth error:', err.message);
+    console.error('Google auth error:', err);
     res.status(400).json({ error: 'Google authentication failed' });
   }
 });
