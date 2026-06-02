@@ -12,6 +12,10 @@
   var ttsChunkIndex = 0;
   var usingOpenAI = false;
 
+  // Pre-generated static audio
+  var usingStaticFile = false;
+  var staticAudio = null;
+
   // Web Audio API state (used for OpenAI TTS playback)
   var audioCtx = null;
   var activeSource = null;
@@ -34,6 +38,20 @@
 
   function nodeText(el) {
     return (el ? (el.innerText || el.textContent || '') : '').replace(/\s+/g, ' ').trim();
+  }
+
+  // ── Derive article lang + slug from URL ───────────────────────────────────────
+  // /blog/handle-complaints       → { lang: 'en', slug: 'handle-complaints' }
+  // /blog/fr/handle-complaints    → { lang: 'fr', slug: 'handle-complaints' }
+  // /blog/es/handle-complaints    → { lang: 'es', slug: 'handle-complaints' }
+
+  function getArticleLangAndSlug() {
+    var p = window.location.pathname;
+    var m = p.match(/^\/blog\/(fr|es)\/([^\/]+?)(?:\.html)?$/);
+    if (m) return { lang: m[1], slug: m[2] };
+    m = p.match(/^\/blog\/([^\/]+?)(?:\.html)?$/);
+    if (m && m[1] !== 'fr' && m[1] !== 'es') return { lang: 'en', slug: m[1] };
+    return { lang: 'en', slug: '' };
   }
 
   function getProseText() {
@@ -203,6 +221,44 @@
     return chunks;
   }
 
+  // ── Static pre-generated audio ────────────────────────────────────────────────
+
+  function playStaticAudio(url, fallbackFn) {
+    usingStaticFile = true;
+    staticAudio = new Audio(url);
+
+    staticAudio.onended = function () {
+      usingStaticFile = false;
+      staticAudio = null;
+      setState('idle');
+    };
+
+    staticAudio.onerror = function () {
+      usingStaticFile = false;
+      staticAudio = null;
+      fallbackFn();
+    };
+
+    staticAudio.play()
+      .then(function () { setState('playing'); })
+      .catch(function () {
+        usingStaticFile = false;
+        staticAudio = null;
+        fallbackFn();
+      });
+  }
+
+  function stopStaticAudio() {
+    if (staticAudio) {
+      staticAudio.onended = null;
+      staticAudio.onerror = null;
+      try { staticAudio.pause(); } catch (e) {}
+      staticAudio.src = '';
+      staticAudio = null;
+    }
+    usingStaticFile = false;
+  }
+
   // ── Web Audio API playback (OpenAI TTS) ──────────────────────────────────────
   // Using AudioContext instead of <audio> element so that iOS/DuckDuckGo
   // honours the user-gesture unlock from the original button click.
@@ -251,7 +307,6 @@
       var ctx = getAudioCtx();
       if (!ctx) throw new Error('No AudioContext');
 
-      // Resume context in case it was suspended (required on some browsers)
       var resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
       return resume.then(function () {
         return new Promise(function (resolve, reject) {
@@ -289,6 +344,20 @@
     closeAudioCtx();
     ttsChunks = [];
     ttsChunkIndex = 0;
+  }
+
+  // ── API TTS entry point (used as fallback when no static file) ────────────────
+
+  function startApiTTS(rawText) {
+    var text = preprocessForTTS(rawText, getVoiceLang());
+    usingOpenAI = true;
+    ttsChunks = splitIntoChunks(text);
+    ttsChunkIndex = 0;
+
+    var ctx = getAudioCtx();
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+
+    playChunk(0);
   }
 
   // ── Browser (Web Speech API) fallback ────────────────────────────────────────
@@ -336,28 +405,43 @@
   function handlePlay() {
     if (state === 'loading') return;
 
-    var siteLang = getSiteLang();
-
     if (state === 'idle') {
       var rawText = getProseText();
       if (isPlaceholderText(rawText)) return;
-      var text = preprocessForTTS(rawText, getVoiceLang());
 
-      usingOpenAI = true;
-      ttsChunks = splitIntoChunks(text);
-      ttsChunkIndex = 0;
+      // Try the pre-generated static MP3 first (no auth required, instant)
+      var info = getArticleLangAndSlug();
+      if (info.slug) {
+        var audioUrl = '/audio/blog/' + info.lang + '/' + info.slug + '.mp3';
+        setState('loading');
 
-      // Unlock the AudioContext synchronously within the user gesture.
-      // iOS/DuckDuckGo require this to happen before any async work.
-      var ctx = getAudioCtx();
-      if (ctx && ctx.state === 'suspended') {
-        ctx.resume();
+        fetch(audioUrl, { method: 'HEAD' })
+          .then(function (r) {
+            if (r.ok) {
+              // Static file exists — play it directly
+              playStaticAudio(audioUrl, function () {
+                // File existed but playback failed — fall back to API
+                startApiTTS(rawText);
+              });
+            } else {
+              // No static file yet — use live API
+              startApiTTS(rawText);
+            }
+          })
+          .catch(function () {
+            startApiTTS(rawText);
+          });
+        return;
       }
 
-      playChunk(0);
+      // No slug detected (e.g. unusual URL) — go straight to API
+      startApiTTS(rawText);
 
     } else if (state === 'playing') {
-      if (usingOpenAI) {
+      if (usingStaticFile && staticAudio) {
+        staticAudio.pause();
+        setState('paused');
+      } else if (usingOpenAI) {
         var ctx2 = getAudioCtx();
         if (ctx2) ctx2.suspend().then(function () { setState('paused'); });
       } else if (window.speechSynthesis) {
@@ -366,7 +450,10 @@
       }
 
     } else if (state === 'paused') {
-      if (usingOpenAI) {
+      if (usingStaticFile && staticAudio) {
+        staticAudio.play().catch(function () {});
+        setState('playing');
+      } else if (usingOpenAI) {
         var ctx3 = getAudioCtx();
         if (ctx3) ctx3.resume().then(function () { setState('playing'); });
       } else if (window.speechSynthesis) {
@@ -377,9 +464,14 @@
   }
 
   function handleStop() {
-    var wasOpenAI = usingOpenAI;
-    usingOpenAI = false;
-    if (wasOpenAI) {
+    var wasStatic  = usingStaticFile;
+    var wasOpenAI  = usingOpenAI;
+    usingStaticFile = false;
+    usingOpenAI     = false;
+
+    if (wasStatic) {
+      stopStaticAudio();
+    } else if (wasOpenAI) {
       stopOpenAI();
     } else {
       stopBrowserTTS();
