@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sma-v4-trial-copy';
+const CACHE_NAME = 'sma-v3';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/logo.svg',

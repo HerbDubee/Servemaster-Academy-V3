@@ -26,7 +26,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/wl-branding.js"></script>
-  <script src="/js/utm-capture.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
     html { overflow-x: hidden; }
@@ -224,7 +223,7 @@
       </div>
       <div class="bg-zinc-900 border border-amber-900 rounded-2xl p-6 text-left space-y-3">
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f1">30 professional training modules</span></div>
-        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f2">150 AI role-play scenarios</span></div>
+        <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f2">150+ AI role-play scenarios</span></div>
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f3">Voice role-play & tray simulation</span></div>
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f4">Badges, streaks & leaderboard</span></div>
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f5">Completion certificate PDF</span></div>
@@ -389,19 +388,6 @@
         <h2 class="text-xl font-semibold mb-4" id="dash-badges-title">Recent Badges</h2>
         <div id="badge-showcase-grid" class="flex flex-wrap gap-3"></div>
       </div>
-
-      <!-- Track Progress Section -->
-      <div id="track-progress-section">
-        <h2 class="text-xl font-semibold mb-4">Training Tracks</h2>
-        <div id="track-progress-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-
-      <!-- Active Team Challenges (shown if staff has restaurant) -->
-      <div id="active-challenges-section" class="hidden">
-        <h2 class="text-xl font-semibold mb-4">🏆 Active Challenges</h2>
-        <div id="active-challenges-list" class="space-y-3"></div>
-      </div>
-
       <div class="text-center pt-4">
         <button onclick="showNewsletter()" class="text-zinc-500 hover:text-amber-400 text-sm transition-colors" id="dash-newsletter-btn">📬 Get monthly tips newsletter</button>
       </div>
@@ -450,7 +436,7 @@
           </div>
         </div>
         <div id="chat-messages" class="space-y-4 flex-1 overflow-y-auto pr-2 py-2" style="min-height: 200px;"></div>
-        <div id="chat-input-row" class="mt-auto pt-3 flex gap-3 flex-wrap">
+        <div class="mt-auto pt-3 flex gap-3 flex-wrap">
           <input id="chat-input" type="text" inputmode="text" autocomplete="off" placeholder="Type your response as the server..."
             class="flex-1 min-w-0 bg-zinc-900 border border-zinc-700 focus:border-amber-400 outline-none rounded-2xl px-5 py-4 text-white placeholder-zinc-500 transition-colors"
             onkeydown="if(event.key==='Enter') sendChat()"
@@ -559,9 +545,6 @@
           <button onclick="switchMgrTab('plans')" id="mgr-tab-plans" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📋 Onboarding Plans</button>
           <button onclick="switchMgrTab('skillgap')" id="mgr-tab-skillgap" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📊 Skill Gap</button>
           <button onclick="switchMgrTab('graduates')" id="mgr-tab-graduates" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🎓 Graduates</button>
-          <button onclick="switchMgrTab('challenges')" id="mgr-tab-challenges" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🏆 Challenges</button>
-          <button onclick="switchMgrTab('personas')" id="mgr-tab-personas" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">🎭 Guest Personas</button>
-          <button onclick="switchMgrTab('custommodules')" id="mgr-tab-custommodules" class="mgr-tab px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white transition-colors">📚 Custom Modules</button>
         </div>
 
         <!-- Staff Progress Tab -->
@@ -634,166 +617,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Team Challenges Tab -->
-        <div id="mgr-panel-challenges" class="hidden space-y-6">
-          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
-            <h2 class="text-lg font-semibold mb-1">Create Team Challenge</h2>
-            <p class="text-zinc-400 text-sm mb-5">Launch a timed competition — staff complete a module quiz or scenario and compete for top score.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Challenge Title</label>
-                <input id="ch-title" type="text" placeholder="e.g. Wine Knowledge Sprint" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Type</label>
-                <select id="ch-type" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
-                  <option value="quiz">Module Quiz</option>
-                  <option value="scenario">AI Scenario</option>
-                  <option value="module">Full Module</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Target Module (optional)</label>
-                <select id="ch-module" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
-                  <option value="">Any module</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Target Score (%)</label>
-                <input id="ch-score" type="number" value="80" min="0" max="100" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Ends At</label>
-                <input id="ch-ends" type="datetime-local" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Badge Emoji</label>
-                <input id="ch-badge" type="text" value="🏆" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="text-xs text-zinc-400 block mb-1">Description (optional)</label>
-              <textarea id="ch-desc" rows="2" placeholder="What are you challenging your team to do?" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
-            </div>
-            <button onclick="createChallenge()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">🏆 Launch Challenge</button>
-            <div id="ch-msg" class="text-sm mt-3 hidden"></div>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Active & Recent Challenges</h2>
-              <button onclick="loadManagerChallenges()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
-            </div>
-            <div id="mgr-challenges-list" class="space-y-3">
-              <div class="text-zinc-500 text-sm">Loading…</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Custom AI Guest Personas Tab -->
-        <div id="mgr-panel-personas" class="hidden space-y-6">
-          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
-            <h2 class="text-lg font-semibold mb-1">Create Guest Persona</h2>
-            <p class="text-zinc-400 text-sm mb-5">Build a custom AI guest character — your staff will see it as a scenario card in the Practice screen.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Guest Name</label>
-                <input id="pn-name" type="text" placeholder="e.g. Margaret Chen" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Role / Type</label>
-                <input id="pn-role" type="text" placeholder="e.g. Regular, VIP, Food Critic" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Difficulty</label>
-                <select id="pn-diff" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none">
-                  <option value="easy">Easy</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-zinc-400 block mb-1">Emoji</label>
-                <input id="pn-emoji" type="text" value="🎭" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="text-xs text-zinc-400 block mb-1">Persona Prompt — Describe this guest's personality, needs, complaint style, and the situation</label>
-              <textarea id="pn-prompt" rows="4" placeholder="e.g. You are Margaret Chen, a regular diner who is celebrating her anniversary but has received the wrong dish. You are politely insistent, know the menu well, and expect a senior staff member to handle this…" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
-            </div>
-            <button onclick="createPersona()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">🎭 Create Persona</button>
-            <div id="pn-msg" class="text-sm mt-3 hidden"></div>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Your Custom Personas</h2>
-              <button onclick="loadManagerPersonas()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
-            </div>
-            <div id="mgr-personas-list" class="space-y-3">
-              <div class="text-zinc-500 text-sm">Loading…</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Custom Module Builder Tab -->
-        <div id="mgr-panel-custommodules" class="hidden space-y-6">
-          <div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
-            <h2 class="text-lg font-semibold mb-1">Build a Custom Training Module</h2>
-            <p class="text-zinc-400 text-sm mb-5">Create restaurant-specific training content — sections of lesson text plus a quiz. Published modules appear in your staff's module list.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              <div class="md:col-span-2">
-                <label class="text-xs text-zinc-400 block mb-1">Module Title</label>
-                <input id="cm-title" type="text" placeholder="e.g. Our Signature Cocktail Menu" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="text-xs text-zinc-400 block mb-1">Emoji</label>
-                  <input id="cm-emoji" type="text" value="📚" maxlength="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-                </div>
-                <div>
-                  <label class="text-xs text-zinc-400 block mb-1">Est. mins</label>
-                  <input id="cm-mins" type="number" value="10" min="1" max="120" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-                </div>
-              </div>
-            </div>
-            <!-- Sections builder -->
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-semibold text-zinc-300 uppercase tracking-wide">Lesson Sections</label>
-                <button onclick="addCmSection()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors font-semibold">+ Add Section</button>
-              </div>
-              <div id="cm-sections" class="space-y-3">
-                <div class="cm-section bg-zinc-800 rounded-xl p-3 space-y-2">
-                  <input type="text" placeholder="Section heading" class="cm-sec-heading w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-                  <textarea rows="3" placeholder="Section body text…" class="cm-sec-body w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>
-                </div>
-              </div>
-            </div>
-            <!-- Quiz builder -->
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-semibold text-zinc-300 uppercase tracking-wide">Quiz Questions (optional)</label>
-                <button onclick="addCmQuestion()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors font-semibold">+ Add Question</button>
-              </div>
-              <div id="cm-questions" class="space-y-4"></div>
-            </div>
-            <div class="flex gap-3">
-              <button onclick="saveCustomModule(false)" class="bg-zinc-700 hover:bg-zinc-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors">Save Draft</button>
-              <button onclick="saveCustomModule(true)" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Publish to Staff</button>
-            </div>
-            <div id="cm-msg" class="text-sm mt-3 hidden"></div>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Your Custom Modules</h2>
-              <button onclick="loadManagerCustomModules()" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">↻ Refresh</button>
-            </div>
-            <div id="mgr-custommodules-list" class="space-y-3">
-              <div class="text-zinc-500 text-sm">Loading…</div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -914,7 +737,7 @@ const STRINGS = {
     l2: '⭐ Experienced Server', l2d: "I've been serving for 1–3 years",
     l3: '🏆 Senior Professional', l3d: "I'm refining my craft and aiming for mastery",
     readySub: 'Your personalized curriculum is ready. 30 modules, real skills, real results.',
-    f1: '30 professional training modules', f2: '150 AI role-play scenarios',
+    f1: '30 professional training modules', f2: '150+ AI role-play scenarios',
     f3: 'Voice role-play & tray simulation', f4: 'Badges, streaks & leaderboard',
     f5: 'Completion certificate PDF', startBtn: 'Start Learning 🍸',
     accountBtn: 'Create account to sync across devices',
@@ -954,7 +777,7 @@ const STRINGS = {
     l2: '⭐ Serveur Expérimenté', l2d: "J'ai servi pendant 1 à 3 ans",
     l3: '🏆 Professionnel Senior', l3d: "J'affine mon art et vise l'excellence",
     readySub: 'Votre programme personnalisé est prêt. 30 modules, de vraies compétences, de vrais résultats.',
-    f1: '30 modules de formation professionnelle', f2: '150 scénarios de jeu de rôle IA',
+    f1: '30 modules de formation professionnelle', f2: '150+ scénarios de jeu de rôle IA',
     f3: 'Jeu de rôle vocal & simulation de plateau', f4: 'Badges, séries & classement',
     f5: 'Certificat de réussite PDF', startBtn: 'Commencer 🍸',
     accountBtn: 'Créer un compte pour synchronizer entre appareils',
@@ -994,7 +817,7 @@ const STRINGS = {
     l2: '⭐ Mesero Experimentado', l2d: 'He servido durante 1 a 3 años',
     l3: '🏆 Profesional Senior', l3d: 'Estoy perfeccionando mi oficio y apuntando a la excelencia',
     readySub: 'Tu plan de estudios personalizado está listo. 30 módulos, habilidades reales, resultados reales.',
-    f1: '30 módulos de formación profesional', f2: '150 escenarios de juego de rol con IA',
+    f1: '30 módulos de formación profesional', f2: '150+ escenarios de juego de rol con IA',
     f3: 'Juego de rol vocal y simulación de bandeja', f4: 'Insignias, rachas y tabla de líderes',
     f5: 'Certificado de finalización en PDF', startBtn: 'Comenzar 🍸',
     accountBtn: 'Crear cuenta para sincronizar entre dispositivos',
@@ -1102,7 +925,7 @@ function showUpgradePrompt(label) {
     ? 'Pasa a Premium para desbloquear todos los módulos, escenarios de IA, práctica vocal y tu certificado.'
     : lang === 'fr'
     ? 'Passez à Premium pour accéder à tous les modules, scénarios IA, voix et votre certificat.'
-    : 'Upgrade to unlock all 30 modules, 150 AI scenarios, voice roleplay, and your completion certificate.';
+    : 'Upgrade to unlock all 30 modules, 150+ AI scenarios, voice roleplay, and your completion certificate.';
   const socialLine = lang === 'es'
     ? '3,200+ servidores entrenados · 48 restaurantes activos'
     : lang === 'fr'
@@ -1114,7 +937,7 @@ function showUpgradePrompt(label) {
     <p class="text-zinc-400 text-sm mb-3">${bodyText}</p>
     <div class="flex flex-wrap justify-center gap-4 text-xs text-zinc-500 mb-5">
       <span>⭐ ${socialLine}</span>
-      <span>✓ ${lang==='es'?'Acceso instantáneo':lang==='fr'?'Accès instantané':'Instant access'}</span>
+      <span>✓ ${lang==='es'?'14 días de prueba gratis':lang==='fr'?'14 jours d\'essai gratuit':'14-day free trial'}</span>
       <span>✓ ${lang==='es'?'Cancela en cualquier momento':lang==='fr'?'Annulez à tout moment':'Cancel anytime'}</span>
     </div>
     <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${upgradeLabel}</a>
@@ -1137,7 +960,6 @@ async function fetchCurrentUser() {
     applyUserToNav(currentUser);
     await syncProgressFromServer();
     await loadAssignedModules();
-    loadCustomPersonas();
     const pendingJoin = localStorage.getItem('sma-pending-join');
     if (pendingJoin) {
       try {
@@ -1230,18 +1052,11 @@ async function pushProgressToServer(moduleId, progress, quizScore) {
 
 async function pushScenarioToServer(scenarioId) {
   if (!authToken) return;
-  // Include the chosen branch path (when the scenario had a decision point)
-  // so the choice is persisted server-side alongside the completion.
-  const payload = { scenarioId };
-  if (chatBranchChoice && chatBranchChoice.scenarioId === scenarioId) {
-    payload.branchChoiceId   = chatBranchChoice.choiceId;
-    payload.branchRecommended = !!chatBranchChoice.recommended;
-  }
   try {
     await fetch('/api/user/scenario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ scenarioId })
     });
   } catch {}
 }
@@ -1250,57 +1065,6 @@ async function pushScenarioToServer(scenarioId) {
 // MODULES + PROGRESS
 // =========================================================
 const modules = window.SMAContent.modules;
-
-const TRAINING_TRACKS = [
-  {
-    id: 'fine-dining',
-    name: 'Fine Dining Excellence',
-    nameFr: 'Excellence en gastronomie',
-    nameEs: 'Excelencia en Alta Cocina',
-    emoji: '🍽️',
-    color: '#FF5E3A',
-    bg: 'rgba(255,94,58,0.1)',
-    border: 'rgba(255,94,58,0.3)',
-    moduleIds: [1, 2, 6, 7, 8, 17, 20]
-  },
-  {
-    id: 'bar-beverage',
-    name: 'Bar & Beverage Mastery',
-    nameFr: 'Maîtrise bar & boissons',
-    nameEs: 'Maestría en Bar y Bebidas',
-    emoji: '🍸',
-    color: '#7dd3fc',
-    bg: 'rgba(125,211,252,0.1)',
-    border: 'rgba(125,211,252,0.3)',
-    moduleIds: [3, 4, 11, 13, 14, 25, 26, 27, 28, 29, 30]
-  },
-  {
-    id: 'guest-experience',
-    name: 'Guest Experience',
-    nameFr: 'Expérience client',
-    nameEs: 'Experiencia del Huésped',
-    emoji: '🧠',
-    color: '#34d399',
-    bg: 'rgba(52,211,153,0.1)',
-    border: 'rgba(52,211,153,0.3)',
-    moduleIds: [5, 9, 10, 15, 16, 19]
-  },
-  {
-    id: 'team-leadership',
-    name: 'Team Leadership',
-    nameFr: 'Leadership d\'équipe',
-    nameEs: 'Liderazgo de Equipo',
-    emoji: '⭐',
-    color: '#c084fc',
-    bg: 'rgba(192,132,252,0.1)',
-    border: 'rgba(192,132,252,0.3)',
-    moduleIds: [12, 18, 21, 22, 23, 24]
-  }
-];
-
-function getModuleTrack(moduleId) {
-  return TRAINING_TRACKS.find(t => t.moduleIds.includes(moduleId)) || TRAINING_TRACKS[0];
-}
 
 let userProgress = JSON.parse(localStorage.getItem('serveMasterProgress')) || [];
 modules.forEach(m => { if (!userProgress.find(u => u.id === m.id)) userProgress.push({ id: m.id, progress: 0 }); });
@@ -1878,7 +1642,6 @@ const practiceScenarios = window.SMAContent.practiceScenarios;
 let chatScenarioId = null;
 let chatHistory = [];
 let chatSessionToken = 0;
-let chatAiMessageCount = 0;
 let firstModuleCompleted = false;
 let scenarioCoachingNotes = [];
 
@@ -1953,14 +1716,9 @@ function startChat(scenarioId) {
   chatScenarioId = scenarioId;
   chatHistory = [];
   chatSessionToken++;
-  chatAiMessageCount = 0;
-  branchChoiceShown = false;
-  chatBranchChoice = null;
   const s = practiceScenarios.find(s => s.id === scenarioId);
-  const overridePersona = _customPersonaOverride && String(scenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
-  const titleText = overridePersona ? overridePersona.name : (s ? (lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title) : String(scenarioId));
-  const emojiText = overridePersona ? (overridePersona.emoji || '🎭') : (s ? s.emoji : '🎭');
-  document.getElementById('chat-scenario-title').textContent = emojiText + ' ' + titleText;
+  const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
+  document.getElementById('chat-scenario-title').textContent = s.emoji + ' ' + title;
   document.getElementById('chat-messages').innerHTML = '';
   document.getElementById('chat-input').disabled = false;
   document.getElementById('chat-send-btn').disabled = false;
@@ -1981,7 +1739,6 @@ function startChat(scenarioId) {
 function exitChat() {
   if (isRecording) { try { stopVoiceRecording(); } catch {} }
   _stopTtsAudio();
-  _customPersonaOverride = null;
   document.getElementById('practice-chat').classList.add('hidden');
   document.getElementById('practice-scenarios').classList.remove('hidden');
 }
@@ -1998,8 +1755,7 @@ function stripMarkdown(text) {
 
 async function sendInitialMessage() {
   const s = practiceScenarios.find(sc => sc.id === chatScenarioId);
-  const _overridePersona = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
-  const scene = _overridePersona ? _overridePersona.scenario_prompt : (s ? (lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene) : '');
+  const scene = s ? (lang === 'es' && s.sceneEs ? s.sceneEs : lang === 'fr' && s.sceneFr ? s.sceneFr : s.scene) : '';
   const sceneLabel = lang === 'fr' ? 'Scène' : lang === 'es' ? 'Escena' : 'Scene';
   // Show combined placeholder while loading
   const box = document.getElementById('chat-messages');
@@ -2038,23 +1794,13 @@ async function sendInitialMessage() {
     box.scrollTop = box.scrollHeight;
     // Play dialogue after scene finishes — only if still in the same session
     if (aiSpeechEnabled) sceneEndPromise.then(() => { if (chatSessionToken === sessionAtStart) speakOpenAI(guestText); });
-    // Branch decision point eval (this is the AI's first turn)
-    handleAssistantReplyComplete();
   } catch {
     div.querySelector('div').innerHTML = `${_sceneHtml}<p class="text-red-400">${lang==='es'?'No se pudo conectar al servidor.':lang==='fr'?'Impossible de se connecter au serveur.':'Could not connect to server.'}</p>${_retryBtn}`;
     box.scrollTop = box.scrollHeight;
   }
 }
 
-// True while branch choice buttons are visible and waiting for the server
-// to pick one. Blocks both keyboard sendChat() and voice sendVoiceChat()
-// from bypassing the decision point.
-function _branchPending() {
-  return branchChoiceShown && !!document.querySelector('#chat-messages .branch-choices');
-}
-
 async function sendChat() {
-  if (_branchPending()) return;
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
@@ -2066,8 +1812,7 @@ async function sendChat() {
   appendChatMessage('assistant', '...');
   try {
     const _sc = practiceScenarios.find(ps => ps.id === chatScenarioId);
-    const _overrideP = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
-    const _sceneCtx = _overrideP ? _overrideP.scenario_prompt : (_sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '');
+    const _sceneCtx = _sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '';
     const res = await fetch('/api/roleplay', {
       method: 'POST', headers: {'Content-Type':'application/json', Authorization: 'Bearer ' + authToken},
       body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang })
@@ -2098,9 +1843,6 @@ async function sendChat() {
         checkBadgesLocal();
         renderScenarios();
         showScenarioSummary();
-      } else {
-        // Branch decision point eval after a real assistant reply.
-        handleAssistantReplyComplete();
       }
     }
   } catch {
@@ -2136,7 +1878,7 @@ async function showScenarioSummary() {
     const res = await fetch('/api/roleplay/summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory, lang, sceneTitle: document.getElementById('chat-scenario-title')?.textContent?.replace(/^\S+\s/, '') || '', sceneContext: (() => { const _overrideP2 = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null; if (_overrideP2) return _overrideP2.scenario_prompt; const _ss = practiceScenarios.find(ps => ps.id === chatScenarioId); return _ss ? (lang === 'es' && _ss.sceneEs ? _ss.sceneEs : lang === 'fr' && _ss.sceneFr ? _ss.sceneFr : _ss.scene || '') : ''; })(), branchChoice: chatBranchChoice })
+      body: JSON.stringify({ scenarioId: chatScenarioId, messages: chatHistory, lang, sceneTitle: document.getElementById('chat-scenario-title')?.textContent?.replace(/^\S+\s/, '') || '', sceneContext: (() => { const _ss = practiceScenarios.find(ps => ps.id === chatScenarioId); return _ss ? (lang === 'es' && _ss.sceneEs ? _ss.sceneEs : lang === 'fr' && _ss.sceneFr ? _ss.sceneFr : _ss.scene || '') : ''; })() })
     });
     const data = await res.json();
 
@@ -2157,33 +1899,8 @@ async function showScenarioSummary() {
       ? data.wrong.map(w => `<li class="flex gap-2"><span class="text-red-400 shrink-0">✗</span><span>${escHtml(w)}</span></li>`).join('')
       : `<li class="text-zinc-500">${lang === 'es' ? 'Sin errores importantes.' : lang === 'fr' ? 'Aucune erreur majeure.' : 'No major errors.'}</li>`;
 
-    // Decision-point block (only when this scenario had a branch choice)
-    let decisionBlock = '';
-    if (chatBranchChoice && Array.isArray(chatBranchChoice.all) && chatBranchChoice.all.length) {
-      const decHeading = lang === 'es' ? '🔀 Punto de decisión' : lang === 'fr' ? '🔀 Point de décision' : '🔀 Decision point';
-      const optionItems = chatBranchChoice.all.map(opt => {
-        const isPicked = opt.id === chatBranchChoice.choiceId;
-        const recBadge = opt.recommended ? `<span class="ml-2 inline-block text-[10px] font-semibold uppercase tracking-wider ${isPicked ? 'text-emerald-300' : 'text-emerald-400/70'}">${lang === 'es' ? 'Recomendado' : lang === 'fr' ? 'Recommandé' : 'Recommended'}</span>` : '';
-        const mark = isPicked ? '<span class="text-amber-400 shrink-0 mt-0.5">●</span>' : '<span class="text-zinc-600 shrink-0 mt-0.5">○</span>';
-        const cls  = isPicked ? 'text-zinc-100 font-medium' : 'text-zinc-500';
-        return `<li class="flex gap-2"><span>${mark}</span><span class="${cls}">${escHtml(opt.label)}${recBadge}</span></li>`;
-      }).join('');
-      const matched = !!chatBranchChoice.recommended;
-      const noteT = matched
-        ? { en:'You picked the recommended path — well chosen.', fr:'Vous avez choisi la voie recommandée — bon choix.', es:'Eligió la opción recomendada — buena decisión.' }
-        : { en:'You did not pick the recommended path. Compare the options above for next time.', fr:'Vous n\'avez pas choisi la voie recommandée. Comparez les options ci-dessus pour la prochaine fois.', es:'No eligió la opción recomendada. Compare las opciones arriba para la próxima vez.' };
-      const noteCls = matched ? 'text-emerald-300' : 'text-amber-300';
-      decisionBlock = `
-      <div class="bg-zinc-800/50 border border-zinc-700 rounded-2xl px-4 py-3">
-        <div class="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-2">${decHeading}</div>
-        <ul class="space-y-1.5 text-sm">${optionItems}</ul>
-        <p class="${noteCls} text-xs mt-3">${noteT[lang] || noteT.en}</p>
-      </div>`;
-    }
-
     document.getElementById('summary-body').innerHTML = `
       <p class="italic text-zinc-300 text-sm border-l-2 border-amber-400 pl-3">${escHtml(data.verdict || '')}</p>
-      ${decisionBlock}
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2">${lang === 'es' ? 'Lo que hiciste bien' : lang === 'fr' ? 'Ce que vous avez bien fait' : 'What you did right'}</div>
         <ul class="space-y-1.5 text-sm text-zinc-200">${rightItems}</ul>
@@ -2211,84 +1928,6 @@ function appendChatMessage(role, text) {
   div.innerHTML = `<div class="max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed break-words whitespace-pre-wrap ${role==='user'?'bg-amber-400 text-black':'bg-zinc-800 text-zinc-100'}">${escHtml(text)}</div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
-}
-
-// Called after a real assistant reply has rendered (whether via direct
-// append in sendInitialMessage or replaceLastHtml in sendChat / sendChatWithText).
-// Increments the AI-turn counter and, when the scenario's branch turn is
-// reached, swaps the text input for a panel of choice buttons. Tap-friendly
-// so voice mode users can use it without typing.
-function handleAssistantReplyComplete() {
-  chatAiMessageCount++;
-  if (!shouldShowBranchChoices(chatScenarioId, chatAiMessageCount)) return;
-  branchChoiceShown = true;
-  const branch = getScenarioBranch(chatScenarioId);
-  if (!branch) return;
-  // Hide the entire input row (text + voice + send) so the choice
-  // buttons fully replace it for this turn — matches product spec.
-  const _row = document.getElementById('chat-input-row');
-  if (_row) _row.classList.add('hidden');
-  const box = document.getElementById('chat-messages');
-  const choiceEl = renderBranchChoices(branch, (chosen) => {
-    recordBranchChoice(chatScenarioId, chosen);
-    if (_row) _row.classList.remove('hidden');
-    sendChatWithText(_bxL(chosen.prompt), chosen);
-  });
-  if (box) {
-    box.appendChild(choiceEl);
-    box.scrollTop = box.scrollHeight;
-  }
-}
-
-async function sendChatWithText(text, chosenBranchOption) {
-  const input = document.getElementById('chat-input');
-  const sendBtn = document.getElementById('chat-send-btn');
-  if (input) input.disabled = true;
-  if (sendBtn) sendBtn.disabled = true;
-  chatHistory.push({ role: 'user', content: text });
-  appendChatMessage('user', text);
-  appendChatMessage('assistant', '...');
-  try {
-    const _sc = practiceScenarios.find(ps => ps.id === chatScenarioId);
-    const _overrideP = _customPersonaOverride && String(chatScenarioId) === `persona_${_customPersonaOverride.id}` ? _customPersonaOverride : null;
-    const _sceneCtx = _overrideP ? _overrideP.scenario_prompt : (_sc ? (lang === 'es' && _sc.sceneEs ? _sc.sceneEs : lang === 'fr' && _sc.sceneFr ? _sc.sceneFr : _sc.scene || '') : '');
-    // When this call originates from a branch choice, pass an English
-    // description of the chosen path so the AI guest can calibrate its
-    // emotional reaction without the choice ID being visible to the user.
-    const _choicePrompt = chosenBranchOption
-      ? `Path "${chosenBranchOption.id}" — ${(chosenBranchOption.label && (chosenBranchOption.label.en || chosenBranchOption.label[lang])) || ''}${chosenBranchOption.recommended ? ' (RECOMMENDED PATH)' : ' (NOT the recommended path)'}`
-      : undefined;
-    const res = await fetch('/api/roleplay', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ scenarioId: chatScenarioId, sceneContext: _sceneCtx, messages: chatHistory, lang, choicePrompt: _choicePrompt })
-    });
-    if (!res.ok) { replaceLastHtml(`<p class="text-red-400">Server error. Please try again.</p>`); }
-    else {
-      const data = await res.json();
-      const guestText = stripMarkdown(data.reply || '').trim();
-      if (!guestText) throw new Error('empty');
-      chatHistory.push({ role: 'assistant', content: data.reply });
-      replaceLastHtml('<p>' + escHtml(guestText) + '</p>');
-      speakOpenAI(guestText);
-      const userTurns = chatHistory.filter(m => m.role === 'user').length;
-      if (userTurns === 3) {
-        completedScenarios.push(chatScenarioId);
-        localStorage.setItem('sma-scenarios', JSON.stringify(completedScenarios));
-        const _scenTs = JSON.parse(localStorage.getItem('sma-scenario-ts') || '{}');
-        _scenTs[chatScenarioId] = new Date().toISOString();
-        localStorage.setItem('sma-scenario-ts', JSON.stringify(_scenTs));
-        pushScenarioToServer(chatScenarioId);
-        checkBadgesLocal();
-        renderScenarios();
-        showScenarioSummary();
-      } else {
-        handleAssistantReplyComplete();
-      }
-    }
-  } catch { replaceLastHtml(`<p class="text-red-400">Connection error</p>`); }
-  if (input) input.disabled = false;
-  if (sendBtn) sendBtn.disabled = false;
-  if (input) input.focus();
 }
 
 function replaceLast(text) {
@@ -3107,7 +2746,7 @@ async function doRegister() {
     const user = JSON.parse(localStorage.getItem('serveMasterUser') || '{}');
     const res = await fetch('/api/auth/register', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))({ name, email, password, level: user.level || 'New to serving' }))
+      body: JSON.stringify({ name, email, password, level: user.level || 'New to serving' })
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error; errEl.classList.remove('hidden'); return; }
@@ -3331,7 +2970,7 @@ const MODULE_NAMES_CLIENT = {
 };
 
 function switchMgrTab(tab) {
-  ['staff','plans','skillgap','graduates','challenges','personas','custommodules'].forEach(t => {
+  ['staff','plans','skillgap','graduates'].forEach(t => {
     const panel = document.getElementById('mgr-panel-'+t);
     const btn = document.getElementById('mgr-tab-'+t);
     if (panel) panel.classList.toggle('hidden', t !== tab);
@@ -3345,9 +2984,6 @@ function switchMgrTab(tab) {
   if (tab === 'plans') loadTrainingPlans();
   if (tab === 'skillgap') loadSkillGap();
   if (tab === 'graduates') loadGraduates();
-  if (tab === 'challenges') { populateChallengeModuleSelect(); loadManagerChallenges(); }
-  if (tab === 'personas') loadManagerPersonas();
-  if (tab === 'custommodules') loadManagerCustomModules();
 }
 
 async function loadGraduates() {
@@ -3712,14 +3348,7 @@ function navigate(screen) {
   if (screen === 'leaderboard') loadLeaderboard();
   if (screen === 'achievements') renderAchievements();
   if (screen === 'manager') loadManagerDashboard();
-  if (screen === 'dashboard') {
-    renderQuickWins();
-    renderTrackProgress();
-    loadActiveChallenges();
-  }
-  if (screen === 'learn') {
-    loadStaffCustomModules();
-  }
+  if (screen === 'dashboard') renderQuickWins();
 }
 
 function renderQuickWins() {
@@ -4048,8 +3677,6 @@ function renderHub() {
       blogBody.innerHTML = `<p class="text-zinc-500 text-sm">${lang === 'fr' ? 'Article bientôt disponible.' : lang === 'es' ? 'Artículo próximamente.' : 'Article coming soon.'}</p>`;
     }
   }
-  // Inject custom restaurant personas as additional scenario cards
-  if (restaurantCustomPersonas.length) renderCustomPersonaScenarioCards();
 }
 
 function renderAchievements() {
@@ -4523,37 +4150,20 @@ function renderAll() {
   if (allEl) {
     const freeModuleLimit = 3;
     const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
-    // Sort modules by track order, then by module id within each track
-    const trackOrder = TRAINING_TRACKS.map(t => t.id);
-    const sortedModules = [...modules].sort((a, b) => {
-      const tA = trackOrder.indexOf(getModuleTrack(a.id).id);
-      const tB = trackOrder.indexOf(getModuleTrack(b.id).id);
-      if (tA !== tB) return tA - tB;
-      return a.id - b.id;
-    });
-    let lastTrackId = null;
-    let trackIdx = 0;
-    allEl.innerHTML = sortedModules.map((m, idx) => {
-      const track = getModuleTrack(m.id);
+    const trackFineDining = lang==='fr' ? '🍽️ Piste fine cuisine — Modules 1–24' : lang==='es' ? '🍽️ Pista Fine Dining — Módulos 1–24' : '🍽️ Fine Dining & Restaurant Service Track — Modules 1–24';
+    const trackBar = lang==='fr' ? '🍸 Piste service bar — Modules 25–30' : lang==='es' ? '🍸 Pista Servicio de Bar — Módulos 25–30' : '🍸 Bar Service Track — Modules 25–30';
+    allEl.innerHTML = modules.map((m, idx) => {
       let trackHeader = '';
-      if (track.id !== lastTrackId) {
-        lastTrackId = track.id;
-        const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
-        const trackDone = track.moduleIds.filter(id => (userProgress.find(u=>u.id===id)||{progress:0}).progress >= 100).length;
-        const trackTotal = track.moduleIds.length;
-        const mt = idx === 0 ? '' : 'mt-6 ';
-        trackHeader = `<div class="col-span-full ${mt}mb-2">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:${track.color}; background:${track.bg};">${track.emoji} ${trackName}</span>
-            <span class="text-xs text-zinc-500">${trackDone}/${trackTotal} ${lang==='fr'?'complétés':lang==='es'?'completados':'completed'}${trackDone===trackTotal?' 🏅':''}</span>
-          </div>
-        </div>`;
+      if (idx === 0) {
+        trackHeader = `<div class="col-span-full mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#FF5E3A; background:rgba(255,94,58,0.1);">${trackFineDining}</span></div>`;
+      } else if (m.id === 25) {
+        trackHeader = `<div class="col-span-full mt-4 mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#7dd3fc; background:rgba(125,211,252,0.1);">${trackBar}</span></div>`;
       }
       const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
       const done = p.progress >= 100;
       const qs = savedQuizScores[m.id];
-      const orderNum = m.id;
-      const locked = !hasPaidPlan() && m.id > freeModuleLimit;
+      const orderNum = idx + 1;
+      const locked = !hasPaidPlan() && idx >= freeModuleLimit;
       if (locked) {
         return trackHeader + `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
           <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
@@ -4599,7 +4209,7 @@ function renderAll() {
       </div>`;
     }).join('');
     if (proModulesLocked) {
-      const upgradeContextLabel = lang==='fr' ? '27 modules + 4 pistes spécialisées' : lang==='es' ? '27 módulos + 4 pistas especializadas' : '27 More Modules + 4 Specialized Tracks';
+      const upgradeContextLabel = lang==='fr' ? '27 modules + Piste service bar' : lang==='es' ? '27 módulos + Pista Servicio de Bar' : '27 More Modules + Full Bar Service Track';
       allEl.innerHTML += showUpgradePrompt(upgradeContextLabel);
     }
   }
@@ -4781,757 +4391,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW reg failed:', e));
   });
-}
-
-// =========================================================
-// TRAINING TRACKS — progress cards & certificates (#17)
-// =========================================================
-function renderTrackProgress() {
-  const grid = document.getElementById('track-progress-grid');
-  if (!grid) return;
-  grid.innerHTML = TRAINING_TRACKS.map(track => {
-    const done = track.moduleIds.filter(id => (userProgress.find(u=>u.id===id)||{progress:0}).progress >= 100).length;
-    const pct = Math.round((done / track.moduleIds.length) * 100);
-    const complete = done === track.moduleIds.length;
-    const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
-    return `<div class="bg-zinc-900 border rounded-2xl p-5 transition-all" style="border-color:${complete ? track.color : 'rgba(63,63,70,0.6)'};">
-      <div class="flex items-start justify-between mb-3">
-        <div>
-          <div class="text-2xl mb-1">${track.emoji}</div>
-          <div class="font-semibold text-sm">${trackName}</div>
-          <div class="text-zinc-500 text-xs mt-0.5">${track.moduleIds.length} modules</div>
-        </div>
-        ${complete ? `<div class="flex flex-col items-end gap-2">
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:${track.bg};color:${track.color};">✓ Complete</span>
-          <button onclick="downloadTrackCertificate('${track.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors hover:opacity-80" style="color:${track.color};border-color:${track.border};">🎓 Certificate</button>
-        </div>` : `<span class="text-sm font-bold" style="color:${track.color};">${pct}%</span>`}
-      </div>
-      <div class="w-full bg-zinc-800 rounded-full h-1.5 mt-2">
-        <div class="h-1.5 rounded-full transition-all" style="width:${pct}%;background:${track.color};"></div>
-      </div>
-      <div class="text-zinc-500 text-xs mt-2">${done} / ${track.moduleIds.length} ${lang==='fr'?'modules complétés':lang==='es'?'módulos completados':'modules completed'}</div>
-    </div>`;
-  }).join('');
-}
-
-async function downloadTrackCertificate(trackId) {
-  if (!hasPaidPlan()) { window.location.href = '/pricing'; return; }
-  const track = TRAINING_TRACKS.find(t => t.id === trackId);
-  if (!track) return;
-  const trackName = lang === 'fr' ? track.nameFr : lang === 'es' ? track.nameEs : track.name;
-  const userName = document.getElementById('dashboard-greeting')?.textContent?.replace(/welcome back,?\s*/i, '').replace('👋','').trim() || 'Learner';
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const w = doc.internal.pageSize.getWidth();
-  const h = doc.internal.pageSize.getHeight();
-  doc.setFillColor(25, 9, 17);
-  doc.rect(0, 0, w, h, 'F');
-  doc.setFillColor(40, 20, 5);
-  doc.rect(8, 8, w-16, h-16, 'F');
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(0.8);
-  doc.rect(10, 10, w-20, h-20);
-  doc.setFont('times', 'italic');
-  doc.setTextColor(212, 175, 55);
-  doc.setFontSize(13);
-  doc.text('ServeMaster Academy', w/2, 28, { align: 'center' });
-  doc.setFont('times', 'bold');
-  doc.setFontSize(28);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Certificate of Track Completion', w/2, 50, { align: 'center' });
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(180, 180, 180);
-  doc.text('This certifies that', w/2, 68, { align: 'center' });
-  doc.setFont('times', 'bolditalic');
-  doc.setFontSize(24);
-  doc.setTextColor(255, 200, 50);
-  doc.text(userName, w/2, 82, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.setTextColor(180, 180, 180);
-  doc.text('has successfully completed all modules in the', w/2, 94, { align: 'center' });
-  doc.setFont('times', 'bold');
-  doc.setFontSize(20);
-  doc.setTextColor(255, 255, 255);
-  doc.text(`${track.emoji}  ${trackName}`, w/2, 108, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`Issued ${new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' })} · servemasteracademy.ca`, w/2, h-22, { align: 'center' });
-  doc.save(`ServeMaster_${track.id}_certificate.pdf`);
-}
-
-// =========================================================
-// TEAM CHALLENGES — staff + manager (#15)
-// =========================================================
-async function loadActiveChallenges() {
-  const section = document.getElementById('active-challenges-section');
-  const list = document.getElementById('active-challenges-list');
-  if (!section || !list || !authToken) return;
-  try {
-    const res = await fetch('/api/challenges', { headers: { Authorization: 'Bearer ' + authToken } });
-    if (!res.ok) return;
-    const data = await res.json();
-    const challenges = data.challenges || [];
-    if (!challenges.length) { section.classList.add('hidden'); return; }
-    section.classList.remove('hidden');
-    list.innerHTML = challenges.map(c => {
-      const endsAt = new Date(c.ends_at);
-      const now = new Date();
-      const msLeft = endsAt - now;
-      const hoursLeft = Math.max(0, Math.round(msLeft / 3600000));
-      const joined = c.my_score !== null;
-      const typeLabel = c.challenge_type === 'quiz' ? 'Module Quiz' : c.challenge_type === 'scenario' ? 'AI Scenario' : 'Full Module';
-      return `<div class="bg-zinc-900 border border-amber-900/30 rounded-2xl p-5 flex items-start gap-4">
-        <div class="text-3xl">${c.badge_emoji || '🏆'}</div>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold mb-1">${escHtml(c.title)}</div>
-          ${c.description ? `<div class="text-zinc-400 text-sm mb-2">${escHtml(c.description)}</div>` : ''}
-          <div class="flex flex-wrap gap-2 text-xs text-zinc-500">
-            <span>${typeLabel}</span><span>·</span>
-            <span>Target: ${c.target_score}%</span><span>·</span>
-            <span>${hoursLeft}h remaining</span>
-          </div>
-        </div>
-        <div class="flex flex-col items-end gap-2 flex-shrink-0">
-          ${joined ? `<span class="text-xs font-semibold text-emerald-400">✓ Score: ${c.my_score}%</span>` : ''}
-          <button onclick="showChallengeLeaderboard(${c.id},'${escHtml(c.title)}')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">View Leaderboard →</button>
-        </div>
-      </div>`;
-    }).join('');
-  } catch {}
-}
-
-async function showChallengeLeaderboard(id, title) {
-  try {
-    const res = await fetch(`/api/challenges/${id}/leaderboard`, { headers: { Authorization: 'Bearer ' + authToken } });
-    const data = await res.json();
-    const lb = data.leaderboard || [];
-    const rows = lb.length ? lb.map((e, i) => `<div class="flex items-center gap-3 py-2 border-b border-zinc-800 last:border-0">
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i===0?'bg-amber-400/20 text-amber-400':i===1?'bg-zinc-600 text-zinc-300':i===2?'bg-orange-900/40 text-orange-400':'bg-zinc-800 text-zinc-500'}">${i+1}</div>
-      <div class="flex-1 text-sm">${escHtml(e.name)}</div>
-      <div class="text-sm font-semibold text-amber-400">${e.score}%</div>
-    </div>`).join('') : '<div class="text-zinc-500 text-sm py-4 text-center">No entries yet — be the first!</div>';
-    const panel = document.getElementById('scorecard-panel') || document.body;
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4';
-    overlay.innerHTML = `<div class="bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 w-full max-w-md">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold text-lg">🏆 ${escHtml(title)}</h3>
-        <button onclick="this.closest('.fixed').remove()" class="text-zinc-400 hover:text-white text-2xl leading-none">×</button>
-      </div>
-      <div class="space-y-0">${rows}</div>
-    </div>`;
-    document.body.appendChild(overlay);
-  } catch {}
-}
-
-function populateChallengeModuleSelect() {
-  const sel = document.getElementById('ch-module');
-  if (!sel || sel.options.length > 1) return;
-  modules.forEach(m => {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = `${m.id}. ${getModuleTitle(m)}`;
-    sel.appendChild(opt);
-  });
-}
-
-async function createChallenge() {
-  const title = document.getElementById('ch-title').value.trim();
-  const desc = document.getElementById('ch-desc').value.trim();
-  const type = document.getElementById('ch-type').value;
-  const modId = document.getElementById('ch-module').value;
-  const score = parseInt(document.getElementById('ch-score').value) || 80;
-  const ends = document.getElementById('ch-ends').value;
-  const badge = document.getElementById('ch-badge').value.trim() || '🏆';
-  const msg = document.getElementById('ch-msg');
-  if (!title || !ends) { msg.textContent = 'Please enter a title and end date.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
-  msg.textContent = 'Creating…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
-  try {
-    const res = await fetch('/api/manager/challenges', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ title, description: desc, challenge_type: type, target_module_id: modId || null, target_score: score, ends_at: new Date(ends).toISOString(), badge_emoji: badge })
-    });
-    if (res.ok) {
-      msg.textContent = '✓ Challenge launched!'; msg.className = 'text-sm mt-3 text-emerald-400';
-      document.getElementById('ch-title').value = '';
-      document.getElementById('ch-desc').value = '';
-      loadManagerChallenges();
-    } else {
-      const d = await res.json();
-      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
-    }
-  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
-}
-
-async function loadManagerChallenges() {
-  const el = document.getElementById('mgr-challenges-list');
-  if (!el) return;
-  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
-  try {
-    const res = await fetch('/api/manager/challenges', { headers: { Authorization: 'Bearer ' + authToken } });
-    const data = await res.json();
-    const cs = data.challenges || [];
-    if (!cs.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No challenges yet. Create one above!</div>'; return; }
-    el.innerHTML = cs.map(c => {
-      const active = new Date(c.ends_at) > new Date();
-      const endsDate = new Date(c.ends_at).toLocaleDateString('en-CA');
-      return `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-center gap-4">
-        <div class="text-2xl">${c.badge_emoji || '🏆'}</div>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold text-sm">${escHtml(c.title)}</div>
-          <div class="text-zinc-500 text-xs mt-0.5">${c.challenge_type} · Target ${c.target_score}% · Ends ${endsDate}</div>
-          <div class="text-zinc-400 text-xs mt-0.5">${c.entry_count} participant${c.entry_count!=1?'s':''}</div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${active?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${active?'Active':'Ended'}</span>
-          <button onclick="showChallengeLeaderboard(${c.id},'${escHtml(c.title)}')" class="text-xs text-amber-400 hover:text-amber-300">Leaderboard</button>
-          <button onclick="deleteChallenge(${c.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
-        </div>
-      </div>`;
-    }).join('');
-  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
-}
-
-async function deleteChallenge(id) {
-  if (!confirm('Delete this challenge?')) return;
-  await fetch(`/api/manager/challenges/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
-  loadManagerChallenges();
-}
-
-// =========================================================
-// CUSTOM AI GUEST PERSONAS — manager + staff (#16)
-// =========================================================
-let restaurantCustomPersonas = [];
-let _customPersonaOverride = null;
-
-async function loadCustomPersonas() {
-  if (!authToken) return;
-  try {
-    const res = await fetch('/api/personas', { headers: { Authorization: 'Bearer ' + authToken } });
-    if (!res.ok) return;
-    const data = await res.json();
-    restaurantCustomPersonas = data.personas || [];
-    renderCustomPersonaScenarioCards();
-  } catch {}
-}
-
-function renderCustomPersonaScenarioCards() {
-  const hubGrid = document.getElementById('hub-scenarios-grid');
-  if (!hubGrid || !restaurantCustomPersonas.length) return;
-  // Append custom persona cards to the existing scenario grid
-  const existingCustom = hubGrid.querySelectorAll('.custom-persona-card');
-  existingCustom.forEach(e => e.remove());
-  if (!restaurantCustomPersonas.length) return;
-  const header = document.createElement('div');
-  header.className = 'custom-persona-card col-span-full mt-2 mb-1';
-  header.innerHTML = '<div class="text-xs font-semibold uppercase tracking-wider text-violet-400">🎭 Restaurant Custom Scenarios</div>';
-  hubGrid.appendChild(header);
-  restaurantCustomPersonas.forEach(p => {
-    const diffColor = p.difficulty === 'easy' ? 'text-emerald-400 border-emerald-700/40' : p.difficulty === 'hard' ? 'text-red-400 border-red-700/40' : 'text-amber-400 border-amber-700/40';
-    const card = document.createElement('div');
-    card.className = 'custom-persona-card bg-zinc-800/50 border border-violet-800/40 hover:border-violet-400 rounded-2xl p-4 cursor-pointer transition-all';
-    card.innerHTML = `<div class="flex items-start gap-3">
-      <div class="text-3xl">${p.emoji || '🎭'}</div>
-      <div class="flex-1 min-w-0">
-        <div class="font-semibold text-sm mb-0.5">${escHtml(p.name)}</div>
-        <div class="text-zinc-400 text-xs mb-2">${escHtml(p.role || 'Guest')}</div>
-        <span class="text-xs px-2 py-0.5 rounded-full border ${diffColor} capitalize">${p.difficulty}</span>
-      </div>
-    </div>`;
-    card.onclick = () => startCustomPersonaRoleplay(p);
-    hubGrid.appendChild(card);
-  });
-}
-
-async function startCustomPersonaRoleplay(persona) {
-  _customPersonaOverride = persona;
-  startChat(`persona_${persona.id}`);
-}
-
-async function loadManagerPersonas() {
-  const el = document.getElementById('mgr-personas-list');
-  if (!el) return;
-  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
-  try {
-    const res = await fetch('/api/manager/personas', { headers: { Authorization: 'Bearer ' + authToken } });
-    const data = await res.json();
-    const ps = data.personas || [];
-    if (!ps.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No personas yet. Create one above!</div>'; return; }
-    el.innerHTML = ps.map(p => {
-      const diffColor = p.difficulty === 'easy' ? 'text-emerald-400' : p.difficulty === 'hard' ? 'text-red-400' : 'text-amber-400';
-      return `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-start gap-4">
-        <div class="text-2xl">${p.emoji || '🎭'}</div>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold text-sm">${escHtml(p.name)}</div>
-          <div class="text-zinc-500 text-xs mt-0.5">${escHtml(p.role || 'Guest')} · <span class="${diffColor} capitalize">${p.difficulty}</span></div>
-          <div class="text-zinc-400 text-xs mt-1 truncate">${escHtml(p.scenario_prompt.substring(0,100))}${p.scenario_prompt.length>100?'…':''}</div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs px-2 py-0.5 rounded-full ${p.is_active?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${p.is_active?'Active':'Hidden'}</span>
-          <button onclick="togglePersonaActive(${p.id},${!p.is_active})" class="text-xs text-zinc-400 hover:text-white">${p.is_active?'Hide':'Show'}</button>
-          <button onclick="deletePersona(${p.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
-        </div>
-      </div>`;
-    }).join('');
-  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
-}
-
-async function createPersona() {
-  const name = document.getElementById('pn-name').value.trim();
-  const role = document.getElementById('pn-role').value.trim();
-  const diff = document.getElementById('pn-diff').value;
-  const emoji = document.getElementById('pn-emoji').value.trim() || '🎭';
-  const prompt = document.getElementById('pn-prompt').value.trim();
-  const msg = document.getElementById('pn-msg');
-  if (!name || !prompt) { msg.textContent = 'Name and prompt are required.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
-  msg.textContent = 'Creating…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
-  try {
-    const res = await fetch('/api/manager/personas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ name, role, difficulty: diff, scenario_prompt: prompt, emoji })
-    });
-    if (res.ok) {
-      msg.textContent = '✓ Persona created!'; msg.className = 'text-sm mt-3 text-emerald-400';
-      document.getElementById('pn-name').value = '';
-      document.getElementById('pn-role').value = '';
-      document.getElementById('pn-prompt').value = '';
-      loadManagerPersonas();
-    } else {
-      const d = await res.json();
-      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
-    }
-  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
-}
-
-async function togglePersonaActive(id, active) {
-  await fetch(`/api/manager/personas/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-    body: JSON.stringify({ is_active: active })
-  });
-  loadManagerPersonas();
-}
-
-async function deletePersona(id) {
-  if (!confirm('Delete this persona?')) return;
-  await fetch(`/api/manager/personas/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
-  loadManagerPersonas();
-}
-
-// =========================================================
-// CUSTOM MODULE BUILDER — manager + staff (#18)
-// =========================================================
-function addCmSection() {
-  const container = document.getElementById('cm-sections');
-  if (!container) return;
-  const div = document.createElement('div');
-  div.className = 'cm-section bg-zinc-800 rounded-xl p-3 space-y-2 relative';
-  div.innerHTML = `<button onclick="this.closest('.cm-section').remove()" class="absolute top-2 right-2 text-zinc-500 hover:text-red-400 text-lg leading-none">×</button>
-    <input type="text" placeholder="Section heading" class="cm-sec-heading w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-    <textarea rows="3" placeholder="Section body text…" class="cm-sec-body w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none resize-none"></textarea>`;
-  container.appendChild(div);
-}
-
-let cmQIdx = 0;
-function addCmQuestion() {
-  const container = document.getElementById('cm-questions');
-  if (!container) return;
-  const qi = cmQIdx++;
-  const div = document.createElement('div');
-  div.className = 'cm-question bg-zinc-800 rounded-xl p-3 space-y-2 relative';
-  div.innerHTML = `<button onclick="this.closest('.cm-question').remove()" class="absolute top-2 right-2 text-zinc-500 hover:text-red-400 text-lg leading-none">×</button>
-    <input type="text" placeholder="Question text" class="cm-q-text w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-    <div class="space-y-1.5" id="cm-opts-${qi}">
-      ${[0,1,2,3].map(i => `<div class="flex items-center gap-2">
-        <input type="radio" name="correct-${qi}" value="${i}" ${i===0?'checked':''} class="accent-amber-400">
-        <input type="text" placeholder="Option ${i+1}" class="cm-opt flex-1 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:border-amber-400 outline-none" />
-      </div>`).join('')}
-    </div>
-    <input type="text" placeholder="Explanation (optional)" class="cm-q-expl w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:border-amber-400 outline-none" />`;
-  container.appendChild(div);
-}
-
-async function saveCustomModule(publish) {
-  const title = document.getElementById('cm-title').value.trim();
-  const emoji = document.getElementById('cm-emoji').value.trim() || '📚';
-  const mins = parseInt(document.getElementById('cm-mins').value) || 10;
-  const msg = document.getElementById('cm-msg');
-  if (!title) { msg.textContent = 'Please enter a title.'; msg.className = 'text-sm mt-3 text-red-400'; msg.classList.remove('hidden'); return; }
-  const sections = [];
-  document.querySelectorAll('#cm-sections .cm-section').forEach(sec => {
-    const h = sec.querySelector('.cm-sec-heading')?.value?.trim();
-    const b = sec.querySelector('.cm-sec-body')?.value?.trim();
-    if (h && b) sections.push({ heading: h, body: b });
-  });
-  const questions = [];
-  document.querySelectorAll('#cm-questions .cm-question').forEach(qel => {
-    const question = qel.querySelector('.cm-q-text')?.value?.trim();
-    const opts = [...qel.querySelectorAll('.cm-opt')].map(o => o.value.trim()).filter(Boolean);
-    const correctEl = qel.querySelector('input[type=radio]:checked');
-    const correctIdx = correctEl ? parseInt(correctEl.value) : 0;
-    const expl = qel.querySelector('.cm-q-expl')?.value?.trim() || '';
-    if (question && opts.length >= 2) questions.push({ question, options: opts, correct_index: correctIdx, explanation: expl });
-  });
-  msg.textContent = 'Saving…'; msg.className = 'text-sm mt-3 text-zinc-400'; msg.classList.remove('hidden');
-  try {
-    const res = await fetch('/api/manager/custom-modules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-      body: JSON.stringify({ title, emoji, mins, sections, questions, is_published: publish })
-    });
-    if (res.ok) {
-      msg.textContent = publish ? '✓ Module published to staff!' : '✓ Draft saved.';
-      msg.className = 'text-sm mt-3 text-emerald-400';
-      document.getElementById('cm-title').value = '';
-      document.getElementById('cm-sections').innerHTML = '';
-      document.getElementById('cm-questions').innerHTML = '';
-      addCmSection();
-      loadManagerCustomModules();
-    } else {
-      const d = await res.json();
-      msg.textContent = d.error || 'Failed'; msg.className = 'text-sm mt-3 text-red-400';
-    }
-  } catch { msg.textContent = 'Network error'; msg.className = 'text-sm mt-3 text-red-400'; }
-}
-
-async function loadManagerCustomModules() {
-  const el = document.getElementById('mgr-custommodules-list');
-  if (!el) return;
-  el.innerHTML = '<div class="text-zinc-500 text-sm">Loading…</div>';
-  try {
-    const res = await fetch('/api/manager/custom-modules', { headers: { Authorization: 'Bearer ' + authToken } });
-    const data = await res.json();
-    const mods = data.modules || [];
-    if (!mods.length) { el.innerHTML = '<div class="text-zinc-500 text-sm">No custom modules yet.</div>'; return; }
-    el.innerHTML = mods.map(m => `<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 flex items-start gap-4">
-      <div class="text-2xl">${m.emoji || '📚'}</div>
-      <div class="flex-1 min-w-0">
-        <div class="font-semibold text-sm">${escHtml(m.title)}</div>
-        <div class="text-zinc-500 text-xs mt-0.5">${m.section_count} sections · ${m.question_count} questions · ~${m.mins} min</div>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs px-2 py-0.5 rounded-full ${m.is_published?'bg-emerald-900/40 text-emerald-400':'bg-zinc-800 text-zinc-500'}">${m.is_published?'Published':'Draft'}</span>
-        ${!m.is_published ? `<button onclick="publishCustomModule(${m.id})" class="text-xs text-amber-400 hover:text-amber-300">Publish</button>` : `<button onclick="unpublishCustomModule(${m.id})" class="text-xs text-zinc-400 hover:text-white">Unpublish</button>`}
-        <button onclick="deleteCustomModule(${m.id})" class="text-xs text-red-400 hover:text-red-300">Delete</button>
-      </div>
-    </div>`).join('');
-  } catch { el.innerHTML = '<div class="text-red-400 text-sm">Failed to load.</div>'; }
-}
-
-async function publishCustomModule(id) {
-  await fetch(`/api/manager/custom-modules/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-    body: JSON.stringify({ is_published: true })
-  });
-  loadManagerCustomModules();
-}
-
-async function unpublishCustomModule(id) {
-  await fetch(`/api/manager/custom-modules/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
-    body: JSON.stringify({ is_published: false })
-  });
-  loadManagerCustomModules();
-}
-
-async function deleteCustomModule(id) {
-  if (!confirm('Delete this module?')) return;
-  await fetch(`/api/manager/custom-modules/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + authToken } });
-  loadManagerCustomModules();
-}
-
-let staffCustomModules = [];
-
-async function loadStaffCustomModules() {
-  if (!authToken) return;
-  try {
-    const res = await fetch('/api/custom-modules', { headers: { Authorization: 'Bearer ' + authToken } });
-    if (!res.ok) return;
-    const data = await res.json();
-    staffCustomModules = data.modules || [];
-    renderCustomModulesInLearnScreen();
-  } catch {}
-}
-
-function renderCustomModulesInLearnScreen() {
-  const allEl = document.getElementById('all-modules');
-  if (!allEl || !staffCustomModules.length) return;
-  // Remove any existing custom module cards
-  allEl.querySelectorAll('.staff-custom-module').forEach(e => e.remove());
-  // Add custom modules section header
-  const hdr = document.createElement('div');
-  hdr.className = 'staff-custom-module col-span-full mt-6 mb-2';
-  hdr.innerHTML = `<div class="flex items-center justify-between flex-wrap gap-2">
-    <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#c084fc;background:rgba(192,132,252,0.1);">🏢 Restaurant Custom Modules</span>
-  </div>`;
-  allEl.appendChild(hdr);
-  staffCustomModules.forEach(m => {
-    const card = document.createElement('div');
-    card.className = 'staff-custom-module bg-zinc-900 border border-violet-900/40 hover:border-violet-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start';
-    card.innerHTML = `<div class="text-3xl">${m.emoji || '📚'}</div>
-      <div class="flex-1 min-w-0">
-        <div class="font-semibold mb-1">${escHtml(m.title)}</div>
-        <div class="flex items-center gap-2 text-xs text-zinc-500">
-          <span>⏱ ~${m.mins} min</span>
-          <span>·</span>
-          <span>${m.sections?.length || 0} sections</span>
-          ${m.questions?.length ? `<span>·</span><span>${m.questions.length} quiz questions</span>` : ''}
-        </div>
-      </div>`;
-    card.onclick = () => openCustomModuleModal(m);
-    allEl.appendChild(card);
-  });
-}
-
-function openCustomModuleModal(mod) {
-  const modal = document.getElementById('module-modal');
-  const title = document.getElementById('modal-title');
-  const content = document.getElementById('modal-content');
-  if (!modal || !content) return;
-  title.textContent = `${mod.emoji || '📚'} ${mod.title}`;
-  let html = '';
-  (mod.sections || []).sort((a,b)=>a.sort_order-b.sort_order).forEach(s => {
-    html += `<div class="mb-6">
-      <h3 class="text-lg font-semibold text-amber-400 mb-3">${escHtml(s.heading)}</h3>
-      <p class="text-zinc-300 leading-relaxed whitespace-pre-wrap">${escHtml(s.body)}</p>
-    </div>`;
-  });
-  if (mod.questions?.length) {
-    html += '<hr class="border-zinc-700 my-6"><h3 class="text-lg font-semibold mb-4">📝 Quiz</h3>';
-    html += `<div id="custom-quiz-${mod.id}" class="space-y-6">`;
-    mod.questions.sort((a,b)=>a.sort_order-b.sort_order).forEach((q, qi) => {
-      html += `<div class="bg-zinc-800 rounded-2xl p-5">
-        <div class="font-semibold mb-3">${qi+1}. ${escHtml(q.question)}</div>
-        <div class="space-y-2">`;
-      (q.options || []).forEach((opt, oi) => {
-        html += `<label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-zinc-700/50 transition-colors">
-          <input type="radio" name="cq-${mod.id}-${qi}" value="${oi}" class="accent-amber-400">
-          <span class="text-sm">${escHtml(opt)}</span>
-        </label>`;
-      });
-      html += `</div>
-        <button onclick="checkCustomQuizAnswer(this,${q.correct_index},'${escHtml((q.explanation||'').replace(/'/g,"\\\'"))}')" class="mt-3 text-xs font-semibold bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 border border-amber-400/30 px-3 py-1.5 rounded-lg transition-colors">Check Answer</button>
-        <div class="hidden mt-2 text-sm font-semibold"></div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-  content.innerHTML = html;
-  modal.classList.remove('hidden');
-}
-
-function checkCustomQuizAnswer(btn, correctIdx, explanation) {
-  const qBlock = btn.closest('div.bg-zinc-800');
-  const radios = qBlock.querySelectorAll('input[type=radio]');
-  let selected = -1;
-  radios.forEach((r,i) => { if (r.checked) selected = i; });
-  if (selected === -1) return;
-  const feedback = btn.nextElementSibling;
-  feedback.classList.remove('hidden');
-  if (selected === correctIdx) {
-    feedback.textContent = '✓ Correct!' + (explanation ? ' ' + explanation : '');
-    feedback.className = 'mt-2 text-sm font-semibold text-emerald-400';
-  } else {
-    feedback.textContent = `✗ Incorrect. ${explanation || ''}`;
-    feedback.className = 'mt-2 text-sm font-semibold text-red-400';
-  }
-  btn.disabled = true;
-}
-
-// =========================================================
-// SCENARIO BRANCHING — pilot (10 scenarios)
-// One decision point per scenario. After the AI guest's `afterAiTurn`th
-// message, the text input is replaced with 2–3 choice buttons. The
-// chosen choice's prompt is sent verbatim as the server's reply, the
-// chosen id is remembered for the coaching summary annotation, then
-// free-text resumes for the rest of the conversation.
-// =========================================================
-let branchingEnabled = true;
-let branchChoiceShown = false;
-let chatBranchChoice = null;  // { scenarioId, choiceId, label, recommended, all:[{id,label,recommended}] }
-
-// Compact i18n triple — order: en, fr, es. Falls back to en.
-function _bxL(t) { return (t && (t[lang] || t.en)) || ''; }
-
-const SCENARIO_BRANCHES = {
-  // ── 1 · The Difficult Guest ────────────────────────────────────────────
-  1: { afterAiTurn: 2, choices: [
-    { id:'apologize_recover', recommended:true,
-      label:{en:'Apologize sincerely and offer to make it right',fr:"S'excuser sincèrement et proposer une solution",es:'Disculparse sinceramente y ofrecer una solución'},
-      prompt:{en:"I'm so sorry your evening has started this way — that's on us, not you. Let me see exactly what I can do right now to get you seated.",fr:"Je suis vraiment désolé que votre soirée commence ainsi — c'est notre faute, pas la vôtre. Laissez-moi voir tout de suite ce que je peux faire pour vous installer.",es:"Lamento mucho que su noche empiece así — es responsabilidad nuestra, no suya. Déjeme ver ahora mismo qué puedo hacer para sentarles."} },
-    { id:'explain_policy',
-      label:{en:'Explain the 15-minute hold policy',fr:'Expliquer la politique de 15 minutes',es:'Explicar la política de 15 minutos'},
-      prompt:{en:"I understand your frustration, but our policy is to release tables after 15 minutes when guests are late. The table has already been given to another party.",fr:"Je comprends votre frustration, mais notre politique est de libérer les tables après 15 minutes de retard. La table a déjà été donnée à un autre client.",es:"Entiendo su frustración, pero nuestra política es liberar las mesas tras 15 minutos cuando los clientes llegan tarde. La mesa ya fue asignada a otro grupo."} },
-    { id:'fetch_manager',
-      label:{en:'Get the manager immediately',fr:'Aller chercher le manager immédiatement',es:'Llamar al gerente de inmediato'},
-      prompt:{en:"Let me get my manager for you right away — please give me one moment.",fr:"Je vais chercher mon manager tout de suite — un instant s'il vous plaît.",es:"Voy a buscar a mi gerente ahora mismo — un momento, por favor."} },
-  ]},
-  // ── 2 · Wine Upselling ─────────────────────────────────────────────────
-  2: { afterAiTurn: 2, choices: [
-    { id:'ask_food_first', recommended:true,
-      label:{en:'Ask what they plan to eat, then suggest a pairing',fr:'Demander ce qu\'ils vont manger, puis proposer un accord',es:'Preguntar qué van a comer y sugerir un maridaje'},
-      prompt:{en:"Have you had a chance to look at the menu? If you tell me what you're leaning toward, I can suggest a wine that will make the meal sing.",fr:"Avez-vous eu le temps de regarder le menu ? Si vous me dites ce qui vous tente, je peux vous suggérer un vin qui mettra le repas en valeur.",es:"¿Han podido ojear el menú? Si me dicen qué les apetece, puedo sugerirles un vino que realce la comida."} },
-    { id:'pitch_premium',
-      label:{en:'Recommend the most expensive bottle',fr:'Recommander la bouteille la plus chère',es:'Recomendar la botella más cara'},
-      prompt:{en:"May I recommend our $185 Cabernet — it's the finest bottle on the list and an exceptional choice for any occasion.",fr:"Puis-je vous recommander notre Cabernet à 185 $ — c'est la meilleure bouteille de la carte et un choix exceptionnel.",es:"¿Me permiten recomendarles nuestro Cabernet de $185? Es la mejor botella de la carta y una elección excepcional."} },
-    { id:'leave_them',
-      label:{en:'Give them more time alone with the list',fr:'Les laisser seuls avec la carte',es:'Dejarles más tiempo a solas con la carta'},
-      prompt:{en:"No problem — take all the time you need with the wine list. I'll come back in a few minutes.",fr:"Aucun souci — prenez tout votre temps avec la carte des vins. Je reviens dans quelques minutes.",es:"Sin problema — tómense todo el tiempo que necesiten con la carta. Vuelvo en unos minutos."} },
-  ]},
-  // ── 4 · The Long Wait Complaint ────────────────────────────────────────
-  4: { afterAiTurn: 2, choices: [
-    { id:'own_check_kitchen', recommended:true,
-      label:{en:'Apologize, go to the kitchen now, return with a real timeline',fr:'S\'excuser, aller en cuisine et revenir avec un délai concret',es:'Disculparse, ir a cocina y volver con un tiempo real'},
-      prompt:{en:"You're absolutely right to be frustrated — that's far too long. I'm going to the kitchen this second and I'll be back in under a minute with a real time on your mains.",fr:"Vous avez tout à fait raison d'être frustré — c'est beaucoup trop long. Je vais en cuisine immédiatement et je reviens dans moins d'une minute avec un délai précis pour vos plats.",es:"Tienen toda la razón de estar molestos — es demasiado tiempo. Voy a la cocina ahora mismo y vuelvo en menos de un minuto con un tiempo real para sus platos."} },
-    { id:'blame_kitchen',
-      label:{en:'Tell them the kitchen is backed up',fr:'Leur dire que la cuisine est débordée',es:'Decir que la cocina está saturada'},
-      prompt:{en:"Sorry about that — the kitchen is really backed up tonight, there's nothing I can do.",fr:"Désolé — la cuisine est vraiment débordée ce soir, je ne peux rien y faire.",es:"Lo siento — la cocina está muy saturada esta noche, no puedo hacer nada."} },
-    { id:'offer_drink_only',
-      label:{en:'Offer a complimentary drink and walk away',fr:'Offrir une boisson offerte et s\'éloigner',es:'Ofrecer una bebida de cortesía y marcharse'},
-      prompt:{en:"I'll bring you a glass of wine on the house while you wait. Sorry again.",fr:"Je vous apporte un verre de vin offert en attendant. Encore désolé.",es:"Les traigo una copa de vino por cuenta de la casa mientras esperan. Disculpen otra vez."} },
-  ]},
-  // ── 7 · Splitting the Bill ─────────────────────────────────────────────
-  7: { afterAiTurn: 2, choices: [
-    { id:'pen_paper_offer', recommended:true,
-      label:{en:'Offer to itemize on paper with them',fr:'Proposer de détailler la note avec eux sur papier',es:'Ofrecer detallar la cuenta con ellos en papel'},
-      prompt:{en:"Happy to help — let me grab the printed itemized bill and we can mark together who had what. Easiest way to make sure no one overpays.",fr:"Avec plaisir — je vous apporte la note détaillée imprimée et on note ensemble qui a pris quoi. C'est le plus simple pour que personne ne paie en trop.",es:"Con gusto les ayudo — traigo la cuenta detallada impresa y marcamos juntos quién tomó qué. Es la forma más fácil de que nadie pague de más."} },
-    { id:'even_split',
-      label:{en:'Suggest splitting evenly across all 7',fr:'Suggérer de diviser également entre les 7',es:'Sugerir dividir en partes iguales entre los 7'},
-      prompt:{en:"It would be much easier if you all just split it evenly seven ways — would that work?",fr:"Ce serait beaucoup plus simple si vous divisiez tout en sept parts égales — ça vous irait ?",es:"Sería mucho más fácil si lo dividen en siete partes iguales — ¿les funciona así?"} },
-    { id:'refuse',
-      label:{en:'Tell them you can only split a maximum of 4 ways',fr:'Leur dire que vous ne pouvez diviser qu\'en 4 maximum',es:'Decir que solo pueden dividir hasta en 4 partes'},
-      prompt:{en:"Unfortunately our system only allows up to four separate bills, so you'll have to sort the rest among yourselves.",fr:"Malheureusement notre système ne permet que quatre additions séparées, vous devrez régler le reste entre vous.",es:"Lamentablemente nuestro sistema solo permite hasta cuatro cuentas separadas, tendrán que arreglar el resto entre ustedes."} },
-  ]},
-  // ── 10 · Wrong Order Delivered ─────────────────────────────────────────
-  10: { afterAiTurn: 2, choices: [
-    { id:'own_remake', recommended:true,
-      label:{en:'Apologize, take the plates back, fast-track the correct dish',fr:'S\'excuser, reprendre les assiettes et accélérer le bon plat',es:'Disculparse, retirar los platos y acelerar el plato correcto'},
-      prompt:{en:"I am so sorry — that's entirely on me. I'm taking these back right now and I'll have your correct plates fired and out as fast as the kitchen can move.",fr:"Je suis vraiment désolé — c'est entièrement de ma faute. Je reprends ces assiettes tout de suite et je fais relancer vos vrais plats aussi vite que possible.",es:"Lo siento muchísimo — la culpa es totalmente mía. Me llevo estos platos ahora mismo y haré que preparen los suyos lo más rápido posible."} },
-    { id:'offer_keep',
-      label:{en:'Suggest they try this dish since it\'s already here',fr:'Suggérer qu\'ils goûtent ce plat puisqu\'il est là',es:'Sugerir que prueben este plato ya que está aquí'},
-      prompt:{en:"Since it's already in front of you, why not give it a try? It's one of our most popular dishes.",fr:"Puisque c'est déjà devant vous, pourquoi ne pas le goûter ? C'est l'un de nos plats les plus populaires.",es:"Como ya lo tienen delante, ¿por qué no lo prueban? Es uno de nuestros platos más populares."} },
-    { id:'blame_kitchen',
-      label:{en:'Blame the kitchen and ask them to wait',fr:'Accuser la cuisine et leur demander d\'attendre',es:'Culpar a la cocina y pedirles que esperen'},
-      prompt:{en:"The kitchen mixed up the ticket — I'll let them know but it might take a while to redo.",fr:"La cuisine s'est trompée de bon — je leur dis, mais ça risque de prendre un moment à refaire.",es:"La cocina confundió la comanda — les aviso, pero puede tardar en rehacerse."} },
-  ]},
-  // ── 13 · Severe Allergy Emergency ──────────────────────────────────────
-  13: { afterAiTurn: 2, choices: [
-    { id:'remove_alert_manager', recommended:true,
-      label:{en:'Remove the plate, alert manager and kitchen, ask if they need help',fr:'Retirer l\'assiette, alerter le manager et la cuisine, proposer de l\'aide',es:'Retirar el plato, avisar al gerente y a la cocina, ofrecer ayuda'},
-      prompt:{en:"I'm removing this plate right now. Stay seated — I'm getting my manager and alerting the kitchen this second. Do you have your EpiPen ready in case you need it?",fr:"Je retire cette assiette tout de suite. Restez assis — je vais chercher mon manager et j'alerte la cuisine immédiatement. Avez-vous votre EpiPen prêt au cas où ?",es:"Estoy retirando este plato ahora mismo. Quédense sentados — voy a buscar al gerente y aviso a la cocina al instante. ¿Tienen su EpiPen a mano por si lo necesitan?"} },
-    { id:'reassure_wait',
-      label:{en:'Reassure them it\'s probably fine and check later',fr:'Les rassurer en disant que tout va bien et vérifier plus tard',es:'Tranquilizarlos diciendo que seguro está bien y verificar luego'},
-      prompt:{en:"I'm sure the kitchen was careful — let me finish my section and I'll come back to check on you.",fr:"Je suis sûr que la cuisine a fait attention — laissez-moi finir mon service et je reviens vérifier.",es:"Seguro que la cocina tuvo cuidado — déjenme terminar mi sección y vuelvo a verificar."} },
-    { id:'call_911_now',
-      label:{en:'Call 911 immediately without checking with the manager',fr:'Appeler le 911 immédiatement sans avis du manager',es:'Llamar al 911 inmediatamente sin avisar al gerente'},
-      prompt:{en:"I'm calling 911 right now — please nobody touch anything.",fr:"J'appelle le 911 tout de suite — que personne ne touche à rien s'il vous plaît.",es:"Estoy llamando al 911 ahora mismo — por favor que nadie toque nada."} },
-  ]},
-  // ── 14 · The Marriage Proposal ─────────────────────────────────────────
-  14: { afterAiTurn: 2, choices: [
-    { id:'discreet_signal', recommended:true,
-      label:{en:'Give a discreet signal and confirm the dessert timing',fr:'Donner un signal discret et confirmer le moment du dessert',es:'Dar una señal discreta y confirmar el momento del postre'},
-      prompt:{en:"(Quietly, without drawing attention) Everything is ready — I'll bring the champagne and dessert together when you give me the small nod we agreed on. The ring is safe with the manager.",fr:"(Discrètement, sans attirer l'attention) Tout est prêt — j'apporte le champagne et le dessert ensemble quand vous me ferez le petit signe convenu. La bague est en sécurité avec le manager.",es:"(En voz baja, sin llamar la atención) Todo está listo — traeré el champán y el postre juntos cuando me hagan la señal acordada. El anillo está a salvo con el gerente."} },
-    { id:'announce_table',
-      label:{en:'Cheerfully say you can\'t wait at the table',fr:'Dire joyeusement à la table que vous avez hâte',es:'Decir alegremente en la mesa que no puede esperar'},
-      prompt:{en:"Oh, I'm so excited about your big moment tonight! Everything is ready for the proposal.",fr:"Oh, je suis tellement excité pour votre grand moment ce soir ! Tout est prêt pour la demande.",es:"¡Estoy muy emocionado por su gran momento esta noche! Todo está listo para la propuesta."} },
-    { id:'forget_check',
-      label:{en:'Just bring dessert when ordered and hope it works out',fr:'Apporter le dessert quand commandé et espérer que ça se passe bien',es:'Traer el postre cuando lo pidan y esperar que salga bien'},
-      prompt:{en:"Are you ready to order dessert now?",fr:"Êtes-vous prêts à commander le dessert ?",es:"¿Listos para pedir el postre?"} },
-  ]},
-  // ── 17 · Vegan Tasting Menu ────────────────────────────────────────────
-  17: { afterAiTurn: 2, choices: [
-    { id:'walk_through_chef', recommended:true,
-      label:{en:'Walk through each course and offer to verify with the chef',fr:'Détailler chaque plat et proposer de vérifier avec le chef',es:'Repasar cada plato y ofrecer verificarlo con el chef'},
-      prompt:{en:"Let's go through every course together. I know the menu, but for anything you're uncertain about I'll go straight to the chef and confirm before it leaves the pass.",fr:"Passons en revue chaque plat ensemble. Je connais le menu, mais pour tout ce dont vous n'êtes pas sûr, j'irai voir le chef directement avant que ça ne sorte de la cuisine.",es:"Repasemos cada plato juntos. Conozco el menú, pero ante cualquier duda iré directo al chef a confirmar antes de que salga de cocina."} },
-    { id:'general_assurance',
-      label:{en:'Tell them the kitchen handles vegan diners all the time',fr:'Leur dire que la cuisine gère souvent des clients véganes',es:'Decirles que la cocina maneja comensales veganos a menudo'},
-      prompt:{en:"You don't need to worry — the kitchen handles vegan guests all the time, everything will be fine.",fr:"Ne vous inquiétez pas — la cuisine gère des clients véganes très souvent, tout ira bien.",es:"No se preocupen — la cocina atiende a clientes veganos constantemente, todo estará bien."} },
-    { id:'redirect_alacarte',
-      label:{en:'Suggest they switch to ordering à la carte instead',fr:'Suggérer qu\'ils commandent plutôt à la carte',es:'Sugerir que pidan a la carta en su lugar'},
-      prompt:{en:"It might be easier if you ordered à la carte tonight instead of the tasting menu.",fr:"Ce serait peut-être plus simple de commander à la carte ce soir plutôt que le menu dégustation.",es:"Quizá sea más fácil si esta noche piden a la carta en lugar del menú degustación."} },
-  ]},
-  // ── 23 · Noise Complaint ───────────────────────────────────────────────
-  23: { afterAiTurn: 2, choices: [
-    { id:'acknowledge_act_both', recommended:true,
-      label:{en:'Acknowledge them, then quietly ask the loud table to lower volume',fr:'Les reconnaître, puis demander discrètement à la table bruyante de baisser le ton',es:'Reconocer su queja y pedir discretamente a la mesa ruidosa que bajen el tono'},
-      prompt:{en:"You're absolutely right — I'm so sorry. Let me have a quiet word with the table next door right now, and I'll come back to make sure things have improved.",fr:"Vous avez tout à fait raison — je suis vraiment désolé. Je vais discrètement parler à la table à côté tout de suite et je reviens m'assurer que ça s'est amélioré.",es:"Tienen toda la razón — lo siento mucho. Voy a hablar discretamente con la mesa de al lado ahora mismo y vuelvo a asegurarme de que ha mejorado."} },
-    { id:'ignore_polite',
-      label:{en:'Sympathize but say there\'s nothing you can do',fr:'Compatir mais dire qu\'il n\'y a rien à faire',es:'Compadecerse pero decir que no se puede hacer nada'},
-      prompt:{en:"I completely understand, but they're a celebration group — there's not much we can do.",fr:"Je comprends tout à fait, mais c'est un groupe en célébration — on ne peut pas faire grand-chose.",es:"Lo entiendo perfectamente, pero es un grupo de celebración — no hay mucho que podamos hacer."} },
-    { id:'confront_loud_table',
-      label:{en:'Loudly tell the noisy table they\'re bothering people',fr:'Dire fort à la table bruyante qu\'ils dérangent',es:'Decir en voz alta a la mesa ruidosa que están molestando'},
-      prompt:{en:"(Loudly to the next table) Excuse me — you're being far too loud and disturbing other guests.",fr:"(Fort à la table d'à côté) Excusez-moi — vous êtes beaucoup trop bruyants et vous dérangez les autres clients.",es:"(En voz alta a la mesa de al lado) Disculpen — están haciendo demasiado ruido y molestan a los demás clientes."} },
-  ]},
-  // ── 31 · Cocktail Recommendation ───────────────────────────────────────
-  31: { afterAiTurn: 2, choices: [
-    { id:'discover_then_pitch', recommended:true,
-      label:{en:'Ask 1–2 quick taste questions, then suggest two specifics',fr:'Poser 1–2 questions sur leurs goûts puis proposer deux cocktails',es:'Hacer 1–2 preguntas sobre sus gustos y proponer dos opciones'},
-      prompt:{en:"Quick question to nail it: do you usually go for something refreshing and citrusy, or richer and spirit-forward? Based on your answers I have two house cocktails I'd love to put in front of you.",fr:"Petite question pour bien viser : vous penchez plutôt vers quelque chose de frais et citronné, ou plus corsé et spiritueux ? Selon vos réponses j'ai deux cocktails maison à vous proposer.",es:"Una pregunta rápida para acertar: ¿suelen preferir algo fresco y cítrico, o más intenso y espirituoso? Según su respuesta tengo dos cócteles de la casa para proponerles."} },
-    { id:'shrug_classic',
-      label:{en:'Recommend a classic Old Fashioned for both',fr:'Recommander un Old Fashioned classique pour les deux',es:'Recomendar un Old Fashioned clásico para ambos'},
-      prompt:{en:"Two Old Fashioneds — you can't go wrong with the classic.",fr:"Deux Old Fashioned — on ne se trompe jamais avec le classique.",es:"Dos Old Fashioned — con el clásico nunca se falla."} },
-    { id:'hand_menu',
-      label:{en:'Hand them the cocktail menu and step away',fr:'Leur tendre la carte des cocktails et s\'éloigner',es:'Pasarles la carta de cócteles y alejarse'},
-      prompt:{en:"Here's our cocktail menu — take a look and let me know when you're ready.",fr:"Voici notre carte des cocktails — regardez tranquillement et faites-moi signe quand vous êtes prêts.",es:"Aquí tienen nuestra carta de cócteles — échenle un vistazo y avísenme cuando estén listos."} },
-  ]},
-};
-
-function getScenarioBranch(scenarioId) {
-  return SCENARIO_BRANCHES[scenarioId] || null;
-}
-
-function shouldShowBranchChoices(scenarioId, aiMessageCount) {
-  if (!branchingEnabled || branchChoiceShown) return false;
-  const b = getScenarioBranch(scenarioId);
-  if (!b) return false;
-  return aiMessageCount === (b.afterAiTurn || 1);
-}
-
-function renderBranchChoices(branch, onChoice) {
-  const headingT = { en:'How do you respond?', fr:'Comment réagissez-vous ?', es:'¿Cómo respondes?' };
-  const recT     = { en:'Recommended', fr:'Recommandé', es:'Recomendado' };
-  const el = document.createElement('div');
-  el.className = 'branch-choices mt-3 flex flex-col gap-2';
-  el.innerHTML = `<div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">${headingT[lang] || headingT.en}</div>`;
-  branch.choices.forEach(choice => {
-    const btn = document.createElement('button');
-    btn.className = 'branch-btn text-left text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-400 rounded-xl px-4 py-3 transition-all text-zinc-200';
-    btn.textContent = _bxL(choice.label);
-    btn.onclick = () => {
-      el.remove();
-      onChoice(choice);
-    };
-    el.appendChild(btn);
-  });
-  return el;
-}
-
-// Returns an object snapshot of the chosen + all-options for the summary.
-function recordBranchChoice(scenarioId, choice) {
-  const b = getScenarioBranch(scenarioId);
-  if (!b) return null;
-  const all = b.choices.map(c => ({ id:c.id, label:_bxL(c.label), recommended: !!c.recommended }));
-  chatBranchChoice = {
-    scenarioId,
-    choiceId: choice.id,
-    label: _bxL(choice.label),
-    recommended: !!choice.recommended,
-    all
-  };
-  // Persist last choice per-scenario for the user (helps coaching history).
-  try {
-    const map = JSON.parse(localStorage.getItem('sma-scenario-choices') || '{}');
-    map[scenarioId] = { choiceId: choice.id, recommended: !!choice.recommended, ts: new Date().toISOString() };
-    localStorage.setItem('sma-scenario-choices', JSON.stringify(map));
-  } catch {}
-  return chatBranchChoice;
 }
 </script>
 </body>

@@ -129,31 +129,6 @@
       <a href="/novels" class="hover:text-white transition-colors">Novels</a>
       <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
       <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
-    </div>
-    <div class="flex items-center gap-3">
-      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
-      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-      <a id="nav-signup-d" href="/signup" class="hidden md:inline btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
-      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button id="hamburger" onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
-        <span class="w-6 h-0.5 bg-white block"></span>
-        <span class="w-6 h-0.5 bg-white block"></span>
-        <span class="w-6 h-0.5 bg-white block"></span>
-      </button>
-    </div>
-  </div>
-  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
-    <div class="flex flex-col px-4 py-2">
-      <a href="/" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Home</a>
-      <a href="/features" data-i18n="nav_features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
-      <a href="/blog" data-i18n="nav_blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
-      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
-      <a href="/pricing" data-i18n="nav_pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
-      <a href="/scholarship" data-i18n="nav_scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
-      <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/affiliates" data-i18n="nav_affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
-      <a href="/novels" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Novels</a>
-      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
-      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
       <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
@@ -178,7 +153,7 @@
       <span data-i18n="home_subtitle">150 real restaurant scenarios. Instant feedback. Better service and bigger tips.</span>
     </p>
     <ul class="flex flex-wrap gap-x-6 gap-y-2 justify-center text-sm text-zinc-400 mb-10">
-      <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check1">30 modules · 150 AI scenarios</span></li>
+      <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check1">30 modules · 150+ AI scenarios</span></li>
       <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check2">Voice practice with AI guests</span></li>
       <li class="flex items-center gap-1.5"><span class="font-bold" style="color:#FF5E3A;">✓</span> <span data-i18n="home_free_check3">Free forever — no expiry</span></li>
     </ul>
@@ -188,7 +163,7 @@
     </div>
     <div class="mt-8">
       <a href="#for-restaurants" class="inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition-colors hover:opacity-90" style="border-color:#ffffff; background:#ffffff; color:#0A4D68;">
-        <span data-i18n="home_owner_banner">🏨 Restaurant Owner? See team plans ↓</span>
+        <span data-i18n="home_owner_banner">🏨 Restaurant Owner? See team plans &amp; pricing ↓</span>
       </a>
     </div>
   </div>
@@ -511,8 +486,8 @@
       <div class="flex gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
         <span class="text-2xl shrink-0">⚡</span>
         <div>
-          <h3 class="font-bold mb-1" data-i18n="home_prob2_h">Cut onboarding from weeks to days</h3>
-          <p class="text-zinc-400 text-sm" data-i18n="home_prob2_p">New hires complete structured training on their own schedule before their first shift — ready faster.</p>
+          <h3 class="font-bold mb-1" data-i18n="home_prob2_h">Build a more consistent onboarding process</h3>
+          <p class="text-zinc-400 text-sm" data-i18n="home_prob2_p">Give new hires structured training they can complete on their own schedule, with clear standards from day one.</p>
         </div>
       </div>
       <div class="flex gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -877,9 +852,9 @@
 
     <!-- Default state -->
     <div id="trial-form-wrap">
-      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Team Access</p>
-      <h3 class="heading text-2xl text-white mb-1">Start Team Trial</h3>
-      <p class="text-zinc-400 text-sm mb-6">Fill in your details below and Kirk will send your access code within 1 business day.</p>
+      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Starter Team Access</p>
+      <h3 class="heading text-2xl text-white mb-1">Request Team Access Details</h3>
+      <p class="text-zinc-400 text-sm mb-6">Fill in your details below and Kirk will review your request personally by email.</p>
       <form id="trial-form" onsubmit="submitTrialRequest(event)" class="space-y-4">
         <div>
           <label class="text-xs text-zinc-400 block mb-1">Your Name</label>
@@ -902,7 +877,7 @@
     <div id="trial-success" class="text-center hidden">
       <div class="text-5xl mb-4">🎉</div>
       <h3 class="heading text-2xl text-white mb-2">Request Sent!</h3>
-      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and send your access code within 1 business day.</p>
+      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and follow up personally by email.</p>
       <button onclick="closeTrialModal()" class="font-semibold text-sm py-2.5 px-6 rounded-2xl border border-zinc-600 hover:border-zinc-400 text-white transition-colors">Close</button>
     </div>
   </div>
@@ -935,11 +910,11 @@ async function submitTrialRequest(e) {
     const res = await fetch('/api/request-team-trial', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))({
+      body: JSON.stringify({
         name: document.getElementById('tr-name').value.trim(),
         email: document.getElementById('tr-email').value.trim(),
         restaurantName: document.getElementById('tr-restaurant').value.trim()
-      }))
+      })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Something went wrong');
@@ -1039,7 +1014,6 @@ showTrialBanner();
     });
   }
 </script>
-  <script src="/js/utm-capture.js"></script>
   <script src="/js/pwa-nav.js"></script>
 </body>
 </html>

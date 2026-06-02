@@ -272,32 +272,6 @@ details[open] summary::after { content: '−'; }
       <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
       <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
       <a href="/managers" class="hover:text-white transition-colors">For Managers</a>
-    </div>
-    <div class="flex items-center gap-3">
-      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
-      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-      <a id="nav-signup-d" href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
-      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
-        <span class="w-6 h-0.5 bg-white block"></span>
-        <span class="w-6 h-0.5 bg-white block"></span>
-        <span class="w-6 h-0.5 bg-white block"></span>
-      </button>
-    </div>
-  </div>
-  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
-    <div class="flex flex-col px-4 py-2">
-      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
-      <a href="/features" data-i18n="nav_features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
-      <a href="/blog" data-i18n="nav_blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
-      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
-      <a href="/pricing" data-i18n="nav_pricing" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Pricing</a>
-      <a href="/scholarship" data-i18n="nav_scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold hover:opacity-80" style="color:#7dd3fc;">🎓 Scholarship</a>
-      <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/affiliates" data-i18n="nav_affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
-      <a href="/novels" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Novels</a>
-      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
-      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
-      <a href="/managers" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">For Managers</a>
       <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
@@ -375,17 +349,17 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_prem_mo_h" class="text-2xl font-semibold">Premium</h3>
       <p data-i18n="pricing_prem_mo_sub" class="text-sm text-zinc-400 mt-1">Individual servers</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="19">$19 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_prem_mo_trial" class="text-sm text-amber-400 mt-2">30-day free trial · No credit card required</p>
+      <p data-i18n="pricing_prem_mo_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Cancel anytime</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat1">All 30 training modules</span></li>
-        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat2">All 150 AI scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat2">All 150+ AI scenarios</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat3">Voice roleplay (Whisper AI)</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat4">Completion certificate</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat5">Streak &amp; gamification</span></li>
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_feat6">EN / FR / ES</span></li>
       </ul>
-      <button onclick="checkout('premium_monthly')" data-i18n="pricing_subscribe_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Get Premium
+      <button onclick="checkout('premium_monthly')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Start 14-Day Free Trial
       </button>
     </div>
 
@@ -397,14 +371,14 @@ details[open] summary::after { content: '−'; }
         <p class="text-5xl font-bold price-display" data-base-amount="149">$149 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
         <p data-i18n="pricing_prem_yr_save_note" class="text-sm text-emerald-400 font-semibold mt-1">~$12.42/mo · Save 35%</p>
       </div>
-      <p data-i18n="pricing_prem_yr_trial" class="text-sm text-amber-400 mt-2">30-day free trial · No credit card required</p>
+      <p data-i18n="pricing_prem_yr_trial" class="text-sm text-amber-400 mt-2">14-day free trial · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-amber-400">✓</span> <span data-i18n="pricing_prem_yr_feat1">Everything in Premium</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat2">2 months free vs monthly</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_prem_yr_feat3">Priority feature access</span></li>
       </ul>
-      <button onclick="checkout('premium_annual')" data-i18n="pricing_subscribe_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Get Premium
+      <button onclick="checkout('premium_annual')" data-i18n="pricing_trial_btn" class="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-black font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Start 14-Day Free Trial
       </button>
     </div>
 
@@ -440,7 +414,7 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_starter_h" class="text-2xl font-semibold">Starter Team</h3>
       <p data-i18n="pricing_starter_sub" class="text-sm text-zinc-400 mt-1">Small–medium restaurants</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="99">$99 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_starter_promo_trial" class="text-sm text-emerald-400 mt-1">Up to 10 staff · 1 location</p>
+      <p data-i18n="pricing_starter_promo_trial" class="text-sm text-zinc-400 mt-1">Up to 10 staff · 1 location · Team access by request</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_feat1">Up to 10 staff accounts</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="team_feat_modules">All 30 training modules</span></li>
@@ -451,8 +425,8 @@ details[open] summary::after { content: '−'; }
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="team_feat_certs">Certificates of completion</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="team_feat_langs">EN / FR / ES language support</span></li>
       </ul>
-      <button onclick="openPricingTrialModal()" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start Team Trial
+      <button onclick="openPricingTrialModal()" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Request Team Access
       </button>
     </div>
 
@@ -462,16 +436,16 @@ details[open] summary::after { content: '−'; }
       <h3 data-i18n="pricing_pro_h" class="text-2xl font-semibold">Pro Team</h3>
       <p data-i18n="pricing_pro_sub" class="text-sm text-zinc-400 mt-1">Mid-size chains</p>
       <p class="text-5xl font-bold mt-6 price-display" data-base-amount="199">$199 <span class="text-xl text-zinc-400 currency-symbol">CAD / mo</span></p>
-      <p data-i18n="pricing_pro_trial" class="text-sm text-blue-400 mt-1">Up to 30 staff · 1 location</p>
+      <p data-i18n="pricing_pro_trial" class="text-sm text-zinc-400 mt-1">Unlimited staff · 1 location · Team access by request</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat1">Up to 30 staff accounts</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="team_feat_pro_label">Everything in Starter, plus:</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="team_feat_pro_custom">Custom AI scenarios tailored to your menu</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="team_feat_pro_analytics">Advanced analytics + CSV reports</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="team_feat_pro_support">Priority support</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat1">Unlimited staff accounts</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat2">Everything in Starter</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat3">Custom AI scenarios</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat4">Advanced analytics</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_feat5">Priority support</span></li>
       </ul>
-      <button onclick="openPricingTrialModal()" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
-        Start Team Trial
+      <button onclick="openPricingTrialModal()" data-i18n="pricing_team_trial_btn" class="mt-auto pt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-3xl transition-colors text-sm">
+        Request Team Access
       </button>
     </div>
 
@@ -507,7 +481,7 @@ details[open] summary::after { content: '−'; }
         <p class="text-5xl font-bold price-display" data-base-amount="990">$990 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
         <p data-i18n="pricing_starter_ann_save_note" class="text-sm text-emerald-400 font-semibold mt-1">~$82.50/mo · Save ~17%</p>
       </div>
-      <p data-i18n="pricing_starter_ann_trial" class="text-sm text-emerald-400 mt-2">Billed annually</p>
+      <p data-i18n="pricing_starter_ann_trial" class="text-sm text-zinc-400 mt-2">Up to 10 staff · 1 location · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_ann_feat1">Everything in Starter Team</span></li>
         <li class="flex items-center gap-2"><span class="text-emerald-400">✓</span> <span data-i18n="pricing_starter_ann_feat2">$198 saved annually</span></li>
@@ -527,7 +501,7 @@ details[open] summary::after { content: '−'; }
         <p class="text-5xl font-bold price-display" data-base-amount="1990">$1,990 <span class="text-xl text-zinc-400 currency-symbol">CAD / yr</span></p>
         <p data-i18n="pricing_pro_ann_save_note" class="text-sm text-blue-400 font-semibold mt-1">~$165.83/mo · Save ~17%</p>
       </div>
-      <p data-i18n="pricing_pro_ann_trial" class="text-sm text-blue-400 mt-2">Billed annually</p>
+      <p data-i18n="pricing_pro_ann_trial" class="text-sm text-zinc-400 mt-2">Unlimited staff · 1 location · Billed annually</p>
       <ul class="text-left text-sm text-zinc-400 mt-6 space-y-2 flex-1">
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_ann_feat1">Everything in Pro Team</span></li>
         <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> <span data-i18n="pricing_pro_ann_feat2">$398 saved annually</span></li>
@@ -560,7 +534,7 @@ details[open] summary::after { content: '−'; }
 
   <!-- Plan comparison note -->
   <div class="mt-8 text-center">
-    <p class="text-zinc-500 text-sm"><span data-i18n="pricing_comparison_note">Team plans are billed per location. Choose Starter Team for up to 10 staff at one location, or Pro Team for up to 30 staff at one location.</span> <a href="/contact" data-i18n="pricing_team_link" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
+    <p class="text-zinc-500 text-sm"><span data-i18n="pricing_comparison_note">Team plans are billed per location. Choose Starter Team for up to 10 staff at one location, or Pro Team for unlimited staff at one location.</span> <a href="/contact" data-i18n="pricing_team_link" class="text-amber-400 hover:underline">Questions? Talk to us.</a></p>
   </div>
 
   <!-- Free vs Team Comparison Table -->
@@ -761,14 +735,14 @@ details[open] summary::after { content: '−'; }
 
 </main>
 
-<!-- Team Trial Request Modal -->
+<!-- Team Access Request Modal -->
 <div id="pricing-trial-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" style="background:rgba(0,0,0,0.75);">
   <div class="relative w-full max-w-md rounded-3xl p-8 text-white" style="background:#0f1117; border:1px solid rgba(255,255,255,0.08);">
     <button onclick="closePricingTrialModal()" class="absolute top-4 right-5 text-zinc-500 hover:text-white text-2xl leading-none">&times;</button>
     <div id="pricing-trial-form-wrap">
-      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Team Access</p>
-      <h2 class="heading text-2xl font-bold text-white mb-1">Start Team Trial</h2>
-      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">Kirk will review your request and send your access code within 1 business day — no credit card required.</p>
+      <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#7dd3fc;">Starter &amp; Pro Team Access</p>
+      <h2 class="heading text-2xl font-bold text-white mb-1">Request Team Access</h2>
+      <p class="text-zinc-400 text-sm mb-6 leading-relaxed">Kirk will review your request personally and follow up by email — no credit card required.</p>
       <form id="pricing-trial-form" onsubmit="submitPricingTrialRequest(event)" class="space-y-4">
         <input type="text" name="name" placeholder="Your name" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
         <input type="email" name="email" placeholder="Work email" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-500 placeholder-zinc-500">
@@ -780,7 +754,7 @@ details[open] summary::after { content: '−'; }
     <div id="pricing-trial-success" class="text-center hidden">
       <div class="text-5xl mb-4">🎉</div>
       <h3 class="heading text-2xl text-white mb-2">Request Sent!</h3>
-      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and send your access code within 1 business day.</p>
+      <p class="text-zinc-300 text-sm leading-relaxed mb-6">Thanks — Kirk will review your request and follow up personally by email.</p>
       <button onclick="closePricingTrialModal()" class="font-semibold text-sm py-2.5 px-6 rounded-2xl border border-zinc-600 hover:border-zinc-400 text-white transition-colors">Close</button>
     </div>
   </div>
@@ -956,11 +930,11 @@ async function checkout(plan) {
       window.location.href = data.url;
     } else {
       alert(data.error || 'Could not start checkout. Please try again.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Get Premium'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
     }
   } catch {
     alert('Connection error. Please try again.');
-    if (btn) { btn.disabled = false; btn.textContent = 'Get Premium'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Start 14-Day Free Trial'; }
   }
 }
 
@@ -1018,7 +992,7 @@ async function submitPricingTrialRequest(e) {
     const res = await fetch('/api/request-team-trial', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))(body))
+      body: JSON.stringify(body)
     });
     if (!res.ok) throw new Error('Request failed');
     document.getElementById('pricing-trial-form-wrap').classList.add('hidden');
@@ -1040,7 +1014,6 @@ async function submitPricingTrialRequest(e) {
     });
   }
 </script>
-  <script src="/js/utm-capture.js"></script>
   <script src="/js/pwa-nav.js"></script>
 </body>
 </html>

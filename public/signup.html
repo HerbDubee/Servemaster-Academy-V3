@@ -105,7 +105,6 @@
   </div>
 </main>
 
-<script src="/js/utm-capture.js"></script>
 <script>
 const urlParams = new URLSearchParams(window.location.search);
 const joinCode = urlParams.get('join');
@@ -130,12 +129,12 @@ async function doSignup(e) {
     const res = await fetch('/api/auth/register', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       credentials: 'include',
-      body: JSON.stringify((window.SMAUtm ? window.SMAUtm.attach : (x=>x))({
+      body: JSON.stringify({
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
         password: document.getElementById('password').value,
         level: document.getElementById('level').value
-      }))
+      })
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Registration failed'; errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Create account →'; return; }

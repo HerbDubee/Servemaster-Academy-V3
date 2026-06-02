@@ -5,8 +5,6 @@ Allow: /checklist
 
 # API, admin, and auth routes
 Disallow: /api/
-Disallow: /admin
-Disallow: /admin.html
 
 # Utility / post-action pages (no crawl value)
 Disallow: /forgot-password

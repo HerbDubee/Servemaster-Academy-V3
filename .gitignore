@@ -1,0 +1,32 @@
+# Generated audio files — regenerate locally with:
+#   node scripts/generate-blog-audio.js --lang en
+#   node scripts/generate-blog-audio.js --lang fr
+#   node scripts/generate-blog-audio.js --lang es
+public/audio/
+
+# ElevenLabs TTS cache for novels
+books/audio-cache/
+
+# Video exports and screen recordings
+exports/
+attached_assets/*.mp4
+attached_assets/*.mov
+attached_assets/*.webm
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets (never commit)
+.env
+.env.local
+.env.*.local
+
+# Replit internal
+.replit
+replit.nix
+.upm/
+.config/

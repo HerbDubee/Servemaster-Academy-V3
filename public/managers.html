@@ -86,32 +86,6 @@
       <a href="/novels" class="hover:text-white transition-colors">Novels</a>
       <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
       <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
-    </div>
-      <div class="flex items-center gap-3">
-        <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 hover:text-white text-sm font-medium transition-colors">📲 Install App</button>
-      <a id="nav-login-d" href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors">Log in</a>
-        <a id="nav-signup-d" href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
-        <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div><button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
-          <span class="w-6 h-0.5 bg-white block"></span>
-          <span class="w-6 h-0.5 bg-white block"></span>
-          <span class="w-6 h-0.5 bg-white block"></span>
-        </button>
-      </div>
-    </div>
-    <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
-      <div class="flex flex-col px-4 py-2">
-      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
-      <a href="/features" data-i18n="nav_features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
-      <a href="/blog" data-i18n="nav_blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
-      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
-      <a href="/pricing" data-i18n="nav_pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
-      <a href="/managers" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">For Managers</a>
-      <a href="/scholarship" data-i18n="nav_scholarship" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">🎓 Scholarship</a>
-      <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
-      <a href="/affiliates" data-i18n="nav_affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
-      <a href="/novels" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Novels</a>
-      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
-      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
       <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
       <a id="nav-login-m" href="/login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
       <a id="nav-signup-m" href="/signup" class="my-3 font-bold px-5 py-3 rounded-2xl text-sm text-center" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
@@ -248,7 +222,7 @@
                     <th class="px-4 py-2 text-left">Name</th>
                     <th class="px-4 py-2 text-left">Progress</th>
                     <th class="px-4 py-2 text-left">Modules</th>
-                    <th class="px-4 py-2 text-left">Scenarios completed</th>
+                    <th class="px-4 py-2 text-left">Scenarios</th>
                     <th class="px-4 py-2 text-left">Badges</th>
                     <th class="px-4 py-2 text-left">Status</th>
                   </tr>
@@ -268,7 +242,7 @@
                       </div>
                     </td>
                     <td class="px-4 py-2.5 text-zinc-300">30 / 30</td>
-                    <td class="px-4 py-2.5 text-zinc-300">42</td>
+                    <td class="px-4 py-2.5 text-zinc-300">36 / 36</td>
                     <td class="px-4 py-2.5 text-zinc-300">🏆 8</td>
                     <td class="px-4 py-2.5"><span class="bg-emerald-900/60 text-emerald-400 px-2 py-0.5 rounded-full font-medium">Completed</span></td>
                   </tr>
@@ -289,7 +263,7 @@
                       </div>
                     </td>
                     <td class="px-4 py-2.5 text-zinc-300">20 / 30</td>
-                    <td class="px-4 py-2.5 text-zinc-300">23</td>
+                    <td class="px-4 py-2.5 text-zinc-300">18 / 36</td>
                     <td class="px-4 py-2.5 text-zinc-300">🔥 5</td>
                     <td class="px-4 py-2.5"><span class="bg-amber-900/50 text-amber-400 px-2 py-0.5 rounded-full font-medium">On Track</span></td>
                   </tr>
@@ -307,7 +281,7 @@
                       </div>
                     </td>
                     <td class="px-4 py-2.5 text-zinc-300">7 / 30</td>
-                    <td class="px-4 py-2.5 text-zinc-300">5</td>
+                    <td class="px-4 py-2.5 text-zinc-300">4 / 36</td>
                     <td class="px-4 py-2.5 text-zinc-300">⭐ 2</td>
                     <td class="px-4 py-2.5"><span class="bg-orange-900/50 text-orange-400 px-2 py-0.5 rounded-full font-medium">Lagging</span></td>
                   </tr>
@@ -325,7 +299,7 @@
                       </div>
                     </td>
                     <td class="px-4 py-2.5 text-zinc-300">2 / 30</td>
-                    <td class="px-4 py-2.5 text-zinc-300">0</td>
+                    <td class="px-4 py-2.5 text-zinc-300">0 / 36</td>
                     <td class="px-4 py-2.5 text-zinc-300">—</td>
                     <td class="px-4 py-2.5"><span class="bg-red-900/40 text-red-400 px-2 py-0.5 rounded-full font-medium">Overdue</span></td>
                   </tr>
@@ -402,8 +376,8 @@
   <!-- FINAL CTA -->
   <div class="py-20 text-center bg-gradient-to-br from-amber-950 to-black">
     <h2 class="text-4xl font-semibold mb-6" data-i18n="managers_final_h">Ready to raise your team's standards?</h2>
-    <a href="/teams" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xl py-6 px-16 rounded-3xl" data-i18n="managers_final_btn">
-      Start Team Trial
+    <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xl py-6 px-16 rounded-3xl" data-i18n="managers_final_btn">
+      Start Your Team Free Trial Today
     </a>
   </div>
 

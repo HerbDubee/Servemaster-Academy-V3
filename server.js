@@ -514,26 +514,13 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           const customerId = session.customer;
           const plan = session.metadata?.plan || 'premium';
           const isTeamPlan = plan === 'starter_team' || plan === 'pro_team';
-          // Normalize annual variants to their base plan name (Stripe metadata may
-          // contain *_annual; restaurants.plan and subscription_status only know
-          // the base names: starter_team, pro_team, premium).
-          const isAnyTeamPlan = plan === 'starter_team' || plan === 'pro_team' || plan === 'starter_team_annual' || plan === 'pro_team_annual';
-          const normalizedTeamPlan = (plan === 'starter_team' || plan === 'starter_team_annual') ? 'starter_team'
-            : (plan === 'pro_team' || plan === 'pro_team_annual') ? 'pro_team' : null;
-          if (isAnyTeamPlan && session.metadata?.restaurantId && normalizedTeamPlan) {
-            await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [normalizedTeamPlan, parseInt(session.metadata.restaurantId)]);
-            // Also set the manager's subscription_status immediately so they
-            // have premium access during the 30-day trial — the
-            // customer.subscription.created webhook may arrive in any order.
-            await db.query(
-              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
-              [normalizedTeamPlan, session.subscription, customerId]
-            );
+          if (isTeamPlan && session.metadata?.restaurantId) {
+            await db.query('UPDATE restaurants SET plan = $1 WHERE id = $2', [plan, parseInt(session.metadata.restaurantId)]);
+            await db.query('UPDATE users SET stripe_subscription_id = $1 WHERE stripe_customer_id = $2', [session.subscription, customerId]);
           } else {
-            const newStatus = (plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan;
             await db.query(
-              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
-              [newStatus, session.subscription, customerId]
+              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2 WHERE stripe_customer_id = $3',
+              [(plan === 'premium_annual' || plan === 'premium_monthly') ? 'premium' : plan, session.subscription, customerId]
             );
           }
           const payingUser = await db.query('SELECT id, email, influencer_ref_code FROM users WHERE stripe_customer_id = $1', [customerId]);
@@ -544,39 +531,13 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         }
         break;
       }
-      case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const sub = event.data.object;
-        // 'trialing' = inside the 30-day free trial; 'active' = paying.
-        // Both grant premium-level access.
-        if (sub.status === 'active' || sub.status === 'trialing') {
-          const subPlan = sub.metadata?.plan;
-          const isTeam = subPlan === 'starter_team' || subPlan === 'pro_team' || subPlan === 'starter_team_annual' || subPlan === 'pro_team_annual';
-          const subStatus = isTeam
-            ? (subPlan.startsWith('starter_team') ? 'starter_team' : 'pro_team')
-            : 'premium';
-          // Try update by subscription id first; if that affects 0 rows
-          // (event arrived before checkout.session.completed), fall back to
-          // matching by stripe_customer_id and backfill the subscription id.
-          const upd = await db.query(
-            'UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2 RETURNING id',
-            [subStatus, sub.id]
-          );
-          if (upd.rowCount === 0 && sub.customer) {
-            await db.query(
-              'UPDATE users SET subscription_status = $1, stripe_subscription_id = $2, paid_started_at = COALESCE(paid_started_at, NOW()) WHERE stripe_customer_id = $3',
-              [subStatus, sub.id, sub.customer]
-            );
-          }
-          if (isTeam) {
-            await db.query(
-              "UPDATE restaurants SET plan = $1 WHERE id = (SELECT restaurant_id FROM users WHERE users.stripe_subscription_id = $2 LIMIT 1)",
-              [subStatus, sub.id]
-            );
-          }
-        } else if (sub.status === 'canceled' || sub.status === 'unpaid' || sub.status === 'incomplete_expired') {
+        if (sub.status === 'active') {
+          await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['premium', sub.id]);
+        } else if (sub.status === 'canceled' || sub.status === 'unpaid') {
           await db.query('UPDATE users SET subscription_status = $1 WHERE stripe_subscription_id = $2', ['free', sub.id]);
-          await db.query("UPDATE restaurants SET plan = 'free' WHERE id = (SELECT restaurant_id FROM users WHERE users.stripe_subscription_id = $1 LIMIT 1)", [sub.id]);
+          await db.query("UPDATE restaurants SET plan = 'free' WHERE (SELECT stripe_subscription_id FROM users WHERE users.restaurant_id = restaurants.id LIMIT 1) = $1", [sub.id]);
         }
         break;
       }
@@ -645,7 +606,6 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 });
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -737,23 +697,15 @@ async function checkTrial(req, res, next) {
 
     const trialEnd = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
 
-    // Grandfathered: existing users mid-trial keep access until natural expiry.
     if (trialEnd && now <= trialEnd) return next();
 
     if (user.is_trial_active) {
       await db.query('UPDATE users SET is_trial_active = false WHERE id = $1', [req.user.id]);
     }
 
-    // Free tier (no subscription, no active trial): allow read/write so the user
-    // can use their 3 free modules + 5 free scenarios. Per-feature locks (which
-    // modules/scenarios are gated to Premium) are enforced in the UI and content layer.
-    if (!user.subscription_status || user.subscription_status === 'free' || user.subscription_status === 'none') {
-      return next();
-    }
-
     return res.status(402).json({
-      error: 'Premium required',
-      message: 'This feature is part of Premium. Upgrade any time to unlock all 30 modules and 150 AI scenarios.'
+      error: 'Trial expired',
+      message: 'Your 14-day trial has ended. Please upgrade to continue.'
     });
   } catch (err) {
     console.error('checkTrial error:', err.message);
@@ -1049,10 +1001,11 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 10);
-    const utm = extractUtm(req);
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
     const result = await db.query(
-      "INSERT INTO users (email, password_hash, name, experience_level, subscription_status, is_trial_active, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, 'free', false, $5, $6, $7, $8, $9) RETURNING id, name, email, role, subscription_status",
-      [email.toLowerCase(), hash, name, level || 'New to serving', utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
+      'INSERT INTO users (email, password_hash, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, role, trial_ends_at, is_trial_active',
+      [email.toLowerCase(), hash, name, level || 'New to serving', trialEndsAt, true]
     );
     const user = result.rows[0];
     await db.query('INSERT INTO streaks (user_id) VALUES ($1)', [user.id]);
@@ -1068,7 +1021,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, COOKIE_OPTS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – your free training starts now!' });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token, message: 'Account created – 14-day trial started!' });
     (async () => { try {
       const wb = await getTenantBrandingForEmail(user.id);
       const unsubToken = await getOrCreateUnsubToken(user.id);
@@ -1076,14 +1029,14 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       resend.emails.send({
         from: wb.fromLine,
         to: user.email,
-        subject: `Welcome to ${wb.brandName} – your free training starts now`,
+        subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
             <img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p>
             <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.</p>
-            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">I recommend starting with Module 1: Foundations of Exceptional Service. When you're ready for the full library — all 30 modules, 150 scenarios, voice practice and your certificate — Premium unlocks everything.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p>
+            <p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p>
             <p style="margin-bottom:32px;">
               <a href="${APP_URL}/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a>
             </p>
@@ -1129,9 +1082,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, experience_level: user.experience_level, subscription_status: user.subscription_status || 'free' },
       token,
       trialDaysLeft: daysLeft,
-      message: 'Welcome back'
+      message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
     });
-    if (daysLeft > 0) sendTrialDripEmails(user);
+    sendTrialDripEmails(user);
     sendDripEmailIfDue(user.id, user.email, user.name).catch(() => {});
   } catch (err) {
     console.error('Login error:', err.message);
@@ -1244,17 +1197,6 @@ app.get('/api/auth/google', authLimiter, (req, res) => {
   // Explicitly block crawlers from following this redirect chain
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.setHeader('Referrer-Policy', 'no-referrer');
-  // Stash UTM params from the inbound query into short-lived cookies so the
-  // OAuth callback can attribute the new account back to the campaign.
-  try {
-    const cookieOpts = { maxAge: 30 * 60 * 1000, httpOnly: false, sameSite: 'lax' };
-    UTM_KEYS.forEach(k => {
-      const v = _normalizeUtmValue(req.query[k]);
-      if (v) res.cookie('sma_' + k, v, cookieOpts);
-    });
-    const ref = _normalizeReferrer(req.query.attribution_referrer || req.query.referrer || req.get('referer'));
-    if (ref) res.cookie('sma_attribution_referrer', ref, cookieOpts);
-  } catch (e) {}
   const BASE_URL = process.env.APP_URL || `https://${req.get('host')}`;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
@@ -1292,18 +1234,14 @@ app.get('/api/auth/google/callback', async (req, res) => {
         await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [profile.sub, existing.rows[0].id]);
         user = existing.rows[0];
       } else {
-        const utm = extractUtm(req);
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
         const ins = await db.query(
-          "INSERT INTO users (email, google_id, name, experience_level, subscription_status, is_trial_active, utm_source, utm_medium, utm_campaign, utm_content, attribution_referrer) VALUES ($1, $2, $3, $4, 'free', false, $5, $6, $7, $8, $9) RETURNING *",
-          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving', utm.source, utm.medium, utm.campaign, utm.content, utm.referrer]
+          'INSERT INTO users (email, google_id, name, experience_level, trial_ends_at, is_trial_active) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+          [profile.email.toLowerCase(), profile.sub, profile.name, 'New to serving', trialEndsAt, true]
         );
         user = ins.rows[0];
         isNewUser = true;
-        // Clear short-lived attribution cookies now that they have been persisted.
-        try {
-          UTM_KEYS.forEach(k => res.clearCookie('sma_' + k, { path: '/' }));
-          res.clearCookie('sma_attribution_referrer', { path: '/' });
-        } catch (e) {}
         await db.query('INSERT INTO streaks (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [user.id]);
         try {
           await db.query(
@@ -1334,8 +1272,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
         resend.emails.send({
           from: wb.fromLine,
           to: user.email,
-          subject: `Welcome to ${wb.brandName} – your free training starts now`,
-          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">I recommend starting with Module 1: Foundations of Exceptional Service. When you're ready for the full library — all 30 modules, 150 scenarios, voice practice and your certificate — Premium unlocks everything.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${wb.poweredBy}${emailFooter(unsubUrl)}</div>`
+          subject: `Welcome to ${wb.brandName} – Your 14-day trial starts now`,
+          html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="${wb.logoUrl}" alt="${escapeHtml(wb.brandName)}" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(user.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I'm Kirk Adamson, founder of ServeMaster Academy.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.</p><p style="font-size:16px;line-height:1.7;margin-bottom:32px;">Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.</p><p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/app" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Start Module 1 Now</a></p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">I'd love to hear what you think after your first session.</p><p style="font-size:15px;line-height:1.7;color:#a3a3a3;">Warm regards,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#d4af37;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>${wb.poweredBy}${emailFooter(unsubUrl)}</div>`
         }).catch(err => console.error('Google welcome email error:', err.message));
       } catch(e) {} })();
     } else {
@@ -1348,33 +1286,6 @@ app.get('/api/auth/google/callback', async (req, res) => {
 });
 
 // ── Shared email helpers ──────────────────────────────────────────────────────
-// ── UTM attribution helper ────────────────────────────────────────────────────
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
-function _normalizeUtmValue(v) {
-  if (v == null) return null;
-  const s = String(v).trim().toLowerCase();
-  if (!s || s.length > 120) return null;
-  return s.replace(/[^a-z0-9._\-]/g, '').slice(0, 120) || null;
-}
-function _normalizeReferrer(v) {
-  if (v == null) return null;
-  const s = String(v).trim();
-  if (!s || s.length > 500) return null;
-  return s.slice(0, 500);
-}
-function extractUtm(req) {
-  const body = (req && req.body) || {};
-  const cookies = (req && req.cookies) || {};
-  const get = (k) => body[k] || cookies['sma_' + k] || null;
-  return {
-    source: _normalizeUtmValue(get('utm_source')),
-    medium: _normalizeUtmValue(get('utm_medium')),
-    campaign: _normalizeUtmValue(get('utm_campaign')),
-    content: _normalizeUtmValue(get('utm_content')),
-    referrer: _normalizeReferrer(body.attribution_referrer || body.referrer || cookies.sma_attribution_referrer || null),
-  };
-}
-
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -1417,17 +1328,6 @@ async function getTenantBrandingForEmail(userId) {
 }
 
 async function sendTrialDripEmails(user) {
-  // Disabled: individual 14-day trials no longer exist on this platform.
-  // Premium is paid from day one; the only trial we offer is the 30-day
-  // team trial, which is provisioned manually by Kirk and tracked
-  // separately. Any legacy `trial_ends_at` values still present in the
-  // users table must NOT trigger trial-end emails — the copy in those
-  // emails referenced a 14-day trial that is no longer offered.
-  // Kept as a no-op so the two call sites (auth + scheduled drip) don't
-  // need to change. Safe to delete the function entirely once we're sure
-  // nothing else imports the symbol.
-  return;
-  // eslint-disable-next-line no-unreachable
   if (!user.trial_ends_at || user.subscription_status === 'active') return;
   const isUnsub = await db.query('SELECT is_unsubscribed FROM users WHERE id = $1', [user.id]).then(r => r.rows[0]?.is_unsubscribed).catch(() => false);
   if (isUnsub) return;
@@ -1495,8 +1395,8 @@ async function sendDripEmailIfDue(userId, userEmail, userName) {
     const drips = [
       { day: 1, subject: 'Module 1 is waiting for you', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;"><strong>Module 1 — Service Foundations</strong> takes about 12 minutes and covers the mindset that separates good servers from great ones. It's the most-completed module on the platform for a reason.</p>${cta('Start Module 1 →', 'https://servemasteracademy.ca/app')}${sig}`) },
       { day: 3, subject: 'Have you tried the AI voice roleplay?', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">The <strong>AI Practice Scenarios</strong> let you talk with a realistic AI guest — a difficult customer, a wine question, a complaint mid-service — and get instant feedback on your handling. It's the closest thing to real floor experience without being on the floor.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Try the Practice tab. First scenario takes under 3 minutes.</p>${cta('Try a Scenario →', 'https://servemasteracademy.ca/app')}${sig}`) },
-      { day: 7, subject: 'One week in — keep your momentum going', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Servers who complete at least 5 modules in their first two weeks are <strong>3× more likely</strong> to earn their certificate.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Your free account gives you 3 modules and 5 AI scenarios forever — no time limit. When you're ready, Premium unlocks the remaining 27 modules, 150 scenarios, voice practice, and your certificate.</p>${cta('Continue Training →', 'https://servemasteracademy.ca/app')}<p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="color:#d4af37;font-size:14px;">See Premium pricing →</a></p>${sig}`) },
-      { day: 14, subject: 'Ready to unlock the rest of the platform?', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">It's been two weeks since you joined ServeMaster Academy. Your free access to the first 3 modules and 5 scenarios stays — there's no deadline to worry about.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">When you're ready to unlock the remaining 27 modules, 150 scenarios, voice practice, and your certificate, Premium is one click away.</p><div style="background:#1a1a1a;border:1px solid #d4af37;border-radius:12px;padding:20px;margin-bottom:24px;"><p style="font-size:18px;font-weight:600;color:#d4af37;margin:0 0 4px;">Premium — $19/mo</p><p style="font-size:14px;color:#a3a3a3;margin:0;">Or save 35% with annual billing — $149/yr</p></div>${cta('Upgrade Now →', 'https://servemasteracademy.ca/pricing')}${sig}`) }
+      { day: 7, subject: 'One week in — 7 days left on your trial', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Servers who complete at least 5 modules in their first two weeks are <strong>3× more likely</strong> to earn their certificate.</p><p style="font-size:16px;line-height:1.7;margin-bottom:24px;">You have 7 days left in your free trial. Your free access stays forever (3 modules, 5 scenarios), but the remaining 27 modules, 150+ scenarios, voice practice, and your certificate unlock with Premium.</p>${cta('Continue Training →', 'https://servemasteracademy.ca/app')}<p style="margin-bottom:32px;"><a href="https://servemasteracademy.ca/pricing" style="color:#d4af37;font-size:14px;">See Premium pricing →</a></p>${sig}`) },
+      { day: 14, subject: 'Your trial ends today', html: wrap(`<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(userName)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your 14-day trial ends today. Your progress, badges, and streak are saved — you keep free access to your first 3 modules permanently.</p><div style="background:#1a1a1a;border:1px solid #d4af37;border-radius:12px;padding:20px;margin-bottom:24px;"><p style="font-size:18px;font-weight:600;color:#d4af37;margin:0 0 4px;">Premium — $19/mo</p><p style="font-size:14px;color:#a3a3a3;margin:0;">Or save 35% with annual billing — $149/yr</p></div>${cta('Upgrade Now →', 'https://servemasteracademy.ca/pricing')}${sig}`) }
     ];
     for (const d of drips) {
       if (daysSinceSignup >= d.day && !sentDays.has(d.day)) {
@@ -1897,13 +1797,10 @@ app.get('/api/modules', authMiddleware, checkTrial, async (req, res) => {
 });
 
 app.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res) => {
-  const { scenarioId, branchChoiceId, branchRecommended } = req.body;
+  const { scenarioId } = req.body;
   if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
   try {
-    await db.query(
-      'INSERT INTO scenario_scores (user_id, scenario_id, branch_choice_id, branch_recommended) VALUES ($1, $2, $3, $4)',
-      [req.user.id, scenarioId, branchChoiceId || null, typeof branchRecommended === 'boolean' ? branchRecommended : null]
-    );
+    await db.query('INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)', [req.user.id, scenarioId]);
     await checkAndAwardBadges(req.user.id);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Failed to save scenario' }); }
@@ -2028,19 +1925,8 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 app.post('/api/request-team-trial', contactLimiter, async (req, res) => {
-  const body = req.body || {};
-  const name = (body.name || '').toString().trim();
-  const email = (body.email || '').toString().trim();
-  const restName = ((body.restaurant || body.restaurantName || '')).toString().trim();
-  const staffCount = body.staffCount || body.staff_count || body.staff || '';
-  if (!name || !email || !restName) {
-    console.warn('Team trial request rejected — missing fields', {
-      hasName: !!name, hasEmail: !!email, hasRestaurant: !!restName,
-      contentType: req.headers['content-type'] || null,
-      bodyKeys: Object.keys(body)
-    });
-    return res.status(400).json({ error: 'Name, email and restaurant name are required' });
-  }
+  const { name, email, restaurantName } = req.body;
+  if (!name || !email || !restaurantName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
   try {
     const utm = extractUtm(req);
     await db.query(
@@ -2125,9 +2011,8 @@ app.post('/api/referral/invite-manager', authMiddleware, contactLimiter, async (
           </p>
           ${note ? `<p style="font-size:15px;line-height:1.7;background:#1c1c1c;padding:16px;border-left:3px solid #fbbf24;border-radius:6px;margin-bottom:20px;">"${escapeHtml(note)}"<br><em>— ${escapeHtml(sender.name)}</em></p>` : ''}
           <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">ServeMaster Academy gives your servers AI role-play, voice practice, and gamified modules that reduce onboarding time and raise tip averages — all trackable from a manager dashboard.</p>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Right now we're offering restaurants a <strong>free 30-day team trial</strong> — no credit card required. I'll send you the access code within one business day.</p>
-          <a href="https://servemasteracademy.ca/teams" style="display:inline-block;background:#fbbf24;color:#000;font-weight:bold;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;">Request Your 30-Day Team Trial →</a>
-          <p style="font-size:13px;color:#71717a;margin-top:32px;">Questions? Reply to this email and Kirk will get back to you personally.</p>
+          <a href="https://servemasteracademy.ca/managers" style="display:inline-block;background:#fbbf24;color:#000;font-weight:bold;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;">See How It Works →</a>
+          <p style="font-size:13px;color:#71717a;margin-top:32px;">Team plans start at $49 for your first 30 days. Questions? Reply to this email.</p>
         </div>
       `
     });
@@ -2449,18 +2334,6 @@ app.post('/api/payments/create-checkout', authMiddleware, async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       metadata,
-      // No credit card required for the 30-day trial. Stripe Checkout will
-      // skip card collection because no payment is due upfront. If the user
-      // never adds a card, the subscription auto-cancels at trial end and
-      // the existing webhook flips them back to free → paywall.
-      payment_method_collection: 'if_required',
-      subscription_data: {
-        trial_period_days: 30,
-        trial_settings: {
-          end_behavior: { missing_payment_method: 'cancel' },
-        },
-        metadata,
-      },
       success_url: 'https://servemasteracademy.ca/success.html',
       cancel_url: 'https://servemasteracademy.ca',
     };
@@ -3191,8 +3064,8 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
     const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
     const emails = {
       welcome: {
-        subject: 'Welcome to ServeMaster Academy – your free training starts now',
-        html: emailShell(`${p(`Hi ${name},`)}${p("I'm Kirk Adamson, founder of ServeMaster Academy.")}${p("Your free account is ready. You have permanent access to <strong>3 training modules</strong> and <strong>5 AI roleplay scenarios</strong> — no time limit, no credit card on file.")}${p("I recommend starting with Module 1: Foundations of Exceptional Service.")}${btn("Start Module 1 Now", "https://servemasteracademy.ca/app")}${p("I'd love to hear what you think after your first session.")}${sig}`)
+        subject: 'Welcome to ServeMaster Academy – Your 14-day trial starts now',
+        html: emailShell(`${p(`Hi ${name},`)}${p("I'm Kirk Adamson, founder of ServeMaster Academy.")}${p("Thank you for starting your free trial. I created this platform because I believe every guest deserves to feel truly cared for — and every server deserves the tools to make that happen.")}${p("Your 14-day journey begins now. I recommend starting with Module 1: Foundations of Exceptional Service.")}${btn("Start Module 1 Now", "https://servemasteracademy.ca/app")}${p("I'd love to hear what you think after your first session.")}${sig}`)
       },
       module2: {
         subject: 'Module 1 complete — here\'s what\'s next',
@@ -3202,13 +3075,21 @@ app.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
         subject: 'Have you tried the AI role-play yet?',
         html: emailShell(`${p(`Hi ${name},`)}${p("One of the most powerful features in ServeMaster Academy is the AI role-play.")}${p("You speak your response to a real guest scenario (anniversary table, difficult customer, VIP) and get instant coaching.")}${p("It feels surprisingly real — and it's the fastest way to build confidence.")}${p("Try one scenario today — it only takes 2 minutes.")}${btn("Open AI Role-Play Now", "https://servemasteracademy.ca/app")}${sig}`)
       },
-      upgrade_nudge: {
-        subject: 'Ready to unlock all 30 modules?',
-        html: emailShell(`${p(`Hi ${name},`)}${p("You've been training on the free tier — nice work.")}${p("If you're getting value from the modules and scenarios you have access to, Premium opens up all 30 modules, 150 AI scenarios, voice practice, and your completion certificate.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("See Premium plans →", "https://servemasteracademy.ca/pricing")}${sig}`)
+      day7: {
+        subject: 'You\'re halfway through your trial — here\'s what to try next',
+        html: emailShell(`${p(`Hi ${name},`)}${p("You're now halfway through your 14-day trial.")}${p("Many users tell me that by Day 7 they already feel more confident handling wine service and special occasions.")}${p("If you haven't tried the Voice Practice yet, I highly recommend it — it's one of the features our early restaurant teams love most.")}${btn("Continue Training", "https://servemasteracademy.ca/app")}${sig}`)
       },
-      premium_offer: {
-        subject: 'A small gift — 20% off Premium',
-        html: emailShell(`${p(`Hi ${name},`)}${p("Thank you for being part of ServeMaster Academy.")}${p('If you\'d like to unlock the full library, I\'ve set up a 20% discount on Premium. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.')}${btn("Continue with 20% off", "https://servemasteracademy.ca/pricing")}${p("Questions? Just reply to this email — I read every one.")}${sig}`)
+      day10: {
+        subject: 'Your trial ends in 4 days — save 20% today',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day free trial ends in just 4 days.")}${p("If you're enjoying the training and want to keep access to all 30 modules, the AI role-play, and the manager dashboard, now is a great time to upgrade.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month.')}${btn("Upgrade Now", "https://servemasteracademy.ca/pricing")}${sig}`)
+      },
+      day13: {
+        subject: 'Your trial ends tomorrow — keep your access',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your free trial ends tomorrow.")}${p("If you've found value in the training, I'd love for you to continue the journey with a full membership.")}${p('Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> for 20% off your first month or year.')}${btn("Keep Access →", "https://servemasteracademy.ca/pricing")}${sig}`)
+      },
+      expired: {
+        subject: 'Your trial has ended — 20% off for the next 7 days',
+        html: emailShell(`${p(`Hi ${name},`)}${p("Your 14-day trial has now ended.")}${p("Thank you for giving ServeMaster Academy a try. I hope you found the training valuable.")}${p('If you\'d like to continue, I\'ve extended a special 20% launch discount for another 7 days. Use code <strong style="color:#d4af37;font-size:18px;letter-spacing:1px;">LAUNCH20</strong> at checkout.')}${btn("Continue with 20% off", "https://servemasteracademy.ca/pricing")}${p("Questions? Just reply to this email — I read every one.")}${sig}`)
       }
     };
     const chosen = emails[emailType];
@@ -3362,7 +3243,7 @@ const scenarios = {
 };
 
 app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang, sceneContext, choicePrompt } = req.body;
+  const { scenarioId, messages, lang, sceneContext } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
   const thirdPersonWrapper = lang === 'fr'
@@ -3378,15 +3259,7 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
   const basePrompt = scenario
     ? scenario.systemPrompt
     : `You are playing the role of a guest in a hospitality training scenario. The user is playing the server. Stay completely in character as the guest described in this scene. React realistically to how the server handles the situation — positively to skill and professionalism, negatively to mistakes or poor technique. Keep responses concise.\n\nScene: ${sceneContext}`;
-  // Optional steering: when the server has just made a branch decision, the
-  // client passes a `choicePrompt` describing that path so the AI guest can
-  // calibrate its emotional reaction (warmer for recommended/empathetic
-  // paths, cooler for dismissive/wrong paths). Does NOT replace the user's
-  // visible message — only supplements the system context for one turn.
-  const branchSteer = (typeof choicePrompt === 'string' && choicePrompt.trim())
-    ? `\n\nBRANCH DECISION CONTEXT — The server has just made an explicit choice at a key decision point in this scenario. Here is what the choice represents (for your reaction calibration only — do not mention it):\n${choicePrompt.trim()}\n\nCalibrate your emotional reaction accordingly: warm and forgiving when the server picks an empathetic/recommended path, cooler or escalating when the server picks a dismissive/poor path.`
-    : '';
-  const systemContent = langInstruction + thirdPersonWrapper + basePrompt + branchSteer;
+  const systemContent = langInstruction + thirdPersonWrapper + basePrompt;
   try {
     const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
@@ -3401,7 +3274,7 @@ app.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
 });
 
 app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) => {
-  const { scenarioId, messages, lang, sceneTitle, sceneContext, branchChoice } = req.body;
+  const { scenarioId, messages, lang, sceneTitle, sceneContext } = req.body;
   const scenario = scenarios[scenarioId];
   if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
   const scenarioTitle = scenario ? scenario.title : (sceneTitle || 'Hospitality Scenario');
@@ -3410,19 +3283,9 @@ app.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) =>
     : lang === 'es'
     ? 'IMPORTANTE: Escribe toda tu respuesta en español. Todos los campos JSON deben estar en español.\n\n'
     : '';
-  // Decision-point context for the trainer (only when the scenario has a branch).
-  let branchContext = '';
-  if (branchChoice && branchChoice.choiceId && Array.isArray(branchChoice.all) && branchChoice.all.length) {
-    const optionLines = branchChoice.all.map(opt => {
-      const picked = opt.id === branchChoice.choiceId ? ' [SERVER PICKED THIS]' : '';
-      const rec    = opt.recommended ? ' [RECOMMENDED PATH]' : '';
-      return `- "${opt.label}"${rec}${picked}`;
-    }).join('\n');
-    branchContext = `\n\nDECISION POINT — At a key moment in this scenario the server was given the following choice options. Treat this as part of their performance and reference whether they chose the recommended path in your "right" or "wrong" arrays.\n${optionLines}\n`;
-  }
   const systemPrompt = langInstruction + `You are a strict, experienced fine-dining hospitality trainer reviewing a server's performance in a roleplay exercise.
 
-Scenario: "${scenarioTitle}"${branchContext}
+Scenario: "${scenarioTitle}"
 
 You will be given the full conversation between the server (user) and the simulated customer (assistant). Review what the server actually said — their word choices, tone, phrasing, and actions — and provide a structured critique.
 
@@ -4616,767 +4479,6 @@ app.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, re
   } catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
 });
 
-// ── Admin: Stripe revenue ─────────────────────────────────────────────────────
-app.get('/api/admin/stripe-revenue', adminMiddleware, async (req, res) => {
-  try {
-    const stripe = await getUncachableStripeClient();
-    const [activeSubs, invoices30d] = await Promise.all([
-      stripe.subscriptions.list({ status: 'active', limit: 100 }),
-      stripe.invoices.list({ status: 'paid', limit: 100, created: { gte: Math.floor(Date.now() / 1000) - 30 * 86400 } }),
-    ]);
-    const mrr = activeSubs.data.reduce((sum, sub) => {
-      const item = sub.items?.data?.[0];
-      if (!item) return sum;
-      const amount = item.price?.unit_amount || 0;
-      const interval = item.price?.recurring?.interval;
-      if (interval === 'year') return sum + amount / 12;
-      return sum + amount;
-    }, 0);
-    const revenue30d = invoices30d.data.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
-    res.json({
-      mrr: Math.round(mrr / 100),
-      active_subscriptions: activeSubs.data.length,
-      revenue_30d: Math.round(revenue30d / 100),
-    });
-  } catch (err) {
-    console.error('Stripe revenue error:', err.message);
-    res.json({ mrr: 0, active_subscriptions: 0, revenue_30d: 0, error: 'Stripe unavailable' });
-  }
-});
-
-// ── Admin: failed payments ────────────────────────────────────────────────────
-app.get('/api/admin/failed-payments', adminMiddleware, async (req, res) => {
-  try {
-    const stripe = await getUncachableStripeClient();
-    const invoices = await stripe.invoices.list({ status: 'open', limit: 50 });
-    const failed = invoices.data.filter(inv => inv.attempt_count > 0);
-    const result = await Promise.all(failed.map(async inv => {
-      let email = '';
-      try {
-        const customer = await stripe.customers.retrieve(inv.customer);
-        email = customer.email || '';
-      } catch {}
-      return {
-        id: inv.id,
-        customer_email: email,
-        amount: Math.round((inv.amount_due || 0) / 100),
-        attempts: inv.attempt_count,
-        next_attempt: inv.next_payment_attempt ? new Date(inv.next_payment_attempt * 1000).toISOString() : null,
-        created: new Date(inv.created * 1000).toISOString(),
-      };
-    }));
-    res.json({ failed_payments: result });
-  } catch (err) {
-    console.error('Failed payments error:', err.message);
-    res.json({ failed_payments: [], error: 'Stripe unavailable' });
-  }
-});
-
-// ── Admin: bulk email by segment ─────────────────────────────────────────────
-app.post('/api/admin/bulk-email', adminMiddleware, async (req, res) => {
-  const { segment, emailType } = req.body;
-  if (!segment || !emailType) return res.status(400).json({ error: 'segment and emailType required' });
-  try {
-    let query = '';
-    if (segment === 'free_inactive') {
-      query = `SELECT id, name, email FROM users WHERE subscription_status = 'free' AND (last_login < NOW() - INTERVAL '7 days' OR last_login IS NULL) AND role = 'user' LIMIT 200`;
-    } else if (segment === 'trial_active') {
-      query = `SELECT id, name, email FROM users WHERE is_trial_active = true AND subscription_status = 'free' LIMIT 200`;
-    } else if (segment === 'paid_incomplete') {
-      query = `SELECT DISTINCT u.id, u.name, u.email FROM users u WHERE u.subscription_status NOT IN ('free') AND (SELECT COUNT(*) FROM user_progress WHERE user_id = u.id AND progress >= 100) < 30 LIMIT 200`;
-    } else if (segment === 'all_users') {
-      query = `SELECT id, name, email FROM users WHERE role = 'user' LIMIT 200`;
-    } else {
-      return res.status(400).json({ error: 'Unknown segment' });
-    }
-    const users = await db.query(query);
-    if (!users.rows.length) return res.json({ sent: 0, message: 'No users in this segment' });
-    const emailShell = (body, unsubUrl) => `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">${body}${emailFooter(unsubUrl)}</div>`;
-    const p = (text) => `<p style="font-size:16px;line-height:1.7;margin-bottom:16px;">${text}</p>`;
-    const btn = (label, href) => `<p style="margin-bottom:32px;"><a href="${href}" style="background:#d4af37;color:#000;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">${label}</a></p>`;
-    const sig = `<p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-top:24px;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>`;
-    const emails = {
-      nudge: { subject: 'Your training is waiting — pick up where you left off', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("We noticed you haven't been in for a while — your training is still right where you left it.")}${p("Even 15 minutes a day adds up fast. Start your next module now.")}${btn("Continue Training →", "https://servemasteracademy.ca/app")}${sig}`, unsubUrl) },
-      upgrade: { subject: 'Ready to go further? Upgrade your ServeMaster plan', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("You've been making progress on ServeMaster Academy — and there's so much more to unlock.")}${p("Upgrade today to access all 30 modules, AI role-play, voice practice, and your completion certificate.")}${btn("View Plans →", "https://servemasteracademy.ca/pricing")}${sig}`, unsubUrl) },
-      comeback: { subject: 'We miss you at ServeMaster Academy', html: (name, unsubUrl) => emailShell(`${p(`Hi ${name},`)}${p("It's been a while since we've seen you in the training platform.")}${p("Your account is still active — log back in and continue from where you left off.")}${btn("Log Back In →", "https://servemasteracademy.ca/app")}${sig}`, unsubUrl) },
-    };
-    const chosenEmail = emails[emailType];
-    if (!chosenEmail) return res.status(400).json({ error: `Unknown emailType. Valid: ${Object.keys(emails).join(', ')}` });
-    let sent = 0, failed = 0;
-    for (const user of users.rows) {
-      try {
-        const bulkUnsubToken = await getOrCreateUnsubToken(user.id);
-        const bulkUnsubUrl = `https://servemasteracademy.ca/unsubscribe?token=${bulkUnsubToken}`;
-        await resend.emails.send({
-          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-          to: user.email,
-          subject: chosenEmail.subject,
-          html: chosenEmail.html(escapeHtml(user.name || user.email.split('@')[0]), bulkUnsubUrl)
-        });
-        sent++;
-        await new Promise(r => setTimeout(r, 100));
-      } catch { failed++; }
-    }
-    res.json({ sent, failed, total: users.rows.length });
-  } catch (err) { res.status(500).json({ error: 'Bulk email failed: ' + err.message }); }
-});
-
-// ── Admin: user impersonation ─────────────────────────────────────────────────
-app.post('/api/admin/impersonate/:id', adminMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userRes = await db.query('SELECT id, email, name, role FROM users WHERE id = $1', [id]);
-    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
-    const user = userRes.rows[0];
-    if (user.role === 'admin') return res.status(403).json({ error: 'Cannot impersonate admin' });
-    const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, role: user.role, impersonated_by: req.user.id },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
-  } catch (err) { res.status(500).json({ error: 'Impersonation failed' }); }
-});
-
-// ── Admin: user progress detail ───────────────────────────────────────────────
-app.get('/api/admin/users/:id/progress', adminMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [userRes, progressRes, scenarioRes, badgeRes] = await Promise.all([
-      db.query('SELECT id, name, email, role, subscription_status, created_at, last_login FROM users WHERE id = $1', [id]),
-      db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1 ORDER BY module_id', [id]),
-      db.query('SELECT COUNT(*) as cnt FROM scenario_scores WHERE user_id = $1', [id]),
-      db.query('SELECT badge_id, earned_at FROM badges WHERE user_id = $1', [id]),
-    ]);
-    if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
-    res.json({
-      user: userRes.rows[0],
-      progress: progressRes.rows,
-      scenario_count: parseInt(scenarioRes.rows[0]?.cnt) || 0,
-      badges: badgeRes.rows,
-    });
-  } catch (err) { res.status(500).json({ error: 'Failed to fetch user progress' }); }
-});
-
-// ── Workbook purchases ────────────────────────────────────────────────────────
-const WORKBOOK_CATALOG = {
-  book1: { name: 'First Crossings — Companion Workbook', amount: 199, currency: 'cad', file: 'Covers - First Crossings Workbook.pdf', slug: 'first-crossings' },
-  book2: { name: 'Eastern Sparks — Companion Workbook', amount: 199, currency: 'cad', file: 'book2-workbook.pdf', slug: 'eastern-sparks' },
-  book3: { name: 'Southern Flames — Companion Workbook', amount: 199, currency: 'cad', file: 'book3-workbook.pdf', slug: 'southern-flames' },
-  book4: { name: 'The Table We Built — Companion Workbook', amount: 199, currency: 'cad', file: 'book4-workbook.pdf', slug: 'the-table-we-built' },
-};
-
-async function handleWorkbookPurchase(session) {
-  const token = require('crypto').randomUUID();
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const email = session.customer_details?.email || session.metadata?.email || '';
-  const bookId = session.metadata?.bookId || 'book1';
-  const paymentIntent = session.payment_intent || null;
-  const bookName = WORKBOOK_CATALOG[bookId]?.name || bookId;
-
-  try {
-    const existing = await db.query('SELECT download_token FROM workbook_purchases WHERE stripe_session_id = $1', [session.id]);
-    if (existing.rows.length > 0) return;
-    await db.query(
-      `INSERT INTO workbook_purchases (email, book_id, stripe_session_id, stripe_payment_intent_id, download_token, token_expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [email, bookId, session.id, paymentIntent, token, expires]
-    );
-  } catch (e) {
-    console.error('Workbook purchase DB error:', e.message);
-    return;
-  }
-
-  const downloadUrl = `${APP_URL}/api/workbooks/download/${token}`;
-  try {
-    await resend.emails.send({
-      from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
-      to: email,
-      subject: `Your ${bookName} is ready to download`,
-      html: `
-        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
-          <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">${escapeHtml(bookName)}</h2>
-          <p style="font-size:16px;line-height:1.7;margin-bottom:24px;">Thank you for your purchase. Click below to download your PDF workbook:</p>
-          <div style="text-align:center;margin:32px 0;">
-            <a href="${downloadUrl}" style="background:#fbbf24;color:#000;padding:14px 32px;border-radius:9999px;text-decoration:none;font-weight:700;font-size:16px;">Download Workbook PDF</a>
-          </div>
-          <p style="font-size:13px;color:#a3a3a3;line-height:1.6;margin-top:24px;">This link is valid for <strong style="color:#f5f5f5;">7 days</strong> and can be used up to <strong style="color:#f5f5f5;">5 times</strong>. If you need it re-sent after that, just reply to this email.</p>
-          <hr style="border:none;border-top:1px solid #333;margin:32px 0;">
-          <p style="font-size:13px;color:#71717a;">ServeMaster Academy &nbsp;·&nbsp; <a href="https://servemasteracademy.ca" style="color:#71717a;">servemasteracademy.ca</a></p>
-        </div>
-      `,
-    });
-  } catch (e) {
-    console.error('Workbook email error:', e.message);
-  }
-}
-
-app.get('/api/workbooks/status/:bookId', (req, res) => {
-  const book = WORKBOOK_CATALOG[req.params.bookId];
-  if (!book) return res.status(400).json({ error: 'Unknown book ID' });
-  const pdfPath = path.join(__dirname, 'books', 'workbooks', book.file);
-  res.json({ bookId: req.params.bookId, available: fs.existsSync(pdfPath) });
-});
-
-app.post('/api/workbooks/checkout', express.json(), async (req, res) => {
-  const { email, bookId = 'book1' } = req.body || {};
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
-    return res.status(400).json({ error: 'Valid email is required' });
-  }
-  const book = WORKBOOK_CATALOG[bookId];
-  if (!book) return res.status(400).json({ error: 'Unknown book ID' });
-  const workbookPdfPath = path.join(__dirname, 'books', 'workbooks', book.file);
-  if (!fs.existsSync(workbookPdfPath)) {
-    return res.status(503).json({ error: 'This workbook is not yet available for purchase. Please check back soon.' });
-  }
-  try {
-    const stripe = await getUncachableStripeClient();
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      customer_email: email,
-      line_items: [{
-        price_data: {
-          currency: book.currency,
-          product_data: {
-            name: book.name,
-            description: 'PDF workbook — exercises, wine pairings, and service scenarios',
-          },
-          unit_amount: book.amount,
-        },
-        quantity: 1,
-      }],
-      metadata: { type: 'workbook', bookId, email },
-      success_url: `${APP_URL}/novels/${book.slug}?workbook=success`,
-      cancel_url:  `${APP_URL}/novels/${book.slug}`,
-    });
-    res.json({ url: session.url });
-  } catch (e) {
-    console.error('Workbook checkout error:', e.message);
-    res.status(500).json({ error: 'Failed to create checkout session' });
-  }
-});
-
-app.get('/api/workbooks/download/:token', async (req, res) => {
-  const token = req.params.token;
-  if (!token || !/^[0-9a-f-]{32,36}$/i.test(token)) {
-    return res.status(400).type('text').send('Invalid token');
-  }
-  try {
-    const result = await db.query('SELECT * FROM workbook_purchases WHERE download_token = $1', [token]);
-    if (!result.rows.length) {
-      return res.status(404).type('text').send('Download link not found — please check your email.');
-    }
-    const p = result.rows[0];
-    if (new Date() > new Date(p.token_expires_at)) {
-      return res.status(410).type('text').send('This download link has expired (7-day limit). Please reply to your purchase email for a new one.');
-    }
-    if (p.download_count >= p.max_downloads) {
-      return res.status(410).type('text').send('This download link has reached its limit (5 downloads). Please reply to your purchase email for a new one.');
-    }
-    const pdfPath = path.join(__dirname, 'books', 'workbooks', WORKBOOK_CATALOG[p.book_id]?.file || `${p.book_id}-workbook.pdf`);
-    if (!fs.existsSync(pdfPath)) {
-      return res.status(503).type('html').send(`
-        <html><head><meta charset="utf-8"></head>
-        <body style="font-family:Georgia,serif;text-align:center;padding:60px 24px;background:#0a0a0a;color:#f5f5f5;">
-          <img src="https://servemasteracademy.ca/logo.png" style="width:48px;margin-bottom:24px;border-radius:10px;">
-          <h2 style="color:#fbbf24;">Your workbook is on its way!</h2>
-          <p style="color:#a3a3a3;max-width:440px;margin:12px auto 0;">We're putting the finishing touches on it. A fresh download link will arrive in your inbox within 24 hours.</p>
-          <p style="margin-top:32px;font-size:13px;color:#52525b;"><a href="https://servemasteracademy.ca" style="color:#52525b;">servemasteracademy.ca</a></p>
-        </body></html>
-      `);
-    }
-    await db.query('UPDATE workbook_purchases SET download_count = download_count + 1 WHERE id = $1', [p.id]);
-    res.setHeader('Content-Disposition', 'attachment; filename="First-Crossings-Companion-Workbook.pdf"');
-    res.setHeader('Content-Type', 'application/pdf');
-    fs.createReadStream(pdfPath).pipe(res);
-  } catch (e) {
-    console.error('Workbook download error:', e.message);
-    res.status(500).type('text').send('Download error — please try again.');
-  }
-});
-
-// ── GitHub Webhook: auto-sync books branch → DB ───────────────────────────────
-// ── Public Books: per-IP rate limiter (10 req/min) ───────────────────────────
-const _booksTtsRateLimit = new Map();
-setInterval(() => { const now = Date.now(); for (const [k,v] of _booksTtsRateLimit) { if (v.resetAt < now) _booksTtsRateLimit.delete(k); } }, 60000);
-function _checkBooksTtsRate(ip) {
-  const now = Date.now();
-  const e = _booksTtsRateLimit.get(ip);
-  if (!e || e.resetAt < now) { _booksTtsRateLimit.set(ip, { count: 1, resetAt: now + 60000 }); return true; }
-  if (e.count >= 25) return false;
-  e.count++;
-  return true;
-}
-
-// ── Public Books: chapter list (source of truth for client) ──────────────────
-app.get('/api/books/chapters', (req, res) => {
-  const book = (req.query.book || 'book1').toLowerCase();
-  if (book !== 'book1' && book !== 'book2' && book !== 'book3') {
-    return res.json([]);
-  }
-  res.json(getAllChapters(book).map(ch => ({
-    key: ch.key, num: ch.num, title: ch.title, voice: ch.voice, voiceName: ch.voiceName,
-  })));
-});
-
-// ── Public Books: chapter text ────────────────────────────────────────────────
-app.get('/api/books/chapter/:key', (req, res) => {
-  let ch;
-  try { ch = getChapter(req.params.key); } catch (e) {
-    return res.status(404).json({ error: e.message });
-  }
-  const filePath = path.join(__dirname, 'books', ch.file);
-  let markdown;
-  try { markdown = fs.readFileSync(filePath, 'utf8'); } catch {
-    return res.status(500).json({ error: 'Chapter file not found on disk' });
-  }
-  let text;
-  try { text = cleanForTTS(markdown); } catch (e) {
-    return res.status(500).json({ error: `Text processing failed: ${e.message}` });
-  }
-  res.json({ chapterKey: ch.key, title: ch.title, voice: ch.voice, voiceName: ch.voiceName, content: text, text });
-});
-
-// ── Public Books: ElevenLabs TTS streaming ────────────────────────────────────
-// Shared handler used by both GET (browser <audio src>) and POST (programmatic)
-// Disk cache: books/audio-cache/<key>.mp3 — generated once, served instantly after.
-const _AUDIO_CACHE_DIR = path.join(__dirname, 'books', 'audio-cache');
-fs.mkdirSync(_AUDIO_CACHE_DIR, { recursive: true });
-
-async function _streamBooksTTS(chapterKey, ip, res) {
-  if (!_checkBooksTtsRate(ip)) {
-    return res.status(429).json({ error: 'Too many requests — please wait a minute.' });
-  }
-  let ch;
-  try { ch = getChapter(chapterKey); } catch (e) {
-    return res.status(404).json({ error: e.message });
-  }
-
-  // ── Serve from disk cache if available ────────────────────────────────────
-  const cachePath = path.join(_AUDIO_CACHE_DIR, `${ch.key}.mp3`);
-  if (fs.existsSync(cachePath)) {
-    const stat = fs.statSync(cachePath);
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', stat.size);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.setHeader('X-Chapter-Key', ch.key);
-    res.setHeader('X-Voice-Name', ch.voiceName);
-    res.setHeader('X-Served-From', 'cache');
-    fs.createReadStream(cachePath).pipe(res);
-    return;
-  }
-
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ElevenLabs API key not configured' });
-  const filePath = path.join(__dirname, 'books', ch.file);
-  let markdown;
-  try { markdown = fs.readFileSync(filePath, 'utf8'); } catch {
-    return res.status(500).json({ error: 'Chapter file not found on disk' });
-  }
-  let chunks;
-  try {
-    const clean = cleanForTTS(markdown);
-    chunks = chunkForTTS(clean, 5000);
-  } catch (e) {
-    return res.status(500).json({ error: `Text processing failed: ${e.message}` });
-  }
-
-  res.setHeader('Content-Type', 'audio/mpeg');
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('X-Chapter-Key', ch.key);
-  res.setHeader('X-Voice-Name', ch.voiceName);
-
-  // Write to a temp file in parallel so the result is cached for next play
-  const tmpPath = cachePath + '.tmp';
-  const writeStream = fs.createWriteStream(tmpPath);
-
-  for (const chunk of chunks) {
-    if (res.writableEnded) break;
-    let elRes;
-    try {
-      elRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ch.voiceId}/stream`, {
-        method: 'POST',
-        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: chunk,
-          model_id: 'eleven_turbo_v2_5',
-          voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true },
-          optimize_streaming_latency: 4,
-        }),
-      });
-    } catch (fetchErr) {
-      console.error('ElevenLabs fetch error:', fetchErr.message);
-      writeStream.destroy(); fs.unlink(tmpPath, () => {});
-      if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs unreachable' });
-      else if (!res.writableEnded) res.end();
-      return;
-    }
-    if (!elRes.ok) {
-      const errBody = await elRes.text().catch(() => '');
-      console.error(`ElevenLabs TTS error ${elRes.status}:`, errBody.slice(0, 200));
-      writeStream.destroy(); fs.unlink(tmpPath, () => {});
-      if (!res.headersSent) res.status(502).json({ error: `ElevenLabs error: ${elRes.status}` });
-      else if (!res.writableEnded) res.end();
-      return;
-    }
-    const ct = elRes.headers.get('content-type') || '';
-    if (!ct.startsWith('audio/')) {
-      console.error('ElevenLabs returned non-audio content-type:', ct);
-      writeStream.destroy(); fs.unlink(tmpPath, () => {});
-      if (!res.headersSent) res.status(502).json({ error: 'ElevenLabs returned non-audio response' });
-      else if (!res.writableEnded) res.end();
-      return;
-    }
-    const reader = elRes.body.getReader();
-    while (!res.writableEnded) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(value);
-      writeStream.write(value);
-    }
-  }
-  if (!res.writableEnded) res.end();
-  writeStream.end();
-  writeStream.on('finish', () => fs.rename(tmpPath, cachePath, err => { if (err) fs.unlink(tmpPath, () => {}); }));
-  writeStream.on('error',  () => fs.unlink(tmpPath, () => {}));
-}
-
-// GET variant: browser <audio src="/api/books/tts/book1-ch01"> streams natively
-app.get('/api/books/tts/:key', async (req, res) => {
-  const ip = req.ip || 'unknown';
-  return _streamBooksTTS(req.params.key, ip, res);
-});
-
-// POST variant: programmatic — body { chapterKey }
-app.post('/api/books/tts', express.json(), async (req, res) => {
-  const ip = req.ip || 'unknown';
-  const { chapterKey } = req.body || {};
-  if (!chapterKey) return res.status(400).json({ error: 'chapterKey is required' });
-  return _streamBooksTTS(chapterKey, ip, res);
-});
-
-app.post('/api/webhooks/books-sync', express.json({ type: '*/*' }), async (req, res) => {
-  const secret = process.env.BOOKS_WEBHOOK_SECRET;
-  if (secret) {
-    const sig = req.headers['x-hub-signature-256'] || '';
-    const hmac = require('crypto').createHmac('sha256', secret);
-    hmac.update(JSON.stringify(req.body));
-    const expected = 'sha256=' + hmac.digest('hex');
-    if (sig !== expected) return res.status(401).json({ error: 'Invalid signature' });
-  }
-  const branch = req.body?.ref || '';
-  if (branch && !branch.includes('books')) return res.json({ skipped: true, reason: 'not books branch' });
-  res.json({ ok: true, message: 'Sync queued' });
-  try {
-    const { syncBooks } = require('./scripts/sync-books');
-    const result = await syncBooks();
-    console.log('Books webhook sync:', result);
-  } catch (e) { console.error('Books webhook sync error:', e.message); }
-});
-
-// ── Admin: manual books-branch sync trigger ───────────────────────────────────
-// ── Admin: OpenAI TTS proxy (book chapter reader) ─────────────────────────────
-// In-memory store for TTS stream tokens (text+speed, expires after 2 min)
-const _ttsTokens = new Map();
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of _ttsTokens) { if (v.expires < now) _ttsTokens.delete(k); }
-}, 30000);
-
-// Step 1: POST – validate admin, store text+speed, return stream token
-app.post('/api/admin/tts', adminMiddleware, express.json(), (req, res) => {
-  const { text, speed = 1.0 } = req.body || {};
-  if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided' });
-  const id = require('crypto').randomUUID();
-  _ttsTokens.set(id, { text: text.slice(0, 4000), speed: Math.min(Math.max(parseFloat(speed) || 1.0, 0.25), 4.0), expires: Date.now() + 120000 });
-  res.json({ id });
-});
-
-// Step 2: GET – generate audio via OpenAI TTS and stream to browser
-app.get('/api/admin/tts-stream', adminMiddleware, async (req, res) => {
-  const entry = _ttsTokens.get(req.query.id);
-  if (!entry) return res.status(404).json({ error: 'TTS token not found or expired' });
-  _ttsTokens.delete(req.query.id);
-  try {
-    const response = await getTTS().audio.speech.create({
-      model: 'tts-1',
-      voice: 'nova',
-      input: entry.text,
-      speed: entry.speed,
-      response_format: 'mp3'
-    });
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-store');
-    const reader = response.body.getReader();
-    const pump = async () => {
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done || res.writableEnded) break;
-          res.write(value);
-        }
-        if (!res.writableEnded) res.end();
-      } catch (e) {
-        console.error('TTS stream pump error:', e.message);
-        if (!res.writableEnded) res.end();
-      }
-    };
-    pump();
-  } catch (e) {
-    console.error('TTS stream error:', e.message);
-    if (!res.headersSent) res.status(500).json({ error: e.message });
-  }
-});
-
-app.post('/api/admin/books-sync', adminMiddleware, async (req, res) => {
-  try {
-    const { syncBooks } = require('./scripts/sync-books');
-    const result = await syncBooks();
-    res.json({ ok: true, ...result });
-  } catch (e) {
-    console.error('Admin books sync error:', e.message);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ── Admin Books / Manuscript API ─────────────────────────────────────────────
-app.get('/api/admin/books', adminMiddleware, async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      'SELECT id, book_title, chapter_number, chapter_title, is_published, created_at, updated_at FROM book_chapters ORDER BY book_title ASC, chapter_number ASC'
-    );
-    res.json(rows);
-  } catch (e) { res.status(500).json({ error: 'Failed to load books' }); }
-});
-
-app.get('/api/admin/books-status', adminMiddleware, async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      `SELECT book_title, COUNT(*) as chapters, bool_or(is_published) as any_published,
-       string_agg(chapter_number::text, ',' ORDER BY chapter_number) as chapter_numbers
-       FROM book_chapters GROUP BY book_title ORDER BY book_title`
-    );
-    const total = await db.query('SELECT COUNT(*) FROM book_chapters');
-    res.json({ total_rows: parseInt(total.rows[0].count), books: rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/admin/books/:id', adminMiddleware, async (req, res) => {
-  try {
-    const { rows } = await db.query('SELECT * FROM book_chapters WHERE id = $1', [req.params.id]);
-    if (!rows.length) return res.status(404).json({ error: 'Chapter not found' });
-    res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Failed to load chapter' }); }
-});
-
-app.post('/api/admin/books', adminMiddleware, async (req, res) => {
-  try {
-    const { book_title, chapter_number, chapter_title, content, notes, is_published } = req.body;
-    if (!book_title || !book_title.trim()) return res.status(400).json({ error: 'book_title is required' });
-    const { rows } = await db.query(
-      `INSERT INTO book_chapters (book_title, chapter_number, chapter_title, content, notes, is_published)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [book_title.trim(), chapter_number || 1, chapter_title || '', content || '', notes || '', !!is_published]
-    );
-    res.status(201).json(rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Failed to create chapter' }); }
-});
-
-app.put('/api/admin/books/:id', adminMiddleware, async (req, res) => {
-  try {
-    const { book_title, chapter_number, chapter_title, content, notes, is_published } = req.body;
-    const { rows } = await db.query(
-      `UPDATE book_chapters SET book_title=$1, chapter_number=$2, chapter_title=$3, content=$4, notes=$5, is_published=$6, updated_at=NOW()
-       WHERE id=$7 RETURNING *`,
-      [book_title, chapter_number, chapter_title, content, notes, !!is_published, req.params.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Chapter not found' });
-    res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Failed to update chapter' }); }
-});
-
-app.delete('/api/admin/books/:id', adminMiddleware, async (req, res) => {
-  try {
-    const { rowCount } = await db.query('DELETE FROM book_chapters WHERE id = $1', [req.params.id]);
-    if (!rowCount) return res.status(404).json({ error: 'Chapter not found' });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: 'Failed to delete chapter' }); }
-});
-
-// ── Catch-all: /app/* ─────────────────────────────────────────────────────────
-app.get('/app/{*path}', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
-
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// ── Stripe init and startup ───────────────────────────────────────────────────
-async function initStripe() {
-  try {
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) return console.warn('No DATABASE_URL, skipping Stripe init');
-    const isReplit = !!process.env.REPLIT_DOMAINS;
-    if (isReplit) {
-      const { runMigrations } = require('stripe-replit-sync');
-      await runMigrations({ databaseUrl });
-      const stripeSync = await getStripeSync();
-      const domain = process.env.REPLIT_DOMAINS.split(',')[0];
-      const webhookUrl = `https://${domain}/api/stripe/webhook`;
-      await stripeSync.findOrCreateManagedWebhook(webhookUrl);
-      stripeSync.syncBackfill().catch(e => console.error('Stripe backfill error:', e.message));
-    } else {
-      console.log('Non-Replit environment — Stripe webhook must be registered manually in the Stripe dashboard.');
-    }
-    console.log('Stripe initialized');
-  } catch (err) {
-    console.warn('Stripe init warning (non-fatal):', err.message);
-  }
-}
-
-
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, '0.0.0.0', async () => {
-  attachMockupWsProxy(server);
-  console.log(`ServeMaster Academy running on port ${PORT}`);
-  try {
-    const updated = await db.query(
-      "UPDATE users SET role = 'admin', subscription_status = 'premium' WHERE email = $1 RETURNING email",
-      [ADMIN_EMAIL]
-    );
-    if (updated.rows.length) console.log(`Admin role granted to ${ADMIN_EMAIL} on startup`);
-  } catch (e) {}
-  try {
-    await db.query(`CREATE TABLE IF NOT EXISTS referrals (
-      id SERIAL PRIMARY KEY,
-      referrer_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      referred_email VARCHAR(255) NOT NULL,
-      referred_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      status VARCHAR(50) NOT NULL DEFAULT 'pending',
-      credited_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT NOW()
-    )`);
-    await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_referred_email ON referrals(referred_email)');
-    await db.query('CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals(status)');
-    await db.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_unique_invite ON referrals(referrer_user_id, referred_email)');
-  } catch (e) { console.error('Referrals table bootstrap error:', e.message); }
-  await initStripe();
-  // Auto-seed demo leaderboard users on every startup
-  try { await seedDemoUsers(); } catch (e) { console.error('Demo seed error:', e.message); }
-  // Seed admin (Kirk) progress to 100% if account exists
-  try { await seedAdminProgress(); } catch (e) { console.warn('Admin progress seed warning:', e.message); }
-
-  // New schema additions
-  try {
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lang_preference VARCHAR(5) DEFAULT 'en'`);
-    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS training_deadline DATE`);
-    await db.query(`CREATE TABLE IF NOT EXISTS certificate_log (
-      id SERIAL PRIMARY KEY,
-      user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      issued_by INT REFERENCES users(id) ON DELETE SET NULL,
-      user_name VARCHAR(255),
-      issued_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS scenario_transcripts (
-      id SERIAL PRIMARY KEY,
-      user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      scenario_id INT,
-      messages JSONB NOT NULL,
-      verdict TEXT,
-      completed_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_scenario_transcripts_user ON scenario_transcripts(user_id)`);
-    await db.query(`CREATE TABLE IF NOT EXISTS roleplays (
-      id SERIAL PRIMARY KEY,
-      category VARCHAR(100) NOT NULL,
-      title TEXT NOT NULL,
-      setup TEXT,
-      dialogue TEXT,
-      debrief TEXT,
-      voice_style_server TEXT,
-      voice_style_guest TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(title)
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS quizzes (
-      id SERIAL PRIMARY KEY,
-      module_name VARCHAR(100) NOT NULL,
-      title TEXT NOT NULL,
-      questions JSONB NOT NULL DEFAULT '[]',
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(module_name, title)
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS module_bookmarks (
-      user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      module_id INT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      PRIMARY KEY (user_id, module_id)
-    )`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_unsubscribed BOOLEAN DEFAULT FALSE`);
-    await db.query(`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS cert_logo_url TEXT`);
-    await db.query(`CREATE TABLE IF NOT EXISTS unsubscribe_tokens (
-      user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-      token TEXT UNIQUE NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS email_drip_log (
-      id SERIAL PRIMARY KEY,
-      user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      day_sent INT NOT NULL,
-      sent_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(user_id, day_sent)
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS assigned_modules (
-      restaurant_id INT REFERENCES restaurants(id) ON DELETE CASCADE,
-      module_id INT NOT NULL,
-      assigned_at TIMESTAMPTZ DEFAULT NOW(),
-      PRIMARY KEY (restaurant_id, module_id)
-    )`);
-    await db.query(`CREATE TABLE IF NOT EXISTS site_settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    await db.query(`INSERT INTO site_settings (key, value) VALUES ('chat_enabled','false') ON CONFLICT (key) DO NOTHING`);
-    await db.query(`ALTER TABLE invite_codes ADD COLUMN IF NOT EXISTS access_days INT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_access_expires_at TIMESTAMPTZ`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cert_token VARCHAR(64)`);
-    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_cert_token ON users(cert_token) WHERE cert_token IS NOT NULL`);
-    await db.query(`CREATE TABLE IF NOT EXISTS training_plans (
-      id SERIAL PRIMARY KEY,
-      restaurant_id INT REFERENCES restaurants(id) ON DELETE CASCADE,
-      user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      title TEXT NOT NULL DEFAULT 'Onboarding Plan',
-      created_by INT REFERENCES users(id),
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    // ── UTM attribution columns (for OpenClaw weekly digest) ──────────────
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_source TEXT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_medium TEXT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_content TEXT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS paid_started_at TIMESTAMPTZ`);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_users_paid_started_at ON users(paid_started_at)`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_source TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_medium TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS utm_content TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS attribution_referrer TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS provisioned BOOLEAN DEFAULT FALSE`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS kirk_trial_digest_notified BOOLEAN NOT NULL DEFAULT FALSE`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS invite_code TEXT`);
-    await db.query(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS invite_code_sent_at TIMESTAMPTZ`);
-    // Backfill: mark any existing team trial rows as already notified so the
-    // first digest run only covers new requests going forward.
-    await db.query(`
-      UPDATE contact_messages
-      SET kirk_trial_digest_notified = TRUE
-      WHERE message LIKE '[TEAM TRIAL REQUEST]%'
-        AND kirk_trial_digest_notified = FALSE
-        AND created_at < NOW() - INTERVAL '25 hours'
-    `);
     await db.query(`CREATE TABLE IF NOT EXISTS training_plan_items (
       id SERIAL PRIMARY KEY,
       plan_id INT REFERENCES training_plans(id) ON DELETE CASCADE,
@@ -5885,7 +4987,7 @@ const CHAT_SYSTEM_PROMPT = `You are the AI assistant for ServeMaster Academy (se
 
 About ServeMaster Academy:
 - 30 expert training modules covering all aspects of professional restaurant service
-- 150 AI roleplay scenarios with an AI guest across 5 categories (Guest Relations, Wine & Beverage, Special Occasions, Rush & Pressure, Health & Safety)
+- 150+ AI roleplay scenarios with an AI guest across 5 categories (Guest Relations, Wine & Beverage, Special Occasions, Rush & Pressure, Health & Safety)
 - Voice practice using Whisper AI transcription — speak out loud like the real floor
 - Completion certificate (PDF download) after finishing all 30 modules
 - Gamification: badges, daily streaks, leaderboard
@@ -5893,17 +4995,17 @@ About ServeMaster Academy:
 - Manager Dashboard for restaurant owners/managers to track staff progress, assign modules, get weekly digest emails
 - PWA — works offline, mobile-first design
 
-Pricing (CAD):
-- Free: $0 — 3 modules, 5 AI scenarios, forever free, no credit card required
-- Premium Monthly: $19/mo — all 30 modules, 150 scenarios, voice roleplay, certificate
+Pricing (CAD, all with 14-day free trial):
+- Free: $0 — 3 modules, 5 AI scenarios, forever free
+- Premium Monthly: $19/mo — all 30 modules, 150+ scenarios, voice roleplay, certificate
 - Premium Annual: $149/yr (~$12.42/mo, save 35%) — same as Premium + 2 months free
-- Starter Team: $99/mo — up to 10 staff, manager dashboard, assign required modules, weekly digest. Free 30-day team trial available on request.
-- Pro Team: $199/mo — up to 30 staff, custom AI scenarios, advanced analytics, priority support. Free 30-day team trial available on request.
+- Starter Team: $99/mo — up to 10 staff, manager dashboard, assign required modules, weekly digest
+- Pro Team: $199/mo — unlimited staff, custom AI scenarios, advanced analytics, priority support
 - Starter Team Annual: $990/yr (~$82.50/mo, save ~17%)
 - Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
 - Enterprise: custom pricing — multi-location, white-label, SSO, API access
 
-Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the permanent free tier (3 modules + 5 scenarios, no credit card) for individuals, and that all paid plans (Premium Monthly, Premium Annual, Starter Team, Pro Team, and their annual versions) come with a 30-day free trial — no credit card required to start. Team trials are activated by an access code Kirk sends within 1 business day of a request on /teams. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -6396,7 +5498,7 @@ app.post('/api/admin/scholarship/:id/reject', adminMiddleware, async (req, res) 
       from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
       to: app.email,
       subject: 'Your ServeMaster Academy scholarship application',
-      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for taking the time to apply for the Career Launch Scholarship. I reviewed your application personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Unfortunately, we weren't able to offer you a scholarship spot at this time — we receive more applications than we have spaces each month, and it's a difficult selection process.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I encourage you to try again next month or sign up for our free tier at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca</a> — 3 modules and 5 AI scenarios, no credit card required.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
+      html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for taking the time to apply for the Career Launch Scholarship. I reviewed your application personally.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Unfortunately, we weren't able to offer you a scholarship spot at this time — we receive more applications than we have spaces each month, and it's a difficult selection process.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I encourage you to try again next month or take advantage of our free 14-day trial at <a href="https://servemasteracademy.ca/signup" style="color:#FF5E3A;">servemasteracademy.ca</a>.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p><hr style="border:none;border-top:1px solid #333;margin:32px 0;"><p style="font-size:11px;color:#555;text-align:center;">ServeMaster Academy · <a href="https://servemasteracademy.ca" style="color:#555;">servemasteracademy.ca</a></p></div>`
     }).catch(e => console.error('Scholarship rejection email error:', e.message));
     res.json({ success: true });
   } catch (e) {
@@ -7109,278 +6211,6 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
   setInterval(runMonthlyAffiliateEmails, 6 * 60 * 60 * 1000);
   setTimeout(runMonthlyAffiliateEmails, 30000);
 })();
-
-// ── Team Challenges API ───────────────────────────────────────────────────────────
-
-app.post('/api/manager/challenges', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
-    const { title, description, challenge_type, target_module_id, target_score, ends_at, badge_emoji } = req.body;
-    if (!title || !ends_at) return res.status(400).json({ error: 'title and ends_at required' });
-    const r = await db.query(
-      `INSERT INTO team_challenges (restaurant_id, title, description, challenge_type, target_module_id, target_score, ends_at, badge_emoji, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [restaurantId, title, description || null, challenge_type || 'quiz', target_module_id || null, target_score || 80, ends_at, badge_emoji || '🏆', req.user.id]
-    );
-    res.json({ challenge: r.rows[0] });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/manager/challenges', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ challenges: [] });
-    const r = await db.query(
-      `SELECT c.*, (SELECT COUNT(*) FROM team_challenge_entries e WHERE e.challenge_id = c.id) AS entry_count
-       FROM team_challenges c WHERE c.restaurant_id = $1 ORDER BY c.created_at DESC`,
-      [restaurantId]
-    );
-    res.json({ challenges: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.delete('/api/manager/challenges/:id', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    await db.query('DELETE FROM team_challenges WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/challenges', authMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ challenges: [] });
-    const r = await db.query(
-      `SELECT c.*, e.score AS my_score, e.completed_at AS my_completed_at
-       FROM team_challenges c
-       LEFT JOIN team_challenge_entries e ON e.challenge_id = c.id AND e.user_id = $2
-       WHERE c.restaurant_id = $1 AND c.ends_at > NOW() AND c.is_active = TRUE
-       ORDER BY c.ends_at ASC`,
-      [restaurantId, req.user.id]
-    );
-    res.json({ challenges: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.post('/api/challenges/:id/submit', authMiddleware, async (req, res) => {
-  try {
-    const { score } = req.body;
-    const challengeRes = await db.query('SELECT * FROM team_challenges WHERE id=$1', [req.params.id]);
-    if (!challengeRes.rows.length) return res.status(404).json({ error: 'Not found' });
-    await db.query(
-      `INSERT INTO team_challenge_entries (challenge_id, user_id, score)
-       VALUES ($1,$2,$3)
-       ON CONFLICT (challenge_id, user_id) DO UPDATE SET score=GREATEST(team_challenge_entries.score,$3), completed_at=NOW()`,
-      [req.params.id, req.user.id, score || 0]
-    );
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/challenges/:id/leaderboard', authMiddleware, async (req, res) => {
-  try {
-    const r = await db.query(
-      `SELECT u.name, e.score, e.completed_at
-       FROM team_challenge_entries e
-       JOIN users u ON u.id = e.user_id
-       WHERE e.challenge_id = $1 ORDER BY e.score DESC, e.completed_at ASC LIMIT 20`,
-      [req.params.id]
-    );
-    res.json({ leaderboard: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Custom AI Guest Personas API ──────────────────────────────────────────────────
-
-app.get('/api/manager/personas', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ personas: [] });
-    const r = await db.query('SELECT * FROM custom_personas WHERE restaurant_id=$1 ORDER BY created_at DESC', [restaurantId]);
-    res.json({ personas: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.post('/api/manager/personas', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
-    const { name, role, difficulty, scenario_prompt, emoji } = req.body;
-    if (!name || !scenario_prompt) return res.status(400).json({ error: 'name and scenario_prompt required' });
-    const r = await db.query(
-      `INSERT INTO custom_personas (restaurant_id, name, role, difficulty, scenario_prompt, emoji, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [restaurantId, name, role || 'Guest', difficulty || 'medium', scenario_prompt, emoji || '🎭', req.user.id]
-    );
-    res.json({ persona: r.rows[0] });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.put('/api/manager/personas/:id', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    const { name, role, difficulty, scenario_prompt, emoji, is_active } = req.body;
-    const r = await db.query(
-      `UPDATE custom_personas SET name=$1,role=$2,difficulty=$3,scenario_prompt=$4,emoji=$5,is_active=$6
-       WHERE id=$7 AND restaurant_id=$8 RETURNING *`,
-      [name, role || 'Guest', difficulty || 'medium', scenario_prompt, emoji || '🎭', is_active !== false, req.params.id, restaurantId]
-    );
-    res.json({ persona: r.rows[0] });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.delete('/api/manager/personas/:id', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    await db.query('DELETE FROM custom_personas WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/personas', authMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ personas: [] });
-    const r = await db.query(
-      'SELECT * FROM custom_personas WHERE restaurant_id=$1 AND is_active=TRUE ORDER BY created_at ASC',
-      [restaurantId]
-    );
-    res.json({ personas: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Custom Module Builder API ─────────────────────────────────────────────────────
-
-app.get('/api/manager/custom-modules', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ modules: [] });
-    const r = await db.query(
-      `SELECT m.*,
-        (SELECT COUNT(*) FROM custom_module_sections s WHERE s.module_id=m.id) AS section_count,
-        (SELECT COUNT(*) FROM custom_module_questions q WHERE q.module_id=m.id) AS question_count
-       FROM custom_modules m WHERE m.restaurant_id=$1 ORDER BY m.created_at DESC`,
-      [restaurantId]
-    );
-    res.json({ modules: r.rows });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.post('/api/manager/custom-modules', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.status(400).json({ error: 'No restaurant' });
-    const { title, emoji, description, mins, sections, questions } = req.body;
-    if (!title) return res.status(400).json({ error: 'title required' });
-    const mRes = await db.query(
-      `INSERT INTO custom_modules (restaurant_id, title, emoji, description, mins, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [restaurantId, title, emoji || '📚', description || '', mins || 10, req.user.id]
-    );
-    const mod = mRes.rows[0];
-    if (sections?.length) {
-      for (let i = 0; i < sections.length; i++) {
-        await db.query(
-          'INSERT INTO custom_module_sections (module_id,sort_order,heading,body) VALUES ($1,$2,$3,$4)',
-          [mod.id, i, sections[i].heading, sections[i].body]
-        );
-      }
-    }
-    if (questions?.length) {
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        await db.query(
-          'INSERT INTO custom_module_questions (module_id,sort_order,question,options,correct_index,explanation) VALUES ($1,$2,$3,$4,$5,$6)',
-          [mod.id, i, q.question, JSON.stringify(q.options || []), q.correct_index || 0, q.explanation || null]
-        );
-      }
-    }
-    res.json({ module: mod });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.put('/api/manager/custom-modules/:id', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    const { title, emoji, description, mins, is_published, sections, questions } = req.body;
-    await db.query(
-      `UPDATE custom_modules SET title=$1,emoji=$2,description=$3,mins=$4,is_published=$5,updated_at=NOW()
-       WHERE id=$6 AND restaurant_id=$7`,
-      [title, emoji || '📚', description || '', mins || 10, is_published || false, req.params.id, restaurantId]
-    );
-    if (sections !== undefined) {
-      await db.query('DELETE FROM custom_module_sections WHERE module_id=$1', [req.params.id]);
-      for (let i = 0; i < sections.length; i++) {
-        await db.query(
-          'INSERT INTO custom_module_sections (module_id,sort_order,heading,body) VALUES ($1,$2,$3,$4)',
-          [req.params.id, i, sections[i].heading, sections[i].body]
-        );
-      }
-    }
-    if (questions !== undefined) {
-      await db.query('DELETE FROM custom_module_questions WHERE module_id=$1', [req.params.id]);
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        await db.query(
-          'INSERT INTO custom_module_questions (module_id,sort_order,question,options,correct_index,explanation) VALUES ($1,$2,$3,$4,$5,$6)',
-          [req.params.id, i, q.question, JSON.stringify(q.options || []), q.correct_index || 0, q.explanation || null]
-        );
-      }
-    }
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.delete('/api/manager/custom-modules/:id', managerMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    await db.query('DELETE FROM custom_modules WHERE id=$1 AND restaurant_id=$2', [req.params.id, restaurantId]);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/custom-modules', authMiddleware, async (req, res) => {
-  try {
-    const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
-    const restaurantId = uRes.rows[0]?.restaurant_id;
-    if (!restaurantId) return res.json({ modules: [] });
-    const mRes = await db.query(
-      'SELECT * FROM custom_modules WHERE restaurant_id=$1 AND is_published=TRUE ORDER BY created_at ASC',
-      [restaurantId]
-    );
-    const result = [];
-    for (const mod of mRes.rows) {
-      const sections = await db.query('SELECT * FROM custom_module_sections WHERE module_id=$1 ORDER BY sort_order', [mod.id]);
-      const questions = await db.query('SELECT * FROM custom_module_questions WHERE module_id=$1 ORDER BY sort_order', [mod.id]);
-      result.push({ ...mod, sections: sections.rows, questions: questions.rows });
-    }
-    res.json({ modules: result });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'public', 'home.html'));
-});
-
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message);
-  res.status(500).json({ error: 'Internal server error' });
-});
 
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
