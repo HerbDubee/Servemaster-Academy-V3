@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handling Guest Allergies & Dietary Restrictions: A Server’s Practical Guide – ServeMaster Academy</title>
+  <meta name="description" content="How to confidently handle allergies, dietary restrictions, and special requests without stress. Practical steps, phrasing, and kitchen communication that keeps guests safe and builds trust.">
+  <meta property="og:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="Handling Guest Allergies & Dietary Restrictions: A Server’s Practical Guide – ServeMaster Academy">
+  <meta property="og:description" content="How to confidently handle allergies, dietary restrictions, and special requests without stress. Practical steps, phrasing, and kitchen communication that keeps guests safe and builds trust.">
+  <meta property="og:url" content="https://servemasteracademy.ca/blog/handling-guest-allergies">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ServeMaster Academy">
+  <link rel="canonical" href="https://servemasteracademy.ca/blog/handling-guest-allergies">
+  <meta name="blog-category" content="guest-interaction">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://servemasteracademy.ca/img/og/og-server-skills.png">
+  <meta name="twitter:title" content="Handling Guest Allergies & Dietary Restrictions: A Server’s Practical Guide – ServeMaster Academy">
+  <meta name="twitter:description" content="How to confidently handle allergies, dietary restrictions, and special requests without stress. Practical steps, phrasing, and kitchen communication that keeps guests safe and builds trust.">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; color: #d4d4d8; }
+    .prose h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #fafafa; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #fafafa; }
+    .prose ul { margin-bottom: 1.25rem; padding-left: 1.5rem; color: #d4d4d8; }
+    .prose ul li { margin-bottom: 0.5rem; list-style-type: disc; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1.25rem; margin: 1.75rem 0; color: #a1a1aa; font-style: italic; }
+    @media (max-width: 1024px) {
+      nav { flex-direction: column; padding: 1rem; }
+      .nav-links { flex-direction: column; width: 100%; gap: 1rem; margin-top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2"><img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto"></a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors" data-i18n="nav_home">Home</a>
+      <a href="/features" class="hover:text-white transition-colors" data-i18n="nav_features">Academy</a>
+      <a href="/blog" class="text-white" data-i18n="nav_blog">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="hover:text-white transition-colors" data-i18n="nav_roleplay">Roleplay Training</a>
+      <a href="/pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Pricing</a>
+      <a href="/scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;" data-i18n="nav_scholarship">Scholarship</a>
+      <a href="/about" class="hover:text-white transition-colors" data-i18n="nav_about">About</a>
+      <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
+      <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-selector"><button onclick="toggleLangMenu()" id="lang-btn" class="text-zinc-400 hover:text-white text-xs font-bold tracking-widest border border-zinc-700 hover:border-zinc-500 rounded-full px-3 py-1.5 transition-all">EN</button><div id="lang-menu" class="hidden absolute right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px]"><button data-lang-option="en" onclick="setLang('en')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">English</button><button data-lang-option="fr" onclick="setLang('fr')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Français</button><button data-lang-option="es" onclick="setLang('es')" class="block w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Español</button></div></div>
+      <a href="/login" class="hidden md:inline text-zinc-400 hover:text-white text-sm font-medium transition-colors" data-i18n="nav_login">Log in</a>
+      <a href="/signup" class="hidden md:inline font-bold px-5 py-2.5 rounded-2xl text-sm transition-colors" style="background-color:#FF5E3A;color:#fff;" data-i18n="nav_cta">Get Started Free</a>
+      <button onclick="toggleMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+        <span class="w-6 h-0.5 bg-white block"></span>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/blog" class="text-white py-4 border-b border-zinc-800 text-sm font-medium">Knowledge Centre</a>
+      <a href="/ai-roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
+      <a href="/pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/scholarship" class="text-sky-400 py-4 border-b border-zinc-800 text-sm font-semibold">Scholarship</a>
+      <a href="/about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 text-sm font-medium hover:text-white">Free Checklist</a>
+      <div class="pt-4 flex gap-3">
+        <a href="/login" class="flex-1 text-center text-zinc-400 hover:text-white text-sm font-medium py-3 border border-zinc-700 rounded-2xl">Log in</a>
+        <a href="/signup" class="flex-1 text-center font-bold text-sm py-3 rounded-2xl" style="background-color:#FF5E3A;color:#fff;">Get Started Free</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 py-16">
+  <!-- Article Header -->
+  <a href="/blog" class="text-amber-400 text-sm hover:underline">← Back to Knowledge Centre</a>
+  <div class="mt-8 mb-12">
+    <div id="article-meta" class="flex items-center gap-3 mb-5">
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Guest Safety</span>
+      <span>8 <span data-i18n="blog_min_read">min read</span></span>
+    </div>
+    <h1 class="heading text-4xl lg:text-5xl font-bold leading-tight mb-6">Handling Guest Allergies & Dietary Restrictions: A Server’s Practical Guide</h1>
+    <p class="text-zinc-400 text-lg leading-relaxed">One of the fastest ways to lose a guest’s trust — and potentially create a serious safety issue — is mishandling an allergy or dietary restriction. Here’s how to do it confidently, professionally, and safely every single time.</p>
+  </div>
+
+  <div class="prose">
+    <p>Allergies and dietary restrictions are no longer niche concerns. In 2026, a significant percentage of your guests will have some form of restriction — whether it’s a life-threatening peanut allergy, celiac disease, religious dietary laws, or a strong preference for plant-based eating. How you handle these moments defines whether that guest feels safe in your restaurant and whether they’ll return.</p>
+
+    <h2>Why this matters more than most servers realize</h2>
+    <p>A guest with a serious allergy is not just making a request — they are placing their health and, in some cases, their life in your hands. A single mistake can lead to an anaphylactic reaction, a hospital visit, or worse. Even when the restriction is not life-threatening, getting it wrong signals to the guest that you don’t care about their needs.</p>
+    <p>The restaurants and servers who handle this well don’t just avoid disasters — they create loyal regulars who specifically ask for the server who “gets it.”</p>
+
+    <h2>The professional mindset shift</h2>
+    <p>Stop thinking of allergies as “extra work” or “complicated orders.” Reframe them as an opportunity to demonstrate professionalism and care. The best servers treat every allergy or restriction with the same seriousness as a credit card payment — it’s non-negotiable.</p>
+
+    <h2>The 5-step allergy protocol</h2>
+    
+    <h3>1. Ask early and ask clearly</h3>
+    <p>The best time to ask about allergies is during the initial greeting or when taking the first drink order — before any food discussion begins.</p>
+    <p><strong>Good phrasing:</strong></p>
+    <ul>
+      <li>“Before we get into the menu, does anyone at the table have any allergies or dietary restrictions I should know about?”</li>
+      <li>“Just so I can make sure everything is perfect for you — any allergies or things you need to avoid?”</li>
+    </ul>
+    <p>Notice the language: “does anyone at the table” (not just the person ordering) and “things you need to avoid” (more inclusive than just “allergies”).</p>
+
+    <h3>2. Listen without interrupting</h3>
+    <p>When a guest explains their restriction, let them finish. Do not jump in with “We can do that” or “No problem” before you fully understand what they’re asking. Many restrictions have nuances (e.g., “I can’t have anything that touched nuts” vs. “I just don’t like nuts”).</p>
+
+    <h3>3. Repeat it back clearly</h3>
+    <p>This is the most important step and the one most servers skip.</p>
+    <p><strong>Example:</strong> “So just to make sure I have this right — you have a severe peanut allergy, and we need to make sure there’s absolutely no cross-contamination with any of your food or drinks. Is that correct?”</p>
+    <p>Only after they confirm do you move forward. This single habit dramatically reduces mistakes.</p>
+
+    <h3>4. Communicate with the kitchen immediately and clearly</h3>
+    <p>Never assume the kitchen will “just know.” Use your restaurant’s allergy protocol (most have one). If you don’t have a formal system, create one with your manager.</p>
+    <p>Good practice: Write the allergy clearly on the ticket and verbally tell the kitchen or expo: “Table 12 has a severe nut allergy — no cross-contamination at all.”</p>
+
+    <h3>5. Follow up at the table</h3>
+    <p>When the food arrives, a quick, discreet check builds enormous trust:</p>
+    <p>“I just double-checked with the kitchen — your dish was prepared separately with clean equipment. You’re all good.”</p>
+    <p>This 10-second reassurance is often what turns a nervous guest into a relaxed, generous one.</p>
+
+    <blockquote>“The guest with the allergy isn’t trying to be difficult. They’re trying to stay safe. Your job is to make that safety feel effortless.”</blockquote>
+
+    <h2>Common mistakes that destroy trust</h2>
+    <ul>
+      <li><strong>Minimizing the restriction</strong> — “It’s just a little bit of cheese, you’ll be fine.” Never say this.</li>
+      <li><strong>Making assumptions</strong> — Assuming “gluten-free” means they can have a little breading or that “vegan” means they don’t mind honey.</li>
+      <li><strong>Promising what you can’t deliver</strong> — Never say “We can definitely do that” before checking with the kitchen.</li>
+      <li><strong>Cross-contamination blindness</strong> — Using the same cutting board, fryer, or utensils without thinking.</li>
+    </ul>
+
+    <h2>Special situations worth extra care</h2>
+    
+    <h3>Celiac disease</h3>
+    <p>This is not a preference — it’s an autoimmune condition. Even tiny amounts of gluten can cause serious damage. Treat it with the same seriousness as a nut allergy.</p>
+
+    <h3>Religious restrictions (Halal, Kosher, Hindu, etc.)</h3>
+    <p>Never make assumptions about what is or isn’t acceptable. Ask respectfully and let the guest guide you. Many guests appreciate when you proactively offer options rather than forcing them to ask.</p>
+
+    <h3>Plant-based / Vegan requests</h3>
+    <p>These are often lifestyle choices rather than medical needs, but they still deserve respect. Many vegan guests are also watching for cross-contamination with animal products. Don’t assume they’re “less serious” than medical allergies.</p>
+
+    <h2>When to involve a manager or chef</h2>
+    <p>Involve leadership immediately when:</p>
+    <ul>
+      <li>The guest has a life-threatening allergy and seems nervous</li>
+      <li>The kitchen is unsure or resistant about accommodating the request</li>
+      <li>You’re not 100% confident the dish can be made safely</li>
+      <li>The guest specifically asks to speak with a manager</li>
+    </ul>
+
+    <h2>The bottom line</h2>
+    <p>Handling allergies and dietary restrictions well is no longer optional — it’s table stakes for professional service. The servers who do this consistently become the ones management trusts with the most demanding guests, and the ones guests specifically request.</p>
+    <p>It’s not about memorizing every possible restriction. It’s about having a calm, repeatable process and treating every guest’s safety with genuine care.</p>
+
+    <p><a href="/pricing" class="text-amber-400 hover:underline">Practice allergy and special-request scenarios with Roleplay Training — start free</a>.</p>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="mt-16 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">
+    <h3 class="heading text-2xl font-bold mb-3">Train for the moments that matter most</h3>
+    <p class="text-zinc-400 mb-6">ServeMaster Academy’s Roleplay Training includes realistic allergy conversations, kitchen communication scenarios, and high-stakes guest interactions — so you’re prepared before the moment arrives. Free to start.</p>
+    <a href="/signup" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-10 py-4 rounded-2xl transition-colors">Get Started Free</a>
+  </div>
+
+  <!-- Related Articles -->
+  <div class="mt-16 border-t border-zinc-800 pt-10">
+    <p class="text-zinc-500 text-sm mb-6">More from the blog</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <a href="/blog/difficult-guests-playbook" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Difficult Guests</p>
+        <p class="font-semibold text-white">The Entitled Guest Playbook: Defusing Difficult Guests Without Losing Your Cool</p>
+      </a>
+      <a href="/blog/handle-complaints" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Service Recovery</p>
+        <p class="font-semibold text-white">How to Handle Complaints: The LAST Method That Turns Problems Into Loyalty</p>
+      </a>
+      <a href="/blog/recovering-from-mistakes" class="bg-zinc-900 rounded-2xl p-5 hover:border-amber-900 border border-zinc-800 transition-colors block">
+        <p class="text-zinc-400 text-xs mb-2 uppercase tracking-wide">Service Recovery</p>
+        <p class="font-semibold text-white">Recovering from Service Mistakes: The 4-Step Apology That Wins Loyalty</p>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer class="border-t border-zinc-800 mt-20">
+  <div class="max-w-7xl mx-auto px-4 py-12 text-sm text-zinc-500">
+    <div class="flex flex-col md:flex-row justify-between gap-8">
+      <div>
+        <p class="font-semibold text-white mb-2">ServeMaster Academy</p>
+        <p>AI-powered training for modern restaurant teams.</p>
+      </div>
+      <div class="flex flex-wrap gap-x-8 gap-y-2">
+        <a href="/about" class="hover:text-white">About</a>
+        <a href="/pricing" class="hover:text-white">Pricing</a>
+        <a href="/blog" class="hover:text-white">Knowledge Centre</a>
+        <a href="/ai-roleplay" class="hover:text-white">Roleplay Training</a>
+        <a href="/scholarship" class="hover:text-white">Scholarship</a>
+        <a href="/demo" class="hover:text-white">Book a Demo</a>
+      </div>
+    </div>
+    <div class="mt-12 pt-8 border-t border-zinc-800 text-xs flex flex-col md:flex-row justify-between gap-4">
+      <p>© 2026 ServeMaster Academy. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="/privacy" class="hover:text-white">Privacy</a>
+        <a href="/terms" class="hover:text-white">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  }
+  
+  function toggleLangMenu() {
+    const menu = document.getElementById('lang-menu');
+    menu.classList.toggle('hidden');
+  }
+  
+  function setLang(lang) {
+    document.getElementById('lang-menu').classList.add('hidden');
+    // Language switching logic would go here
+    console.log('Language set to:', lang);
+  }
+</script>
+
+</body>
+</html>
