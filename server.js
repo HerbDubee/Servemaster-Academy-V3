@@ -17,6 +17,9 @@ const db = require('./db');
 const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
 const { getChapter, getAllChapters } = require('./books/voice-map');
 const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
+const authRoutes = require('./routes/auth');
+// NOTE: COOKIE_OPTS is defined locally below (line ~165) and shared with lib/auth —
+// do not import it from lib/auth here or Node will throw "already declared".
 
 // Build a slug → { datePublished, dateModified } map once at startup.
 // Used by the sitemap and blog JSON-LD routes so dates are always accurate.
@@ -57,6 +60,7 @@ app.use((req, res, next) => {
 });
 app.use(compression());
 app.use(cookieParser());
+app.use('/auth', authRoutes); // Google OAuth (credential flow) + logout — see routes/auth.js
 // Force JS files to revalidate on every load so browser updates are never missed
 app.use(function (req, res, next) {
   if (req.path.endsWith('.js')) {
