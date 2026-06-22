@@ -15,7 +15,7 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `routes/curriculum.js` — roleplays, quizzes, chat config, AI chat stream, curriculum setup
 - `routes/features.js` — unsubscribe flow, scholarship applications, affiliate program, monthly affiliate email
 - `lib/cronJobs.js` — starts the three Monday-digest cron schedulers (`maybeRunManagerDigestCron`, `maybeRunOpenClawDigestCron`, `maybeRunKirkTrialDigestCron`)
-- `lib/emailHelpers.js` — shared email utilities (if extracted)
+- `lib/emailHelpers.js` — shared email utilities: `escapeHtml`, `getTenantBrandingForEmail`, `sendTrialDripEmails`, `getOrCreateUnsubToken`, `emailFooter`, `sendDripEmailIfDue`, `sendWeeklyManagerDigests`
 - `app.html` — Training SPA (auth-gated at `/app`)
 - `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
 - `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
