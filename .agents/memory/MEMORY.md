@@ -1,0 +1,1 @@
+- [Router middleware ordering](router-middleware-ordering.md) — routers needing req.body must mount AFTER express.json(); the Stripe router is intentionally before it for raw webhook body.
