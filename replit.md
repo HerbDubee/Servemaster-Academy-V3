@@ -4,7 +4,18 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 
 ## Architecture
 
-- `server.js` — Express backend (port 5000); all routes, auth, AI, Stripe, admin APIs, webhooks; email via Resend
+- `server.js` — Express backend (port 5000); startup, middleware, page routes, shared helpers (`escapeHtml`, `getTenantBrandingForEmail`, `sendWeeklyManagerDigests`, drip email helpers, schema migration IIFE). ~1,440 lines after route extraction.
+- `routes/auth.js` — Google OAuth credential flow + logout (mounted before `express.json`)
+- `routes/auth-email.js` — register, login, logout, forgot/reset-password, `/api/auth/me`, Google OAuth redirect+callback
+- `routes/stripe.js` — Stripe webhook (raw body), checkout, billing portal, payment status
+- `routes/manager.js` — all `/api/manager/*` endpoints (dashboard, staff, nudge, certificates, training plans, skill-gap, export, white-label, digest, deadline, assigned modules)
+- `routes/admin.js` — all `/api/admin/*` endpoints + OpenClaw digest, Kirk trial digest; exports `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest`
+- `routes/user.js` — progress, streaks, badges, scenarios, transcription, TTS, certificates, referrals, team
+- `routes/contact.js` — newsletter subscribe, contact form, enterprise inquiry, referral invite
+- `routes/curriculum.js` — roleplays, quizzes, chat config, AI chat stream, curriculum setup
+- `routes/features.js` — unsubscribe flow, scholarship applications, affiliate program, monthly affiliate email
+- `lib/cronJobs.js` — starts the three Monday-digest cron schedulers (`maybeRunManagerDigestCron`, `maybeRunOpenClawDigestCron`, `maybeRunKirkTrialDigestCron`)
+- `lib/emailHelpers.js` — shared email utilities (if extracted)
 - `app.html` — Training SPA (auth-gated at `/app`)
 - `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
 - `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
@@ -339,26 +350,10 @@ The script is idempotent: it skips slugs where the MP3 already exists. Use `--fo
 
 **Runtime fallback:** `public/js/blog-tts.js` performs a HEAD request to check whether the static file exists. If the HEAD returns 200 it streams the MP3; if 404 it falls back to a live OpenAI TTS chunked stream call, so the Listen button always works even without pre-generated files.
 
-## Git history note — audio commit cleanup
+## Git / repo notes
 
-The commit `6cdb849` (Pre-generate MP3 audio for all blog articles) added ~1.9 GB of MP3s to local git history but has **not been pushed to GitHub**. Before pushing to `origin`, remove it from history by running the following commands in the Replit shell:
-
-```bash
-# Un-commit the audio commit and the empty checkpoint above it,
-# keeping all non-audio changes staged
-git reset --soft HEAD~2
-
-# Unstage the audio directory (files stay on disk)
-git restore --staged public/audio/
-
-# Re-stage the scripts and any other changes from that commit
-git add scripts/generate-blog-audio.js public/js/blog-tts.js .gitignore replit.md
-
-# Re-commit cleanly (no audio files)
-git commit -m "Add blog audio pre-generation script and .gitignore for generated assets"
-```
-
-After this the local history will be clean and a normal `git push origin main` will work without bloating GitHub.
+- **Audio files** — `public/audio/blog/` is in `.gitignore`. The ~1.9 GB of pre-generated MP3s must never be committed. The audio commit history is already in `origin/main` (cannot be rewound without a force-push). Generate locally with `node scripts/generate-blog-audio.js`.
+- **`.env.local` tracking** — `.env.local` is in `.gitignore` but is currently still git-tracked by mistake (no secrets inside; all keys were removed). To stop tracking it, run once in the Replit shell: `git rm --cached .env.local` (file stays on disk). Note: this command is blocked in the Replit agent — run it manually in the Shell tab.
 
 ## Gotchas
 
