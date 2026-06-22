@@ -18,6 +18,7 @@ const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
 const { getChapter, getAllChapters } = require('./books/voice-map');
 const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
 const authRoutes = require('./routes/auth');
+const { errorHandler } = require('./middleware/errorHandler');
 // NOTE: COOKIE_OPTS is defined locally below (line ~165) and shared with lib/auth —
 // do not import it from lib/auth here or Node will throw "already declared".
 
@@ -6219,6 +6220,14 @@ app.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, as
   setInterval(runMonthlyAffiliateEmails, 6 * 60 * 60 * 1000);
   setTimeout(runMonthlyAffiliateEmails, 30000);
 })();
+
+// 404 catch-all — must come after all routes, before the error handler
+app.use((req, res) => {
+  res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
+});
+
+// Global error handler — must be mounted after all routes
+app.use(errorHandler);
 
 const server = app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
