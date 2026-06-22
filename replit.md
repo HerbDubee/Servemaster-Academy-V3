@@ -9,7 +9,9 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 - `routes/auth-email.js` — register, login, logout, forgot/reset-password, `/api/auth/me`, Google OAuth redirect+callback
 - `routes/stripe.js` — Stripe webhook (raw body), checkout, billing portal, payment status
 - `routes/manager.js` — all `/api/manager/*` endpoints (dashboard, staff, nudge, certificates, training plans, skill-gap, export, white-label, digest, deadline, assigned modules)
-- `routes/admin.js` — all `/api/admin/*` endpoints + OpenClaw digest, Kirk trial digest; exports `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest`
+- `routes/admin.js` — core `/api/admin/*` endpoints (tenants, users, modules, newsletter, scholarships, analytics, digests trigger routes); exports `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest` sourced from `lib/digests.js`
+- `routes/admin-affiliates.js` — all `/api/admin/affiliates/*` endpoints: CRUD, approve/reject, commissions, Stripe Connect onboarding, payout transfers, CSV export, monthly summaries
+- `lib/digests.js` — attribution + digest functions: `buildWeeklyAttribution`, `_renderAttributionDigestHtml`, `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest`; factory `createDigests({ db, resend, escapeHtml, APP_URL })`
 - `routes/user.js` — progress, streaks, badges, scenarios, transcription, TTS, certificates, referrals, team
 - `routes/contact.js` — newsletter subscribe, contact form, enterprise inquiry, referral invite
 - `routes/curriculum.js` — roleplays, quizzes, chat config, AI chat stream, curriculum setup
