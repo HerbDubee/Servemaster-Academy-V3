@@ -787,25 +787,26 @@ app.get('/novels/southern-flames', (req, res) => res.sendFile(path.join(__dirnam
 app.get('/novels/book-3', (req, res) => res.redirect(301, '/novels/southern-flames'));
 app.get('/novels/the-table-we-built', (req, res) => res.sendFile(path.join(__dirname, 'public', 'novels-the-table-we-built.html')));
 app.get('/novels/book-4', (req, res) => res.redirect(301, '/novels/the-table-we-built'));
-app.get('/books/Novel1.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Covers - First Crossings.pdf');
+// Dynamic book PDF downloads — drop a PDF into books/ and it's served at
+// /books/<filename>.pdf with no server changes. Legacy NovelN.pdf URLs are
+// mapped to their actual cover filenames so existing novel pages keep working.
+const LEGACY_BOOK_PDF_ALIASES = {
+  'Novel1.pdf': { file: 'Covers - First Crossings.pdf', download: 'First Crossings.pdf' },
+  'Novel2.pdf': { file: 'Covers - Eastern Sparks.pdf', download: 'Eastern Sparks.pdf' },
+  'Novel3.pdf': { file: 'Covers - Southern Flames.pdf', download: 'Southern Flames.pdf' },
+  'Novel4.pdf': { file: 'Novel4.pdf', download: 'The-Table-We-Built.pdf' },
+};
+app.get('/books/:filename', (req, res) => {
+  const requested = path.basename(req.params.filename);
+  if (!requested.toLowerCase().endsWith('.pdf')) {
+    return res.status(404).send('PDF not yet available');
+  }
+  const alias = LEGACY_BOOK_PDF_ALIASES[requested];
+  const fileName = alias ? alias.file : requested;
+  const downloadName = alias ? alias.download : requested;
+  const pdfPath = path.join(__dirname, 'books', fileName);
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Covers - First Crossings.pdf');
-});
-app.get('/books/Novel2.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Covers - Eastern Sparks.pdf');
-  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Covers - Eastern Sparks.pdf');
-});
-app.get('/books/Novel3.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Covers - Southern Flames.pdf');
-  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'Covers - Southern Flames.pdf');
-});
-app.get('/books/Novel4.pdf', (req, res) => {
-  const pdfPath = path.join(__dirname, 'books', 'Novel4.pdf');
-  if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
-  res.download(pdfPath, 'The-Table-We-Built.pdf');
+  res.download(pdfPath, downloadName);
 });
 // ── Novel reader API ──────────────────────────────────────────────────────────
 // Chapter list for a given book (voice-map is the single source of truth).
