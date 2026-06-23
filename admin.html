@@ -306,6 +306,10 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                 <option value="newsletter">Newsletter subscribers</option>
                 <option value="all">All subscribers</option>
               </select>
+              <button id="btn-book-launch-preview" onclick="previewBookLaunchEmail()"
+                class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+                👁 Preview
+              </button>
               <button id="btn-book-launch" onclick="sendBookLaunchEmail()" disabled
                 class="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-900 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
                 📖 Send Launch Email
@@ -1549,6 +1553,39 @@ function updateBookLaunchUI() {
   } else {
     statusEl.textContent = `${unsent} subscriber${unsent !== 1 ? 's' : ''} will receive the launch email${sent > 0 ? ` · ${sent} already sent` : ''}.`;
     btn.disabled = false;
+  }
+}
+
+async function previewBookLaunchEmail() {
+  const btn = document.getElementById('btn-book-launch-preview');
+  const statusEl = document.getElementById('book-launch-status');
+  // Open the tab synchronously so the browser doesn't block it as a popup.
+  const win = window.open('', '_blank');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try {
+    const source = document.getElementById('book-launch-source').value;
+    const data = await apiFetch('/api/admin/newsletter/preview-book-launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'html', source })
+    });
+    if (data.error || !data.html) {
+      if (win) win.close();
+      statusEl.textContent = `Error: ${data.error || 'Could not render preview.'}`;
+    } else if (win) {
+      win.document.open();
+      win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Preview: ${data.subject || 'Launch email'}</title></head><body style="margin:0;background:#18181b;padding:24px;">${data.html}</body></html>`);
+      win.document.close();
+      win.document.title = `Preview: ${data.subject || 'Launch email'}`;
+    }
+  } catch (e) {
+    if (win) win.close();
+    statusEl.textContent = 'Network error generating preview.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
   }
 }
 

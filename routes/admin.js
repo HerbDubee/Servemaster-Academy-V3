@@ -479,6 +479,66 @@ module.exports = function createAdminRouter({
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch book launch status' })); }
   });
 
+  const BOOK_LAUNCH_SUBJECT = 'Eastern Sparks is here — Book 2 of the Covers series is now live';
+
+  function buildBookLaunchEmailHtml(appUrl, greeting, email, intro, footerReason) {
+    const introText = intro || 'You asked us to let you know — so here it is.';
+    const footerText = footerReason || 'You\'re receiving this because you signed up for book launch notifications at servemasteracademy.ca.';
+    return `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+  <img src="${appUrl}/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:28px;">
+  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${greeting}</p>
+  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${introText}</p>
+  <div style="background:#1c1a14;border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:28px;margin:28px 0;text-align:center;">
+    <p style="font-size:11px;color:#a3a3a3;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">Book 2 of the Covers Series</p>
+    <h1 style="font-size:36px;font-weight:900;color:#fbbf24;margin:0 0 6px;font-family:'Montserrat',Georgia,sans-serif;letter-spacing:-0.02em;">Eastern <span style="color:#f5f5f5;">Sparks</span></h1>
+    <p style="font-size:13px;color:#a3a3a3;margin:0 0 20px;">Tokyo &nbsp;·&nbsp; Bangkok &nbsp;·&nbsp; Singapore</p>
+    <p style="font-size:15px;color:#d4d4d4;line-height:1.75;margin:0 0 24px;font-style:italic;">In Tokyo, Bangkok, and Singapore, Luca and Sofia finally speak — and the slow-burn romance ignites. But just as something real begins, life pulls them apart again.</p>
+    <a href="${appUrl}/novels" style="display:inline-block;background:#fbbf24;color:#09090b;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none;">Read Eastern Sparks →</a>
+  </div>
+  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:16px;">If you haven't finished <em>First Crossings</em> yet, you can <a href="${appUrl}/novels/first-crossings" style="color:#fbbf24;text-decoration:none;">catch up here</a> before diving into Book 2.</p>
+  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:32px;">Enjoy the read.</p>
+  <p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#fbbf24;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
+  <hr style="border:none;border-top:1px solid #27272a;margin:32px 0 20px;">
+  <p style="font-size:11px;color:#52525b;line-height:1.6;">${footerText} <a href="${appUrl}/unsubscribe?email=${encodeURIComponent(email)}" style="color:#52525b;">Unsubscribe</a></p>
+</div>`;
+  }
+
+  // Preview the launch email without marking any subscriber as sent.
+  // mode=html → returns rendered HTML for a new-tab preview.
+  // mode=test → sends a single test email to the admin's own address.
+  router.post('/api/admin/newsletter/preview-book-launch', adminMiddleware, express.json(), async (req, res, next) => {
+    try {
+      const appUrl = process.env.APP_URL || 'https://servemasteracademy.ca';
+      const admin = await db.query('SELECT email, name FROM users WHERE id = $1', [req.user.id]);
+      const adminEmail = admin.rows[0]?.email || 'preview@servemasteracademy.ca';
+      const firstName = admin.rows[0]?.name ? admin.rows[0].name.split(' ')[0] : null;
+      const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : 'Hi,';
+      const isNewsletter = req.body && req.body.source === 'newsletter';
+      const intro = isNewsletter
+        ? 'We just released something we think you\'ll love.'
+        : 'You asked us to let you know — so here it is.';
+      const footerReason = isNewsletter
+        ? "You're receiving this because you subscribed to the ServeMaster Academy newsletter."
+        : 'You\'re receiving this because you signed up for book launch notifications at servemasteracademy.ca.';
+      const html = buildBookLaunchEmailHtml(appUrl, greeting, adminEmail, intro, footerReason);
+
+      if (req.body && req.body.mode === 'test') {
+        await resend.emails.send({
+          from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+          to: adminEmail,
+          subject: `[TEST] ${BOOK_LAUNCH_SUBJECT}`,
+          html
+        });
+        return res.json({ preview: true, mode: 'test', to: adminEmail });
+      }
+
+      res.json({ preview: true, mode: 'html', subject: BOOK_LAUNCH_SUBJECT, html });
+    } catch (err) {
+      console.error('Preview book launch error:', err.message);
+      next(Object.assign(err, { publicMessage: 'Failed to preview book launch email' }));
+    }
+  });
+
   router.post('/api/admin/newsletter/send-book-launch', adminMiddleware, express.json(), async (req, res, next) => {
     try {
       const requested = (req.body && req.body.source) || 'covers-series';
@@ -511,24 +571,8 @@ module.exports = function createAdminRouter({
           await resend.emails.send({
             from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
             to: sub.email,
-            subject: 'Eastern Sparks is here — Book 2 of the Covers series is now live',
-            html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
-  <img src="${appUrl}/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:28px;">
-  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${greeting}</p>
-  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${intro}</p>
-  <div style="background:#1c1a14;border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:28px;margin:28px 0;text-align:center;">
-    <p style="font-size:11px;color:#a3a3a3;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">Book 2 of the Covers Series</p>
-    <h1 style="font-size:36px;font-weight:900;color:#fbbf24;margin:0 0 6px;font-family:'Montserrat',Georgia,sans-serif;letter-spacing:-0.02em;">Eastern <span style="color:#f5f5f5;">Sparks</span></h1>
-    <p style="font-size:13px;color:#a3a3a3;margin:0 0 20px;">Tokyo &nbsp;·&nbsp; Bangkok &nbsp;·&nbsp; Singapore</p>
-    <p style="font-size:15px;color:#d4d4d4;line-height:1.75;margin:0 0 24px;font-style:italic;">In Tokyo, Bangkok, and Singapore, Luca and Sofia finally speak — and the slow-burn romance ignites. But just as something real begins, life pulls them apart again.</p>
-    <a href="${appUrl}/novels" style="display:inline-block;background:#fbbf24;color:#09090b;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none;">Read Eastern Sparks →</a>
-  </div>
-  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:16px;">If you haven't finished <em>First Crossings</em> yet, you can <a href="${appUrl}/novels/first-crossings" style="color:#fbbf24;text-decoration:none;">catch up here</a> before diving into Book 2.</p>
-  <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:32px;">Enjoy the read.</p>
-  <p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#fbbf24;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
-  <hr style="border:none;border-top:1px solid #27272a;margin:32px 0 20px;">
-  <p style="font-size:11px;color:#52525b;line-height:1.6;">${footerReason} <a href="${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#52525b;">Unsubscribe</a></p>
-</div>`
+            subject: BOOK_LAUNCH_SUBJECT,
+            html: buildBookLaunchEmailHtml(appUrl, greeting, sub.email, intro, footerReason)
           });
           await db.query(
             `UPDATE email_subscribers SET book_launch_sent_at = NOW() WHERE email = $1`,
