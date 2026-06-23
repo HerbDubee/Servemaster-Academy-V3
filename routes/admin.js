@@ -1,16 +1,23 @@
 const express = require('express');
 const createDigests = require('../lib/digests');
 const createAdminAffiliatesRouter = require('./admin-affiliates');
+const { validate } = require('../middleware/validate');
+const {
+  createTenantSchema,
+  updateUserSchema,
+  provisionTrialSchema,
+  sendTrialCodeSchema,
+  createInviteCodeSchema,
+  updateInviteCodeSchema,
+  sendEmailSchema,
+  siteSettingSchema,
+} = require('../lib/schemas');
 
 const BOOK_LAUNCH_SOURCES = ['covers-series', 'newsletter'];
 const SCHOLARSHIP_MONTHLY_CAP = 15;
 const SCHOLARSHIP_DAYS = 60;
 const TOTAL_MODULES = 30;
 const TOTAL_SCENARIOS = 36;
-
-function isValidHex(color) {
-  return /^#[0-9a-fA-F]{6}$/.test(color);
-}
 
 const DEMO_USERS = [
   { name: 'Sophie Tremblay',   email: 'sophie.tremblay.sma@example.com',   modules: 30 },
@@ -193,11 +200,8 @@ module.exports = function createAdminRouter({
     } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to update tenant' })); }
   });
 
-  router.post('/api/admin/tenants', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/tenants', adminMiddleware, express.json(), validate(createTenantSchema), async (req, res, next) => {
     const { brandName, managerEmail, primaryColor } = req.body;
-    if (!brandName) return res.status(400).json({ error: 'Brand name is required' });
-    if (!managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerEmail)) return res.status(400).json({ error: 'Valid manager email is required' });
-    if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid color — use #rrggbb format' });
     try {
       const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       let managerUser = (await db.query('SELECT id, role FROM users WHERE email = $1', [managerEmail.toLowerCase()])).rows[0];
@@ -328,15 +332,10 @@ module.exports = function createAdminRouter({
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch users' })); }
   });
 
-  router.patch('/api/admin/users/:id', adminMiddleware, async (req, res, next) => {
+  router.patch('/api/admin/users/:id', adminMiddleware, express.json(), validate(updateUserSchema), async (req, res, next) => {
     try {
       const { id } = req.params;
       const { plan, role } = req.body;
-      const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
-      const validRoles = ['user', 'manager', 'admin'];
-      if (!plan && !role) return res.status(400).json({ error: 'Provide plan and/or role' });
-      if (plan && !validPlans.includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
-      if (role && !validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
       const fields = [];
       const vals = [];
       if (plan) { fields.push(`subscription_status = $${vals.length + 1}`); vals.push(plan); }
@@ -581,7 +580,7 @@ module.exports = function createAdminRouter({
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch team trial requests' })); }
   });
 
-  router.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, express.json(), validate(provisionTrialSchema), async (req, res, next) => {
     try {
       const { id } = req.params;
       if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
@@ -595,7 +594,7 @@ module.exports = function createAdminRouter({
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to update trial request' })); }
   });
 
-  router.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, express.json(), validate(sendTrialCodeSchema), async (req, res, next) => {
     try {
       const { id } = req.params;
       if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
@@ -668,7 +667,7 @@ module.exports = function createAdminRouter({
   });
 
   // ── Invite codes ──────────────────────────────────────────────────────────────
-  router.post('/api/admin/invite-codes', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/invite-codes', adminMiddleware, express.json(), validate(createInviteCodeSchema), async (req, res, next) => {
     try {
       const { plan = 'premium', maxUses = 1, expiresAt, accessDays = 0 } = req.body;
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -698,10 +697,8 @@ module.exports = function createAdminRouter({
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch invite codes' })); }
   });
 
-  router.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res, next) => {
-    const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
+  router.patch('/api/admin/invite-codes/:code', adminMiddleware, express.json(), validate(updateInviteCodeSchema), async (req, res, next) => {
     const { plan } = req.body;
-    if (!plan || !validPlans.includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
     try {
       const r = await db.query('UPDATE invite_codes SET plan = $1 WHERE code = $2 RETURNING code', [plan, req.params.code]);
       if (!r.rows.length) return res.status(404).json({ error: 'Code not found' });
@@ -725,9 +722,8 @@ module.exports = function createAdminRouter({
   });
 
   // ── Send email ────────────────────────────────────────────────────────────────
-  router.post('/api/admin/send-email', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/send-email', adminMiddleware, express.json(), validate(sendEmailSchema), async (req, res, next) => {
     const { emailType, userEmail } = req.body;
-    if (!emailType || !userEmail) return res.status(400).json({ error: 'emailType and userEmail required' });
     try {
       const uRes = await db.query('SELECT name, email FROM users WHERE email = $1', [userEmail.toLowerCase()]);
       if (!uRes.rows.length) return res.status(404).json({ error: 'User not found' });
@@ -997,10 +993,9 @@ module.exports = function createAdminRouter({
     } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to load settings' })); }
   });
 
-  router.post('/api/admin/site-settings', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/site-settings', adminMiddleware, express.json(), validate(siteSettingSchema), async (req, res, next) => {
     try {
       const { key, value } = req.body;
-      if (!key) return res.status(400).json({ error: 'key required' });
       if (key === 'kirk_trial_digest_hour_et') {
         const h = Number(value);
         if (!Number.isInteger(h) || h < 0 || h > 23) return res.status(400).json({ error: 'kirk_trial_digest_hour_et must be an integer 0–23' });

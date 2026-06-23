@@ -5,6 +5,19 @@ const crypto  = require('crypto');
 const jwt     = require('jsonwebtoken');
 const puppeteer = require('puppeteer');
 const db      = require('../db');
+const { validate } = require('../middleware/validate');
+const {
+  createRestaurantSchema,
+  joinRestaurantSchema,
+  whiteLabelSchema,
+  userIdBodySchema,
+  digestPreferenceSchema,
+  deadlineSchema,
+  assignModuleSchema,
+  createTrainingPlanSchema,
+  trainingPlanItemSchema,
+  certLogoSchema,
+} = require('../lib/schemas');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -74,9 +87,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Restaurant / onboarding ──────────────────────────────────────────────────
 
-  router.post('/api/manager/create-restaurant', authMiddleware, async (req, res, next) => {
+  router.post('/api/manager/create-restaurant', authMiddleware, express.json(), validate(createRestaurantSchema), async (req, res, next) => {
     const { restaurantName } = req.body;
-    if (!restaurantName) return res.status(400).json({ error: 'Restaurant name required' });
     try {
       const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       const result = await db.query('INSERT INTO restaurants (name, owner_id, invite_code) VALUES ($1, $2, $3) RETURNING *', [restaurantName, req.user.id, inviteCode]);
@@ -86,9 +98,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to create restaurant' })); }
   });
 
-  router.post('/api/manager/join', authMiddleware, async (req, res, next) => {
+  router.post('/api/manager/join', authMiddleware, express.json(), validate(joinRestaurantSchema), async (req, res, next) => {
     const { inviteCode } = req.body;
-    if (!inviteCode) return res.status(400).json({ error: 'Invite code required' });
     try {
       const result = await db.query('SELECT * FROM restaurants WHERE invite_code = $1', [inviteCode.toUpperCase()]);
       if (!result.rows.length) return res.status(404).json({ error: 'Invalid invite code' });
@@ -145,11 +156,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to load white-label config' })); }
   });
 
-  router.post('/api/manager/white-label', managerMiddleware, async (req, res, next) => {
+  router.post('/api/manager/white-label', managerMiddleware, express.json(), validate(whiteLabelSchema), async (req, res, next) => {
     const { brandName, logoUrl, primaryColor, accentColor, isActive } = req.body;
-    if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid primary color — use #rrggbb format' });
-    if (accentColor  && !isValidHex(accentColor))  return res.status(400).json({ error: 'Invalid accent color — use #rrggbb format' });
-    if (logoUrl && !/^https?:\/\/.+/.test(logoUrl)) return res.status(400).json({ error: 'Logo URL must start with http:// or https://' });
     try {
       const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       if (!uRes.rows.length || !uRes.rows[0].restaurant_id) return res.status(404).json({ error: 'No restaurant found for this account' });
@@ -258,9 +266,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Certificates ─────────────────────────────────────────────────────────────
 
-  router.post('/api/certificate', managerMiddleware, async (req, res, next) => {
+  router.post('/api/certificate', managerMiddleware, express.json(), validate(userIdBodySchema), async (req, res, next) => {
     const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
       const userRes = await db.query('SELECT id, name, email FROM users WHERE id = $1', [userId]);
       if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
@@ -526,9 +533,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to fetch preference' })); }
   });
 
-  router.put('/api/manager/digest-preference', managerMiddleware, async (req, res, next) => {
+  router.put('/api/manager/digest-preference', managerMiddleware, express.json(), validate(digestPreferenceSchema), async (req, res, next) => {
     const { enabled } = req.body;
-    if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'enabled must be boolean' });
     try {
       await db.query('UPDATE users SET weekly_digest_enabled = $1 WHERE id = $2', [enabled, req.user.id]);
       res.json({ success: true, enabled });
@@ -567,9 +573,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Email nudge ──────────────────────────────────────────────────────────────
 
-  router.post('/api/manager/nudge', managerMiddleware, async (req, res, next) => {
+  router.post('/api/manager/nudge', managerMiddleware, express.json(), validate(userIdBodySchema), async (req, res, next) => {
     const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
       const userRes = await db.query('SELECT name, email FROM users WHERE id = $1', [userId]);
       if (!userRes.rows.length) return res.status(404).json({ error: 'User not found' });
@@ -608,7 +613,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch deadline' })); }
   });
 
-  router.post('/api/manager/deadline', managerMiddleware, async (req, res, next) => {
+  router.post('/api/manager/deadline', managerMiddleware, express.json(), validate(deadlineSchema), async (req, res, next) => {
     const { deadline } = req.body;
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
@@ -658,9 +663,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/manager/assign', authMiddleware, async (req, res, next) => {
+  router.post('/api/manager/assign', authMiddleware, express.json(), validate(assignModuleSchema), async (req, res, next) => {
     const { moduleId } = req.body;
-    if (!moduleId) return res.status(400).json({ error: 'Missing moduleId' });
     try {
       const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
       if (!rr.rows.length) return res.status(404).json({ error: 'No restaurant found' });
@@ -690,9 +694,8 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Training plans ───────────────────────────────────────────────────────────
 
-  router.post('/api/manager/training-plans', managerMiddleware, async (req, res, next) => {
+  router.post('/api/manager/training-plans', managerMiddleware, express.json(), validate(createTrainingPlanSchema), async (req, res, next) => {
     const { userId, title } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       const restaurantId = userRes.rows[0]?.restaurant_id;
@@ -746,16 +749,9 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch plans: ' + err.message })); }
   });
 
-  router.post('/api/manager/training-plans/:planId/items', managerMiddleware, async (req, res, next) => {
+  router.post('/api/manager/training-plans/:planId/items', managerMiddleware, express.json(), validate(trainingPlanItemSchema), async (req, res, next) => {
     const { moduleId, dueDate, position } = req.body;
     const planId = parseInt(req.params.planId);
-    const moduleIdInt = parseInt(moduleId);
-    if (!moduleId || isNaN(moduleIdInt) || moduleIdInt < 1 || moduleIdInt > 30) {
-      return res.status(400).json({ error: 'moduleId must be a number between 1 and 30' });
-    }
-    if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
-      return res.status(400).json({ error: 'dueDate must be in YYYY-MM-DD format' });
-    }
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       const restaurantId = userRes.rows[0]?.restaurant_id;
@@ -892,7 +888,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
     } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/manager/cert-logo', authMiddleware, async (req, res, next) => {
+  router.post('/api/manager/cert-logo', authMiddleware, express.json(), validate(certLogoSchema), async (req, res, next) => {
     const { certLogoUrl } = req.body;
     try {
       await db.query('UPDATE restaurants SET cert_logo_url = $1 WHERE manager_id = $2', [certLogoUrl || null, req.user.id]);

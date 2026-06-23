@@ -13,4 +13,8 @@ description: How request validation is structured and the rules for adding it to
 
 **Zod v4 notes:** `z.enum([...], { error: 'msg' })` for custom enum message. `z.string({ error })` does NOT override the "expected string, received undefined" message for a missing required field — the field name is still shown, so it's acceptable; don't waste time fighting it.
 
-**Scope:** auth/payment/contact routes are validated; manager/admin routes are not — grep for `validate(` in a route file to confirm current coverage before assuming it.
+**Scope:** auth/payment/contact AND manager/admin/admin-affiliates routes are validated — grep for `validate(` in a route file to confirm current coverage before assuming it.
+
+**Body parser gotcha (manager/admin):** The manager + admin routers mount in `server.js` BEFORE the global `express.json()`, so `req.body` is `undefined` on them. Every body route on these routers needs its own inline `express.json()` placed before `validate(...)` (pattern: `auth, express.json(), validate(schema), handler`). admin-affiliates already had inline `express.json()` per-route.
+
+**Pre-existing bug noticed (NOT validation):** several `routes/manager.js` handlers query `restaurants.manager_id`, but that column doesn't exist (table uses `owner_id`) — e.g. cert-logo 500s with `column "manager_id" does not exist`. Unrelated to validation; flagged as follow-up.

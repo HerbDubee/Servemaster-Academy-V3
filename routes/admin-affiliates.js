@@ -1,5 +1,11 @@
 'use strict';
 const express = require('express');
+const { validate } = require('../middleware/validate');
+const {
+  markCommissionPaidSchema,
+  commissionReasonSchema,
+  updatePayoutMethodSchema,
+} = require('../lib/schemas');
 
 const WELCOME_BONUS_CAD = 100;
 
@@ -84,10 +90,10 @@ module.exports = function createAdminAffiliatesRouter({
     } catch (e) { console.error('Affiliate reject error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), async (req, res, next) => {
+  router.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), validate(markCommissionPaidSchema), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { payment_ref, payout_method, payout_amount, override_pending } = req.body;
-    if (!commId || !payment_ref) return res.status(400).json({ error: 'Commission ID and payment reference required' });
+    if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
     try {
       const check = await db.query('SELECT status FROM influencer_commissions WHERE id = $1', [commId]);
       if (!check.rows.length) return res.status(404).json({ error: 'Commission not found' });
@@ -116,7 +122,7 @@ module.exports = function createAdminAffiliatesRouter({
     } catch (e) { console.error('Mark paid error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/block', adminMiddleware, express.json(), async (req, res, next) => {
+  router.post('/api/admin/affiliates/commissions/:id/block', adminMiddleware, express.json(), validate(commissionReasonSchema), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { reason } = req.body;
     if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
@@ -130,7 +136,7 @@ module.exports = function createAdminAffiliatesRouter({
     } catch (e) { console.error('Block commission error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/reverse', adminMiddleware, express.json(), async (req, res, next) => {
+  router.post('/api/admin/affiliates/commissions/:id/reverse', adminMiddleware, express.json(), validate(commissionReasonSchema), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { reason } = req.body;
     if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
@@ -392,7 +398,7 @@ module.exports = function createAdminAffiliatesRouter({
     } catch (e) { console.error('Payout transfer error:', e.message); next(Object.assign(e, { publicMessage: e.message })); }
   });
 
-  router.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res, next) => {
+  router.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), validate(updatePayoutMethodSchema), async (req, res, next) => {
     const affId = parseInt(req.params.id);
     const { pref_payout_method } = req.body;
     if (!affId) return res.status(400).json({ error: 'Invalid id' });
