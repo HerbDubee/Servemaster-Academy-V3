@@ -62,8 +62,14 @@ function getChapter(key) {
   return { ...ch, voiceId: VOICES[ch.voice].id, voiceName: VOICES[ch.voice].name };
 }
 
+const BOOKS_BY_ID = { book1: BOOK1_CHAPTERS, book2: BOOK2_CHAPTERS, book3: BOOK3_CHAPTERS };
+
 function getAllChapters(book) {
-  const source = book === 'book3' ? BOOK3_CHAPTERS : book === 'book2' ? BOOK2_CHAPTERS : BOOK1_CHAPTERS;
+  // No argument → default to Book 1 (backward compatibility with the
+  // first-crossings reader). An explicit but unknown book id (e.g. 'book4'
+  // before its content exists) returns an empty list rather than silently
+  // falling back to Book 1.
+  const source = book == null ? BOOK1_CHAPTERS : (BOOKS_BY_ID[book] || []);
   return source.map(ch => ({
     ...ch,
     voiceId: VOICES[ch.voice].id,

@@ -807,6 +807,42 @@ app.get('/books/Novel4.pdf', (req, res) => {
   if (!fs.existsSync(pdfPath)) return res.status(404).send('PDF not yet available');
   res.download(pdfPath, 'The-Table-We-Built.pdf');
 });
+// ── Novel reader API ──────────────────────────────────────────────────────────
+// Chapter list for a given book (voice-map is the single source of truth).
+// ?book=book1|book2|book3 — no param defaults to Book 1 for the first-crossings
+// reader. Unknown book ids (e.g. book4 before its content exists) return an empty
+// array. Only chapters whose markdown file is present on disk are returned, so each
+// book's reader populates automatically as its Book{N}_Ch*.md files are added.
+app.get('/api/books/chapters', (req, res, next) => {
+  try {
+    const book = req.query.book || 'book1';
+    const chapters = getAllChapters(book)
+      .filter(ch => fs.existsSync(path.join(__dirname, 'books', ch.file)))
+      .map(ch => ({ key: ch.key, num: ch.num, title: ch.title, voiceName: ch.voiceName }));
+    res.json(chapters);
+  } catch (err) {
+    next(Object.assign(err, { publicMessage: 'Failed to load chapters' }));
+  }
+});
+
+// Single chapter content by key (e.g. book2-ch01).
+app.get('/api/books/chapter/:key', (req, res, next) => {
+  let ch;
+  try {
+    ch = getChapter(req.params.key);
+  } catch (e) {
+    return res.status(404).json({ error: 'Chapter not found' });
+  }
+  try {
+    const filePath = path.join(__dirname, 'books', ch.file);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Chapter not available' });
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.json({ key: ch.key, num: ch.num, title: ch.title, content });
+  } catch (err) {
+    next(Object.assign(err, { publicMessage: 'Failed to load chapter' }));
+  }
+});
+
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));

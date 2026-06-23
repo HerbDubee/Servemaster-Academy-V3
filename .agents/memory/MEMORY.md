@@ -1,3 +1,4 @@
 - [Router middleware ordering](router-middleware-ordering.md) — routers needing req.body must mount AFTER express.json(); the Stripe router is intentionally before it for raw webhook body.
 - [Logging & error handling](logging-and-errors.md) — structured logger (lib/logger.js) + requestLogger; global errorHandler exists but routes still use res.status(500), so next(err) migration is deferred.
 - [Input validation (Zod)](input-validation.md) — lib/schemas.js + validate() middleware; order = limiter→auth→validate; schemas strip unknown keys; auth/payment/contact/manager/admin/affiliates all done; manager+admin routers mount before global express.json so each body route needs inline express.json().
+- [Novel reader API](novel-reader-api.md) — chapter lists come from books/voice-map.js (single source); unknown book ids return [] not Book1; content read from books/ md files.
