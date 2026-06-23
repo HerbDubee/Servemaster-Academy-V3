@@ -2,6 +2,7 @@ const express = require('express');
 const createDigests = require('../lib/digests');
 const createAdminAffiliatesRouter = require('./admin-affiliates');
 
+const BOOK_LAUNCH_SOURCES = ['covers-series', 'newsletter'];
 const SCHOLARSHIP_MONTHLY_CAP = 15;
 const SCHOLARSHIP_DAYS = 60;
 const TOTAL_MODULES = 30;
@@ -458,22 +459,39 @@ module.exports = function createAdminRouter({
   router.get('/api/admin/newsletter/book-launch-status', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
-        SELECT
-          COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series') AS total,
-          COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NULL) AS unsent,
-          COUNT(*) FILTER (WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NOT NULL) AS sent
+        SELECT source,
+          COUNT(*) FILTER (WHERE active = TRUE) AS total,
+          COUNT(*) FILTER (WHERE active = TRUE AND book_launch_sent_at IS NULL) AS unsent,
+          COUNT(*) FILTER (WHERE active = TRUE AND book_launch_sent_at IS NOT NULL) AS sent
         FROM email_subscribers
-      `);
-      res.json(result.rows[0]);
+        WHERE source = ANY($1)
+        GROUP BY source
+      `, [BOOK_LAUNCH_SOURCES]);
+      const sources = {};
+      for (const s of BOOK_LAUNCH_SOURCES) sources[s] = { total: 0, unsent: 0, sent: 0 };
+      for (const row of result.rows) {
+        sources[row.source] = {
+          total: parseInt(row.total, 10),
+          unsent: parseInt(row.unsent, 10),
+          sent: parseInt(row.sent, 10),
+        };
+      }
+      res.json({ sources });
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch book launch status' })); }
   });
 
-  router.post('/api/admin/newsletter/send-book-launch', adminMiddleware, async (req, res, next) => {
+  router.post('/api/admin/newsletter/send-book-launch', adminMiddleware, express.json(), async (req, res, next) => {
     try {
+      const requested = (req.body && req.body.source) || 'covers-series';
+      let sources;
+      if (requested === 'all') sources = BOOK_LAUNCH_SOURCES;
+      else if (BOOK_LAUNCH_SOURCES.includes(requested)) sources = [requested];
+      else return res.status(400).json({ error: 'Invalid subscriber source' });
+
       const subscribers = await db.query(`
-        SELECT email, first_name FROM email_subscribers
-        WHERE active = TRUE AND source = 'covers-series' AND book_launch_sent_at IS NULL
-      `);
+        SELECT email, first_name, source FROM email_subscribers
+        WHERE active = TRUE AND source = ANY($1) AND book_launch_sent_at IS NULL
+      `, [sources]);
       if (!subscribers.rows.length) {
         return res.json({ sent: 0, message: 'No unsent subscribers.' });
       }
@@ -483,6 +501,13 @@ module.exports = function createAdminRouter({
       for (const sub of subscribers.rows) {
         const firstName = sub.first_name ? sub.first_name.split(' ')[0] : null;
         const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : 'Hi,';
+        const isNewsletter = sub.source === 'newsletter';
+        const intro = isNewsletter
+          ? 'We just released something we think you\'ll love.'
+          : 'You asked us to let you know — so here it is.';
+        const footerReason = isNewsletter
+          ? "You're receiving this because you subscribed to the ServeMaster Academy newsletter."
+          : 'You\'re receiving this because you signed up for book launch notifications at servemasteracademy.ca.';
         try {
           await resend.emails.send({
             from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
@@ -491,7 +516,7 @@ module.exports = function createAdminRouter({
             html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
   <img src="${appUrl}/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:28px;">
   <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${greeting}</p>
-  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">You asked us to let you know — so here it is.</p>
+  <p style="font-size:16px;line-height:1.7;margin-bottom:20px;">${intro}</p>
   <div style="background:#1c1a14;border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:28px;margin:28px 0;text-align:center;">
     <p style="font-size:11px;color:#a3a3a3;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">Book 2 of the Covers Series</p>
     <h1 style="font-size:36px;font-weight:900;color:#fbbf24;margin:0 0 6px;font-family:'Montserrat',Georgia,sans-serif;letter-spacing:-0.02em;">Eastern <span style="color:#f5f5f5;">Sparks</span></h1>
@@ -503,7 +528,7 @@ module.exports = function createAdminRouter({
   <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-bottom:32px;">Enjoy the read.</p>
   <p style="font-size:15px;line-height:1.7;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy<br><a href="mailto:kirk_adamson@servemasteracademy.ca" style="color:#fbbf24;text-decoration:none;">kirk_adamson@servemasteracademy.ca</a></p>
   <hr style="border:none;border-top:1px solid #27272a;margin:32px 0 20px;">
-  <p style="font-size:11px;color:#52525b;line-height:1.6;">You're receiving this because you signed up for book launch notifications at servemasteracademy.ca. <a href="${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#52525b;">Unsubscribe</a></p>
+  <p style="font-size:11px;color:#52525b;line-height:1.6;">${footerReason} <a href="${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#52525b;">Unsubscribe</a></p>
 </div>`
           });
           await db.query(

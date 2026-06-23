@@ -296,13 +296,21 @@ body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
                 <span class="text-amber-400 text-xs font-semibold uppercase tracking-widest">Book 2 — Eastern Sparks</span>
                 <span id="book-launch-badge" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">All sent</span>
               </div>
-              <p class="text-white font-semibold text-sm mb-0.5">Launch email to book notification subscribers</p>
+              <p class="text-white font-semibold text-sm mb-0.5">Launch email to subscribers</p>
               <p id="book-launch-status" class="text-zinc-400 text-xs">Loading subscriber counts…</p>
             </div>
-            <button id="btn-book-launch" onclick="sendBookLaunchEmail()" disabled
-              class="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-900 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
-              📖 Send Launch Email
-            </button>
+            <div class="flex items-center gap-2">
+              <select id="book-launch-source" onchange="updateBookLaunchUI()"
+                class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-3 py-2.5 focus:outline-none">
+                <option value="covers-series">Book notification subscribers</option>
+                <option value="newsletter">Newsletter subscribers</option>
+                <option value="all">All subscribers</option>
+              </select>
+              <button id="btn-book-launch" onclick="sendBookLaunchEmail()" disabled
+                class="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-900 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+                📖 Send Launch Email
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1501,40 +1509,63 @@ async function loadNewsletter() {
   } catch (e) { console.error(e); }
 }
 
+let bookLaunchSources = null;
+const BOOK_LAUNCH_SOURCE_LABELS = {
+  'covers-series': 'book notification subscribers',
+  'newsletter': 'newsletter subscribers',
+  'all': 'all subscribers',
+};
+
 async function loadBookLaunchStatus() {
   try {
     const data = await apiFetch('/api/admin/newsletter/book-launch-status');
-    const unsent = parseInt(data.unsent || 0);
-    const sent = parseInt(data.sent || 0);
-    const total = parseInt(data.total || 0);
-    const statusEl = document.getElementById('book-launch-status');
-    const btn = document.getElementById('btn-book-launch');
-    const badge = document.getElementById('book-launch-badge');
-    if (total === 0) {
-      statusEl.textContent = 'No book notification subscribers yet.';
-      btn.disabled = true;
-    } else if (unsent === 0) {
-      statusEl.textContent = `Launch email already sent to all ${sent} subscriber${sent !== 1 ? 's' : ''}.`;
-      btn.disabled = true;
-      badge.classList.remove('hidden');
-    } else {
-      statusEl.textContent = `${unsent} subscriber${unsent !== 1 ? 's' : ''} will receive the launch email${sent > 0 ? ` · ${sent} already sent` : ''}.`;
-      btn.disabled = false;
-    }
+    bookLaunchSources = data.sources || {};
+    updateBookLaunchUI();
   } catch (e) {
     document.getElementById('book-launch-status').textContent = 'Could not load status.';
+  }
+}
+
+function updateBookLaunchUI() {
+  if (!bookLaunchSources) return;
+  const source = document.getElementById('book-launch-source').value;
+  const keys = source === 'all' ? ['covers-series', 'newsletter'] : [source];
+  let total = 0, unsent = 0, sent = 0;
+  for (const k of keys) {
+    const s = bookLaunchSources[k] || { total: 0, unsent: 0, sent: 0 };
+    total += s.total; unsent += s.unsent; sent += s.sent;
+  }
+  const statusEl = document.getElementById('book-launch-status');
+  const btn = document.getElementById('btn-book-launch');
+  const badge = document.getElementById('book-launch-badge');
+  badge.classList.add('hidden');
+  if (total === 0) {
+    statusEl.textContent = `No ${BOOK_LAUNCH_SOURCE_LABELS[source]} yet.`;
+    btn.disabled = true;
+  } else if (unsent === 0) {
+    statusEl.textContent = `Launch email already sent to all ${sent} subscriber${sent !== 1 ? 's' : ''}.`;
+    btn.disabled = true;
+    badge.classList.remove('hidden');
+  } else {
+    statusEl.textContent = `${unsent} subscriber${unsent !== 1 ? 's' : ''} will receive the launch email${sent > 0 ? ` · ${sent} already sent` : ''}.`;
+    btn.disabled = false;
   }
 }
 
 async function sendBookLaunchEmail() {
   const btn = document.getElementById('btn-book-launch');
   const statusEl = document.getElementById('book-launch-status');
-  if (!confirm('Send the Eastern Sparks launch email now? This will email all book notification subscribers who haven\'t received it yet.')) return;
+  const source = document.getElementById('book-launch-source').value;
+  if (!confirm(`Send the Eastern Sparks launch email now? This will email all ${BOOK_LAUNCH_SOURCE_LABELS[source]} who haven't received it yet.`)) return;
   btn.disabled = true;
   btn.textContent = 'Sending…';
   statusEl.textContent = 'Sending emails…';
   try {
-    const data = await apiFetch('/api/admin/newsletter/send-book-launch', { method: 'POST' });
+    const data = await apiFetch('/api/admin/newsletter/send-book-launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source }),
+    });
     if (data.error) {
       statusEl.textContent = `Error: ${data.error}`;
       btn.textContent = '📖 Send Launch Email';
