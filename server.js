@@ -837,7 +837,8 @@ app.get('/api/books/chapter/:key', (req, res, next) => {
   try {
     const filePath = path.join(__dirname, 'books', ch.file);
     if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Chapter not available' });
-    const content = fs.readFileSync(filePath, 'utf8');
+    let content = fs.readFileSync(filePath, 'utf8');
+    content = content.replace(/^\s*(?:#+\s*)?Chapter\s+\d+\s*[—–-].*(?:\r?\n)+/i, '');
     res.json({ key: ch.key, num: ch.num, title: ch.title, content });
   } catch (err) {
     next(Object.assign(err, { publicMessage: 'Failed to load chapter' }));
