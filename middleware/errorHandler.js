@@ -17,6 +17,7 @@
  */
 
 const { logger } = require('../lib/logger');
+const { Sentry, sentryEnabled } = require('../instrument');
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 
@@ -68,6 +69,18 @@ function errorHandler(err, req, res, next) {
     code: err.code,
     stack: !IS_PROD ? err.stack : undefined,
   });
+
+  // Report genuine server errors (5xx) to Sentry with request context.
+  // Expected 4xx (validation, auth, conflicts) are not sent — they're not bugs.
+  if (sentryEnabled && status >= 500) {
+    Sentry.withScope((scope) => {
+      scope.setTag('path', req.path);
+      scope.setTag('method', req.method);
+      if (req.id) scope.setTag('reqId', req.id);
+      if (req.user && req.user.id) scope.setUser({ id: String(req.user.id) });
+      Sentry.captureException(err);
+    });
+  }
 
   // Don't send a second response if headers already went out
   if (res.headersSent) return next(err);

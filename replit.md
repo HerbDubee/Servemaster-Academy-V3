@@ -93,12 +93,15 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 | `STRIPE_PREMIUM_MONTHLY_ID`, `STRIPE_PREMIUM_ANNUAL_ID`, `STRIPE_STARTER_TEAM_ID`, `STRIPE_PRO_TEAM_ID`, `STRIPE_STARTER_TEAM_ANNUAL_ID`, `STRIPE_PRO_TEAM_ANNUAL_ID` | Stripe price IDs |
 | `ADMIN_EMAIL` | Auto-granted admin on startup |
 | `APP_URL` | `https://servemasteracademy.ca` (production) |
+| `SENTRY_DSN` | Sentry error monitoring (optional — Sentry stays off if unset) |
 
 ## Conventions
 
 **Input validation (Zod):** Schemas live in `lib/schemas.js`; `validate(schema, source='body')` in `middleware/validate.js` returns `400 { error, issues }` on failure and replaces `req[source]` with parsed data. Middleware order is **rate-limiter → auth → validate → handler** (so abusive traffic is capped first and unauthenticated requests fail 401 before validation). Zod strips unknown keys, so every body key a handler reads must be in the schema. Currently wired on auth/payment/contact routes; manager/admin not yet.
 
 **Logging / errors:** Use `lib/logger.js` for structured logs. `requestLogger` logs every request on finish with a correlation ID. A centralized `errorHandler` exists, but most routes still use their own `res.status(500)` (migration to `next(err)` is intentionally deferred).
+
+**Error monitoring (Sentry):** `instrument.js` is required as the **first line of server.js** (before express) and inits Sentry only if `SENTRY_DSN` is set — otherwise it no-ops. Configured for errors only (`tracesSampleRate: 0`). Process-level crashes (`unhandledRejection`, `uncaughtException`) are handled by Sentry's **default integrations** (no custom `process.on` handlers — they would double-capture): unhandled rejections are captured and serving continues; uncaught exceptions are captured, flushed, then the process exits. `middleware/errorHandler.js` reports 5xx to Sentry with request context (path, method, reqId, user id); 4xx are not sent. Alert rules are configured in the Sentry dashboard, not in code. The inline `res.status(500)` catch blocks do NOT reach Sentry until migrated to `next(err)`.
 
 **Router mount order:** Routers that read `req.body` must mount **after** `express.json()`. The Stripe and OAuth routers mount before it on purpose (raw webhook body / credential flow); any Stripe route needing JSON attaches its own `express.json()` inline.
 
