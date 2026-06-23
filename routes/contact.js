@@ -92,6 +92,20 @@ module.exports = function createContactRouter({
     const { name, email, message } = req.body;
     try {
       await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), message]);
+      const internalTo = ADMIN_EMAIL || 'kirk_adamson@servemasteracademy.ca';
+      resend.emails.send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: internalTo,
+        subject: `New contact message from ${escapeHtml(name)}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f9f9f9;border-radius:8px;">
+        <h2 style="font-size:18px;margin-bottom:16px;color:#111;">New Contact Message</h2>
+        <table style="font-size:14px;border-collapse:collapse;width:100%;">
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Name</strong></td><td style="padding:6px 0;">${escapeHtml(name)}</td></tr>
+          <tr><td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap;"><strong>Email</strong></td><td style="padding:6px 0;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+        </table>
+        <p style="font-size:14px;color:#111;margin-top:16px;"><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
+      </div>`
+      }).catch(e => console.error('Contact message internal notification error:', e.message));
       res.json({ success: true });
     } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to send message' })); }
   });
