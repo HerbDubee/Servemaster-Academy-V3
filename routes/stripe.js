@@ -23,6 +23,8 @@
 const express = require('express');
 const crypto = require('crypto');
 const db = require('../db');
+const { validate } = require('../middleware/validate');
+const { checkoutSchema } = require('../lib/schemas');
 const {
   getUncachableStripeClient,
   getStripePublishableKey,
@@ -339,7 +341,7 @@ module.exports = function createStripeRouter({
   });
 
   // ── Create checkout session ──────────────────────────────────────────────────
-  router.post('/payments/create-checkout', authMiddleware, async (req, res) => {
+  router.post('/payments/create-checkout', authMiddleware, express.json(), validate(checkoutSchema), async (req, res) => {
     const { plan } = req.body;
     const priceMap = getPriceMap();
     const priceId = priceMap[plan];

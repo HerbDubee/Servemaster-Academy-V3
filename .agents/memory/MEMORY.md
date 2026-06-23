@@ -1,2 +1,3 @@
 - [Router middleware ordering](router-middleware-ordering.md) — routers needing req.body must mount AFTER express.json(); the Stripe router is intentionally before it for raw webhook body.
 - [Logging & error handling](logging-and-errors.md) — structured logger (lib/logger.js) + requestLogger; global errorHandler exists but routes still use res.status(500), so next(err) migration is deferred.
+- [Input validation (Zod)](input-validation.md) — lib/schemas.js + validate() middleware; order = limiter→auth→validate; schemas strip unknown keys; auth/payment/contact done, manager/admin not.

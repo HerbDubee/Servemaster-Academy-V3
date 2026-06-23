@@ -62,7 +62,65 @@ const compression = require('compression');
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+// Content Security Policy — allowlists the third-party origins the site actually
+// uses (Stripe, Google Fonts/Tag Manager, ContentSquare, Tailwind/cdnjs/jsDelivr,
+// YouTube). 'unsafe-inline'/'unsafe-eval' are required: the marketing pages and
+// SPAs rely on inline scripts/handlers and the Tailwind Play CDN evaluates code at
+// runtime. upgrade-insecure-requests is production-only so local http dev isn't broken.
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      objectSrc: ["'none'"],
+      scriptSrc: [
+        "'self'", "'unsafe-inline'", "'unsafe-eval'",
+        'https://cdn.tailwindcss.com',
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net',
+        'https://js.stripe.com',
+        'https://www.googletagmanager.com',
+        'https://t.contentsquare.net',
+      ],
+      // The marketing pages + dashboards use ~500 inline on*= handler attributes;
+      // helmet's default script-src-attr 'none' would block every one of them.
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc: [
+        "'self'", "'unsafe-inline'",
+        'https://fonts.googleapis.com',
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net',
+      ],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      connectSrc: [
+        "'self'",
+        'https://api.stripe.com',
+        'https://r.stripe.com',
+        'https://m.stripe.network',
+        'https://www.googletagmanager.com',
+        'https://www.google-analytics.com',
+        'https://region1.google-analytics.com',
+        'https://t.contentsquare.net',
+        'https://*.contentsquare.net',
+      ],
+      frameSrc: [
+        "'self'",
+        'https://js.stripe.com',
+        'https://hooks.stripe.com',
+        'https://www.youtube.com',
+        'https://www.youtube-nocookie.com',
+      ],
+      frameAncestors: ["'self'"],
+      formAction: ["'self'"],
+      workerSrc: ["'self'", 'blob:'],
+      manifestSrc: ["'self'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+}));
 // Prevent crawlers from indexing API routes — stops OAuth redirect chains
 // and API endpoints from being flagged as exposed secrets by scanners
 app.use((req, res, next) => {

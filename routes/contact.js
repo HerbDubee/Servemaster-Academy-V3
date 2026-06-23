@@ -1,5 +1,10 @@
 'use strict';
 const express = require('express');
+const { validate } = require('../middleware/validate');
+const {
+  newsletterSchema, contactSchema, teamTrialSchema,
+  enterpriseSchema, referralInviteSchema, inviteRedeemSchema,
+} = require('../lib/schemas');
 
 module.exports = function createContactRouter({
   db, resend, authMiddleware, contactLimiter, escapeHtml, highestPlan, ADMIN_EMAIL,
@@ -19,9 +24,8 @@ module.exports = function createContactRouter({
 
   // ── Newsletter subscribe ────────────────────────────────────────────────────
 
-  router.post('/api/newsletter/subscribe', contactLimiter, async (req, res) => {
+  router.post('/api/newsletter/subscribe', contactLimiter, validate(newsletterSchema), async (req, res) => {
     const { email, firstName, source, role } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email required' });
     const safeSource = (source || 'newsletter').toString().slice(0, 64);
     try {
       await db.query(
@@ -84,9 +88,8 @@ module.exports = function createContactRouter({
 
   // ── Contact form ────────────────────────────────────────────────────────────
 
-  router.post('/api/contact', contactLimiter, async (req, res) => {
+  router.post('/api/contact', contactLimiter, validate(contactSchema), async (req, res) => {
     const { name, email, message } = req.body;
-    if (!name || !email || !message) return res.status(400).json({ error: 'All fields required' });
     try {
       await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), message]);
       res.json({ success: true });
@@ -95,10 +98,9 @@ module.exports = function createContactRouter({
 
   // ── Team trial request ──────────────────────────────────────────────────────
 
-  router.post('/api/request-team-trial', contactLimiter, async (req, res) => {
+  router.post('/api/request-team-trial', contactLimiter, validate(teamTrialSchema), async (req, res) => {
     const { name, email, restaurantName, staffCount } = req.body;
     const restName = restaurantName;
-    if (!name || !email || !restName) return res.status(400).json({ error: 'Name, email and restaurant name are required' });
     try {
       const utm = extractUtm(req);
       await db.query(
@@ -140,9 +142,8 @@ module.exports = function createContactRouter({
 
   // ── Enterprise inquiry ──────────────────────────────────────────────────────
 
-  router.post('/api/enterprise-request', contactLimiter, async (req, res) => {
+  router.post('/api/enterprise-request', contactLimiter, validate(enterpriseSchema), async (req, res) => {
     const { name, email, company, locations, message } = req.body;
-    if (!name || !email || !company) return res.status(400).json({ error: 'Name, email and company are required' });
     try {
       const fullMessage = `Company: ${company}\nLocations: ${locations || 'Not specified'}\n\n${message || ''}`.trim();
       await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), `[ENTERPRISE] ${fullMessage}`]);
@@ -163,9 +164,8 @@ module.exports = function createContactRouter({
 
   // ── Referral: invite a manager ──────────────────────────────────────────────
 
-  router.post('/api/referral/invite-manager', authMiddleware, contactLimiter, async (req, res) => {
+  router.post('/api/referral/invite-manager', authMiddleware, contactLimiter, validate(referralInviteSchema), async (req, res) => {
     const { managerEmail, note } = req.body;
-    if (!managerEmail) return res.status(400).json({ error: 'Manager email is required' });
     const sender = req.user;
     try {
       await db.query(
@@ -206,10 +206,9 @@ module.exports = function createContactRouter({
 
   // ── Invite code redeem ──────────────────────────────────────────────────────
 
-  router.post('/api/invite/redeem', authMiddleware, async (req, res) => {
+  router.post('/api/invite/redeem', authMiddleware, validate(inviteRedeemSchema), async (req, res) => {
     try {
       const { code } = req.body;
-      if (!code) return res.status(400).json({ error: 'Code required' });
       const codeRes = await db.query('SELECT * FROM invite_codes WHERE code = $1', [code.trim().toUpperCase()]);
       if (!codeRes.rows.length) return res.status(404).json({ error: 'Invalid invite code' });
       const ic = codeRes.rows[0];

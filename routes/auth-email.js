@@ -1,5 +1,7 @@
 'use strict';
 const express = require('express');
+const { validate } = require('../middleware/validate');
+const { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } = require('../lib/schemas');
 
 module.exports = function createAuthEmailRouter({
   db, resend, bcrypt, jwt, JWT_SECRET, COOKIE_OPTS,
@@ -14,9 +16,8 @@ module.exports = function createAuthEmailRouter({
   const router = express.Router();
 
   // ── Register ─────────────────────────────────────────────────────────────────
-  router.post('/api/auth/register', authLimiter, async (req, res) => {
+  router.post('/api/auth/register', authLimiter, validate(registerSchema), async (req, res) => {
     const { email, password, name, level } = req.body;
-    if (!email || !password || !name) return res.status(400).json({ error: 'Missing required fields' });
     try {
       const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
       if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
@@ -78,9 +79,8 @@ module.exports = function createAuthEmailRouter({
   });
 
   // ── Login ────────────────────────────────────────────────────────────────────
-  router.post('/api/auth/login', authLimiter, async (req, res) => {
+  router.post('/api/auth/login', authLimiter, validate(loginSchema), async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Missing credentials' });
     try {
       const result = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
       if (!result.rows.length) return res.status(401).json({ error: 'Invalid email or password' });
@@ -120,9 +120,8 @@ module.exports = function createAuthEmailRouter({
   });
 
   // ── Forgot password ──────────────────────────────────────────────────────────
-  router.post('/api/forgot-password', authLimiter, async (req, res) => {
+  router.post('/api/forgot-password', authLimiter, validate(forgotPasswordSchema), async (req, res) => {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email required' });
     try {
       await db.query(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
         id serial PRIMARY KEY,
@@ -164,10 +163,8 @@ module.exports = function createAuthEmailRouter({
   });
 
   // ── Reset password ───────────────────────────────────────────────────────────
-  router.post('/api/reset-password', authLimiter, async (req, res) => {
+  router.post('/api/reset-password', authLimiter, validate(resetPasswordSchema), async (req, res) => {
     const { token, newPassword } = req.body;
-    if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
-    if (newPassword.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
     try {
       const tokenRes = await db.query(
         'SELECT * FROM password_reset_tokens WHERE token = $1 AND used = false AND expires_at > NOW()',
