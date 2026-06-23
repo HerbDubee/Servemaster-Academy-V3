@@ -36,6 +36,16 @@ try {
   });
 } catch (_e) { /* non-fatal: dates fall back gracefully */ }
 
+// Resolve static-page sitemap <lastmod> dates once at startup. Each page's date
+// is the more recent of its declared baseline and the HTML file's last git
+// commit, so the sitemap freshens automatically as pages are updated. Computed
+// here (not per-request) because each lookup shells out to `git log`.
+const { buildStaticSitemapRows } = require('./lib/staticFreshness');
+let _staticSitemapRows = [];
+try {
+  _staticSitemapRows = buildStaticSitemapRows();
+} catch (_e) { /* non-fatal: sitemap falls back to empty static list */ }
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── Shared email helpers (lib/emailHelpers.js) ────────────────────────────
@@ -726,24 +736,10 @@ app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'abo
 app.get('/sitemap.xml', (req, res) => {
   const base = APP_URL;
   // Static marketing pages — lastmod reflects actual content age, not today.
-  // Using "today" on every request erodes Google's freshness trust.
-  const staticPages = [
-    ['/', '2026-05-01', '1.0', 'weekly'],
-    ['/features', '2026-04-01', '0.9', 'monthly'],
-    ['/pricing', '2026-04-01', '0.9', 'monthly'],
-    ['/about', '2026-01-01', '0.7', 'monthly'],
-    ['/contact', '2026-01-01', '0.6', 'monthly'],
-    ['/ai-roleplay', '2026-03-01', '0.8', 'monthly'],
-    ['/managers', '2026-03-01', '0.8', 'monthly'],
-    ['/teams', '2026-03-01', '0.8', 'monthly'],
-    ['/demo', '2026-05-24', '0.8', 'monthly'],
-    ['/checklist', '2026-05-24', '0.8', 'monthly'],
-    ['/scholarship', '2026-02-01', '0.8', 'monthly'],
-    ['/affiliates', '2026-03-01', '0.7', 'monthly'],
-    ['/novels', '2026-05-22', '0.8', 'monthly'],
-    ['/novels/first-crossings', '2026-05-22', '0.8', 'monthly'],
-    ['/blog', '2026-05-01', '0.8', 'weekly'],
-  ];
+  // Using "today" on every request erodes Google's freshness trust. Dates are
+  // resolved once at startup (_staticSitemapRows) from each page's HTML file's
+  // last git commit, floored by a declared baseline (see lib/staticFreshness).
+  const staticPages = _staticSitemapRows.map(r => [r.path, r.lastmod, r.priority, r.changefreq]);
   let blogUrls = '';
   try {
     const blogDir = path.join(__dirname, 'public', 'blog');

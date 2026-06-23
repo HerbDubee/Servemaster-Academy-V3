@@ -141,6 +141,10 @@ All `/api/manager/*` routes are gated by `managerMiddleware` (`role` manager or 
 
 **Referral status state machine:** `pending` (invite sent) → `credited` ($50 CAD Stripe balance credit applied) / `pending_credit` (referee paid but referrer has no Stripe customer yet — credited on their first checkout) / `closed` (duplicate referral; another referrer already credited).
 
+## Sitemap Freshness
+
+Static (non-blog) sitemap entries live in `lib/staticFreshness.js` (`STATIC_PAGES`: path → backing HTML file + `baseline`/priority/changefreq). The `/sitemap.xml` route self-heals: at startup it sets each page's `<lastmod>` to the **more recent** of its declared `baseline` and the HTML file's last git-commit date (`buildStaticSitemapRows`), so dates freshen automatically as pages are updated — never going backwards if git history is unavailable. Keep baselines honest with `node scripts/check-sitemap-freshness.js` (non-zero exit if a baseline is older than the file's last commit; registered as the `sitemap-freshness` validation). Auto-bump stale baselines with `node scripts/fix-sitemap-freshness.js`, then re-check. When adding a new static page route, add it to `STATIC_PAGES` too.
+
 ## Blog Conventions
 
 **Freshness (`dateModified`):** Each `blogArticles` entry in `public/js/content.js` has `datePublished` (never changes) and `dateModified` (bump to today in `YYYY-MM-DD` **whenever the article's HTML is meaningfully revised** — Google reads it from JSON-LD for freshness). Check drift with `node scripts/check-blog-freshness.js` (compares declared date vs last git-commit date of the HTML file; non-zero exit if stale). Auto-fix all with `node scripts/fix-blog-freshness.js`, then re-check. Run after any blog editing session.
