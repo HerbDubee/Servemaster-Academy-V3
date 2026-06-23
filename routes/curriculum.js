@@ -5,7 +5,7 @@ module.exports = function createCurriculumRouter({ db, getGrok, adminMiddleware 
   const router = express.Router();
 
   // ── Roleplays ────────────────────────────────────────────────────────────────
-  router.get('/api/roleplays', async (req, res) => {
+  router.get('/api/roleplays', async (req, res, next) => {
     try {
       const { category } = req.query;
       const result = await db.query(
@@ -15,12 +15,12 @@ module.exports = function createCurriculumRouter({ db, getGrok, adminMiddleware 
       res.json(result.rows);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Failed to load roleplays' });
+      next(Object.assign(err, { publicMessage: 'Failed to load roleplays' }));
     }
   });
 
   // ── Quizzes ──────────────────────────────────────────────────────────────────
-  router.get('/api/quizzes', async (req, res) => {
+  router.get('/api/quizzes', async (req, res, next) => {
     try {
       const { module } = req.query;
       const result = await db.query(
@@ -30,18 +30,18 @@ module.exports = function createCurriculumRouter({ db, getGrok, adminMiddleware 
       res.json(result.rows);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Failed to load quiz' });
+      next(Object.assign(err, { publicMessage: 'Failed to load quiz' }));
     }
   });
 
   // ── Curriculum Check ─────────────────────────────────────────────────────────
-  router.get('/check-curriculum', async (req, res) => {
+  router.get('/check-curriculum', async (req, res, next) => {
     try {
       const roleplays = await db.query('SELECT * FROM roleplays WHERE category = $1', ['difficult-guests']);
       const quizzes = await db.query('SELECT * FROM quizzes WHERE module_name = $1', ['wine-service']);
       res.json({ roleplays: roleplays.rows, quizzes: quizzes.rows });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      next(Object.assign(err, { publicMessage: err.message }));
     }
   });
 
@@ -320,7 +320,7 @@ Pricing (CAD, all with 14-day free trial):
 
 Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
-  router.post('/api/chat', async (req, res) => {
+  router.post('/api/chat', async (req, res, next) => {
     try {
       const settingRow = await db.query(`SELECT value FROM site_settings WHERE key = 'chat_enabled'`);
       const chatEnabled = settingRow.rows.length > 0 && settingRow.rows[0].value === 'true';
@@ -349,7 +349,7 @@ Keep answers concise, helpful, and friendly. If someone asks about pricing, alwa
       res.json({ reply });
     } catch (e) {
       console.error('Chat error:', e.message);
-      res.status(500).json({ error: 'Chat service unavailable' });
+      next(Object.assign(e, { publicMessage: 'Chat service unavailable' }));
     }
   });
 

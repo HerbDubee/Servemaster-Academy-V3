@@ -58,7 +58,7 @@ module.exports = function createAdminRouter({
       if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
         return res.status(401).json({ error: 'Invalid token' });
       }
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   }
 
@@ -145,7 +145,7 @@ module.exports = function createAdminRouter({
   });
 
   // ── Tenant management ─────────────────────────────────────────────────────────
-  router.get('/api/admin/tenants', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/tenants', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT
@@ -167,10 +167,10 @@ module.exports = function createAdminRouter({
         ORDER BY r.wl_is_enterprise DESC, r.name
       `);
       res.json({ tenants: result.rows });
-    } catch (e) { res.status(500).json({ error: 'Failed to load tenants' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to load tenants' })); }
   });
 
-  router.patch('/api/admin/tenants/:id/toggle', adminMiddleware, async (req, res) => {
+  router.patch('/api/admin/tenants/:id/toggle', adminMiddleware, async (req, res, next) => {
     try {
       const r = await db.query(
         'UPDATE restaurants SET wl_is_active = NOT wl_is_active WHERE id = $1 RETURNING wl_is_active',
@@ -178,10 +178,10 @@ module.exports = function createAdminRouter({
       );
       if (!r.rows.length) return res.status(404).json({ error: 'Tenant not found' });
       res.json({ isActive: r.rows[0].wl_is_active });
-    } catch (e) { res.status(500).json({ error: 'Failed to update tenant' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to update tenant' })); }
   });
 
-  router.patch('/api/admin/tenants/:id/enterprise', adminMiddleware, async (req, res) => {
+  router.patch('/api/admin/tenants/:id/enterprise', adminMiddleware, async (req, res, next) => {
     try {
       const r = await db.query(
         'UPDATE restaurants SET wl_is_enterprise = NOT wl_is_enterprise WHERE id = $1 RETURNING wl_is_enterprise',
@@ -189,10 +189,10 @@ module.exports = function createAdminRouter({
       );
       if (!r.rows.length) return res.status(404).json({ error: 'Tenant not found' });
       res.json({ isEnterprise: r.rows[0].wl_is_enterprise });
-    } catch (e) { res.status(500).json({ error: 'Failed to update tenant' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to update tenant' })); }
   });
 
-  router.post('/api/admin/tenants', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/tenants', adminMiddleware, async (req, res, next) => {
     const { brandName, managerEmail, primaryColor } = req.body;
     if (!brandName) return res.status(400).json({ error: 'Brand name is required' });
     if (!managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerEmail)) return res.status(400).json({ error: 'Valid manager email is required' });
@@ -225,7 +225,7 @@ module.exports = function createAdminRouter({
       });
     } catch (e) {
       console.error('Create tenant error:', e.message);
-      res.status(500).json({ error: 'Failed to create tenant' });
+      next(Object.assign(e, { publicMessage: 'Failed to create tenant' }));
     }
   });
 
@@ -257,7 +257,7 @@ module.exports = function createAdminRouter({
     }
   });
 
-  router.patch('/api/admin/blog-freshness/:slug', adminMiddleware, (req, res) => {
+  router.patch('/api/admin/blog-freshness/:slug', adminMiddleware, (req, res, next) => {
     try {
       const { slug } = req.params;
       if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
@@ -270,12 +270,12 @@ module.exports = function createAdminRouter({
       if (e.message && e.message.startsWith('Slug not found')) {
         return res.status(404).json({ error: e.message });
       }
-      res.status(500).json({ error: e.message });
+      next(Object.assign(e, { publicMessage: e.message }));
     }
   });
 
   // ── Overview & users ──────────────────────────────────────────────────────────
-  router.get('/api/admin/overview', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/overview', adminMiddleware, async (req, res, next) => {
     try {
       const [users, new7d, new30d, active7d, tierCounts, teamCounts, subs, scenarios, modules, contacts] = await Promise.all([
         db.query('SELECT COUNT(*) as cnt FROM users'),
@@ -308,10 +308,10 @@ module.exports = function createAdminRouter({
         modules_completed:      parseInt(modules.rows[0].cnt),
         contact_messages:       parseInt(contacts.rows[0].cnt),
       });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch overview' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch overview' })); }
   });
 
-  router.get('/api/admin/users', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/users', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT u.id, u.name, u.email, u.role, u.subscription_status, u.created_at, u.last_login,
@@ -324,10 +324,10 @@ module.exports = function createAdminRouter({
         LIMIT 200
       `);
       res.json({ users: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch users' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch users' })); }
   });
 
-  router.patch('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  router.patch('/api/admin/users/:id', adminMiddleware, async (req, res, next) => {
     try {
       const { id } = req.params;
       const { plan, role } = req.body;
@@ -347,10 +347,10 @@ module.exports = function createAdminRouter({
       );
       if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
       res.json({ success: true, user: result.rows[0] });
-    } catch (err) { res.status(500).json({ error: 'Failed to update user' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to update user' })); }
   });
 
-  router.delete('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  router.delete('/api/admin/users/:id', adminMiddleware, async (req, res, next) => {
     try {
       const { id } = req.params;
       const check = await db.query('SELECT email, role FROM users WHERE id = $1', [id]);
@@ -359,10 +359,10 @@ module.exports = function createAdminRouter({
       await db.query('DELETE FROM user_progress WHERE user_id = $1', [id]);
       await db.query('DELETE FROM users WHERE id = $1', [id]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to delete user' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to delete user' })); }
   });
 
-  router.post('/api/admin/send-welcome-back', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/send-welcome-back', adminMiddleware, async (req, res, next) => {
     try {
       const { rows: users } = await db.query(`
         SELECT u.id, u.name, u.email, u.role, u.google_id, u.restaurant_id,
@@ -409,11 +409,11 @@ module.exports = function createAdminRouter({
         } catch (e) { failed.push({ email: u.email, error: e.message }); }
       }
       res.json({ ok: true, sent: sent.length, failed });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: err.message })); }
   });
 
   // ── Module / newsletter / restaurant / contacts ───────────────────────────────
-  router.get('/api/admin/modules', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/modules', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT module_id,
@@ -424,10 +424,10 @@ module.exports = function createAdminRouter({
         GROUP BY module_id ORDER BY module_id
       `);
       res.json({ modules: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch module stats' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch module stats' })); }
   });
 
-  router.get('/api/admin/newsletter', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/newsletter', adminMiddleware, async (req, res, next) => {
     try {
       const { source } = req.query;
       const params = [];
@@ -435,10 +435,10 @@ module.exports = function createAdminRouter({
       if (source) { params.push(source); where += ` AND source = $${params.length}`; }
       const result = await db.query(`SELECT email, first_name, source, created_at FROM email_subscribers ${where} ORDER BY created_at DESC`, params);
       res.json({ subscribers: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch newsletter' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch newsletter' })); }
   });
 
-  router.get('/api/admin/newsletter/export.csv', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/newsletter/export.csv', adminMiddleware, async (req, res, next) => {
     try {
       const { source } = req.query;
       const params = [];
@@ -452,10 +452,10 @@ module.exports = function createAdminRouter({
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="newsletter-subscribers${source ? '-' + source : ''}.csv"`);
       res.send(csv);
-    } catch (err) { res.status(500).json({ error: 'Failed to export newsletter' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to export newsletter' })); }
   });
 
-  router.get('/api/admin/newsletter/book-launch-status', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/newsletter/book-launch-status', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT
@@ -465,10 +465,10 @@ module.exports = function createAdminRouter({
         FROM email_subscribers
       `);
       res.json(result.rows[0]);
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch book launch status' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch book launch status' })); }
   });
 
-  router.post('/api/admin/newsletter/send-book-launch', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/newsletter/send-book-launch', adminMiddleware, async (req, res, next) => {
     try {
       const subscribers = await db.query(`
         SELECT email, first_name FROM email_subscribers
@@ -519,11 +519,11 @@ module.exports = function createAdminRouter({
       res.json({ sent: sentCount, errors: errors.length, failed: errors });
     } catch (err) {
       console.error('Send book launch error:', err.message);
-      res.status(500).json({ error: 'Failed to send book launch emails' });
+      next(Object.assign(err, { publicMessage: 'Failed to send book launch emails' }));
     }
   });
 
-  router.get('/api/admin/restaurants', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/restaurants', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT r.id, r.name, r.invite_code, r.created_at, u.name as owner_name, u.email as owner_email,
@@ -531,18 +531,18 @@ module.exports = function createAdminRouter({
         FROM restaurants r JOIN users u ON u.id = r.owner_id ORDER BY r.created_at DESC
       `);
       res.json({ restaurants: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch restaurants' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch restaurants' })); }
   });
 
-  router.get('/api/admin/contacts', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/contacts', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query('SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 100');
       res.json({ messages: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch contacts' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch contacts' })); }
   });
 
   // ── Team trial requests ───────────────────────────────────────────────────────
-  router.get('/api/admin/team-trial-requests', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/team-trial-requests', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(
         `SELECT id, name, email, message, provisioned, created_at,
@@ -553,10 +553,10 @@ module.exports = function createAdminRouter({
          ORDER BY created_at DESC`
       );
       res.json({ requests: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch team trial requests' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch team trial requests' })); }
   });
 
-  router.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/team-trial-requests/:id/provision', adminMiddleware, async (req, res, next) => {
     try {
       const { id } = req.params;
       if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
@@ -567,10 +567,10 @@ module.exports = function createAdminRouter({
       );
       if (!result.rows.length) return res.status(404).json({ error: 'Request not found' });
       res.json({ ok: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to update trial request' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to update trial request' })); }
   });
 
-  router.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/team-trial-requests/:id/send-code', adminMiddleware, async (req, res, next) => {
     try {
       const { id } = req.params;
       if (!/^\d+$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
@@ -628,7 +628,7 @@ module.exports = function createAdminRouter({
       } catch (emailErr) {
         console.error('send-code email failure, removing orphan code:', emailErr.message);
         await db.query('DELETE FROM invite_codes WHERE code = $1', [code]).catch(() => {});
-        return res.status(500).json({ error: 'Failed to send email — please try again' });
+        return next(Object.assign(emailErr, { publicMessage: 'Failed to send email — please try again' }));
       }
 
       await db.query(
@@ -638,12 +638,12 @@ module.exports = function createAdminRouter({
       res.json({ ok: true, code, plan });
     } catch (err) {
       console.error('send-code error:', err.message);
-      res.status(500).json({ error: 'Failed to send access code' });
+      next(Object.assign(err, { publicMessage: 'Failed to send access code' }));
     }
   });
 
   // ── Invite codes ──────────────────────────────────────────────────────────────
-  router.post('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/invite-codes', adminMiddleware, async (req, res, next) => {
     try {
       const { plan = 'premium', maxUses = 1, expiresAt, accessDays = 0 } = req.body;
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -654,10 +654,10 @@ module.exports = function createAdminRouter({
         [code, plan, maxUses === 0 ? 999999 : maxUses, expiresAt || null, accessDays > 0 ? accessDays : null, req.user.id]
       );
       res.json({ code });
-    } catch (err) { res.status(500).json({ error: 'Failed to create invite code' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to create invite code' })); }
   });
 
-  router.get('/api/admin/invite-codes', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/invite-codes', adminMiddleware, async (req, res, next) => {
     try {
       const codes = await db.query(`
         SELECT ic.*, u.email as creator_email,
@@ -670,10 +670,10 @@ module.exports = function createAdminRouter({
         ORDER BY ic.created_at DESC
       `);
       res.json({ codes: codes.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch invite codes' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch invite codes' })); }
   });
 
-  router.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
+  router.patch('/api/admin/invite-codes/:code', adminMiddleware, async (req, res, next) => {
     const validPlans = ['free', 'premium', 'starter_team', 'pro_team', 'enterprise'];
     const { plan } = req.body;
     if (!plan || !validPlans.includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
@@ -681,26 +681,26 @@ module.exports = function createAdminRouter({
       const r = await db.query('UPDATE invite_codes SET plan = $1 WHERE code = $2 RETURNING code', [plan, req.params.code]);
       if (!r.rows.length) return res.status(404).json({ error: 'Code not found' });
       res.json({ ok: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to update invite code' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to update invite code' })); }
   });
 
-  router.delete('/api/admin/invite-codes/:code', adminMiddleware, async (req, res) => {
+  router.delete('/api/admin/invite-codes/:code', adminMiddleware, async (req, res, next) => {
     try {
       await db.query('DELETE FROM invite_codes WHERE code = $1', [req.params.code]);
       res.json({ ok: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to delete invite code' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to delete invite code' })); }
   });
 
   // ── Seed fake users ───────────────────────────────────────────────────────────
-  router.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/seed-fake-users', adminMiddleware, async (req, res, next) => {
     try {
       const result = await seedDemoUsers();
       res.json({ ok: true, ...result });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: err.message })); }
   });
 
   // ── Send email ────────────────────────────────────────────────────────────────
-  router.post('/api/admin/send-email', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/send-email', adminMiddleware, async (req, res, next) => {
     const { emailType, userEmail } = req.body;
     if (!emailType || !userEmail) return res.status(400).json({ error: 'emailType and userEmail required' });
     try {
@@ -762,12 +762,12 @@ module.exports = function createAdminRouter({
       res.json({ success: true, to: email, emailType });
     } catch (err) {
       console.error('Admin send-email error:', err.message);
-      res.status(500).json({ error: err.message });
+      next(Object.assign(err, { publicMessage: err.message }));
     }
   });
 
   // ── Activation funnel ─────────────────────────────────────────────────────────
-  router.get('/api/admin/funnel', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/funnel', adminMiddleware, async (req, res, next) => {
     try {
       const [signups, trialStarted, mod1, mod5, mod10, paid] = await Promise.all([
         db.query('SELECT COUNT(*) as cnt FROM users'),
@@ -788,11 +788,11 @@ module.exports = function createAdminRouter({
           { label: 'Converted to Paid',   count: parseInt(paid.rows[0].cnt),         pct: Math.round(parseInt(paid.rows[0].cnt) / total * 100) },
         ]
       });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch funnel data' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch funnel data' })); }
   });
 
   // ── Dashboard summary ─────────────────────────────────────────────────────────
-  router.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/dashboard-summary', adminMiddleware, async (req, res, next) => {
     try {
       const [
         usersRes, new7dRes, new30dRes, active7dRes, tierCountsRes,
@@ -887,12 +887,12 @@ module.exports = function createAdminRouter({
       });
     } catch (err) {
       console.error('Dashboard summary error:', err.message);
-      res.status(500).json({ error: 'Failed to load dashboard' });
+      next(Object.assign(err, { publicMessage: 'Failed to load dashboard' }));
     }
   });
 
   // ── Module analytics ──────────────────────────────────────────────────────────
-  router.get('/api/admin/analytics', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/analytics', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT module_id,
@@ -905,21 +905,21 @@ module.exports = function createAdminRouter({
         GROUP BY module_id ORDER BY module_id
       `);
       res.json({ modules: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch analytics' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch analytics' })); }
   });
 
   // ── Weekly attribution ────────────────────────────────────────────────────────
-  router.get('/api/admin/weekly-attribution', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/weekly-attribution', adminMiddleware, async (req, res, next) => {
     try {
       const data = await buildWeeklyAttribution();
       res.json(data);
     } catch (err) {
       console.error('Weekly attribution error:', err.message);
-      res.status(500).json({ error: 'Failed to build weekly attribution' });
+      next(Object.assign(err, { publicMessage: 'Failed to build weekly attribution' }));
     }
   });
 
-  router.get('/api/admin/weekly-attribution.csv', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/weekly-attribution.csv', adminMiddleware, async (req, res, next) => {
     try {
       const data = await buildWeeklyAttribution();
       const lines = ['metric,utm_source,utm_medium,utm_campaign,count_7d,prior_7d,delta'];
@@ -935,17 +935,17 @@ module.exports = function createAdminRouter({
       res.send(lines.join('\n'));
     } catch (err) {
       console.error('Weekly attribution CSV error:', err.message);
-      res.status(500).json({ error: 'Failed to export CSV' });
+      next(Object.assign(err, { publicMessage: 'Failed to export CSV' }));
     }
   });
 
   // ── Manual digest triggers ────────────────────────────────────────────────────
-  router.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/trigger-openclaw-digest', adminMiddleware, async (req, res, next) => {
     try { await sendOpenClawWeeklyDigest(); res.json({ success: true }); }
-    catch (e) { res.status(500).json({ error: 'Failed to send digest' }); }
+    catch (e) { next(Object.assign(e, { publicMessage: 'Failed to send digest' })); }
   });
 
-  router.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/trigger-kirk-trial-digest', adminMiddleware, async (req, res, next) => {
     try {
       const result = await sendKirkTrialDigest();
       await db.query(
@@ -953,26 +953,26 @@ module.exports = function createAdminRouter({
         [new Date().toISOString()]
       );
       res.json({ success: true, ...result });
-    } catch (e) { res.status(500).json({ error: 'Failed to send digest', detail: e.message }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to send digest' })); }
   });
 
-  router.post('/api/admin/trigger-weekly-digest', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/trigger-weekly-digest', adminMiddleware, async (req, res, next) => {
     try {
       const { sent, skipped } = await sendWeeklyManagerDigests();
       res.json({ success: true, sent, skipped });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   // ── Site settings ─────────────────────────────────────────────────────────────
-  router.get('/api/admin/site-settings', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/site-settings', adminMiddleware, async (req, res, next) => {
     try {
       const r = await db.query(`SELECT key, value FROM site_settings`);
       const map = Object.fromEntries(r.rows.map(row => [row.key, row.value]));
       res.json(map);
-    } catch (e) { res.status(500).json({ error: 'Failed to load settings' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to load settings' })); }
   });
 
-  router.post('/api/admin/site-settings', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/site-settings', adminMiddleware, async (req, res, next) => {
     try {
       const { key, value } = req.body;
       if (!key) return res.status(400).json({ error: 'key required' });
@@ -990,11 +990,11 @@ module.exports = function createAdminRouter({
         );
       }
       res.json({ ok: true });
-    } catch (e) { res.status(500).json({ error: 'Failed to save setting' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to save setting' })); }
   });
 
   // ── Scholarships ──────────────────────────────────────────────────────────────
-  router.get('/api/admin/scholarships', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/scholarships', adminMiddleware, async (req, res, next) => {
     try {
       const apps = await db.query(
         `SELECT id, name, email, phone, motivation, years_experience, status, applied_at, reviewed_at, invite_code, grad_at, share_contact,
@@ -1004,10 +1004,10 @@ module.exports = function createAdminRouter({
       );
       const spotsUsed = await getMonthlyApprovedCount();
       res.json({ applications: apps.rows, spots_used: spotsUsed, cap: SCHOLARSHIP_MONTHLY_CAP });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/scholarship/:id/approve', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/scholarship/:id/approve', adminMiddleware, async (req, res, next) => {
     const appId = parseInt(req.params.id);
     if (!appId) return res.status(400).json({ error: 'Invalid application ID' });
     try {
@@ -1038,11 +1038,11 @@ module.exports = function createAdminRouter({
       res.json({ success: true, code });
     } catch (e) {
       console.error('Scholarship approve error:', e.message);
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   });
 
-  router.post('/api/admin/scholarship/:id/reject', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/scholarship/:id/reject', adminMiddleware, async (req, res, next) => {
     const appId = parseInt(req.params.id);
     if (!appId) return res.status(400).json({ error: 'Invalid application ID' });
     try {
@@ -1061,7 +1061,7 @@ module.exports = function createAdminRouter({
       res.json({ success: true });
     } catch (e) {
       console.error('Scholarship reject error:', e.message);
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   });
 

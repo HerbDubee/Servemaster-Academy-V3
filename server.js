@@ -637,7 +637,7 @@ async function adminMiddleware(req, res, next) {
     if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid token' });
     }
-    res.status(500).json({ error: 'Server error' });
+    next(Object.assign(e, { publicMessage: 'Server error' }));
   }
 }
 
@@ -710,7 +710,7 @@ async function checkTrial(req, res, next) {
     });
   } catch (err) {
     console.error('checkTrial error:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    next(Object.assign(err, { publicMessage: 'Server error' }));
   }
 }
 

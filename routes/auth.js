@@ -19,19 +19,25 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Google OAuth Login
 // Flow: Check if user exists → Create or update name → Sign JWT → Set cookie
-router.post('/google', async (req, res) => {
+router.post('/google', async (req, res, next) => {
   try {
     const { credential } = req.body;
     if (!credential) {
       return res.status(400).json({ error: 'Missing credential' });
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      payload = ticket.getPayload();
+    } catch (verifyErr) {
+      // Invalid/expired Google credential is a client error, not a server bug.
+      return res.status(400).json({ error: 'Google authentication failed' });
+    }
 
-    const payload = ticket.getPayload();
     const email = payload.email.toLowerCase();
     const name = payload.name || '';
 
@@ -62,7 +68,7 @@ router.post('/google', async (req, res) => {
 
     // Defensive check — should never happen given the logic above
     if (!user) {
-      return res.status(500).json({ error: 'Failed to create or retrieve user' });
+      return next(Object.assign(new Error('Failed to create or retrieve user'), { publicMessage: 'Failed to create or retrieve user' }));
     }
 
     const token = signToken({
@@ -83,7 +89,7 @@ router.post('/google', async (req, res) => {
 
   } catch (err) {
     console.error('Google auth error:', err);
-    res.status(400).json({ error: 'Google authentication failed' });
+    next(Object.assign(err, { publicMessage: 'Google authentication failed' }));
   }
 });
 

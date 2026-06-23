@@ -16,7 +16,7 @@ module.exports = function createAuthEmailRouter({
   const router = express.Router();
 
   // ── Register ─────────────────────────────────────────────────────────────────
-  router.post('/api/auth/register', authLimiter, validate(registerSchema), async (req, res) => {
+  router.post('/api/auth/register', authLimiter, validate(registerSchema), async (req, res, next) => {
     const { email, password, name, level } = req.body;
     try {
       const existing = await db.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
@@ -74,12 +74,12 @@ module.exports = function createAuthEmailRouter({
       } catch(e) {} })();
     } catch (err) {
       console.error('Register error:', err.message);
-      res.status(500).json({ error: 'Registration failed' });
+      next(Object.assign(err, { publicMessage: 'Registration failed' }));
     }
   });
 
   // ── Login ────────────────────────────────────────────────────────────────────
-  router.post('/api/auth/login', authLimiter, validate(loginSchema), async (req, res) => {
+  router.post('/api/auth/login', authLimiter, validate(loginSchema), async (req, res, next) => {
     const { email, password } = req.body;
     try {
       const result = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
@@ -109,7 +109,7 @@ module.exports = function createAuthEmailRouter({
       sendDripEmailIfDue(user.id, user.email, user.name).catch(() => {});
     } catch (err) {
       console.error('Login error:', err.message);
-      res.status(500).json({ error: 'Login failed' });
+      next(Object.assign(err, { publicMessage: 'Login failed' }));
     }
   });
 
@@ -163,7 +163,7 @@ module.exports = function createAuthEmailRouter({
   });
 
   // ── Reset password ───────────────────────────────────────────────────────────
-  router.post('/api/reset-password', authLimiter, validate(resetPasswordSchema), async (req, res) => {
+  router.post('/api/reset-password', authLimiter, validate(resetPasswordSchema), async (req, res, next) => {
     const { token, newPassword } = req.body;
     try {
       const tokenRes = await db.query(
@@ -180,12 +180,12 @@ module.exports = function createAuthEmailRouter({
       res.json({ success: true });
     } catch (err) {
       console.error('Reset password error:', err.message);
-      res.status(500).json({ error: 'Password reset failed. Please try again.' });
+      next(Object.assign(err, { publicMessage: 'Password reset failed. Please try again.' }));
     }
   });
 
   // ── Auth/me ──────────────────────────────────────────────────────────────────
-  router.get('/api/auth/me', authMiddleware, async (req, res) => {
+  router.get('/api/auth/me', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query('SELECT id, name, email, role, experience_level, restaurant_id, subscription_status, trial_ends_at FROM users WHERE id = $1', [req.user.id]);
       if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
@@ -210,7 +210,7 @@ module.exports = function createAuthEmailRouter({
         message: daysLeft > 0 ? `You have ${daysLeft} days left in your free trial` : 'Trial expired'
       });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch user' });
+      next(Object.assign(err, { publicMessage: 'Failed to fetch user' }));
     }
   });
 

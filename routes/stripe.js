@@ -81,7 +81,7 @@ module.exports = function createStripeRouter({
   // ── Webhook ─────────────────────────────────────────────────────────────────
   // MUST use express.raw — Stripe signature verification requires the raw body.
   // This route must be mounted BEFORE app.use(express.json()) in server.js.
-  router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res, next) => {
     const signature = req.headers['stripe-signature'];
     if (!signature) return res.status(400).json({ error: 'Missing stripe-signature' });
     const sig = Array.isArray(signature) ? signature[0] : signature;
@@ -326,22 +326,22 @@ module.exports = function createStripeRouter({
       res.status(200).json({ received: true });
     } catch (err) {
       console.error('Webhook handler error:', err.message);
-      res.status(500).json({ error: 'Webhook handler failed' });
+      next(Object.assign(err, { publicMessage: 'Webhook handler failed' }));
     }
   });
 
   // ── Publishable key ──────────────────────────────────────────────────────────
-  router.get('/stripe/publishable-key', async (req, res) => {
+  router.get('/stripe/publishable-key', async (req, res, next) => {
     try {
       const key = await getStripePublishableKey();
       res.json({ publishableKey: key });
-    } catch {
-      res.status(500).json({ error: 'Unable to fetch key' });
+    } catch (err) {
+      next(Object.assign(err, { publicMessage: 'Unable to fetch key' }));
     }
   });
 
   // ── Create checkout session ──────────────────────────────────────────────────
-  router.post('/payments/create-checkout', authMiddleware, express.json(), validate(checkoutSchema), async (req, res) => {
+  router.post('/payments/create-checkout', authMiddleware, express.json(), validate(checkoutSchema), async (req, res, next) => {
     const { plan } = req.body;
     const priceMap = getPriceMap();
     const priceId = priceMap[plan];
@@ -458,7 +458,7 @@ module.exports = function createStripeRouter({
       res.json({ url: session.url });
     } catch (err) {
       console.error('Checkout error:', err.message);
-      res.status(500).json({ error: 'Failed to create checkout session' });
+      next(Object.assign(err, { publicMessage: 'Failed to create checkout session' }));
     }
   });
 
@@ -466,7 +466,7 @@ module.exports = function createStripeRouter({
   router.get('/payments/cancel', (req, res) => res.redirect('/pricing'));
 
   // ── Billing portal ───────────────────────────────────────────────────────────
-  router.post('/payments/billing-portal', authMiddleware, async (req, res) => {
+  router.post('/payments/billing-portal', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(
         'SELECT stripe_customer_id FROM users WHERE id = $1',
@@ -503,12 +503,12 @@ module.exports = function createStripeRouter({
       res.json({ url: session.url });
     } catch (err) {
       console.error('Billing portal error:', err.message);
-      res.status(500).json({ error: 'Failed to open billing portal' });
+      next(Object.assign(err, { publicMessage: 'Failed to open billing portal' }));
     }
   });
 
   // ── Payment status ────────────────────────────────────────────────────────────
-  router.get('/payments/status', authMiddleware, async (req, res) => {
+  router.get('/payments/status', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(
         'SELECT subscription_status, restaurant_id FROM users WHERE id = $1',
@@ -523,7 +523,7 @@ module.exports = function createStripeRouter({
       const effective_plan = highestPlan(user?.subscription_status, restaurantPlan);
       res.json({ status: user?.subscription_status || 'free', effective_plan });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to check subscription' });
+      next(Object.assign(err, { publicMessage: 'Failed to check subscription' }));
     }
   });
 

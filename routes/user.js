@@ -178,7 +178,7 @@ module.exports = function createUserRouter({
 
   // ── User progress ───────────────────────────────────────────────────────────
 
-  router.get('/api/user/progress', authMiddleware, checkTrial, async (req, res) => {
+  router.get('/api/user/progress', authMiddleware, checkTrial, async (req, res, next) => {
     try {
       const result = await db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1', [req.user.id]);
       const streakRes = await db.query('SELECT current_streak, longest_streak FROM streaks WHERE user_id = $1', [req.user.id]);
@@ -192,10 +192,10 @@ module.exports = function createUserRouter({
         scenarios: scenarioRes.rows,
         subscription_status: subRes.rows[0]?.subscription_status || 'free'
       });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch progress' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch progress' })); }
   });
 
-  router.post('/api/user/progress', authMiddleware, progressLimiter, checkTrial, async (req, res) => {
+  router.post('/api/user/progress', authMiddleware, progressLimiter, checkTrial, async (req, res, next) => {
     let { moduleId, progress, quizScore } = req.body;
     if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
     try {
@@ -297,12 +297,12 @@ module.exports = function createUserRouter({
           } catch(e) {} })();
         }
       }
-    } catch (err) { res.status(500).json({ error: 'Failed to save progress' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to save progress' })); }
   });
 
   // ── Modules list ────────────────────────────────────────────────────────────
 
-  router.get('/api/modules', authMiddleware, checkTrial, async (req, res) => {
+  router.get('/api/modules', authMiddleware, checkTrial, async (req, res, next) => {
     try {
       const { rows } = await db.query(
         'SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1',
@@ -319,25 +319,25 @@ module.exports = function createUserRouter({
       res.json({ modules });
     } catch (err) {
       console.error('Modules fetch error:', err.message);
-      res.status(500).json({ error: 'Failed to fetch modules' });
+      next(Object.assign(err, { publicMessage: 'Failed to fetch modules' }));
     }
   });
 
   // ── Scenario completion ─────────────────────────────────────────────────────
 
-  router.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res) => {
+  router.post('/api/user/scenario', authMiddleware, checkTrial, async (req, res, next) => {
     const { scenarioId } = req.body;
     if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
     try {
       await db.query('INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)', [req.user.id, scenarioId]);
       await checkAndAwardBadges(req.user.id);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to save scenario' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to save scenario' })); }
   });
 
   // ── Leaderboard ─────────────────────────────────────────────────────────────
 
-  router.get('/api/leaderboard', authMiddleware, async (req, res) => {
+  router.get('/api/leaderboard', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
         SELECT u.name,
@@ -353,7 +353,7 @@ module.exports = function createUserRouter({
         LIMIT 50
       `);
       res.json({ leaderboard: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch leaderboard' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch leaderboard' })); }
   });
 
   // ── TTS ─────────────────────────────────────────────────────────────────────
@@ -386,7 +386,7 @@ module.exports = function createUserRouter({
 
   // ── Roleplay ────────────────────────────────────────────────────────────────
 
-  router.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res) => {
+  router.post('/api/roleplay', authMiddleware, aiLimiter, async (req, res, next) => {
     const { scenarioId, messages, lang, sceneContext } = req.body;
     const scenario = scenarios[scenarioId];
     if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
@@ -413,11 +413,11 @@ module.exports = function createUserRouter({
       res.json({ reply });
     } catch (err) {
       console.error('OpenAI error:', err.message);
-      res.status(500).json({ error: 'AI request failed' });
+      next(Object.assign(err, { publicMessage: 'AI request failed' }));
     }
   });
 
-  router.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res) => {
+  router.post('/api/roleplay/summary', authMiddleware, aiLimiter, async (req, res, next) => {
     const { scenarioId, messages, lang, sceneTitle, sceneContext } = req.body;
     const scenario = scenarios[scenarioId];
     if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
@@ -462,49 +462,49 @@ Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field
       res.json(parsed);
     } catch (err) {
       console.error('Summary AI error:', err.message);
-      res.status(500).json({ error: 'Summary failed' });
+      next(Object.assign(err, { publicMessage: 'Summary failed' }));
     }
   });
 
   // ── User preferences ────────────────────────────────────────────────────────
 
-  router.patch('/api/user/lang', authMiddleware, async (req, res) => {
+  router.patch('/api/user/lang', authMiddleware, async (req, res, next) => {
     const { lang } = req.body;
     if (!['en', 'fr', 'es'].includes(lang)) return res.status(400).json({ error: 'Invalid lang' });
     try {
       await db.query('UPDATE users SET lang_preference = $1 WHERE id = $2', [lang, req.user.id]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to save language' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to save language' })); }
   });
 
   // ── Module bookmarks ─────────────────────────────────────────────────────────
 
-  router.get('/api/user/bookmarks', authMiddleware, async (req, res) => {
+  router.get('/api/user/bookmarks', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query('SELECT module_id, created_at FROM module_bookmarks WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
       res.json({ bookmarks: result.rows.map(r => r.module_id) });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch bookmarks' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch bookmarks' })); }
   });
 
-  router.post('/api/user/bookmarks', authMiddleware, async (req, res) => {
+  router.post('/api/user/bookmarks', authMiddleware, async (req, res, next) => {
     const { moduleId } = req.body;
     if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
     try {
       await db.query('INSERT INTO module_bookmarks (user_id, module_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.user.id, moduleId]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to add bookmark' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to add bookmark' })); }
   });
 
-  router.delete('/api/user/bookmarks/:moduleId', authMiddleware, async (req, res) => {
+  router.delete('/api/user/bookmarks/:moduleId', authMiddleware, async (req, res, next) => {
     try {
       await db.query('DELETE FROM module_bookmarks WHERE user_id = $1 AND module_id = $2', [req.user.id, req.params.moduleId]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to remove bookmark' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to remove bookmark' })); }
   });
 
   // ── Scenario transcripts ─────────────────────────────────────────────────────
 
-  router.post('/api/user/scenario-transcript', authMiddleware, async (req, res) => {
+  router.post('/api/user/scenario-transcript', authMiddleware, async (req, res, next) => {
     const { scenarioId, messages, verdict } = req.body;
     if (!scenarioId || !messages) return res.status(400).json({ error: 'scenarioId and messages required' });
     try {
@@ -513,20 +513,20 @@ Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field
         [req.user.id, scenarioId, JSON.stringify(messages), verdict || null]
       );
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to save transcript' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to save transcript' })); }
   });
 
-  router.get('/api/user/scenario-transcripts', authMiddleware, async (req, res) => {
+  router.get('/api/user/scenario-transcripts', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(
         'SELECT id, scenario_id, verdict, completed_at FROM scenario_transcripts WHERE user_id = $1 ORDER BY completed_at DESC LIMIT 50',
         [req.user.id]
       );
       res.json({ transcripts: result.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch transcripts' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch transcripts' })); }
   });
 
-  router.get('/api/user/scenario-transcripts/:id', authMiddleware, async (req, res) => {
+  router.get('/api/user/scenario-transcripts/:id', authMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(
         'SELECT id, scenario_id, messages, verdict, completed_at FROM scenario_transcripts WHERE id = $1 AND user_id = $2',
@@ -534,7 +534,7 @@ Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field
       );
       if (!result.rows.length) return res.status(404).json({ error: 'Transcript not found' });
       res.json(result.rows[0]);
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch transcript' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch transcript' })); }
   });
 
   return router;

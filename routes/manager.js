@@ -24,7 +24,7 @@ async function managerMiddleware(req, res, next) {
     if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid token' });
     }
-    res.status(500).json({ error: 'Auth error' });
+    next(Object.assign(e, { publicMessage: 'Auth error' }));
   }
 }
 
@@ -74,7 +74,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Restaurant / onboarding ──────────────────────────────────────────────────
 
-  router.post('/api/manager/create-restaurant', authMiddleware, async (req, res) => {
+  router.post('/api/manager/create-restaurant', authMiddleware, async (req, res, next) => {
     const { restaurantName } = req.body;
     if (!restaurantName) return res.status(400).json({ error: 'Restaurant name required' });
     try {
@@ -83,10 +83,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       const restaurant = result.rows[0];
       await db.query("UPDATE users SET role = 'manager', restaurant_id = $1 WHERE id = $2", [restaurant.id, req.user.id]);
       res.json({ restaurant, inviteCode });
-    } catch (err) { res.status(500).json({ error: 'Failed to create restaurant' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to create restaurant' })); }
   });
 
-  router.post('/api/manager/join', authMiddleware, async (req, res) => {
+  router.post('/api/manager/join', authMiddleware, async (req, res, next) => {
     const { inviteCode } = req.body;
     if (!inviteCode) return res.status(400).json({ error: 'Invite code required' });
     try {
@@ -95,10 +95,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       const restaurant = result.rows[0];
       await db.query('UPDATE users SET restaurant_id = $1 WHERE id = $2', [restaurant.id, req.user.id]);
       res.json({ success: true, restaurantName: restaurant.name });
-    } catch (err) { res.status(500).json({ error: 'Failed to join restaurant' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to join restaurant' })); }
   });
 
-  router.get('/api/manager/dashboard', authMiddleware, async (req, res) => {
+  router.get('/api/manager/dashboard', authMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
       const user = userRes.rows[0];
@@ -118,12 +118,12 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         ORDER BY modules_completed DESC
       `, [user.restaurant_id]);
       res.json({ restaurant: restaurantRes.rows[0], staff: staffRes.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch dashboard' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch dashboard' })); }
   });
 
   // ── White-label config ───────────────────────────────────────────────────────
 
-  router.get('/api/manager/white-label', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/white-label', managerMiddleware, async (req, res, next) => {
     try {
       const uRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       if (!uRes.rows.length || !uRes.rows[0].restaurant_id) return res.json({ config: null });
@@ -142,10 +142,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
           restaurantName: row.name,
         } : null
       });
-    } catch (e) { res.status(500).json({ error: 'Failed to load white-label config' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to load white-label config' })); }
   });
 
-  router.post('/api/manager/white-label', managerMiddleware, async (req, res) => {
+  router.post('/api/manager/white-label', managerMiddleware, async (req, res, next) => {
     const { brandName, logoUrl, primaryColor, accentColor, isActive } = req.body;
     if (primaryColor && !isValidHex(primaryColor)) return res.status(400).json({ error: 'Invalid primary color — use #rrggbb format' });
     if (accentColor  && !isValidHex(accentColor))  return res.status(400).json({ error: 'Invalid accent color — use #rrggbb format' });
@@ -165,7 +165,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         [brandName || null, logoUrl || null, primaryColor || null, accentColor || null, !!isActive, rid]
       );
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Failed to save white-label config' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to save white-label config' })); }
   });
 
   // ── Tenant branding (public + auth) ─────────────────────────────────────────
@@ -196,7 +196,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Team overview ────────────────────────────────────────────────────────────
 
-  router.get('/api/team', managerMiddleware, async (req, res) => {
+  router.get('/api/team', managerMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
       const user = userRes.rows[0];
@@ -252,13 +252,13 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       res.json(team);
     } catch (err) {
       console.error('Team fetch error:', err.message);
-      res.status(500).json({ error: 'Failed to fetch team' });
+      next(Object.assign(err, { publicMessage: 'Failed to fetch team' }));
     }
   });
 
   // ── Certificates ─────────────────────────────────────────────────────────────
 
-  router.post('/api/certificate', managerMiddleware, async (req, res) => {
+  router.post('/api/certificate', managerMiddleware, async (req, res, next) => {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
@@ -284,11 +284,11 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       res.json({ success: true, user: { name: user.name, email: user.email } });
     } catch (err) {
       console.error('Certificate error:', err.message);
-      res.status(500).json({ error: 'Failed to issue certificate' });
+      next(Object.assign(err, { publicMessage: 'Failed to issue certificate' }));
     }
   });
 
-  router.get('/api/cert-token', authMiddleware, async (req, res) => {
+  router.get('/api/cert-token', authMiddleware, async (req, res, next) => {
     try {
       const { rows } = await db.query('SELECT cert_token FROM users WHERE id = $1', [req.user.id]);
       if (!rows.length) return res.status(404).json({ error: 'User not found' });
@@ -300,7 +300,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       res.json({ token });
     } catch (err) {
       console.error('cert-token error:', err.message);
-      res.status(500).json({ error: 'Failed to get cert token' });
+      next(Object.assign(err, { publicMessage: 'Failed to get cert token' }));
     }
   });
 
@@ -334,7 +334,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
 
   // ── Export report (CSV + PDF) ────────────────────────────────────────────────
 
-  router.get('/api/export-report', managerMiddleware, async (req, res) => {
+  router.get('/api/export-report', managerMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
       const user = userRes.rows[0];
@@ -513,31 +513,31 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       res.send(csv);
     } catch (err) {
       console.error('Export error:', err.message);
-      res.status(500).json({ error: 'Failed to export report' });
+      next(Object.assign(err, { publicMessage: 'Failed to export report' }));
     }
   });
 
   // ── Digest preference ────────────────────────────────────────────────────────
 
-  router.get('/api/manager/digest-preference', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/digest-preference', managerMiddleware, async (req, res, next) => {
     try {
       const r = await db.query('SELECT weekly_digest_enabled FROM users WHERE id = $1', [req.user.id]);
       res.json({ enabled: r.rows[0]?.weekly_digest_enabled !== false });
-    } catch (e) { res.status(500).json({ error: 'Failed to fetch preference' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to fetch preference' })); }
   });
 
-  router.put('/api/manager/digest-preference', managerMiddleware, async (req, res) => {
+  router.put('/api/manager/digest-preference', managerMiddleware, async (req, res, next) => {
     const { enabled } = req.body;
     if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'enabled must be boolean' });
     try {
       await db.query('UPDATE users SET weekly_digest_enabled = $1 WHERE id = $2', [enabled, req.user.id]);
       res.json({ success: true, enabled });
-    } catch (e) { res.status(500).json({ error: 'Failed to save preference' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Failed to save preference' })); }
   });
 
   // ── Staff detail ─────────────────────────────────────────────────────────────
 
-  router.get('/api/manager/staff/:id', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/staff/:id', managerMiddleware, async (req, res, next) => {
     try {
       const staffId = parseInt(req.params.id);
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
@@ -562,12 +562,12 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         badges: badgeRes.rows,
         transcripts: transcriptRes.rows
       });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch staff details' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch staff details' })); }
   });
 
   // ── Email nudge ──────────────────────────────────────────────────────────────
 
-  router.post('/api/manager/nudge', managerMiddleware, async (req, res) => {
+  router.post('/api/manager/nudge', managerMiddleware, async (req, res, next) => {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
@@ -593,22 +593,22 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         </div>`
       });
       res.json({ success: true, to: email });
-    } catch (err) { res.status(500).json({ error: 'Failed to send nudge: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to send nudge: ' + err.message })); }
   });
 
   // ── Training deadline ────────────────────────────────────────────────────────
 
-  router.get('/api/manager/deadline', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/deadline', managerMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       const restaurantId = userRes.rows[0]?.restaurant_id;
       if (!restaurantId) return res.json({ deadline: null });
       const result = await db.query('SELECT training_deadline FROM restaurants WHERE id = $1', [restaurantId]);
       res.json({ deadline: result.rows[0]?.training_deadline || null });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch deadline' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch deadline' })); }
   });
 
-  router.post('/api/manager/deadline', managerMiddleware, async (req, res) => {
+  router.post('/api/manager/deadline', managerMiddleware, async (req, res, next) => {
     const { deadline } = req.body;
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
@@ -616,12 +616,12 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       if (!restaurantId) return res.status(400).json({ error: 'No restaurant found' });
       await db.query('UPDATE restaurants SET training_deadline = $1 WHERE id = $2', [deadline || null, restaurantId]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to set deadline' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to set deadline' })); }
   });
 
   // ── Certificate history ──────────────────────────────────────────────────────
 
-  router.get('/api/manager/certificates', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/certificates', managerMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
       const mgr = userRes.rows[0];
@@ -644,21 +644,21 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         `, [mgr.restaurant_id]);
       }
       res.json({ certificates: logs.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch certificates' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch certificates' })); }
   });
 
   // ── Assigned modules ─────────────────────────────────────────────────────────
 
-  router.get('/api/manager/assigned-modules', authMiddleware, async (req, res) => {
+  router.get('/api/manager/assigned-modules', authMiddleware, async (req, res, next) => {
     try {
       const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
       if (!rr.rows.length) return res.json({ modules: [] });
       const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [rr.rows[0].id]);
       res.json({ modules: r.rows.map(x => x.module_id) });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/manager/assign', authMiddleware, async (req, res) => {
+  router.post('/api/manager/assign', authMiddleware, async (req, res, next) => {
     const { moduleId } = req.body;
     if (!moduleId) return res.status(400).json({ error: 'Missing moduleId' });
     try {
@@ -666,31 +666,31 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       if (!rr.rows.length) return res.status(404).json({ error: 'No restaurant found' });
       await db.query('INSERT INTO assigned_modules (restaurant_id, module_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [rr.rows[0].id, moduleId]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.delete('/api/manager/assign/:moduleId', authMiddleware, async (req, res) => {
+  router.delete('/api/manager/assign/:moduleId', authMiddleware, async (req, res, next) => {
     try {
       const rr = await db.query('SELECT id FROM restaurants WHERE manager_id = $1', [req.user.id]);
       if (!rr.rows.length) return res.status(404).json({ error: 'No restaurant found' });
       await db.query('DELETE FROM assigned_modules WHERE restaurant_id = $1 AND module_id = $2', [rr.rows[0].id, req.params.moduleId]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.get('/api/user/assigned-modules', authMiddleware, async (req, res) => {
+  router.get('/api/user/assigned-modules', authMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       const restaurantId = userRes.rows[0]?.restaurant_id;
       if (!restaurantId) return res.json({ modules: [] });
       const r = await db.query('SELECT module_id FROM assigned_modules WHERE restaurant_id = $1', [restaurantId]);
       res.json({ modules: r.rows.map(x => x.module_id) });
-    } catch (e) { console.error('assigned-modules error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('assigned-modules error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   // ── Training plans ───────────────────────────────────────────────────────────
 
-  router.post('/api/manager/training-plans', managerMiddleware, async (req, res) => {
+  router.post('/api/manager/training-plans', managerMiddleware, async (req, res, next) => {
     const { userId, title } = req.body;
     if (!userId) return res.status(400).json({ error: 'userId required' });
     try {
@@ -708,10 +708,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         [restaurantId, userId, planTitle, req.user.id]
       );
       res.json({ plan: r.rows[0] });
-    } catch (err) { res.status(500).json({ error: 'Failed to create plan: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to create plan: ' + err.message })); }
   });
 
-  router.get('/api/manager/training-plans', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/training-plans', managerMiddleware, async (req, res, next) => {
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
       const mgr = userRes.rows[0];
@@ -743,10 +743,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       }
       const plans = plansRes.rows.map(p => ({ ...p, items: itemsByPlan[p.id] || [] }));
       res.json({ plans });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch plans: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch plans: ' + err.message })); }
   });
 
-  router.post('/api/manager/training-plans/:planId/items', managerMiddleware, async (req, res) => {
+  router.post('/api/manager/training-plans/:planId/items', managerMiddleware, async (req, res, next) => {
     const { moduleId, dueDate, position } = req.body;
     const planId = parseInt(req.params.planId);
     const moduleIdInt = parseInt(moduleId);
@@ -768,10 +768,10 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         [planId, moduleId, pos, dueDate || null]
       );
       res.json({ item: r.rows[0] });
-    } catch (err) { res.status(500).json({ error: 'Failed to add item: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to add item: ' + err.message })); }
   });
 
-  router.delete('/api/manager/training-plans/:planId/items/:itemId', managerMiddleware, async (req, res) => {
+  router.delete('/api/manager/training-plans/:planId/items/:itemId', managerMiddleware, async (req, res, next) => {
     const planId = parseInt(req.params.planId);
     const itemId = parseInt(req.params.itemId);
     try {
@@ -781,20 +781,20 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
       if (!planCheck.rows.length) return res.status(404).json({ error: 'Plan not found' });
       await db.query('DELETE FROM training_plan_items WHERE id = $1 AND plan_id = $2', [itemId, planId]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to remove item: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to remove item: ' + err.message })); }
   });
 
-  router.delete('/api/manager/training-plans/:planId', managerMiddleware, async (req, res) => {
+  router.delete('/api/manager/training-plans/:planId', managerMiddleware, async (req, res, next) => {
     const planId = parseInt(req.params.planId);
     try {
       const userRes = await db.query('SELECT restaurant_id FROM users WHERE id = $1', [req.user.id]);
       const restaurantId = userRes.rows[0]?.restaurant_id;
       await db.query('DELETE FROM training_plans WHERE id = $1 AND restaurant_id = $2', [planId, restaurantId]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to delete plan: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to delete plan: ' + err.message })); }
   });
 
-  router.get('/api/user/training-plan', authMiddleware, async (req, res) => {
+  router.get('/api/user/training-plan', authMiddleware, async (req, res, next) => {
     try {
       const planRes = await db.query(
         `SELECT tp.id, tp.title, tp.created_at, u.name as manager_name
@@ -816,12 +816,12 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         [req.user.id, plan.id]
       );
       res.json({ plan: { ...plan, items: itemsRes.rows } });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch training plan: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch training plan: ' + err.message })); }
   });
 
   // ── Skill-gap report ─────────────────────────────────────────────────────────
 
-  router.get('/api/manager/skill-gap', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/skill-gap', managerMiddleware, async (req, res, next) => {
     const ALL_MODULE_IDS = Array.from({ length: 30 }, (_, i) => i + 1);
     try {
       const userRes = await db.query('SELECT restaurant_id, role FROM users WHERE id = $1', [req.user.id]);
@@ -880,29 +880,29 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
         return a.avg_quiz - b.avg_quiz;
       });
       res.json({ modules: modulesData, staff: staffRes.rows });
-    } catch (err) { res.status(500).json({ error: 'Failed to fetch skill gap: ' + err.message }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to fetch skill gap: ' + err.message })); }
   });
 
   // ── Certificate logo ─────────────────────────────────────────────────────────
 
-  router.get('/api/manager/cert-logo', authMiddleware, async (req, res) => {
+  router.get('/api/manager/cert-logo', authMiddleware, async (req, res, next) => {
     try {
       const rr = await db.query('SELECT cert_logo_url FROM restaurants WHERE manager_id = $1', [req.user.id]);
       res.json({ certLogoUrl: rr.rows[0]?.cert_logo_url || '' });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/manager/cert-logo', authMiddleware, async (req, res) => {
+  router.post('/api/manager/cert-logo', authMiddleware, async (req, res, next) => {
     const { certLogoUrl } = req.body;
     try {
       await db.query('UPDATE restaurants SET cert_logo_url = $1 WHERE manager_id = $2', [certLogoUrl || null, req.user.id]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   // ── Graduates ────────────────────────────────────────────────────────────────
 
-  router.get('/api/manager/graduates', managerMiddleware, async (req, res) => {
+  router.get('/api/manager/graduates', managerMiddleware, async (req, res, next) => {
     try {
       const grads = await db.query(
         `SELECT sa.id, sa.name, sa.email, sa.phone, sa.testimonial, sa.grad_at, sa.share_contact
@@ -911,7 +911,7 @@ module.exports = function createManagerRouter({ resend, authMiddleware, escapeHt
          ORDER BY sa.grad_at DESC`
       );
       res.json({ graduates: grads.rows });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   return router;

@@ -41,9 +41,20 @@ function classifyError(err) {
     return { status: 400, message: 'Referenced record does not exist.' };
   }
 
+  // Route-supplied client-safe message. A catch block forwards the original
+  // error (so Sentry keeps the real stack) but attaches a curated, safe message
+  // for the client via `next(Object.assign(err, { publicMessage: '...' }))`.
+  // Defaults to a 500 unless the route also set an explicit 4xx/5xx status.
+  if (err.publicMessage) {
+    const status = (err.status && err.status >= 400 && err.status < 600) ? err.status : 500;
+    return { status, message: err.publicMessage };
+  }
+
   // Explicit HTTP status set by a route (e.g. throw Object.assign(new Error(...), { status: 403 }))
   if (err.status && err.status >= 400 && err.status < 600) {
-    return { status: err.status, message: err.message };
+    // Don't leak raw internals on an explicit 5xx in production.
+    const message = (err.status >= 500 && IS_PROD) ? 'An unexpected error occurred.' : err.message;
+    return { status: err.status, message };
   }
 
   // Default: unhandled server error

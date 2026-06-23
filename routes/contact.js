@@ -24,7 +24,7 @@ module.exports = function createContactRouter({
 
   // ── Newsletter subscribe ────────────────────────────────────────────────────
 
-  router.post('/api/newsletter/subscribe', contactLimiter, validate(newsletterSchema), async (req, res) => {
+  router.post('/api/newsletter/subscribe', contactLimiter, validate(newsletterSchema), async (req, res, next) => {
     const { email, firstName, source, role } = req.body;
     const safeSource = (source || 'newsletter').toString().slice(0, 64);
     try {
@@ -83,22 +83,22 @@ module.exports = function createContactRouter({
         }).catch(err => console.error('Checklist internal notification error:', err.message));
       }
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Subscription failed' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Subscription failed' })); }
   });
 
   // ── Contact form ────────────────────────────────────────────────────────────
 
-  router.post('/api/contact', contactLimiter, validate(contactSchema), async (req, res) => {
+  router.post('/api/contact', contactLimiter, validate(contactSchema), async (req, res, next) => {
     const { name, email, message } = req.body;
     try {
       await db.query('INSERT INTO contact_messages (name, email, message) VALUES ($1, $2, $3)', [name, email.toLowerCase(), message]);
       res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: 'Failed to send message' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to send message' })); }
   });
 
   // ── Team trial request ──────────────────────────────────────────────────────
 
-  router.post('/api/request-team-trial', contactLimiter, validate(teamTrialSchema), async (req, res) => {
+  router.post('/api/request-team-trial', contactLimiter, validate(teamTrialSchema), async (req, res, next) => {
     const { name, email, restaurantName, staffCount } = req.body;
     const restName = restaurantName;
     try {
@@ -136,13 +136,13 @@ module.exports = function createContactRouter({
       res.json({ success: true });
     } catch (err) {
       console.error('Team trial request error:', err.message);
-      res.status(500).json({ error: 'Failed to send request' });
+      next(Object.assign(err, { publicMessage: 'Failed to send request' }));
     }
   });
 
   // ── Enterprise inquiry ──────────────────────────────────────────────────────
 
-  router.post('/api/enterprise-request', contactLimiter, validate(enterpriseSchema), async (req, res) => {
+  router.post('/api/enterprise-request', contactLimiter, validate(enterpriseSchema), async (req, res, next) => {
     const { name, email, company, locations, message } = req.body;
     try {
       const fullMessage = `Company: ${company}\nLocations: ${locations || 'Not specified'}\n\n${message || ''}`.trim();
@@ -158,13 +158,13 @@ module.exports = function createContactRouter({
       res.json({ success: true });
     } catch (err) {
       console.error('Enterprise request error:', err.message);
-      res.status(500).json({ error: 'Failed to send request' });
+      next(Object.assign(err, { publicMessage: 'Failed to send request' }));
     }
   });
 
   // ── Referral: invite a manager ──────────────────────────────────────────────
 
-  router.post('/api/referral/invite-manager', authMiddleware, contactLimiter, validate(referralInviteSchema), async (req, res) => {
+  router.post('/api/referral/invite-manager', authMiddleware, contactLimiter, validate(referralInviteSchema), async (req, res, next) => {
     const { managerEmail, note } = req.body;
     const sender = req.user;
     try {
@@ -200,13 +200,13 @@ module.exports = function createContactRouter({
       res.json({ success: true });
     } catch (err) {
       console.error('Referral invite error:', err.message);
-      res.status(500).json({ error: 'Failed to send invite' });
+      next(Object.assign(err, { publicMessage: 'Failed to send invite' }));
     }
   });
 
   // ── Invite code redeem ──────────────────────────────────────────────────────
 
-  router.post('/api/invite/redeem', authMiddleware, validate(inviteRedeemSchema), async (req, res) => {
+  router.post('/api/invite/redeem', authMiddleware, validate(inviteRedeemSchema), async (req, res, next) => {
     try {
       const { code } = req.body;
       const codeRes = await db.query('SELECT * FROM invite_codes WHERE code = $1', [code.trim().toUpperCase()]);
@@ -230,7 +230,7 @@ module.exports = function createContactRouter({
       const restaurant = user.restaurant_id ? (await db.query('SELECT * FROM restaurants WHERE id = $1', [user.restaurant_id])).rows[0] : null;
       const effective_plan = highestPlan(user.subscription_status, restaurant?.plan);
       res.json({ ok: true, plan: ic.plan, effective_plan });
-    } catch (err) { res.status(500).json({ error: 'Failed to redeem invite code' }); }
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to redeem invite code' })); }
   });
 
   return router;

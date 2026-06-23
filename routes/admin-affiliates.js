@@ -14,7 +14,7 @@ module.exports = function createAdminAffiliatesRouter({
 }) {
   const router = express.Router();
 
-  router.get('/api/admin/affiliates', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/affiliates', adminMiddleware, async (req, res, next) => {
     try {
       const affiliates = await db.query(`
         SELECT i.*,
@@ -39,10 +39,10 @@ module.exports = function createAdminAffiliatesRouter({
         ORDER BY ic.created_at DESC
       `);
       res.json({ affiliates: affiliates.rows, commissions: commissions.rows });
-    } catch (e) { console.error('Admin affiliates error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Admin affiliates error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/:id/approve', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/affiliates/:id/approve', adminMiddleware, async (req, res, next) => {
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid id' });
     try {
@@ -63,10 +63,10 @@ module.exports = function createAdminAffiliatesRouter({
         html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${safeName},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">I've reviewed your application and I'm pleased to welcome you to the <strong style="color:#FF5E3A;">ServeMaster Partners Program</strong>.</p><p style="font-size:16px;line-height:1.7;margin-bottom:8px;"><strong>Your unique tracking link:</strong></p><div style="background:#1a1a1a;border:2px solid #FF5E3A;border-radius:12px;padding:20px;margin:16px 0;word-break:break-all;"><p style="font-size:14px;color:#FF5E3A;margin:0;font-family:monospace;">${link}</p></div><p style="font-size:15px;line-height:1.7;color:#a3a3a3;margin-bottom:8px;"><strong style="color:#f5f5f5;">Your commission structure:</strong></p><ul style="color:#a3a3a3;font-size:14px;line-height:2;padding-left:20px;"><li>Individual Premium Monthly ($19/mo) — <strong style="color:#f5f5f5;">25% = ~$4.75 CAD</strong></li><li>Individual Premium Annual ($149/yr) — <strong style="color:#f5f5f5;">25% = ~$37.25 CAD</strong></li><li>Starter Team ($99/mo) — <strong style="color:#f5f5f5;">30% = ~$29.70 CAD + $75 activation bonus</strong></li><li>Pro Team ($199/mo) — <strong style="color:#f5f5f5;">30% = ~$59.70 CAD + $75 activation bonus</strong></li></ul><div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:16px;margin:20px 0;"><p style="font-size:14px;color:#f5f5f5;font-weight:700;margin:0 0 6px;">$100 Welcome Bonus</p><p style="font-size:13px;color:#a3a3a3;margin:0;">You'll receive a $100 CAD welcome bonus after your first qualified sale on any plan.</p></div><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
       }).catch(e => console.error('Affiliate approve email error:', e.message));
       res.json({ success: true, ref_code: refCode, link });
-    } catch (e) { console.error('Affiliate approve error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Affiliate approve error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/:id/reject', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/affiliates/:id/reject', adminMiddleware, async (req, res, next) => {
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid id' });
     try {
@@ -81,10 +81,10 @@ module.exports = function createAdminAffiliatesRouter({
         html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;"><img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;"><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Hi ${escapeHtml(aff.name)},</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Thank you for applying to our affiliate program. I reviewed your application personally — unfortunately, we aren't able to move forward at this time.</p><p style="font-size:16px;line-height:1.7;margin-bottom:16px;">We keep a small, curated group of partners, and the fit needs to be right for both sides. I encourage you to reach out again in the future as your audience grows or evolves.</p><p style="font-size:16px;line-height:1.7;margin-top:32px;color:#a3a3a3;"><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p></div>`
       }).catch(e => console.error('Affiliate reject email error:', e.message));
       res.json({ success: true });
-    } catch (e) { console.error('Affiliate reject error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Affiliate reject error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), async (req, res) => {
+  router.post('/api/admin/affiliates/commissions/:id/mark-paid', adminMiddleware, express.json(), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { payment_ref, payout_method, payout_amount, override_pending } = req.body;
     if (!commId || !payment_ref) return res.status(400).json({ error: 'Commission ID and payment reference required' });
@@ -113,10 +113,10 @@ module.exports = function createAdminAffiliatesRouter({
         }).catch(e => console.error('Mark paid email error:', e.message));
       }
       res.json({ success: true });
-    } catch (e) { console.error('Mark paid error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Mark paid error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/block', adminMiddleware, express.json(), async (req, res) => {
+  router.post('/api/admin/affiliates/commissions/:id/block', adminMiddleware, express.json(), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { reason } = req.body;
     if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
@@ -127,10 +127,10 @@ module.exports = function createAdminAffiliatesRouter({
       );
       if (!result.rows.length) return res.status(404).json({ error: 'Commission not found or already paid/reversed' });
       res.json({ success: true });
-    } catch (e) { console.error('Block commission error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Block commission error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/commissions/:id/reverse', adminMiddleware, express.json(), async (req, res) => {
+  router.post('/api/admin/affiliates/commissions/:id/reverse', adminMiddleware, express.json(), async (req, res, next) => {
     const commId = parseInt(req.params.id);
     const { reason } = req.body;
     if (!commId) return res.status(400).json({ error: 'Invalid commission ID' });
@@ -141,10 +141,10 @@ module.exports = function createAdminAffiliatesRouter({
       );
       if (!result.rows.length) return res.status(404).json({ error: 'Commission not found or not in paid state' });
       res.json({ success: true });
-    } catch (e) { console.error('Reverse commission error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Reverse commission error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/affiliates/payout-summary', adminMiddleware, async (req, res, next) => {
     const PAYOUT_THRESHOLD_CAD = 50;
     try {
       const rows = await db.query(`
@@ -181,11 +181,11 @@ module.exports = function createAdminAffiliatesRouter({
           : 'ready_to_pay'
       }));
       res.json({ threshold_cad: PAYOUT_THRESHOLD_CAD, affiliates: summary, generated_at: new Date().toISOString() });
-    } catch (e) { console.error('Payout summary error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Payout summary error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   // ── Stripe Connect ──────────────────────────────────────────────────────
-  router.post('/api/admin/affiliates/:id/stripe-connect/initiate', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/affiliates/:id/stripe-connect/initiate', adminMiddleware, async (req, res, next) => {
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
     try {
@@ -242,10 +242,10 @@ module.exports = function createAdminAffiliatesRouter({
       }).catch(e => console.error('Connect initiate email error:', e.message));
 
       res.json({ success: true, stripe_connect_id: connectId, onboard_url: link.url, expires_at: new Date(link.expires_at * 1000).toISOString() });
-    } catch (e) { console.error('Stripe Connect initiate error:', e.message); res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error('Stripe Connect initiate error:', e.message); next(Object.assign(e, { publicMessage: e.message })); }
   });
 
-  router.get('/api/admin/affiliates/:id/stripe-connect/link', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/affiliates/:id/stripe-connect/link', adminMiddleware, async (req, res, next) => {
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
     try {
@@ -261,10 +261,10 @@ module.exports = function createAdminAffiliatesRouter({
         type: 'account_onboarding'
       });
       res.json({ onboard_url: link.url, expires_at: new Date(link.expires_at * 1000).toISOString() });
-    } catch (e) { console.error('Connect link error:', e.message); res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error('Connect link error:', e.message); next(Object.assign(e, { publicMessage: e.message })); }
   });
 
-  router.post('/api/admin/affiliates/:id/stripe-connect/sync', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/affiliates/:id/stripe-connect/sync', adminMiddleware, async (req, res, next) => {
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
     try {
@@ -281,10 +281,10 @@ module.exports = function createAdminAffiliatesRouter({
         [payoutsEnabled, onboardStatus, affId]
       );
       res.json({ success: true, stripe_connect_id, payouts_enabled: payoutsEnabled, onboard_status: onboardStatus, details_submitted: acct.details_submitted });
-    } catch (e) { console.error('Connect sync error:', e.message); res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error('Connect sync error:', e.message); next(Object.assign(e, { publicMessage: e.message })); }
   });
 
-  router.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), async (req, res) => {
+  router.post('/api/admin/affiliates/:id/payout', adminMiddleware, express.json(), async (req, res, next) => {
     const PAYOUT_THRESHOLD_CAD = 50;
     const affId = parseInt(req.params.id);
     if (!affId) return res.status(400).json({ error: 'Invalid affiliate ID' });
@@ -389,20 +389,20 @@ module.exports = function createAdminAffiliatesRouter({
         sale_count:              saleRows.length,
         welcome_bonus_included:  welcomeRows.length > 0
       });
-    } catch (e) { console.error('Payout transfer error:', e.message); res.status(500).json({ error: e.message }); }
+    } catch (e) { console.error('Payout transfer error:', e.message); next(Object.assign(e, { publicMessage: e.message })); }
   });
 
-  router.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res) => {
+  router.post('/api/admin/affiliates/:id/update-payout-method', adminMiddleware, express.json(), async (req, res, next) => {
     const affId = parseInt(req.params.id);
     const { pref_payout_method } = req.body;
     if (!affId) return res.status(400).json({ error: 'Invalid id' });
     try {
       await db.query(`UPDATE influencers SET pref_payout_method = $1 WHERE id = $2`, [(pref_payout_method || '').trim() || null, affId]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.get('/api/admin/affiliates/export-csv', adminMiddleware, async (req, res) => {
+  router.get('/api/admin/affiliates/export-csv', adminMiddleware, async (req, res, next) => {
     try {
       const { month } = req.query;
       let whereClause = '';
@@ -430,10 +430,10 @@ module.exports = function createAdminAffiliatesRouter({
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="affiliates-${month || 'all'}.csv"`);
       res.send(csv);
-    } catch (e) { console.error('Affiliate export error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Affiliate export error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, async (req, res) => {
+  router.post('/api/admin/affiliates/generate-monthly-summaries', adminMiddleware, async (req, res, next) => {
     try {
       const now = new Date();
       const prevMonth      = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -473,7 +473,7 @@ module.exports = function createAdminAffiliatesRouter({
         });
       }
       res.json({ month: prevMonth.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }), summaries });
-    } catch (e) { console.error('Generate summaries error:', e.message); res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { console.error('Generate summaries error:', e.message); next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   return router;

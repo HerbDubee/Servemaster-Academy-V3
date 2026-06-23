@@ -19,7 +19,7 @@ module.exports = function createFeaturesRouter({
     } catch (e) { console.error('Unsubscribe GET error:', e.message); res.redirect('/'); }
   });
 
-  router.post('/api/unsubscribe', async (req, res) => {
+  router.post('/api/unsubscribe', async (req, res, next) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Missing token' });
     try {
@@ -27,14 +27,14 @@ module.exports = function createFeaturesRouter({
       if (!r.rows.length) return res.status(404).json({ error: 'Invalid token' });
       await db.query('UPDATE users SET is_unsubscribed = TRUE WHERE id = $1', [r.rows[0].user_id]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/resubscribe', authMiddleware, async (req, res) => {
+  router.post('/api/resubscribe', authMiddleware, async (req, res, next) => {
     try {
       await db.query('UPDATE users SET is_unsubscribed = FALSE WHERE id = $1', [req.user.id]);
       res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
   // ── Scholarship routes ───────────────────────────────────────────────────────
@@ -57,14 +57,14 @@ module.exports = function createFeaturesRouter({
     return `SCH-${part()}-${part()}`;
   }
 
-  router.get('/api/scholarship/spots', async (req, res) => {
+  router.get('/api/scholarship/spots', async (req, res, next) => {
     try {
       const used = await getMonthlyApprovedCount();
       res.json({ remaining: Math.max(0, SCHOLARSHIP_MONTHLY_CAP - used), used, cap: SCHOLARSHIP_MONTHLY_CAP });
-    } catch (e) { res.status(500).json({ error: 'Server error' }); }
+    } catch (e) { next(Object.assign(e, { publicMessage: 'Server error' })); }
   });
 
-  router.post('/api/scholarship/apply', scholarshipLimiter, async (req, res) => {
+  router.post('/api/scholarship/apply', scholarshipLimiter, async (req, res, next) => {
     const { name, email, phone, years_experience, motivation } = req.body || {};
     if (!name || !email || !years_experience || !motivation) {
       return res.status(400).json({ error: 'Please fill in all required fields.' });
@@ -102,11 +102,11 @@ module.exports = function createFeaturesRouter({
       res.json({ success: true, id: result.rows[0].id });
     } catch (e) {
       console.error('Scholarship apply error:', e.message);
-      res.status(500).json({ error: 'Server error. Please try again.' });
+      next(Object.assign(e, { publicMessage: 'Server error. Please try again.' }));
     }
   });
 
-  router.get('/api/user/scholarship-status', authMiddleware, async (req, res) => {
+  router.get('/api/user/scholarship-status', authMiddleware, async (req, res, next) => {
     try {
       const appRes = await db.query(
         `SELECT sa.id, sa.status, sa.invite_code, sa.grad_at, sa.testimonial, sa.share_contact
@@ -153,11 +153,11 @@ module.exports = function createFeaturesRouter({
       });
     } catch (e) {
       console.error('Scholarship status error:', e.message);
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   });
 
-  router.post('/api/scholarship/testimonial', authMiddleware, async (req, res) => {
+  router.post('/api/scholarship/testimonial', authMiddleware, async (req, res, next) => {
     const { testimonial, share_contact } = req.body || {};
     if (!testimonial || testimonial.trim().length < 20) {
       return res.status(400).json({ error: 'Please write at least 20 characters for your testimonial.' });
@@ -201,14 +201,14 @@ module.exports = function createFeaturesRouter({
       res.json({ success: true, completed: newStatus === 'completed' });
     } catch (e) {
       console.error('Testimonial submit error:', e.message);
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   });
 
   // ── Affiliate / Influencer routes ────────────────────────────────────────────
   const affiliateLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Please try again later.' } });
 
-  router.post('/api/affiliate/apply', affiliateLimiter, async (req, res) => {
+  router.post('/api/affiliate/apply', affiliateLimiter, async (req, res, next) => {
     const { name, email, platform, handle, followers, audience_desc, website, pref_language, pref_payout_method } = req.body;
     if (!name || !email || !platform || !handle) return res.status(400).json({ error: 'Missing required fields' });
     const safeName = escapeHtml(name.trim());
@@ -236,7 +236,7 @@ module.exports = function createFeaturesRouter({
       res.json({ success: true });
     } catch (e) {
       console.error('Affiliate apply error:', e.message);
-      res.status(500).json({ error: 'Server error' });
+      next(Object.assign(e, { publicMessage: 'Server error' }));
     }
   });
 
