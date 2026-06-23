@@ -1,68 +1,68 @@
 # ServeMaster Academy
 
-A professional hospitality training platform at `servemasteracademy.ca` — full multi-page marketing site + Google/email auth + training SPA + Stripe pricing + hidden admin dashboard.
+A professional hospitality training platform at `servemasteracademy.ca` — multi-page marketing site + Google/email auth + training SPA + Stripe pricing + hidden admin dashboard. Express backend on port 5000, PostgreSQL, server-rendered HTML pages with inline scripts (no SPA framework).
+
+## User Preferences
+
+- **Git is pushed manually by the user** in the Replit Shell. Several git write commands are blocked for the agent — never assume a commit/push happened; the user handles version control.
+- Keep this file concise: it's an orientation map, not exhaustive API docs (those are derivable from the route files).
 
 ## Architecture
 
-- `server.js` — Express backend (port 5000); startup, middleware, page routes, shared helpers (`escapeHtml`, `getTenantBrandingForEmail`, `sendWeeklyManagerDigests`, drip email helpers, schema migration IIFE). ~1,440 lines after route extraction.
-- `routes/auth.js` — Google OAuth credential flow + logout (mounted before `express.json`)
-- `routes/auth-email.js` — register, login, logout, forgot/reset-password, `/api/auth/me`, Google OAuth redirect+callback
-- `routes/stripe.js` — Stripe webhook (raw body), checkout, billing portal, payment status
-- `routes/manager.js` — all `/api/manager/*` endpoints (dashboard, staff, nudge, certificates, training plans, skill-gap, export, white-label, digest, deadline, assigned modules)
-- `routes/admin.js` — core `/api/admin/*` endpoints (tenants, users, modules, newsletter, scholarships, analytics, digests trigger routes); exports `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest` sourced from `lib/digests.js`
-- `routes/admin-affiliates.js` — all `/api/admin/affiliates/*` endpoints: CRUD, approve/reject, commissions, Stripe Connect onboarding, payout transfers, CSV export, monthly summaries
-- `lib/digests.js` — attribution + digest functions: `buildWeeklyAttribution`, `_renderAttributionDigestHtml`, `sendOpenClawWeeklyDigest`, `sendKirkTrialDigest`; factory `createDigests({ db, resend, escapeHtml, APP_URL })`
-- `routes/user.js` — progress, streaks, badges, scenarios, transcription, TTS, certificates, referrals, team
-- `routes/contact.js` — newsletter subscribe, contact form, enterprise inquiry, referral invite
-- `routes/curriculum.js` — roleplays, quizzes, chat config, AI chat stream, curriculum setup
-- `routes/features.js` — unsubscribe flow, scholarship applications, affiliate program, monthly affiliate email
-- `lib/cronJobs.js` — starts the three Monday-digest cron schedulers (`maybeRunManagerDigestCron`, `maybeRunOpenClawDigestCron`, `maybeRunKirkTrialDigestCron`)
-- `lib/emailHelpers.js` — shared email utilities: `escapeHtml`, `getTenantBrandingForEmail`, `sendTrialDripEmails`, `getOrCreateUnsubToken`, `emailFooter`, `sendDripEmailIfDue`, `sendWeeklyManagerDigests`
-- `app.html` — Training SPA (auth-gated at `/app`)
-- `admin.html` — Owner dashboard at `/admin` (DB role check via adminMiddleware)
-- `public/` — Marketing pages: home, about, features, pricing, contact, login, signup, privacy, terms, brand
-- `public/blog/` — 106 blog articles (HTML) + index + article template; served via dynamic `/blog/:slug` route
-- `public/blog/es/` — 106 Spanish translations of all articles; served at `/blog/es/:slug`
-- `public/js/content.js` — Central content store (`window.SMAContent`); single source of truth for modules, lessonData, glossaryTerms, practiceScenarios, blogArticles, blogSections. Loaded by `app.html`, `blog/index.html`, and `blog/article.html`.
-- `public/blog/article.html` — Universal blog article template; reads `window.SMAContent.blogArticles` for metadata, then fetches the static HTML body from the slug-specific file.
-- `public/unsubscribe.html` — CASL unsubscribe page
-- `public/manifest.json` — PWA manifest
-- `public/sw.js` — Service worker (offline support)
-- `public/logo.svg` — Horizontal nav wordmark: gold soundwave icon + white "ServeMaster" + gold "ACADEMY" (dark-bg optimised)
-- `public/logo-icon.svg` — Soundwave-only icon for app nav (gold, transparent bg)
-- `public/logo.png` — 1200×630 OG/social share image (brand photo on dark navy #071a26)
-- `public/logo-transparent.png` — Full stacked logo, transparent background (for footers, dark sections)
-- `public/favicon.png` (64px), `public/apple-touch-icon.png` (180px), `public/icon-192.png`, `public/icon-512.png` — PWA/browser icons: gold soundwave on dark navy rounded square
-- `stripeClient.js` — Replit Stripe connector helpers
-- `db.js` — PostgreSQL connection pool (Replit built-in)
-- `public/js/wl-branding.js` — White-label branding injection utility (used on app.html, login.html, signup.html)
+Backend is `server.js` (startup, middleware, page routes, shared helpers, schema-migration IIFE) plus feature routers under `routes/` and shared helpers under `lib/`.
+
+**Routers (`routes/`):**
+- `auth.js` — Google OAuth credential flow + logout (mounted **before** `express.json`)
+- `auth-email.js` — register, login, logout, forgot/reset-password, `/api/auth/me`, Google OAuth redirect+callback
+- `stripe.js` — Stripe webhook (raw body), checkout, billing portal, payment status (mounted **before** `express.json` for raw webhook body)
+- `manager.js` — all `/api/manager/*` (dashboard, staff, nudge, certificates, training plans, skill-gap, export, white-label, digest, deadline, assigned modules)
+- `admin.js` — core `/api/admin/*` (tenants, users, modules, newsletter, scholarships, analytics, digest triggers)
+- `admin-affiliates.js` — `/api/admin/affiliates/*` (CRUD, approve/reject, commissions, Stripe Connect, payouts, CSV export)
+- `user.js` — progress, streaks, badges, scenarios, transcription, TTS, certificates, referrals, team
+- `contact.js` — newsletter, contact form, enterprise inquiry, team-trial, referral invite, invite redeem
+- `curriculum.js` — roleplays, quizzes, chat config, AI chat stream, curriculum setup
+- `features.js` — unsubscribe flow, scholarship applications, affiliate program, monthly affiliate email
+
+**Shared libs (`lib/`):**
+- `emailHelpers.js` — `escapeHtml`, `getTenantBrandingForEmail`, drip/digest helpers
+- `digests.js` — weekly attribution + digest builders (`createDigests({ db, resend, escapeHtml, APP_URL })`)
+- `cronJobs.js` — three Monday-digest cron schedulers
+- `logger.js` — dependency-free structured logger (JSON in prod, pretty in dev, `LOG_LEVEL`-gated)
+- `schemas.js` — Zod request schemas; `middleware/validate.js` is the validation middleware (see Conventions)
+
+**Middleware (`middleware/`):** `requestLogger.js` (per-request log + `X-Request-Id`), `errorHandler.js` (centralized), `validate.js` (Zod).
+
+**Frontend:**
+- `app.html` — training SPA (auth-gated `/app`); `admin.html` — owner dashboard (`/admin`, DB role check)
+- `public/manager-dashboard.html` — manager sidebar SPA (`/manager-dashboard`), separate from admin
+- `public/` — marketing pages (home, about, features, pricing, contact, login, signup, privacy, terms, brand)
+- `public/blog/` — 106 articles + `public/blog/es/` Spanish translations; served via dynamic `/blog/:slug`
+- `public/js/content.js` — central content store (`window.SMAContent`): single source of truth for modules, lessons, glossary, scenarios, blogArticles. Loaded by `app.html`, `blog/index.html`, `blog/article.html`
+- `public/blog/article.html` — universal article template (reads `SMAContent.blogArticles` metadata, fetches static HTML body)
+- `public/js/wl-branding.js` — white-label branding injection (app.html, login, signup)
+- `public/sw.js` + `manifest.json` — PWA / offline
+- Logos/icons: `logo.svg` (nav wordmark), `logo-icon.svg` (app nav), `logo.png` (1200×630 OG), `logo-transparent.png`, `favicon.png`/`apple-touch-icon.png`/`icon-192.png`/`icon-512.png`
+
+**Infra:** `db.js` (pg Pool, Replit Postgres), `stripeClient.js` (Replit Stripe connector helpers).
 
 ## Pages
 
 | Path | File |
 |------|------|
-| `/` | `public/home.html` |
-| `/about` | `public/about.html` |
-| `/features` | `public/features.html` |
-| `/pricing` | `public/pricing.html` |
-| `/contact` | `public/contact.html` |
-| `/login` | `public/login.html` |
-| `/signup` | `public/signup.html` |
-| `/privacy` | `public/privacy.html` |
-| `/terms` | `public/terms.html` |
-| `/brand` | `public/brand.html` |
+| `/`, `/about`, `/features`, `/pricing`, `/contact`, `/login`, `/signup`, `/privacy`, `/terms`, `/brand` | matching `public/*.html` |
 | `/app` | `app.html` (training SPA) |
+| `/admin` | `admin.html` |
+| `/manager-dashboard` | `public/manager-dashboard.html` |
 | `/blog` | `public/blog/index.html` (rendered from content.js) |
-| `/blog/:slug` | `public/blog/{slug}.html` or `public/blog/article.html` template |
-| `/blog/es/:slug` | `public/blog/es/{slug}.html` (Spanish translations) |
-| `/admin` | `admin.html` (admin dashboard) |
-| `/unsubscribe` | `public/unsubscribe.html` (CASL) |
+| `/blog/:slug` | `public/blog/{slug}.html` or `article.html` template |
+| `/blog/es/:slug` | `public/blog/es/{slug}.html` |
 | `/training` | `public/training.html` (public curriculum preview) |
 | `/app/training` | `public/app-training.html` (protected — `requirePaidAccess`) |
+| `/unsubscribe` | `public/unsubscribe.html` (CASL) |
 
 ## Subscription Model
 
-| Tier | Price | Stripe Price ID env var |
+| Tier | Price | Price ID env var |
 |------|-------|----------------|
 | Free | $0 | — |
 | Individual Monthly | $19/mo | `STRIPE_PREMIUM_MONTHLY_ID` |
@@ -73,323 +73,84 @@ A professional hospitality training platform at `servemasteracademy.ca` — full
 | Team Pro Annual | $1990/yr | `STRIPE_PRO_TEAM_ANNUAL_ID` |
 | Enterprise | Custom | Contact sales form (modal on pricing page) |
 
-Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`, `starter_team_annual`, `pro_team_annual`
-Both `premium_monthly` and `premium_annual` normalize to `'premium'` in DB. `PLAN_TIER_ORDER` and `PAID_PLAN_STATUSES` in server.js govern access gating.
-
-The pricing page has a monthly/annual billing toggle. Annual team plans show discounted pricing.
+Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_team`, `starter_team_annual`, `pro_team_annual`. Both premium keys normalize to `'premium'` in DB. `PLAN_TIER_ORDER` and `PAID_PLAN_STATUSES` in server.js govern access gating. Pricing page has a monthly/annual toggle.
 
 ## Admin Access
 
-- Visit `/admin` → if not admin, shows diagnostic panel → click "Grant Admin Access to This Account"
-- `adminMiddleware` verifies role from **database** (not JWT) — so role upgrades take effect immediately without re-login
-- `ADMIN_EMAIL` env var gets admin role auto-granted on server startup
+- Visit `/admin` → if not admin, a diagnostic panel offers "Grant Admin Access to This Account".
+- `adminMiddleware` / `managerMiddleware` verify role from the **database** (not the JWT) on every request — so role changes take effect immediately without re-login.
+- `ADMIN_EMAIL` env var is auto-granted admin role on server startup.
 
 ## Key Environment Variables
 
 | Variable | Purpose |
 |----------|---------|
-| `JWT_SECRET` | JWT signing secret (set as shared env var) |
-| `AI_INTEGRATIONS_OPENAI_API_KEY` | Replit OpenAI integration (auto-injected) |
-| `AI_INTEGRATIONS_OPENAI_BASE_URL` | Replit OpenAI integration (auto-injected) |
+| `JWT_SECRET` | JWT signing secret |
 | `DATABASE_URL` | Replit PostgreSQL (auto-injected) |
+| `AI_INTEGRATIONS_OPENAI_API_KEY` / `_BASE_URL` | Replit OpenAI integration (auto-injected) |
+| `RESEND_API_KEY` | Resend email (Replit integration, auto-injected) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `STRIPE_PREMIUM_MONTHLY_ID` | Stripe price ID |
-| `STRIPE_PREMIUM_ANNUAL_ID` | Stripe price ID |
-| `STRIPE_STARTER_TEAM_ID` | Stripe price ID |
-| `STRIPE_PRO_TEAM_ID` | Stripe price ID |
-| `STRIPE_STARTER_TEAM_ANNUAL_ID` | Stripe price ID (annual team starter) |
-| `STRIPE_PRO_TEAM_ANNUAL_ID` | Stripe price ID (annual team pro) |
+| `STRIPE_PREMIUM_MONTHLY_ID`, `STRIPE_PREMIUM_ANNUAL_ID`, `STRIPE_STARTER_TEAM_ID`, `STRIPE_PRO_TEAM_ID`, `STRIPE_STARTER_TEAM_ANNUAL_ID`, `STRIPE_PRO_TEAM_ANNUAL_ID` | Stripe price IDs |
 | `ADMIN_EMAIL` | Auto-granted admin on startup |
-| `RESEND_API_KEY` | Resend transactional email (Replit integration, auto-injected) |
 | `APP_URL` | `https://servemasteracademy.ca` (production) |
+
+## Conventions
+
+**Input validation (Zod):** Schemas live in `lib/schemas.js`; `validate(schema, source='body')` in `middleware/validate.js` returns `400 { error, issues }` on failure and replaces `req[source]` with parsed data. Middleware order is **rate-limiter → auth → validate → handler** (so abusive traffic is capped first and unauthenticated requests fail 401 before validation). Zod strips unknown keys, so every body key a handler reads must be in the schema. Currently wired on auth/payment/contact routes; manager/admin not yet.
+
+**Logging / errors:** Use `lib/logger.js` for structured logs. `requestLogger` logs every request on finish with a correlation ID. A centralized `errorHandler` exists, but most routes still use their own `res.status(500)` (migration to `next(err)` is intentionally deferred).
+
+**Router mount order:** Routers that read `req.body` must mount **after** `express.json()`. The Stripe and OAuth routers mount before it on purpose (raw webhook body / credential flow); any Stripe route needing JSON attaches its own `express.json()` inline.
+
+**CSP:** Helmet sends a Content-Security-Policy allowlisting the third-party origins the site uses (Stripe, Google Fonts/Tag Manager, ContentSquare, Tailwind/cdnjs/jsDelivr, YouTube). `'unsafe-inline'`/`'unsafe-eval'` and `script-src-attr 'unsafe-inline'` are required because the pages use hundreds of inline scripts/handlers and the Tailwind Play CDN. `upgrade-insecure-requests` is production-only.
 
 ## Manager Dashboard
 
-The manager dashboard (`public/manager-dashboard.html`) is one of the most feature-rich parts of the platform. It is a sidebar SPA served at `/manager-dashboard` (also reachable via the training app) and is separate from `admin.html`.
+A user becomes a manager by `POST /api/manager/create-restaurant` (creates a `restaurants` row with an 8-char `invite_code`, promotes the caller to `role='manager'`, sets `restaurant_id`). Others join via `POST /api/manager/join { inviteCode }` (sets `restaurant_id` without changing role — for co-managers). Shareable invite URL: `https://servemasteracademy.ca/join?code=XXXXXXXX`.
 
-### Account & restaurant creation
+All `/api/manager/*` routes are gated by `managerMiddleware` (`role` manager or admin, re-read from DB each request). Features (see `routes/manager.js` for exact endpoints): team overview + per-staff drill-down, send-nudge emails, issue certificates (marks all 30 modules complete), assigned/required modules, per-staff training plans with due dates, skill-gap report, CSV/PDF progress export, weekly email digest toggle, training deadline, certificate logo.
 
-A user becomes a manager by creating a restaurant tenant:
+**White-label branding (Enterprise):** stored as `wl_*` columns on `restaurants` (`wl_brand_name`, `wl_logo_url` must be `https://`, `wl_primary_color`/`wl_accent_color` validated `#rrggbb`, `wl_is_active` master switch, `wl_is_enterprise`). The training SPA fetches `/api/tenant/branding[/invite?code=]` and injects colours as CSS custom properties + swaps the logo. Branding also flows into nudge/digest emails via `getTenantBrandingForEmail(managerId)`; the "Powered by ServeMaster" email footer is hidden for enterprise.
 
-```
-POST /api/manager/create-restaurant  { restaurantName }
-```
-
-This inserts a row into `restaurants` (generating a random 8-char `invite_code`), then promotes the calling user's `role` to `'manager'` and sets their `restaurant_id`. Existing users can join a restaurant via:
-
-```
-POST /api/manager/join  { inviteCode }
-```
-
-This sets `restaurant_id` on the joining user without changing their role — useful for co-managers.
-
-### Permission model
-
-All manager-only routes are gated behind `managerMiddleware` (defined in `server.js`). It checks that the caller's DB row has `role = 'manager'` OR `role = 'admin'`. Roles are re-read from the database on every request — there is no role caching in the JWT, so demoting a manager takes effect immediately without a re-login.
-
-### Dashboard overview
-
-```
-GET /api/manager/dashboard
-```
-
-Returns the `restaurants` row for the manager's tenant plus an aggregated `staff` array (modules_completed, avg_score, scenarios_done, current_streak per user).
-
-```
-GET /api/team
-```
-
-Returns a richer team list (avg_progress, avg_quiz_score, scenarios, badges, strongest module, status) used by the Team Overview tab. Supports 100-member pages. Site-wide admins without a `restaurant_id` see all non-manager users.
-
-### Staff drill-down
-
-```
-GET /api/manager/staff/:id
-```
-
-Returns full detail for one staff member: their progress on each of the 30 modules, scenario completions, badges earned, and the last 10 scenario transcripts. The frontend renders this in a slide-over modal with progress bars, a module grid, and a badge list.
-
-### Staff actions
-
-- **Send nudge:** `POST /api/manager/nudge { userId }` — sends a branded Resend email encouraging the staff member to continue training. The email body uses the restaurant's white-label branding (name, logo, colours) if enabled.
-- **Issue certificate:** `POST /api/certificate { userId }` — marks all 30 modules as 100% complete for that user and logs an entry to the `certificates` table. Gated by `managerMiddleware`.
-- **Certificate history:** `GET /api/manager/certificates` — returns all certificates issued by the calling manager, joined with staff name/email and the issuer's name.
-
-### Assigned (required) modules
-
-Managers can flag certain modules as required for their whole team. Staff see a "Required" badge on those modules in the training SPA.
-
-```
-GET    /api/manager/assigned-modules         → { modules: [1, 4, 7, …] }
-POST   /api/manager/assign     { moduleId }  → adds to assigned_modules table
-DELETE /api/manager/assign/:moduleId         → removes from assigned_modules table
-GET    /api/user/assigned-modules            → used by training SPA (reads via restaurant_members)
-```
-
-DB table: `assigned_modules (restaurant_id, module_id)` with a unique constraint.
-
-### Training plans
-
-Per-staff ordered training plans with optional per-item due dates.
-
-```
-POST   /api/manager/training-plans                      { userId, title }    → creates plan
-GET    /api/manager/training-plans                                            → all plans with items + live progress
-POST   /api/manager/training-plans/:planId/items        { moduleId, dueDate, position }
-DELETE /api/manager/training-plans/:planId/items/:itemId
-DELETE /api/manager/training-plans/:planId
-
-GET    /api/user/training-plan   → staff member's own most-recent plan with items + progress (used in app.html)
-```
-
-DB tables: `training_plans (restaurant_id, user_id, title, created_by)` and `training_plan_items (plan_id, module_id, position, due_date)`. Items are returned with live `progress` and `quiz_score` joined from `user_progress`.
-
-### Skill-gap report
-
-```
-GET /api/manager/skill-gap
-```
-
-Returns per-module averages across the whole team (avg progress, avg quiz score, number of staff who started each module). The frontend uses this to render a "weakest modules" chart and a per-module heat-map bar in the Reports tab.
-
-### Progress export
-
-The Export button in the header triggers either:
-
-- **CSV:** `GET /api/manager/export/csv` — generates a UTF-8 CSV (name, email, avg_progress, modules_completed, avg_quiz_score, scenarios, badges, last_login) and streams it as a file download.
-- **PDF:** `GET /api/manager/export/pdf` — renders an HTML table server-side and converts to PDF using `html-pdf` (or similar). Returned as a binary stream.
-
-Both routes are protected by `managerMiddleware`.
-
-### White-label branding (Enterprise)
-
-Enterprise tenants can rebrand the training app with their own name, logo, and colour scheme. The branding panel in the Settings tab is hidden for non-enterprise managers (the `wl-section` div starts as `display:none` and is revealed by JS only if the server confirms enterprise status).
-
-```
-GET  /api/manager/white-label          → current config
-POST /api/manager/white-label          { brandName, logoUrl, primaryColor, accentColor, isActive }
-```
-
-Stored as five columns on the `restaurants` table:
-
-| Column | Type | Notes |
-|---|---|---|
-| `wl_brand_name` | text | Falls back to `restaurants.name` if blank |
-| `wl_logo_url` | text | Must start with `https://` |
-| `wl_primary_color` | text | Validated as `#rrggbb`; applied as `--color-primary` CSS variable |
-| `wl_accent_color` | text | Validated as `#rrggbb`; applied as `--color-accent` CSS variable |
-| `wl_is_active` | boolean | Master switch; branding is ignored while `false` |
-
-When a staff member logs in via an invite link the training SPA calls:
-
-```
-GET /api/tenant/branding/invite?code=XXXX    → { branding: { isActive, brandName, logoUrl, primaryColor, accentColor } | null }
-GET /api/tenant/branding                     → same, resolved from the logged-in user's restaurant_id
-```
-
-The SPA injects the returned colours as CSS custom properties on `<html>` and swaps the logo `<img>` src, so the entire UI reflects the brand without any CSS file changes.
-
-Nudge and digest emails also consume the branding via the internal `getTenantBrandingForEmail(managerId)` helper — branded `from` name, logo in the email header, and "Powered by ServeMaster" footer toggled off for enterprise accounts.
-
-### Weekly email digest
-
-```
-GET /api/manager/digest-preference         → { enabled: true|false }
-PUT /api/manager/digest-preference         { enabled: boolean }
-```
-
-Stored as `weekly_digest_enabled` on the `users` table (defaults to `true`). When enabled, managers receive a Monday-morning Resend email summarising team progress for the prior week. Toggle is rendered as a styled checkbox in the Settings tab.
-
-### Training deadline
-
-```
-GET  /api/manager/deadline         → { deadline: "2025-12-31" | null }
-POST /api/manager/deadline         { deadline: "YYYY-MM-DD" | null }
-```
-
-Stored as `training_deadline` on `restaurants`. Displayed as an urgency reminder in the dashboard header when set. Staff do not see this deadline; it is manager-only.
-
-### Certificate logo
-
-Managers can add their restaurant's logo URL to completion certificates:
-
-```
-GET  /api/manager/cert-logo        → { logoUrl: "…" | null }
-POST /api/manager/cert-logo        { logoUrl }
-```
-
-The URL is stored in `restaurants.cert_logo_url` and rendered on the certificate PDF/HTML alongside the ServeMaster Academy branding.
-
-### Invite link
-
-The Settings tab displays a full shareable URL:
-
-```
-https://servemasteracademy.ca/join?code=XXXXXXXX
-```
-
-When a staff member visits this URL they are prompted to create an account (or log in), and their `restaurant_id` is set automatically via the join flow.
-
-### DB tables summary
-
-| Table | Purpose |
-|---|---|
-| `restaurants` | One row per tenant. Holds `invite_code`, `training_deadline`, `cert_logo_url`, and all `wl_*` branding columns. |
-| `users` | `role` (`'server'`, `'manager'`, `'admin'`), `restaurant_id`, `weekly_digest_enabled` |
-| `assigned_modules` | `(restaurant_id, module_id)` — required modules per tenant |
-| `training_plans` | Per-staff plan header (`restaurant_id`, `user_id`, `title`, `created_by`) |
-| `training_plan_items` | `(plan_id, module_id, position, due_date)` |
-| `certificates` | Log of every certificate issued (`user_id`, `issued_by`, `issued_at`) |
-
----
-
-## First Crossings — Novels & TTS
-
-- **Single narrator:** All 12 chapters use one ElevenLabs voice — `dAlhI9qAHVIjXuVppzhW`. Both `sofia` and `luca` entries in `books/voice-map.js` point to this ID. The POV labels (Sofia / Luca) are kept for UI display only.
-- **Voice source:** https://elevenlabs.io/app/voice-lab/share/c4cfee2ad0d3d272176a36b773ddbf8df48c457a5aa7664dd8523f6dcdfbb76b/dAlhI9qAHVIjXuVppzhW
-- **To swap voice:** change both `sofia.id` and `luca.id` in `books/voice-map.js` and restart the server.
-- **YouTube upload tool:** `node scripts/upload-to-youtube.js` — uploads video, polls processing, writes JSON manifest to `/data/.openclaw/workspace/shared-memory/youtube-uploads/`. Run once for OAuth (browser prompt), then non-interactive. Token stored at `~/.config/sma-yt/token.json`.
-
-## Blog article freshness convention
-
-Each entry in the `blogArticles` array in `public/js/content.js` has two date fields:
-
-- `datePublished` — the original publication date; never changes.
-- `dateModified` — must be updated (to today's date in `YYYY-MM-DD` format) **every time the corresponding HTML file in `public/blog/` is meaningfully revised** (new content, corrected facts, updated references, restructured sections). Minor typo fixes do not require a bump.
-
-**Why this matters:** Google uses `dateModified` in the JSON-LD schema on every article page to detect freshness. A stale value signals old content; a missing bump after a real revision means fresh content goes undetected.
-
-**Checking for drift:** Run the freshness-check utility at any time to find articles whose HTML file has been committed more recently than their declared date:
-
-```
-node scripts/check-blog-freshness.js
-```
-
-It compares each article's declared date against the last `git log` commit date for its HTML file (stable across clones and CI — unlike filesystem mtime). It lists every article that needs a `dateModified` bump and exits with a non-zero code if any are found. Run it after any blog editing session.
-
-**Auto-fixing stale dates:** Instead of editing `content.js` by hand, run the companion fix script to update every stale `dateModified` in one command:
-
-```
-node scripts/fix-blog-freshness.js
-```
-
-It reads the same stale list as the check script and sets each article's `dateModified` to its last git-commit date. After running, verify with `node scripts/check-blog-freshness.js` (should exit 0 with no stale articles).
-
-## Blog Post Categories & OG Images
-
-Every blog post in `public/blog/` must include a `<meta name="blog-category">` tag in its `<head>`. This drives the correct OG social-share image automatically — no manual map needed.
-
-**Available categories and their OG images:**
-
-| `content` value | OG image file | Use for |
-|---|---|---|
-| `server-skills` | `og-server-skills.png` | Front-of-house serving techniques, guest interaction, upselling, table management |
-| `bartending` | `og-bartending.png` | Bar craft, cocktails, spirits, bartending techniques and operations |
-| `management` | `og-management.png` | Leadership, hiring, scheduling, training, industry trends, career development |
-
-**Required tag format** (place after the `og:image:height` meta tag):
-```html
-<meta name="blog-category" content="server-skills">
-```
-
-When in doubt: if the post is about behind-the-bar craft → `bartending`; if it's about running a team or venue → `management`; everything else front-of-house → `server-skills`.
-
-## Blog audio files (pre-generated MP3s)
-
-Blog articles support a "Listen" button powered by pre-generated MP3 files served as static assets.
-
-**Location on disk (not in git):** `public/audio/blog/{lang}/{slug}.mp3`
-
-This directory is in `.gitignore` — the ~1.9 GB of MP3 files must never be committed to the repository. Regenerate them locally whenever needed:
-
-```
-node scripts/generate-blog-audio.js --lang en
-node scripts/generate-blog-audio.js --lang fr
-node scripts/generate-blog-audio.js --lang es
-```
-
-The script is idempotent: it skips slugs where the MP3 already exists. Use `--force` to regenerate, `--slug article-slug` to regenerate a single article. It uses the OpenAI `tts-1` model with the `nova` voice (concurrency=20, 180 s per-article timeout).
-
-**Runtime fallback:** `public/js/blog-tts.js` performs a HEAD request to check whether the static file exists. If the HEAD returns 200 it streams the MP3; if 404 it falls back to a live OpenAI TTS chunked stream call, so the Listen button always works even without pre-generated files.
-
-## Git / repo notes
-
-- **Audio files** — `public/audio/blog/` is in `.gitignore`. The ~1.9 GB of pre-generated MP3s must never be committed. The audio commit history is already in `origin/main` (cannot be rewound without a force-push). Generate locally with `node scripts/generate-blog-audio.js`.
-- **`.env.local` tracking** — `.env.local` is in `.gitignore` but is currently still git-tracked by mistake (no secrets inside; all keys were removed). To stop tracking it, run once in the Replit shell: `git rm --cached .env.local` (file stays on disk). Note: this command is blocked in the Replit agent — run it manually in the Shell tab.
-
-## Gotchas
+## Database Tables
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Accounts — email, google_id, role, subscription_status, stripe IDs, `is_unsubscribed` flag |
+| `users` | Accounts — email, google_id, role (`server`/`manager`/`admin`), restaurant_id, subscription_status, stripe IDs, `weekly_digest_enabled`, `is_unsubscribed` |
 | `user_progress` | Module progress + quiz scores |
 | `streaks` | Daily login streak tracking |
 | `badges` | Earned badge records |
 | `scenario_scores` | Completed roleplay sessions |
-| `restaurants` | Manager restaurant profiles + `cert_logo_url` + white-label branding columns (`wl_brand_name`, `wl_logo_url`, `wl_primary_color`, `wl_accent_color`, `wl_is_active`, `wl_is_enterprise`) |
-| `invite_codes` | Admin-generated invite codes |
-| `invite_code_redemptions` | Code redemption log |
+| `restaurants` | One row per tenant — `invite_code`, `training_deadline`, `cert_logo_url`, `wl_*` branding columns |
+| `assigned_modules` | `(restaurant_id, module_id)` required modules per tenant (unique) |
+| `training_plans` | Per-staff plan header (`restaurant_id`, `user_id`, `title`, `created_by`) |
+| `training_plan_items` | `(plan_id, module_id, position, due_date)` |
+| `certificates` | Log of every certificate issued (`user_id`, `issued_by`, `issued_at`) |
+| `invite_codes`, `invite_code_redemptions` | Admin-generated invite codes + redemption log |
 | `email_subscribers` | Newsletter signups |
-| `contact_messages` | Contact + enterprise inquiry submissions |
-| `referrals` | Manager referral tracking |
-| `email_drip_log` | Tracks which drip emails have been sent per user (Day 1/3/7/14) |
-| `unsubscribe_tokens` | CASL unsubscribe tokens for one-click unsubscribe links |
-| `assigned_modules` | Manager-assigned required modules per restaurant |
-| `affiliates` | Affiliate accounts — tier, language, payout info, website, commission_rate, activation_bonus |
-| `commissions` | Per-sale commission records linked to affiliates |
-| `affiliate_payouts` | Payout history with status tracking |
-| `roleplays` | Curriculum role-play scenarios — category, title, setup, dialogue, debrief, voice_styles; UNIQUE on title |
+| `contact_messages` | Contact + enterprise + team-trial submissions |
+| `referrals` | Manager referral tracking (state machine below) |
+| `email_drip_log` | Which drip emails sent per user (Day 1/3/7/14) |
+| `unsubscribe_tokens` | CASL one-click unsubscribe tokens |
+| `affiliates`, `commissions`, `affiliate_payouts` | Affiliate accounts, per-sale commissions, payout history |
+| `roleplays` | Curriculum role-plays — category, title, setup, dialogue, debrief, voice_styles; UNIQUE on title |
 | `quizzes` | Curriculum knowledge checks — module_name, title, questions (JSONB); UNIQUE on module+title |
 
-### Referral Status State Machine
-- **pending**: invite sent, awaiting referred manager signup + checkout
-- **credited**: $50 CAD balance credit applied to referrer's Stripe account
-- **pending_credit**: referred manager paid but referrer has no Stripe customer yet; credit applied when referrer first checks out
-- **closed**: duplicate referral for same referee; another referrer already credited for this user
+**Referral status state machine:** `pending` (invite sent) → `credited` ($50 CAD Stripe balance credit applied) / `pending_credit` (referee paid but referrer has no Stripe customer yet — credited on their first checkout) / `closed` (duplicate referral; another referrer already credited).
 
-- **Stripe Integration:** Refer to Stripe API documentation for `STRIPE_PREMIUM_MONTHLY_ID` and other price IDs.
-- **Google OAuth:** Consult Google Cloud Console for `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` setup.
-- **Resend API:** See Resend documentation for email sending and `RESEND_API_KEY` usage.
-- **PostgreSQL:** Refer to PostgreSQL documentation for database queries and schema management.
-- **OpenAI API:** Consult OpenAI documentation for AI integrations and Whisper transcription.
-- **Tailwind CSS:** Refer to Tailwind CSS documentation for utility classes and customization.
+## Blog Conventions
+
+**Freshness (`dateModified`):** Each `blogArticles` entry in `public/js/content.js` has `datePublished` (never changes) and `dateModified` (bump to today in `YYYY-MM-DD` **whenever the article's HTML is meaningfully revised** — Google reads it from JSON-LD for freshness). Check drift with `node scripts/check-blog-freshness.js` (compares declared date vs last git-commit date of the HTML file; non-zero exit if stale). Auto-fix all with `node scripts/fix-blog-freshness.js`, then re-check. Run after any blog editing session.
+
+**Category / OG image:** Every post needs `<meta name="blog-category" content="...">` in `<head>` (after `og:image:height`). Values → OG image: `server-skills` (front-of-house), `bartending` (behind-the-bar craft), `management` (running a team/venue).
+
+**Audio (Listen button):** Pre-generated MP3s at `public/audio/blog/{lang}/{slug}.mp3` — **gitignored** (~1.9 GB, never commit). Regenerate with `node scripts/generate-blog-audio.js --lang en|fr|es` (idempotent; `--force`, `--slug` flags; OpenAI `tts-1` / `nova` voice). Runtime fallback in `public/js/blog-tts.js`: HEAD-checks the static file, streams it if 200, else falls back to live OpenAI TTS — so the button always works.
+
+## First Crossings — Novels & TTS
+
+All 12 chapters use one ElevenLabs voice `dAlhI9qAHVIjXuVppzhW` (both `sofia` and `luca` in `books/voice-map.js` point to it; POV labels are UI-only). To swap voice, change both IDs and restart. YouTube upload tool: `node scripts/upload-to-youtube.js` (uploads, polls, writes a JSON manifest; one-time OAuth in browser, then non-interactive; token at `~/.config/sma-yt/token.json`).
+
+## Git / Repo Notes
+
+- `public/audio/blog/` is gitignored — never commit the MP3s.
+- `.env.local` is gitignored but still git-tracked by mistake (no secrets inside). To untrack: `git rm --cached .env.local` in the Shell (file stays on disk; this command is blocked for the agent — run it manually).
