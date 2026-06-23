@@ -656,6 +656,13 @@
 <footer class="border-t border-zinc-800 py-8 text-center text-zinc-500 text-sm">
   <p class="mb-1">Ready to earn partner commissions on qualified referrals? <a href="#apply" class="text-orange-400 hover:text-orange-300 font-semibold">Apply today</a> and get your unique link within a few business days.</p>
   <p class="mt-3">&copy; 2025 ServeMaster Academy · <a href="/privacy" class="hover:text-zinc-300 transition-colors">Privacy</a> · <a href="/terms" class="hover:text-zinc-300 transition-colors">Terms</a> · <a href="mailto:kirk_adamson@servemasteracademy.ca" class="hover:text-zinc-300 transition-colors">Contact</a></p>
+  <div class="flex gap-3 justify-center mt-4">
+    <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+    <span class="text-zinc-700 self-center">|</span>
+    <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+    <span class="text-zinc-700 self-center">|</span>
+    <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-400 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+  </div>
 </footer>
 
 <script>
@@ -722,5 +729,6 @@ document.getElementById('affiliate-form').addEventListener('submit', async funct
   }
 });
 </script>
+<script src="/js/lang.js?v=6"></script>
 </body>
 </html>
