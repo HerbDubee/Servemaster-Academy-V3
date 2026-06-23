@@ -1689,6 +1689,7 @@ async function loadTrials() {
     if (!reqs.length) { container.innerHTML = '<div class="text-zinc-500 text-sm">No team trial requests yet.</div>'; return; }
 
     const savedPlan = localStorage.getItem('kirk_trial_plan_default') || 'starter_team';
+    const planByRow = getTrialPlanHistory();
     container.innerHTML = reqs.map(r => {
       const msgBody = r.message.replace(/^\[TEAM TRIAL REQUEST\]\s*/, '');
       const parts = {};
@@ -1743,9 +1744,25 @@ async function loadTrials() {
     }).join('');
     reqs.forEach(r => {
       const sel = document.getElementById(`plan-select-${r.id}`);
-      if (sel) sel.value = savedPlan;
+      if (sel) sel.value = planByRow[r.id] || savedPlan;
     });
   } catch (e) { console.error(e); }
+}
+
+const TRIAL_PLAN_HISTORY_KEY = 'kirk_trial_plan_by_row';
+
+function getTrialPlanHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(TRIAL_PLAN_HISTORY_KEY) || '{}') || {};
+  } catch (e) { return {}; }
+}
+
+function rememberTrialPlan(id, plan) {
+  try {
+    const hist = getTrialPlanHistory();
+    hist[id] = plan;
+    localStorage.setItem(TRIAL_PLAN_HISTORY_KEY, JSON.stringify(hist));
+  } catch (e) { /* ignore storage errors */ }
 }
 
 async function triggerKirkTrialDigest() {
@@ -1811,6 +1828,7 @@ async function sendTrialCode(id) {
       alert('Failed to send code: ' + (data.error || res.status));
       return;
     }
+    rememberTrialPlan(id, plan);
     showTrialToast(`${planLabel} code sent (${data.code}) — trial marked provisioned.`);
     loadTrials();
   } catch (e) {
