@@ -20,6 +20,8 @@ const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
 const authRoutes = require('./routes/auth');
 const createStripeRouter = require('./routes/stripe');
 const { errorHandler } = require('./middleware/errorHandler');
+const { requestLogger } = require('./middleware/requestLogger');
+const { logger } = require('./lib/logger');
 // NOTE: COOKIE_OPTS is defined locally below (line ~165) and shared with lib/auth —
 // do not import it from lib/auth here or Node will throw "already declared".
 
@@ -68,6 +70,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(compression());
+app.use(requestLogger); // structured per-request logging + X-Request-Id correlation
 app.use(cookieParser());
 app.use('/auth', authRoutes); // Google OAuth (credential flow) + logout — see routes/auth.js
 // Force JS files to revalidate on every load so browser updates are never missed
@@ -1133,7 +1136,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 const server = app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server running on port ${process.env.PORT || 5000}`);
+  logger.info('server_start', { port: Number(process.env.PORT || 5000), env: process.env.NODE_ENV || 'development' });
 });
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;

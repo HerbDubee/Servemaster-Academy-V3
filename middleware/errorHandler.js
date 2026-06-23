@@ -16,6 +16,8 @@
  * This handler sits at the end of the chain and does not depend on them.
  */
 
+const { logger } = require('../lib/logger');
+
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 /**
@@ -53,13 +55,19 @@ function classifyError(err) {
 function errorHandler(err, req, res, next) {
   const { status, message } = classifyError(err);
 
-  // Always log the full error server-side with request context
-  console.error(
-    `[ERROR] ${req.method} ${req.path}` +
-    (req.user ? ` user=${req.user.id}` : '') +
-    ` → ${status} ${err.message}` +
-    (err.stack && !IS_PROD ? `\n${err.stack}` : '')
-  );
+  // Always log the full error server-side with request context.
+  // 5xx → error level; expected 4xx (validation, auth, conflicts) → warn.
+  const level = status >= 500 ? 'error' : 'warn';
+  logger[level]('request_error', {
+    reqId: req.id,
+    method: req.method,
+    path: req.path,
+    status,
+    userId: req.user && req.user.id,
+    err: err.message,
+    code: err.code,
+    stack: !IS_PROD ? err.stack : undefined,
+  });
 
   // Don't send a second response if headers already went out
   if (res.headersSent) return next(err);
