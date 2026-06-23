@@ -1066,8 +1066,20 @@ async function markAllBlogArticlesUpdated(btn) {
     const slugs = Array.from(
       document.querySelectorAll('#blog-freshness-list code[data-slug]')
     ).map(el => el.dataset.slug);
+    const total = slugs.length;
+    let done = 0;
     const results = await Promise.all(slugs.map(slug =>
       apiFetch(`/api/admin/blog-freshness/${slug}`, { method: 'PATCH' })
+        .then(r => {
+          done += 1;
+          btn.textContent = `Updating ${done} / ${total}…`;
+          return r;
+        })
+        .catch(err => {
+          done += 1;
+          btn.textContent = `Updating ${done} / ${total}…`;
+          throw err;
+        })
     ));
     const anyFailed = results.some(r => !r.ok);
     await checkBlogFreshness();
