@@ -844,6 +844,105 @@ app.get('/api/books/chapter/:key', (req, res, next) => {
   }
 });
 
+// Chapter narration audio (e.g. /api/books/tts/book2-ch01). When a pre-generated
+// MP3 exists in books/audio-cache it is served directly with HTTP Range support
+// (instant, seekable). Otherwise the chapter is synthesized on demand via
+// ElevenLabs using the chapter's mapped voice and STREAMED to the client chunk by
+// chunk (so playback starts as soon as the first segment is ready instead of after
+// the whole multi-minute file), while the full result is written to the cache so
+// every later play is instant. 404 for unknown/unavailable keys.
+const BOOK_AUDIO_CACHE_DIR = path.join(__dirname, 'books', 'audio-cache');
+
+async function fetchChapterChunkMp3(voiceId, text, apiKey) {
+  const resp = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
+    {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg',
+      },
+      body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2' }),
+    }
+  );
+  if (!resp.ok) {
+    const detail = await resp.text().catch(() => '');
+    throw new Error(`ElevenLabs TTS failed (${resp.status}): ${detail.slice(0, 300)}`);
+  }
+  return Buffer.from(await resp.arrayBuffer());
+}
+
+app.get('/api/books/tts/:key', async (req, res, next) => {
+  let ch;
+  try {
+    ch = getChapter(req.params.key);
+  } catch (e) {
+    return res.status(404).json({ error: 'Chapter not found' });
+  }
+
+  if (!fs.existsSync(path.join(__dirname, 'books', ch.file))) {
+    return res.status(404).json({ error: 'Chapter not available' });
+  }
+
+  const cachePath = path.join(BOOK_AUDIO_CACHE_DIR, `${ch.key}.mp3`);
+
+  // Fast path: serve the cached MP3 (Content-Type + Range/seeking handled by sendFile).
+  if (fs.existsSync(cachePath)) {
+    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
+      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve chapter audio' }));
+    });
+  }
+
+  // Cold path: synthesize on demand and stream segments as they arrive.
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    return next(Object.assign(new Error('ELEVENLABS_API_KEY is not configured'),
+      { publicMessage: 'Audio narration is not configured' }));
+  }
+
+  let aborted = false;
+  req.on('close', () => { aborted = true; });
+
+  try {
+    const markdown = fs.readFileSync(path.join(__dirname, 'books', ch.file), 'utf8');
+    const chunks = chunkForTTS(cleanForTTS(markdown));
+    const buffers = [];
+
+    for (const chunk of chunks) {
+      if (aborted) return; // client navigated away — stop spending TTS credits
+      const buf = await fetchChapterChunkMp3(ch.voiceId, chunk, apiKey);
+      buffers.push(buf);
+      if (aborted) return;
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Cache-Control', 'no-store');
+      }
+      res.write(buf);
+    }
+
+    res.end();
+
+    // Persist the complete chapter so subsequent plays are instant and seekable.
+    // Atomic write (temp + rename) guarantees the cache never holds a partial file.
+    try {
+      if (!fs.existsSync(BOOK_AUDIO_CACHE_DIR)) fs.mkdirSync(BOOK_AUDIO_CACHE_DIR, { recursive: true });
+      const tmpPath = `${cachePath}.${process.pid}.${Date.now()}.tmp`;
+      fs.writeFileSync(tmpPath, Buffer.concat(buffers));
+      fs.renameSync(tmpPath, cachePath);
+    } catch (cacheErr) {
+      logger.warn('book_tts_cache_write_failed', { key: ch.key, error: cacheErr.message });
+    }
+  } catch (err) {
+    if (!res.headersSent) {
+      return next(Object.assign(err, { publicMessage: 'Failed to generate chapter audio' }));
+    }
+    // Already streaming — can't change status; log and terminate the stream.
+    logger.error('book_tts_stream_failed', { key: ch.key, error: err.message });
+    res.destroy(err);
+  }
+});
+
 app.get('/features', (req, res) => res.sendFile(path.join(__dirname, 'public', 'features.html')));
 app.get('/pricing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pricing.html')));
 app.get('/managers', (req, res) => res.sendFile(path.join(__dirname, 'public', 'managers.html')));
