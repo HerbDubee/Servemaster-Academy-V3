@@ -50,8 +50,23 @@ const BOOK3_CHAPTERS = [
   { key: 'book3-ch12', file: 'Book3_Ch12.md', num: 12, title: 'The Seed',                           voice: 'luca'  },
 ];
 
+const BOOK4_CHAPTERS = [
+  { key: 'book4-ch01', file: 'Book4_Ch1.md',  num: 1,  title: 'Arrivals',                        voice: 'sofia' },
+  { key: 'book4-ch02', file: 'Book4_Ch2.md',  num: 2,  title: 'Measurement',                     voice: 'luca'  },
+  { key: 'book4-ch03', file: 'Book4_Ch3.md',  num: 3,  title: 'What the Room Is Telling You',     voice: 'sofia' },
+  { key: 'book4-ch04', file: 'Book4_Ch4.md',  num: 4,  title: 'How to Hold a Tray',              voice: 'luca'  },
+  { key: 'book4-ch05', file: 'Book4_Ch5.md',  num: 5,  title: 'The Justice Project',             voice: 'sofia' },
+  { key: 'book4-ch06', file: 'Book4_Ch6.md',  num: 6,  title: 'The First Failure',               voice: 'luca'  },
+  { key: 'book4-ch07', file: 'Book4_Ch7.md',  num: 7,  title: 'The Space Between',               voice: 'sofia' },
+  { key: 'book4-ch08', file: 'Book4_Ch8.md',  num: 8,  title: 'The Soft Launch',                 voice: 'luca'  },
+  { key: 'book4-ch09', file: 'Book4_Ch9.md',  num: 9,  title: 'The Sommelier',                   voice: 'sofia' },
+  { key: 'book4-ch10', file: 'Book4_Ch10.md', num: 10, title: 'The Beta Network',                voice: 'luca'  },
+  { key: 'book4-ch11', file: 'Book4_Ch11.md', num: 11, title: 'The Thing That Tries to Take It', voice: 'sofia' },
+  { key: 'book4-ch12', file: 'Book4_Ch12.md', num: 12, title: 'The Full Arc',                    voice: 'luca'  },
+];
+
 const _byKey = {};
-for (const ch of [...BOOK1_CHAPTERS, ...BOOK2_CHAPTERS, ...BOOK3_CHAPTERS]) {
+for (const ch of [...BOOK1_CHAPTERS, ...BOOK2_CHAPTERS, ...BOOK3_CHAPTERS, ...BOOK4_CHAPTERS]) {
   if (_byKey[ch.key]) throw new Error(`Duplicate chapter key in voice-map: ${ch.key}`);
   _byKey[ch.key] = ch;
 }
@@ -62,7 +77,7 @@ function getChapter(key) {
   return { ...ch, voiceId: VOICES[ch.voice].id, voiceName: VOICES[ch.voice].name };
 }
 
-const BOOKS_BY_ID = { book1: BOOK1_CHAPTERS, book2: BOOK2_CHAPTERS, book3: BOOK3_CHAPTERS };
+const BOOKS_BY_ID = { book1: BOOK1_CHAPTERS, book2: BOOK2_CHAPTERS, book3: BOOK3_CHAPTERS, book4: BOOK4_CHAPTERS };
 
 function getAllChapters(book) {
   // No argument → default to Book 1 (backward compatibility with the
@@ -77,4 +92,4 @@ function getAllChapters(book) {
   }));
 }
 
-module.exports = { getChapter, getAllChapters, VOICES, BOOK2_CHAPTERS, BOOK3_CHAPTERS };
+module.exports = { getChapter, getAllChapters, VOICES, BOOK2_CHAPTERS, BOOK3_CHAPTERS, BOOK4_CHAPTERS };
