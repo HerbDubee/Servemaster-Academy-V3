@@ -1,32 +1,14 @@
 ---
-name: Book chapter audio — durable storage
-description: Why pre-generated chapter narration MP3s must live in Replit Object Storage, not just the local cache.
+name: Book audio durable serving
+description: How chapter MP3 narration is served durably in production, and why download-to-local-disk failed.
 ---
 
-Pre-generated book-chapter narration MP3s (e.g. `book4-ch01.mp3`) are cached in
-`books/audio-cache/`, which is **gitignored and ephemeral** — a fresh deploy starts
-with an empty cache. Without durable storage the TTS route would re-synthesize each
-chapter via paid ElevenLabs TTS on first play after every deploy.
+# Serving book/chapter audio durably
 
-**Decision:** persist each chapter MP3 in Replit Object Storage and restore on demand.
-- Helper: `lib/bookAudioStore.js` (plain CommonJS — the main app is `server.js`, no TS
-  build). Objects at `PRIVATE_OBJECT_DIR/book-audio/{key}.mp3`.
-- `/api/books/tts/:key` serve order: local cache → restore-from-Object-Storage into
-  local cache → live ElevenLabs synthesis (then written to both cache and storage).
-- Migrate existing files with `node scripts/upload-book-audio.js` (idempotent).
+**Rule:** Serve large media (chapter MP3s) by **streaming directly from Replit Object Storage with HTTP Range support** — never download-to-local-disk-then-sendFile.
 
-**Why:** the local cache cannot be the source of truth (gitignored + ephemeral); the
-gitignore on the audio exists because the MP3s are huge (~45 MB/chapter, GBs total) and
-must never be committed. Object Storage is the durable layer that keeps deploys from
-re-spending TTS credits.
+**Why:** A prior implementation downloaded the full ~45MB MP3 from Object Storage into the gitignored local cache (`books/audio-cache/`) then `res.sendFile()`. In the deployed app this produced intermittent `200/206/500` and **0-byte** responses (confirmed via curl against prod). Deployments run multiple/ephemeral instances; concurrent Range requests from the `<audio>` element raced on the shared cache path during download+rename, and per-instance disk writes are unreliable. HTML5 `<audio>` needs consistent `206`/Range to play and seek, so playback broke.
 
-**How to apply:** when adding a new book/chapter audio, generate it, then run the upload
-script so it lands in Object Storage. Any new audio-serving route should keep the same
-three-tier order (local → object storage → synthesize-and-persist-to-both).
+**How to apply:** `lib/bookAudioStore.js#streamToResponse(key, req, res)` parses the `Range` header, uses GCS `file.createReadStream({start,end})` + `getMetadata()` for size, sets `Accept-Ranges`/`Content-Range`/`Content-Length`, and returns 206/200/416/HEAD correctly. Malformed/multi-range headers are ignored (serve full 200). On client disconnect (`res 'close'`) it destroys the GCS stream to stop wasted reads. The `/api/books/tts/:key` route order is: local-cache `sendFile` (dev) → `streamToResponse` (durable) → live ElevenLabs synth (then uploads result to OS). It only falls through to synth if storage is unconfigured/object-missing or `streamToResponse` throws *before* headers are sent.
 
-**Replit Object Storage note (plain JS):** the App Storage blueprint scaffolds a
-TypeScript/React Uppy upload flow that does NOT fit a server-rendered plain-JS app —
-skip it. Instead use `@google-cloud/storage` directly with the sidecar external_account
-credentials (`token_url`/`credential` at `http://127.0.0.1:1106`). `PRIVATE_OBJECT_DIR`
-is `/<bucket>/.private`; split off the leading bucket segment to get bucket + object
-prefix.
+**Audio inventory caveat:** Only book4 (12/12) has audio in Object Storage. book1 has 2/12, book2 0/12, book3 0/12. Books without OS audio fall to live synth which takes minutes per chapter (effectively "not playing"). Generating them is a large ElevenLabs spend — see elevenlabs-tts-generation.md and get user approval first.

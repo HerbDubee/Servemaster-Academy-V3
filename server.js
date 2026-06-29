@@ -896,20 +896,17 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
     });
   }
 
-  // Durable path: the local cache is gitignored/ephemeral, so on a cold instance
-  // restore the pre-generated MP3 from Object Storage into the local cache, then
-  // serve it with full Range/seeking support (and instant on every later play).
+  // Durable path: the local cache is gitignored and (in deployments) ephemeral
+  // across multiple instances, so stream the pre-generated MP3 straight from
+  // Object Storage with full HTTP Range/seeking support. No local-disk writes,
+  // so there are no cross-instance cache races or read-only-FS failures.
   if (bookAudioStore.isConfigured()) {
     try {
-      if (!fs.existsSync(BOOK_AUDIO_CACHE_DIR)) fs.mkdirSync(BOOK_AUDIO_CACHE_DIR, { recursive: true });
-      const restored = await bookAudioStore.download(ch.key, cachePath);
-      if (restored) {
-        return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
-          if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve chapter audio' }));
-        });
-      }
+      const served = await bookAudioStore.streamToResponse(ch.key, req, res);
+      if (served) return;
     } catch (storeErr) {
-      logger.warn('book_audio_store_download_failed', { key: ch.key, error: storeErr.message });
+      if (res.headersSent) return; // already streaming — cannot recover
+      logger.warn('book_audio_store_stream_failed', { key: ch.key, error: storeErr.message });
       // fall through to on-demand synthesis
     }
   }
