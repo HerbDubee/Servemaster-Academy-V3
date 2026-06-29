@@ -157,6 +157,8 @@ Static (non-blog) sitemap entries live in `lib/staticFreshness.js` (`STATIC_PAGE
 
 All 12 chapters use one ElevenLabs voice `dAlhI9qAHVIjXuVppzhW` (both `sofia` and `luca` in `books/voice-map.js` point to it; POV labels are UI-only). To swap voice, change both IDs and restart. YouTube upload tool: `node scripts/upload-to-youtube.js` (uploads, polls, writes a JSON manifest; one-time OAuth in browser, then non-interactive; token at `~/.config/sma-yt/token.json`).
 
+**Chapter audio & durable storage:** Pre-generated chapter MP3s live in `books/audio-cache/{key}.mp3` (e.g. `book4-ch01.mp3`) — **gitignored & ephemeral**, so they're also persisted in Replit Object Storage (`lib/bookAudioStore.js`, stored at `PRIVATE_OBJECT_DIR/book-audio/{key}.mp3`). The `/api/books/tts/:key` route serves in order: (1) local cache (`sendFile`, Range/seek), (2) restore from Object Storage into the local cache, (3) live ElevenLabs synthesis (then persisted to both cache + storage). So fresh deploys never re-synthesize (no wasted credits). Generate with `node scripts/generate-book-audio.js --book bookN` (resumable; `--concurrency`, `--budget`, `--assemble-only`); push to storage with `node scripts/upload-book-audio.js [--book bookN] [--force]` (idempotent).
+
 ## Git / Repo Notes
 
 - `public/audio/blog/` is gitignored — never commit the MP3s.

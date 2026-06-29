@@ -18,6 +18,7 @@ const db = require('./db');
 const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
 const { getChapter, getAllChapters } = require('./books/voice-map');
 const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
+const bookAudioStore = require('./lib/bookAudioStore');
 const authRoutes = require('./routes/auth');
 const createStripeRouter = require('./routes/stripe');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -895,6 +896,24 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
     });
   }
 
+  // Durable path: the local cache is gitignored/ephemeral, so on a cold instance
+  // restore the pre-generated MP3 from Object Storage into the local cache, then
+  // serve it with full Range/seeking support (and instant on every later play).
+  if (bookAudioStore.isConfigured()) {
+    try {
+      if (!fs.existsSync(BOOK_AUDIO_CACHE_DIR)) fs.mkdirSync(BOOK_AUDIO_CACHE_DIR, { recursive: true });
+      const restored = await bookAudioStore.download(ch.key, cachePath);
+      if (restored) {
+        return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
+          if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve chapter audio' }));
+        });
+      }
+    } catch (storeErr) {
+      logger.warn('book_audio_store_download_failed', { key: ch.key, error: storeErr.message });
+      // fall through to on-demand synthesis
+    }
+  }
+
   // Cold path: synthesize on demand and stream segments as they arrive.
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) {
@@ -931,6 +950,12 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
       const tmpPath = `${cachePath}.${process.pid}.${Date.now()}.tmp`;
       fs.writeFileSync(tmpPath, Buffer.concat(buffers));
       fs.renameSync(tmpPath, cachePath);
+      // Also persist to durable Object Storage so it survives a fresh deploy and
+      // never needs regenerating again. Best-effort: a failure here is non-fatal.
+      if (bookAudioStore.isConfigured()) {
+        bookAudioStore.upload(ch.key, cachePath).catch((storeErr) =>
+          logger.warn('book_audio_store_upload_failed', { key: ch.key, error: storeErr.message }));
+      }
     } catch (cacheErr) {
       logger.warn('book_tts_cache_write_failed', { key: ch.key, error: cacheErr.message });
     }

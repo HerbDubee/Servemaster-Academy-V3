@@ -1,4 +1,5 @@
 - [Router middleware ordering](router-middleware-ordering.md) — routers needing req.body must mount AFTER express.json(); the Stripe router is intentionally before it for raw webhook body.
+- [Book chapter audio — durable storage](book-audio-durable-storage.md) — gitignored/ephemeral audio-cache MP3s are persisted in Object Storage; serve order local→storage→synthesize so deploys never re-spend TTS credits.
 - [ElevenLabs TTS generation](elevenlabs-tts-generation.md) — PAYG caps at 3 concurrent requests; quota is a hard 401 wall; use the resumable per-chunk generator and check quota before large jobs.
 - [Logging & error handling](logging-and-errors.md) — structured logger (lib/logger.js) + requestLogger; global errorHandler exists but routes still use res.status(500), so next(err) migration is deferred.
 - [Input validation (Zod)](input-validation.md) — lib/schemas.js + validate() middleware; order = limiter→auth→validate; schemas strip unknown keys; auth/payment/contact/manager/admin/affiliates all done; manager+admin routers mount before global express.json so each body route needs inline express.json().
