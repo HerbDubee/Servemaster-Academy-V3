@@ -37,6 +37,7 @@ function arg(name, def) {
 const BOOK = arg('book', 'book4');
 const FORCE = !!arg('force', false);
 const ONLY = arg('slug', null);
+const ASSEMBLE_ONLY = !!arg('assemble-only', false); // skip synthesis; just concat any chapter whose parts are all present
 const BUDGET = parseInt(arg('budget', '0'), 10) || 0;          // seconds; 0 = unlimited
 const CONCURRENCY = parseInt(arg('concurrency', '4'), 10) || 4;
 const CACHE_DIR = path.join(__dirname, '..', 'books', 'audio-cache');
@@ -115,7 +116,8 @@ function writeAtomic(file, buf) {
 
   // Bounded-concurrency worker pool with a wall-clock launch budget.
   let next = 0, active = 0, completed = 0, charsSpent = 0, aborted = null, budgetHit = false;
-  await new Promise((resolve) => {
+  if (ASSEMBLE_ONLY) log('assemble-only mode: skipping synthesis, concatenating complete chapters');
+  if (!ASSEMBLE_ONLY) await new Promise((resolve) => {
     const pump = () => {
       if (aborted) { if (active === 0) resolve(); return; }
       if (BUDGET && elapsed() >= BUDGET) budgetHit = true;
