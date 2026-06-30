@@ -161,5 +161,6 @@ All 12 chapters use one ElevenLabs voice `dAlhI9qAHVIjXuVppzhW` (both `sofia` an
 
 ## Git / Repo Notes
 
+- `.git` is ~2 GB because historical large binaries (mostly `public/audio/` MP3s) were untracked but never purged from history. To reclaim the space, follow `docs/git-history-shrink-runbook.md` — a manual, user-run runbook (history rewrite + force-push; the agent cannot run it).
 - `public/audio/blog/` is gitignored — never commit the MP3s.
 - `.env.local` is gitignored but still git-tracked by mistake (no secrets inside). To untrack: `git rm --cached .env.local` in the Shell (file stays on disk; this command is blocked for the agent — run it manually).
