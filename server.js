@@ -19,6 +19,8 @@ const { parseArticles: _parseBlogArticles } = require('./lib/blogFreshness');
 const { getChapter, getAllChapters } = require('./books/voice-map');
 const { cleanForTTS, chunkForTTS } = require('./lib/bookCleaner');
 const bookAudioStore = require('./lib/bookAudioStore');
+const blogAudioStore = require('./lib/blogAudioStore');
+const { extractText: extractBlogText, preprocessForTTS: preprocessBlogTTS, splitIntoChunks: splitBlogChunks, TTS_VOICE: BLOG_TTS_VOICE, TTS_MODEL: BLOG_TTS_MODEL } = require('./lib/blogAudioText');
 const authRoutes = require('./routes/auth');
 const createStripeRouter = require('./routes/stripe');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -962,6 +964,123 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
     }
     // Already streaming — can't change status; log and terminate the stream.
     logger.error('book_tts_stream_failed', { key: ch.key, error: err.message });
+    res.destroy(err);
+  }
+});
+
+// Blog "Listen" narration audio (e.g. /api/blog/tts/en/handle-complaints). Public
+// (no auth) so anonymous readers — the common case — get the real pre-generated
+// MP3 instead of dropping to low-quality browser speech. Served in priority order:
+//   (1) local public/audio/blog/{lang}/{slug}.mp3 (sendFile, Range/seek),
+//   (2) stream from durable Object Storage (the gitignored local cache is absent
+//       on fresh deploys), restoring nothing to disk so there are no cross-instance
+//       races / read-only-FS failures,
+//   (3) synthesize on demand via OpenAI tts-1/nova, stream it, and persist to both
+//       the local cache and Object Storage so every later play is instant.
+const BLOG_AUDIO_LANGS = new Set(['en', 'fr', 'es']);
+const BLOG_AUDIO_DIR = path.join(__dirname, 'public', 'audio', 'blog');
+
+function blogArticleHtmlPath(lang, slug) {
+  return lang === 'en'
+    ? path.join(__dirname, 'public', 'blog', slug + '.html')
+    : path.join(__dirname, 'public', 'blog', lang, slug + '.html');
+}
+
+app.get('/api/blog/tts/:lang/:slug', async (req, res, next) => {
+  const lang = req.params.lang;
+  const slug = (req.params.slug || '').replace(/[^a-z0-9-]/gi, '');
+
+  // Validate lang/slug against a real article before doing any work.
+  if (!BLOG_AUDIO_LANGS.has(lang) || !slug) {
+    return res.status(404).json({ error: 'Article not found' });
+  }
+  const htmlPath = blogArticleHtmlPath(lang, slug);
+  if (!fs.existsSync(htmlPath)) {
+    return res.status(404).json({ error: 'Article not found' });
+  }
+
+  const key = `${lang}/${slug}`;
+  const cachePath = path.join(BLOG_AUDIO_DIR, lang, `${slug}.mp3`);
+
+  // Fast path: serve the local pre-generated MP3 (Content-Type + Range handled by sendFile).
+  if (fs.existsSync(cachePath) && fs.statSync(cachePath).size > 1024) {
+    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
+      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve blog audio' }));
+    });
+  }
+
+  // Durable path: stream the pre-generated MP3 straight from Object Storage.
+  if (blogAudioStore.isConfigured()) {
+    try {
+      const served = await blogAudioStore.streamToResponse(key, req, res);
+      if (served) return;
+    } catch (storeErr) {
+      if (res.headersSent) return; // already streaming — cannot recover
+      logger.warn('blog_audio_store_stream_failed', { key, error: storeErr.message });
+      // fall through to on-demand synthesis
+    }
+  }
+
+  // Cold path: synthesize on demand, stream segments as they arrive, then persist.
+  let tts;
+  try {
+    tts = getTTS();
+  } catch (cfgErr) {
+    return next(Object.assign(cfgErr, { publicMessage: 'Audio narration is not configured' }));
+  }
+
+  let aborted = false;
+  req.on('close', () => { aborted = true; });
+
+  try {
+    const html = fs.readFileSync(htmlPath, 'utf8');
+    const rawText = extractBlogText(html);
+    if (!rawText || rawText.length < 100) {
+      return res.status(404).json({ error: 'Article has no narratable text' });
+    }
+    const chunks = splitBlogChunks(preprocessBlogTTS(rawText));
+    const buffers = [];
+
+    for (const chunk of chunks) {
+      if (aborted) return; // client navigated away — stop spending TTS credits
+      const response = await tts.audio.speech.create({
+        model: BLOG_TTS_MODEL, voice: BLOG_TTS_VOICE, input: chunk, response_format: 'mp3',
+      });
+      const buf = Buffer.from(await response.arrayBuffer());
+      buffers.push(buf);
+      if (aborted) return;
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Cache-Control', 'no-store');
+      }
+      res.write(buf);
+    }
+
+    res.end();
+
+    // Persist the complete article so subsequent plays are instant and seekable.
+    // Atomic write (temp + rename) guarantees the cache never holds a partial file.
+    try {
+      const dir = path.join(BLOG_AUDIO_DIR, lang);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const tmpPath = `${cachePath}.${process.pid}.${Date.now()}.tmp`;
+      fs.writeFileSync(tmpPath, Buffer.concat(buffers));
+      fs.renameSync(tmpPath, cachePath);
+      // Also persist to durable Object Storage so it survives a fresh deploy and
+      // never needs regenerating again. Best-effort: a failure here is non-fatal.
+      if (blogAudioStore.isConfigured()) {
+        blogAudioStore.upload(key, cachePath).catch((storeErr) =>
+          logger.warn('blog_audio_store_upload_failed', { key, error: storeErr.message }));
+      }
+    } catch (cacheErr) {
+      logger.warn('blog_tts_cache_write_failed', { key, error: cacheErr.message });
+    }
+  } catch (err) {
+    if (!res.headersSent) {
+      return next(Object.assign(err, { publicMessage: 'Failed to generate blog audio' }));
+    }
+    // Already streaming — can't change status; log and terminate the stream.
+    logger.error('blog_tts_stream_failed', { key, error: err.message });
     res.destroy(err);
   }
 });

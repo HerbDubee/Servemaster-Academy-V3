@@ -409,28 +409,19 @@
       var rawText = getProseText();
       if (isPlaceholderText(rawText)) return;
 
-      // Try the pre-generated static MP3 first (no auth required, instant)
+      // Play the durable blog-audio endpoint (no auth required). It serves the
+      // pre-generated MP3 from local disk → Object Storage → on-demand synthesis,
+      // so logged-out readers always get the real narration. The <audio> element
+      // streams it directly and only falls back to the live API / browser speech
+      // if the request genuinely fails.
       var info = getArticleLangAndSlug();
       if (info.slug) {
-        var audioUrl = '/audio/blog/' + info.lang + '/' + info.slug + '.mp3';
+        var audioUrl = '/api/blog/tts/' + info.lang + '/' + info.slug;
         setState('loading');
-
-        fetch(audioUrl, { method: 'HEAD' })
-          .then(function (r) {
-            if (r.ok) {
-              // Static file exists — play it directly
-              playStaticAudio(audioUrl, function () {
-                // File existed but playback failed — fall back to API
-                startApiTTS(rawText);
-              });
-            } else {
-              // No static file yet — use live API
-              startApiTTS(rawText);
-            }
-          })
-          .catch(function () {
-            startApiTTS(rawText);
-          });
+        playStaticAudio(audioUrl, function () {
+          // Endpoint unavailable or playback failed — fall back to live API.
+          startApiTTS(rawText);
+        });
         return;
       }
 
