@@ -7,12 +7,19 @@
  *   node scripts/generate-blog-audio.js --force    # regenerate even if file exists
  *   node scripts/generate-blog-audio.js --lang en  # only one language
  *   node scripts/generate-blog-audio.js --slug handle-complaints  # one article (all langs)
+ *   node scripts/generate-blog-audio.js --upload   # also push each new MP3 to Object Storage
  *
  * Output: public/audio/blog/{en|fr|es}/{slug}.mp3
  *
  * Each file is a single MP3 created by chunking the article text into <=4000-char
  * segments, calling OpenAI TTS-1 for each, and binary-concatenating the results.
  * Binary concat is valid for same-bitrate MP3 streams.
+ *
+ * With --upload, every file that's freshly generated this run is mirrored into
+ * durable Replit Object Storage as it finishes (key `{lang}/{slug}`), so a fresh
+ * deploy serves the real narration without a separate `upload-blog-audio.js` step.
+ * Skipped (already-present) files aren't re-uploaded; use scripts/upload-blog-audio.js
+ * to backfill storage for files that already exist locally.
  */
 
 'use strict';
@@ -24,6 +31,7 @@ const {
   TTS_MODEL, TTS_VOICE,
   extractText, preprocessForTTS, splitIntoChunks,
 } = require('../lib/blogAudioText');
+const blogAudioStore = require('../lib/blogAudioStore');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +50,7 @@ const LANG_DIRS = {
 
 const args = process.argv.slice(2);
 const FORCE      = args.includes('--force');
+const UPLOAD     = args.includes('--upload');
 const LANG_FILTER = (args.indexOf('--lang') !== -1) ? args[args.indexOf('--lang') + 1] : null;
 const SLUG_FILTER = (args.indexOf('--slug') !== -1) ? args[args.indexOf('--slug') + 1] : null;
 
@@ -80,7 +89,17 @@ function sleep(ms) {
 
 const ARTICLE_TIMEOUT_MS = 180000; // 180s max per article before skipping
 
-async function generateArticle(openai, htmlFile, outputFile, label) {
+async function maybeUpload(key, outputFile, label) {
+  if (!UPLOAD) return;
+  try {
+    await blogAudioStore.upload(key, outputFile);
+    console.log(`  PUSH  ${label} → Object Storage`);
+  } catch (err) {
+    console.error(`  WARN  ${label} upload to storage failed: ${err.message}`);
+  }
+}
+
+async function generateArticle(openai, htmlFile, outputFile, label, storageKey) {
   // Skip if file already exists and not forcing
   if (!FORCE && fs.existsSync(outputFile) && fs.statSync(outputFile).size > 1024) {
     console.log(`  SKIP  ${label} (already exists)`);
@@ -130,6 +149,7 @@ async function generateArticle(openai, htmlFile, outputFile, label) {
   fs.mkdirSync(path.dirname(outputFile), { recursive: true });
   fs.writeFileSync(outputFile, combined);
   console.log(`  DONE  ${label} → ${(combined.length / 1024).toFixed(0)} KB`);
+  await maybeUpload(storageKey, outputFile, label);
   return 'ok';
 }
 
@@ -137,6 +157,11 @@ async function generateArticle(openai, htmlFile, outputFile, label) {
 
 async function main() {
   const openai = getOpenAI();
+
+  if (UPLOAD && !blogAudioStore.isConfigured()) {
+    console.error('ERROR: --upload requested but Object Storage is not configured (PRIVATE_OBJECT_DIR unset).');
+    process.exit(1);
+  }
 
   // Build work list: { lang, slug, htmlFile, outputFile }
   const work = [];
@@ -158,6 +183,7 @@ async function main() {
         htmlFile:   path.join(dir, file),
         outputFile: path.join(AUDIO_DIR, lang, slug + '.mp3'),
         label:      `[${lang}] ${slug}`,
+        storageKey: `${lang}/${slug}`,
       });
     }
   }
@@ -193,7 +219,7 @@ async function main() {
     const results = await Promise.all(
       batch.map(item =>
         withTimeout(
-          generateArticle(openai, item.htmlFile, item.outputFile, item.label),
+          generateArticle(openai, item.htmlFile, item.outputFile, item.label, item.storageKey),
           item.label
         )
       )
