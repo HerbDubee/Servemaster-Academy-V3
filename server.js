@@ -895,28 +895,32 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
 
   const cachePath = path.join(BOOK_AUDIO_CACHE_DIR, `${ch.key}.mp3`);
 
-  // Fast path: serve the cached MP3 (Content-Type + Range/seeking handled by sendFile).
-  if (fs.existsSync(cachePath)) {
-    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
-      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve chapter audio' }));
-    });
-  }
-
-  // Durable path: the local cache is gitignored and (in deployments) ephemeral
-  // across multiple instances, so the pre-generated MP3 lives in Object Storage.
-  // Redirect the client to a short-lived signed URL so it pulls the bytes
-  // directly from Object Storage (Google Cloud Storage) with native HTTP Range/
-  // seeking. We do NOT stream large files through the app: on autoscale (Cloud
-  // Run) the proxy 500s a multi-MB streamed response, which breaks the <audio>
-  // element's opening HEAD / `bytes=0-` request and stops playback.
+  // Durable path FIRST: the pre-generated MP3 lives in Object Storage. Redirect
+  // the client to a short-lived signed URL so it pulls the bytes directly from
+  // Object Storage (Google Cloud Storage) with native HTTP Range/seeking.
+  // This MUST take priority over the local cache below: on autoscale (Cloud Run)
+  // the proxy 500s ANY large response sent through the app — including res.sendFile
+  // of a cached ~44MB MP3 — which breaks the <audio> element's opening
+  // HEAD / `bytes=0-` request and stops playback. So we never serve big media
+  // ourselves when storage has it.
   if (bookAudioStore.isConfigured()) {
     try {
       const url = await bookAudioStore.signedUrl(ch.key, 6 * 60 * 60);
       if (url) return res.redirect(302, url);
     } catch (storeErr) {
       logger.warn('book_audio_store_sign_failed', { key: ch.key, error: storeErr.message });
-      // fall through to on-demand synthesis
+      // fall through to local cache / on-demand synthesis
     }
+  }
+
+  // Fallback: serve a locally-cached MP3 (storage unconfigured in dev, or the
+  // object isn't in storage yet). Range/seeking handled by sendFile. Note this
+  // path is unsafe for large files behind the autoscale proxy, so it only runs
+  // when the durable redirect above was unavailable.
+  if (fs.existsSync(cachePath)) {
+    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
+      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve chapter audio' }));
+    });
   }
 
   // Cold path: synthesize on demand and stream segments as they arrive.
@@ -1008,26 +1012,30 @@ app.get('/api/blog/tts/:lang/:slug', async (req, res, next) => {
   const key = `${lang}/${slug}`;
   const cachePath = path.join(BLOG_AUDIO_DIR, lang, `${slug}.mp3`);
 
-  // Fast path: serve the local pre-generated MP3 (Content-Type + Range handled by sendFile).
-  if (fs.existsSync(cachePath) && fs.statSync(cachePath).size > 1024) {
-    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
-      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve blog audio' }));
-    });
-  }
-
-  // Durable path: redirect the client to a short-lived signed URL so it pulls
-  // the bytes directly from Object Storage (Google Cloud Storage) with native
-  // HTTP Range/seeking. We do NOT stream the file through the app: on autoscale
-  // (Cloud Run) the proxy 500s a multi-MB streamed response, which breaks the
-  // <audio> element's opening HEAD / `bytes=0-` request and stops playback.
+  // Durable path FIRST: redirect the client to a short-lived signed URL so it
+  // pulls the bytes directly from Object Storage (Google Cloud Storage) with
+  // native HTTP Range/seeking. This MUST take priority over the local cache
+  // below: on autoscale (Cloud Run) the proxy 500s ANY large response sent
+  // through the app — including res.sendFile of a cached MP3 — which breaks the
+  // <audio> element's opening HEAD / `bytes=0-` request and stops playback. So
+  // we never serve big media ourselves when storage has it.
   if (blogAudioStore.isConfigured()) {
     try {
       const url = await blogAudioStore.signedUrl(key, 6 * 60 * 60);
       if (url) return res.redirect(302, url);
     } catch (storeErr) {
       logger.warn('blog_audio_store_sign_failed', { key, error: storeErr.message });
-      // fall through to on-demand synthesis
+      // fall through to local cache / on-demand synthesis
     }
+  }
+
+  // Fallback: serve a locally-cached MP3 (storage unconfigured in dev, or the
+  // object isn't in storage yet). Unsafe for large files behind the autoscale
+  // proxy, so it only runs when the durable redirect above was unavailable.
+  if (fs.existsSync(cachePath) && fs.statSync(cachePath).size > 1024) {
+    return res.sendFile(cachePath, { headers: { 'Content-Type': 'audio/mpeg' } }, (err) => {
+      if (err && !res.headersSent) next(Object.assign(err, { publicMessage: 'Failed to serve blog audio' }));
+    });
   }
 
   // Cold path: synthesize on demand, stream segments as they arrive, then persist.
