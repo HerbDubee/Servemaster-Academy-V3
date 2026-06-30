@@ -109,6 +109,10 @@ app.use(helmet({
       ],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
       imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      // <audio> for book/blog narration plays from 'self' (local-cache sendFile)
+      // or from a signed Object Storage URL on storage.googleapis.com (the route
+      // 302-redirects large MP3s there so they don't stream through the proxy).
+      mediaSrc: ["'self'", 'https://storage.googleapis.com'],
       connectSrc: [
         "'self'",
         'https://api.stripe.com',
@@ -899,16 +903,18 @@ app.get('/api/books/tts/:key', async (req, res, next) => {
   }
 
   // Durable path: the local cache is gitignored and (in deployments) ephemeral
-  // across multiple instances, so stream the pre-generated MP3 straight from
-  // Object Storage with full HTTP Range/seeking support. No local-disk writes,
-  // so there are no cross-instance cache races or read-only-FS failures.
+  // across multiple instances, so the pre-generated MP3 lives in Object Storage.
+  // Redirect the client to a short-lived signed URL so it pulls the bytes
+  // directly from Object Storage (Google Cloud Storage) with native HTTP Range/
+  // seeking. We do NOT stream large files through the app: on autoscale (Cloud
+  // Run) the proxy 500s a multi-MB streamed response, which breaks the <audio>
+  // element's opening HEAD / `bytes=0-` request and stops playback.
   if (bookAudioStore.isConfigured()) {
     try {
-      const served = await bookAudioStore.streamToResponse(ch.key, req, res);
-      if (served) return;
+      const url = await bookAudioStore.signedUrl(ch.key, 6 * 60 * 60);
+      if (url) return res.redirect(302, url);
     } catch (storeErr) {
-      if (res.headersSent) return; // already streaming — cannot recover
-      logger.warn('book_audio_store_stream_failed', { key: ch.key, error: storeErr.message });
+      logger.warn('book_audio_store_sign_failed', { key: ch.key, error: storeErr.message });
       // fall through to on-demand synthesis
     }
   }
@@ -1009,14 +1015,17 @@ app.get('/api/blog/tts/:lang/:slug', async (req, res, next) => {
     });
   }
 
-  // Durable path: stream the pre-generated MP3 straight from Object Storage.
+  // Durable path: redirect the client to a short-lived signed URL so it pulls
+  // the bytes directly from Object Storage (Google Cloud Storage) with native
+  // HTTP Range/seeking. We do NOT stream the file through the app: on autoscale
+  // (Cloud Run) the proxy 500s a multi-MB streamed response, which breaks the
+  // <audio> element's opening HEAD / `bytes=0-` request and stops playback.
   if (blogAudioStore.isConfigured()) {
     try {
-      const served = await blogAudioStore.streamToResponse(key, req, res);
-      if (served) return;
+      const url = await blogAudioStore.signedUrl(key, 6 * 60 * 60);
+      if (url) return res.redirect(302, url);
     } catch (storeErr) {
-      if (res.headersSent) return; // already streaming — cannot recover
-      logger.warn('blog_audio_store_stream_failed', { key, error: storeErr.message });
+      logger.warn('blog_audio_store_sign_failed', { key, error: storeErr.message });
       // fall through to on-demand synthesis
     }
   }
