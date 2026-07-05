@@ -22,6 +22,18 @@ module's pre-overhaul topic (e.g. module 6 "Wine Service Fundamentals" still has
 scenarios). The remaining scenario mismatches are tracked in
 `docs/track-relabel-content-mismatches.md` — consult it before a scenario-rewrite pass.
 **Why:** the rename + lesson rewrite are done; scenarios were left for a later pass.
+**The relabel was title-only.** Lesson bodies, quizzes, `emoji`, and `blogSlug`
+were intentionally left on their original topics, so most renamed modules still have lesson/quiz
+content that does not match the new title. The full list is tracked in
+`docs/track-relabel-content-mismatches.md` — consult it before a content-rewrite pass.
+**Why:** the task scoped this as a repositioning, not a content rewrite.
+
+**`scenarioIds` HAVE since been repointed** so each module's 5 practice roleplays fit its new
+title (content-based rematch across all 150 scenarios). Three sources must stay in lockstep:
+`content.js` `modules[].scenarioIds`, each scenario's `moduleId` in `content.js` `practiceScenarios`,
+and `lib/tracks.js` `MODULE_SCENARIOS`. Invariant: scenarios 1–150 each used exactly once, exactly
+5 per module. The old grouping comments in `practiceScenarios` are now cosmetic/stale — do not trust
+them for grouping; the `moduleId` field is authoritative.
 
 # Marketing i18n (lang.js overrides HTML)
 
