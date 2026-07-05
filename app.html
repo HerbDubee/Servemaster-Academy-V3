@@ -945,7 +945,7 @@ function showUpgradePrompt(label) {
     ? 'Fundamentos es gratis para siempre. Pasa a un plan de pago para desbloquear los recorridos El Oficio y Maestría, más de 150 escenarios de IA y el Centro de Conocimiento completo.'
     : lang === 'fr'
     ? 'Les Fondations sont gratuites pour toujours. Passez à un forfait payant pour débloquer les parcours Le Métier et Maîtrise, 150+ scénarios IA et le Centre de Connaissances complet.'
-    : 'Foundations is free forever. Upgrade to a paid plan to unlock The Craft and Mastery tracks, 150+ AI role-play scenarios, and the full Knowledge Center.';
+    : 'Foundations is free forever. Upgrade to a paid plan to unlock Craft and Mastery tracks, 150+ AI role-play scenarios, and the full Knowledge Center.';
   const socialLine = lang === 'es'
     ? 'Un aprendizaje estructurado, no una lista de tareas'
     : lang === 'fr'
@@ -2108,7 +2108,7 @@ async function renderKnowledgeReferences() {
   }
   const LEVEL_META = {
     basic:        { track: 'foundations', c: '#34d399', name: {en:'Foundations Field Guides', fr:'Guides — Fondations', es:'Guías — Fundamentos'} },
-    intermediate: { track: 'craft',       c: '#fbbf24', name: {en:'The Craft Field Guides',   fr:'Guides — Le Métier',  es:'Guías — El Oficio'} },
+    intermediate: { track: 'craft',       c: '#fbbf24', name: {en:'Craft Field Guides',   fr:'Guides — Le Métier',  es:'Guías — El Oficio'} },
     advanced:     { track: 'mastery',     c: '#c084fc', name: {en:'Mastery Field Guides',      fr:'Guides — Maîtrise',   es:'Guías — Maestría'} }
   };
   const heading = lang==='fr'?'Guides de Terrain' : lang==='es'?'Guías de Campo' : 'Field Guides';
@@ -4279,7 +4279,7 @@ function renderAll() {
         const title = lang === 'fr' ? 'Continuez votre apprentissage' : lang === 'es' ? 'Continúa tu aprendizaje' : 'Continue your apprenticeship';
         const sub = paidNow
           ? (lang === 'fr' ? 'Terminez votre parcours actuel pour débloquer le suivant.' : lang === 'es' ? 'Completa tu recorrido actual para desbloquear el siguiente.' : 'Finish your current track to unlock the next one.')
-          : (lang === 'fr' ? 'Passez à un forfait payant pour débloquer Le Métier et Maîtrise.' : lang === 'es' ? 'Actualiza para desbloquear El Oficio y Maestría.' : 'Upgrade to unlock The Craft & Mastery tracks.');
+          : (lang === 'fr' ? 'Passez à un forfait payant pour débloquer Le Métier et Maîtrise.' : lang === 'es' ? 'Actualiza para desbloquear El Oficio y Maestría.' : 'Upgrade to unlock Craft & Mastery tracks.');
         const cta = paidNow ? '' : `<a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm">${lang === 'fr' ? 'Voir les forfaits' : lang === 'es' ? 'Ver planes' : 'See Plans'}</a>`;
         nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
           <div class="text-5xl">🔒</div>
@@ -4415,7 +4415,7 @@ function renderAll() {
     });
     allEl.innerHTML = html;
     if (!paid) {
-      allEl.innerHTML += showUpgradePrompt(lang==='fr'?'Débloquez Le Métier et Maîtrise':lang==='es'?'Desbloquea El Oficio y Maestría':'Unlock The Craft & Mastery Tracks');
+      allEl.innerHTML += showUpgradePrompt(lang==='fr'?'Débloquez Le Métier et Maîtrise':lang==='es'?'Desbloquea El Oficio y Maestría':'Unlock Craft & Mastery Tracks');
     }
   }
 
