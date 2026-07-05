@@ -15,11 +15,13 @@ The 30 modules are grouped into 3 progressive tracks — **Foundations** (free, 
   That array is the single source of truth for the card/nav/cert titles. `lessonData` (keyed by
   module id) holds lesson bodies and does NOT carry a competing display title.
 
-**The relabel was title-only.** Lesson bodies, quizzes, `emoji`, `blogSlug`, and `scenarioIds`
-were intentionally left on their original topics, so most renamed modules now have content that
-does not match the new title. The full list is tracked in
-`docs/track-relabel-content-mismatches.md` — consult it before a content-rewrite pass.
-**Why:** the task scoped this as a repositioning, not a content rewrite.
+**The relabel was originally title-only**, but a follow-up content pass then rewrote each module's
+`lessonData` (lessons + quizzes) to match its new title and re-mapped `emoji` + `blogSlug` to fit.
+**The one thing NOT rewritten is the roleplay `practiceScenarios`** — they still describe each
+module's pre-overhaul topic (e.g. module 6 "Wine Service Fundamentals" still has food-pacing
+scenarios). The remaining scenario mismatches are tracked in
+`docs/track-relabel-content-mismatches.md` — consult it before a scenario-rewrite pass.
+**Why:** the rename + lesson rewrite are done; scenarios were left for a later pass.
 
 # Marketing i18n (lang.js overrides HTML)
 
