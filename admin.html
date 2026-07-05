@@ -1466,7 +1466,7 @@ function renderUsers(users) {
       <td class="px-4 py-3 font-medium">${esc(u.name || '—')}</td>
       <td class="px-4 py-3 text-zinc-400">${esc(u.email)}</td>
       <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${planColor}">${PLAN_LABELS[plan] || plan}</span></td>
-      <td class="px-4 py-3 text-zinc-400 text-xs">${u.role}</td>
+      <td class="px-4 py-3 text-zinc-400 text-xs">${u.role}${u.training_track ? `<span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/15 text-amber-300 capitalize">${esc(u.training_track)}</span>` : ''}</td>
       <td class="px-4 py-3">${u.modules_completed || 0} / 30</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-4 py-3 text-zinc-500 text-xs">${fmtDate(u.last_login)}</td>
@@ -2318,6 +2318,7 @@ function openEditUser(id) {
   document.getElementById('um-subtitle').textContent = esc(u.email);
   document.getElementById('um-plan-select').value = plan;
   document.getElementById('um-role-select').value = u.role || 'user';
+  document.getElementById('um-track-select').value = u.training_track || '';
   document.getElementById('um-error').classList.add('hidden');
   document.getElementById('user-modal').classList.remove('hidden');
 }
@@ -2351,6 +2352,7 @@ async function saveUserEdit() {
   if (!editingUserId) return;
   const plan = document.getElementById('um-plan-select').value;
   const role = document.getElementById('um-role-select').value;
+  const trainingTrack = document.getElementById('um-track-select').value;
   const errEl = document.getElementById('um-error');
   const saveBtn = document.getElementById('um-save-btn');
   errEl.classList.add('hidden');
@@ -2360,12 +2362,12 @@ async function saveUserEdit() {
     const res = await fetch(`/api/admin/users/${editingUserId}`, {
       method: 'PATCH',
       headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, role })
+      body: JSON.stringify({ plan, role, trainingTrack })
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Save failed'; errEl.classList.remove('hidden'); return; }
     const idx = allUsers.findIndex(x => x.id === editingUserId);
-    if (idx !== -1) { allUsers[idx].subscription_status = data.user.subscription_status; allUsers[idx].role = data.user.role; }
+    if (idx !== -1) { allUsers[idx].subscription_status = data.user.subscription_status; allUsers[idx].role = data.user.role; allUsers[idx].training_track = data.user.training_track; }
     renderUsers(allUsers);
     saveBtn.textContent = '✓ Saved!';
     saveBtn.classList.replace('bg-amber-400', 'bg-emerald-500');
@@ -2906,6 +2908,16 @@ init();
             <option value="manager">Manager</option>
             <option value="admin">Admin</option>
           </select>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1.5 font-medium">Assigned Track</label>
+          <select id="um-track-select" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+            <option value="">Progression (default)</option>
+            <option value="foundations">Foundations</option>
+            <option value="craft">Craft</option>
+            <option value="mastery">Mastery</option>
+          </select>
+          <p class="text-[11px] text-zinc-500 mt-1.5">Unlocks this track (and earlier ones) for a paid learner without requiring prior completion. Leave as Progression for the normal sequential unlock.</p>
         </div>
       </div>
       <p id="um-error" class="hidden text-red-400 text-xs mb-4"></p>

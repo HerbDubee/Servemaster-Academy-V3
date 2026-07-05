@@ -712,8 +712,14 @@
     </div>
     <!-- Index view -->
     <div id="kp-index" class="flex flex-col flex-1 min-h-0">
-      <input id="kp-search" type="text" placeholder="Search articles…" oninput="renderKnowledgePanel()" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 rounded-2xl px-5 py-3 text-sm text-white outline-none mb-4 transition-colors flex-shrink-0">
-      <div id="kp-articles" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto flex-1 pb-4"></div>
+      <div class="overflow-auto flex-1 pb-4 pr-1">
+        <!-- Gated field guides (curriculum references, unlock by track) -->
+        <div id="kp-references" class="mb-6"></div>
+        <!-- Public deep-dive articles -->
+        <div id="kp-articles-label" class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Deep-Dive Articles</div>
+        <input id="kp-search" type="text" placeholder="Search articles…" oninput="renderKnowledgePanel()" class="w-full bg-zinc-800 border border-zinc-700 focus:border-amber-400 rounded-2xl px-5 py-3 text-sm text-white outline-none mb-4 transition-colors">
+        <div id="kp-articles" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
     </div>
     <!-- Article view -->
     <div id="kp-article" class="hidden flex-col flex-1 overflow-auto pb-4">
@@ -901,6 +907,18 @@ let authToken = localStorage.getItem('sma-token') || null;
   document.addEventListener('touchstart', unlock, { once: true, capture: true });
 })();
 
+let trackAccess = null; // authoritative access state from /api/user/access (for assignedTrack)
+
+async function loadTrackAccess() {
+  try {
+    const res = await fetch('/api/user/access', { headers: { Authorization: 'Bearer ' + (authToken || '') } });
+    if (res.ok) {
+      trackAccess = await res.json();
+      if (typeof renderAll === 'function') renderAll();
+    }
+  } catch {}
+}
+
 function hasPaidPlan() {
   if (currentUser?.role === 'admin') return true;
   const plan = currentUser?.effective_plan || currentUser?.subscription_status;
@@ -922,22 +940,22 @@ function showUpgradePrompt(label) {
   const upgradeLabel = lang === 'es' ? 'Ver planes →' : lang === 'fr' ? 'Voir les forfaits →' : 'See Plans →';
   const lockedLabel  = lang === 'es' ? `${label}` : lang === 'fr' ? `${label}` : `${label}`;
   const bodyText = lang === 'es'
-    ? 'Pasa a Premium para desbloquear todos los módulos, escenarios de IA, práctica vocal y tu certificado.'
+    ? 'Fundamentos es gratis para siempre. Pasa a un plan de pago para desbloquear los recorridos El Oficio y Maestría, más de 150 escenarios de IA y el Centro de Conocimiento completo.'
     : lang === 'fr'
-    ? 'Passez à Premium pour accéder à tous les modules, scénarios IA, voix et votre certificat.'
-    : 'Upgrade to unlock all 30 modules, 150+ AI scenarios, voice roleplay, and your completion certificate.';
+    ? 'Les Fondations sont gratuites pour toujours. Passez à un forfait payant pour débloquer les parcours Le Métier et Maîtrise, 150+ scénarios IA et le Centre de Connaissances complet.'
+    : 'Foundations is free forever. Upgrade to a paid plan to unlock The Craft and Mastery tracks, 150+ AI role-play scenarios, and the full Knowledge Center.';
   const socialLine = lang === 'es'
-    ? '3,200+ servidores entrenados · 48 restaurantes activos'
+    ? 'Un aprendizaje estructurado, no una lista de tareas'
     : lang === 'fr'
-    ? '3 200+ serveurs formés · 48 restaurants actifs'
-    : '3,200+ servers trained · 48 restaurants active · 4.9★ rating';
+    ? 'Un apprentissage structuré, pas une simple liste'
+    : 'A structured apprenticeship, not a checklist';
   return `<div class="col-span-full bg-zinc-900 border border-amber-500/40 rounded-3xl p-8 text-center">
     <div class="text-4xl mb-3">🔒</div>
     <div class="font-semibold text-lg mb-1 text-amber-300">${lockedLabel} — ${lang==='es'?'Plan de pago requerido':lang==='fr'?'Forfait payant requis':'Paid Plan Required'}</div>
     <p class="text-zinc-400 text-sm mb-3">${bodyText}</p>
     <div class="flex flex-wrap justify-center gap-4 text-xs text-zinc-500 mb-5">
-      <span>⭐ ${socialLine}</span>
-      <span>✓ ${lang==='es'?'14 días de prueba gratis':lang==='fr'?'14 jours d\'essai gratuit':'14-day free trial'}</span>
+      <span>🎯 ${socialLine}</span>
+      <span>✓ ${lang==='es'?'Fundamentos siempre gratis':lang==='fr'?'Fondations toujours gratuites':'Foundations always free'}</span>
       <span>✓ ${lang==='es'?'Cancela en cualquier momento':lang==='fr'?'Annulez à tout moment':'Cancel anytime'}</span>
     </div>
     <a href="/pricing" class="inline-block bg-amber-400 hover:bg-amber-300 text-black font-bold px-8 py-3 rounded-2xl text-sm transition-colors">${upgradeLabel}</a>
@@ -960,6 +978,7 @@ async function fetchCurrentUser() {
     applyUserToNav(currentUser);
     await syncProgressFromServer();
     await loadAssignedModules();
+    await loadTrackAccess();
     const pendingJoin = localStorage.getItem('sma-pending-join');
     if (pendingJoin) {
       try {
@@ -2067,7 +2086,95 @@ function openKnowledgePanel() {
   showKnowledgeIndex();
   document.getElementById('kp-search').value = '';
   renderKnowledgePanel();
-  setTimeout(() => document.getElementById('kp-search').focus(), 100);
+  renderKnowledgeReferences();
+}
+
+// ── Gated Knowledge Center references (field guides) ──────────────────────────
+let kpKnowledge = null; // cached payload from GET /api/user/knowledge
+
+async function renderKnowledgeReferences() {
+  const el = document.getElementById('kp-references');
+  if (!el) return;
+  el.innerHTML = `<div class="text-zinc-600 text-xs py-2">${lang==='fr'?'Chargement des guides…':lang==='es'?'Cargando guías…':'Loading field guides…'}</div>`;
+  try {
+    const res = await fetch('/api/user/knowledge', { headers: { Authorization: 'Bearer ' + (authToken || '') } });
+    if (!res.ok) throw new Error('load failed');
+    kpKnowledge = await res.json();
+  } catch {
+    el.innerHTML = '';
+    return;
+  }
+  const LEVEL_META = {
+    basic:        { track: 'foundations', c: '#34d399', name: {en:'Foundations Field Guides', fr:'Guides — Fondations', es:'Guías — Fundamentos'} },
+    intermediate: { track: 'craft',       c: '#fbbf24', name: {en:'The Craft Field Guides',   fr:'Guides — Le Métier',  es:'Guías — El Oficio'} },
+    advanced:     { track: 'mastery',     c: '#c084fc', name: {en:'Mastery Field Guides',      fr:'Guides — Maîtrise',   es:'Guías — Maestría'} }
+  };
+  const heading = lang==='fr'?'Guides de Terrain' : lang==='es'?'Guías de Campo' : 'Field Guides';
+  const subhead = lang==='fr'?'Références rapides, débloquées en progressant dans votre apprentissage.'
+    : lang==='es'?'Referencias rápidas que se desbloquean al avanzar en tu aprendizaje.'
+    : 'Quick references — unlocked as you progress through your apprenticeship.';
+  let html = `<div class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">${heading}</div>
+    <div class="text-zinc-500 text-xs mb-3">${subhead}</div>`;
+  (kpKnowledge.levels || []).forEach(level => {
+    const meta = LEVEL_META[level];
+    if (!meta) return;
+    const entries = (kpKnowledge.entries || []).filter(e => e.level === level);
+    if (!entries.length) return;
+    const unlocked = !!(kpKnowledge.unlockedLevels && kpKnowledge.unlockedLevels[level]);
+    html += `<div class="flex items-center gap-2 mt-3 mb-2">
+      <span class="text-xs font-bold uppercase tracking-wider" style="color:${meta.c}">${meta.name[lang]||meta.name.en}</span>
+      ${unlocked ? '' : `<span class="text-[10px] text-zinc-500">🔒 ${lang==='fr'?'Verrouillé':lang==='es'?'Bloqueado':'Locked'}</span>`}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+    entries.forEach(e => {
+      const title = lang==='es'&&e.titleEs?e.titleEs:lang==='fr'&&e.titleFr?e.titleFr:e.title;
+      if (e.locked) {
+        html += `<div class="bg-zinc-800/50 border border-zinc-800 rounded-2xl p-4 opacity-70">
+          <div class="flex items-center gap-2">
+            <span class="text-xl grayscale">${e.emoji||'📘'}</span>
+            <div class="font-semibold text-zinc-400 text-sm leading-snug">${title}</div>
+          </div>
+          <div class="text-zinc-600 text-xs mt-1.5">🔒 ${lang==='fr'?'Terminez ce parcours pour débloquer':lang==='es'?'Completa este recorrido para desbloquear':'Complete this track to unlock'}</div>
+        </div>`;
+      } else {
+        const summary = lang==='es'&&e.summaryEs?e.summaryEs:lang==='fr'&&e.summaryFr?e.summaryFr:(e.summary||'');
+        html += `<button onclick="openReferenceInPanel('${e.id}')" class="text-left bg-zinc-800 hover:bg-zinc-700 rounded-2xl p-4 transition-colors w-full border border-transparent hover:border-amber-500/30">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xl">${e.emoji||'📘'}</span>
+            <div class="font-semibold text-white text-sm leading-snug">${title}</div>
+          </div>
+          <div class="text-zinc-400 text-xs leading-relaxed line-clamp-2">${summary}</div>
+        </button>`;
+      }
+    });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function openReferenceInPanel(id) {
+  kpTtsStop();
+  const entry = (kpKnowledge && kpKnowledge.entries || []).find(e => e.id === id);
+  if (!entry || entry.locked || !entry.body) return;
+  const ttsBtn = document.getElementById('kp-tts-btn');
+  const ttsStopBtn = document.getElementById('kp-tts-stop-btn');
+  if (ttsBtn) { ttsBtn.style.display = 'inline-flex'; ttsBtn.style.borderColor = ''; ttsBtn.style.color = ''; }
+  if (ttsStopBtn) ttsStopBtn.style.display = 'none';
+
+  document.getElementById('kp-index').classList.add('hidden');
+  document.getElementById('kp-index-header').classList.add('hidden');
+  const articleEl = document.getElementById('kp-article');
+  articleEl.classList.remove('hidden');
+  articleEl.classList.add('flex');
+  const articleHeader = document.getElementById('kp-article-header');
+  articleHeader.classList.remove('hidden');
+  articleHeader.classList.add('flex');
+  const title = lang==='es'&&entry.titleEs?entry.titleEs:lang==='fr'&&entry.titleFr?entry.titleFr:entry.title;
+  const summary = lang==='es'&&entry.summaryEs?entry.summaryEs:lang==='fr'&&entry.summaryFr?entry.summaryFr:(entry.summary||'');
+  const contentEl = document.getElementById('kp-article-content');
+  contentEl.innerHTML = `<h1 class="heading text-2xl lg:text-3xl mb-2">${entry.emoji||''} ${title}</h1>
+    <p class="text-zinc-400 text-sm mb-5">${summary}</p>${entry.body}`;
+  articleEl.scrollTop = 0;
 }
 
 function closeKnowledgePanel() {
@@ -3439,9 +3546,54 @@ function getTopicScenariosDoneCount(mod) {
   return (mod.scenarioIds || []).filter(sid => completedScenarios.includes(sid)).length;
 }
 
+// ── Apprenticeship track gating (mirrors lib/tracks.js; server enforces) ──────
+function getTrackState() {
+  const tracks = (window.SMAContent && SMAContent.tracks) ? SMAContent.tracks : [];
+  const assigned = (trackAccess && trackAccess.assignedTrack) || (currentUser && currentUser.training_track) || null;
+  // Prefer authoritative server access state (/api/user/access) — it treats
+  // trial/invite users as paid and is the same source the server enforces with.
+  if (trackAccess && Array.isArray(trackAccess.tracks) && trackAccess.tracks.length) {
+    const completion = {};
+    const unlocked = {};
+    trackAccess.tracks.forEach(t => { completion[t.id] = !!t.complete; unlocked[t.id] = !!t.unlocked; });
+    return { tracks, completion, unlocked, assigned, paid: !!trackAccess.isPaid };
+  }
+  // Fallback (access not yet loaded / offline): compute locally from progress.
+  const paid = hasPaidPlan();
+  const rankOf = id => { const t = tracks.find(x => x.id === id); return t ? t.order : 0; };
+  const assignedRank = assigned ? rankOf(assigned) : 0;
+  const completion = {};
+  tracks.forEach(t => {
+    completion[t.id] = t.moduleIds.every(mid => { const m = modules.find(x => x.id === mid); return m && isTopicComplete(m); });
+  });
+  const unlocked = {};
+  tracks.forEach(t => {
+    if (t.order === 1) { unlocked[t.id] = true; return; } // Foundations always free
+    const prereqComplete = t.prereq ? completion[t.prereq] : true;
+    unlocked[t.id] = paid && (prereqComplete || assignedRank >= t.order);
+  });
+  return { tracks, completion, unlocked, assigned, paid };
+}
+
+function isModuleUnlocked(id) {
+  const st = getTrackState();
+  const tr = st.tracks.find(t => t.moduleIds.includes(id));
+  if (!tr) return true;
+  return st.unlocked[tr.id];
+}
+
 function openTopicHub(id, fromScreen) {
-  if (!hasPaidPlan() && id > 3) {
-    window.location.href = '/pricing';
+  const st = getTrackState();
+  const tr = st.tracks.find(t => t.moduleIds.includes(id));
+  if (tr && !st.unlocked[tr.id]) {
+    // Free user reaching a paid track → send to pricing.
+    if (!st.paid && !tr.free) { window.location.href = '/pricing'; return; }
+    // Paid but sequential prerequisite not yet complete.
+    const prereqTr = tr.prereq ? st.tracks.find(t => t.id === tr.prereq) : null;
+    const pName = prereqTr ? (lang === 'fr' ? prereqTr.nameFr : lang === 'es' ? prereqTr.nameEs : prereqTr.name) : '';
+    alert(lang === 'fr' ? `Terminez d'abord le parcours ${pName} pour débloquer celui-ci.`
+      : lang === 'es' ? `Completa primero el recorrido ${pName} para desbloquear este.`
+      : `Complete the ${pName} track first to unlock this one.`);
     return;
   }
   hubCurrentModId = id;
@@ -4066,7 +4218,7 @@ function renderAll() {
   const nextCardEl = document.getElementById('next-module-card');
   const continueEl = document.getElementById('continue-modules');
   const allEl = document.getElementById('all-modules');
-  const nextModule = modules.find(m => !isTopicComplete(m));
+  const nextModule = modules.find(m => !isTopicComplete(m) && isModuleUnlocked(m.id));
 
   const inProgress = modules.filter(m => {
     const p = userProgress.find(u => u.id === m.id);
@@ -4113,11 +4265,28 @@ function renderAll() {
         <div class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm">${btnLabel}</div>
       </div>`;
     } else {
-      nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-emerald-900/30 to-zinc-900 border border-emerald-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
-        <div class="text-5xl">🎓</div>
-        <div><div class="text-emerald-400 font-semibold text-lg">${t('allCompleteTitle')}</div>
-        <div class="text-zinc-400 text-sm mt-1">${t('allCompleteSub')}</div></div>
-      </div>`;
+      const allComplete = modules.every(m => isTopicComplete(m));
+      if (allComplete) {
+        nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-emerald-900/30 to-zinc-900 border border-emerald-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
+          <div class="text-5xl">🎓</div>
+          <div><div class="text-emerald-400 font-semibold text-lg">${t('allCompleteTitle')}</div>
+          <div class="text-zinc-400 text-sm mt-1">${t('allCompleteSub')}</div></div>
+        </div>`;
+      } else {
+        // Remaining modules exist but the next track is locked (paid-gate or prerequisite).
+        const paidNow = hasPaidPlan();
+        const title = lang === 'fr' ? 'Continuez votre apprentissage' : lang === 'es' ? 'Continúa tu aprendizaje' : 'Continue your apprenticeship';
+        const sub = paidNow
+          ? (lang === 'fr' ? 'Terminez votre parcours actuel pour débloquer le suivant.' : lang === 'es' ? 'Completa tu recorrido actual para desbloquear el siguiente.' : 'Finish your current track to unlock the next one.')
+          : (lang === 'fr' ? 'Passez à un forfait payant pour débloquer Le Métier et Maîtrise.' : lang === 'es' ? 'Actualiza para desbloquear El Oficio y Maestría.' : 'Upgrade to unlock The Craft & Mastery tracks.');
+        const cta = paidNow ? '' : `<a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-5 py-3 rounded-2xl whitespace-nowrap text-sm">${lang === 'fr' ? 'Voir les forfaits' : lang === 'es' ? 'Ver planes' : 'See Plans'}</a>`;
+        nextCardEl.innerHTML = `<div class="bg-gradient-to-r from-amber-900/30 to-zinc-900 border border-amber-500/50 rounded-3xl p-6 flex items-center gap-4 mb-2">
+          <div class="text-5xl">🔒</div>
+          <div class="flex-1 min-w-0"><div class="text-amber-400 font-semibold text-lg">${title}</div>
+          <div class="text-zinc-400 text-sm mt-1">${sub}</div></div>
+          ${cta}
+        </div>`;
+      }
     }
   }
 
@@ -4148,69 +4317,104 @@ function renderAll() {
   }
 
   if (allEl) {
-    const freeModuleLimit = 3;
-    const proModulesLocked = !hasPaidPlan() && modules.length > freeModuleLimit;
-    const trackFineDining = lang==='fr' ? '🍽️ Piste fine cuisine — Modules 1–24' : lang==='es' ? '🍽️ Pista Fine Dining — Módulos 1–24' : '🍽️ Fine Dining & Restaurant Service Track — Modules 1–24';
-    const trackBar = lang==='fr' ? '🍸 Piste service bar — Modules 25–30' : lang==='es' ? '🍸 Pista Servicio de Bar — Módulos 25–30' : '🍸 Bar Service Track — Modules 25–30';
-    allEl.innerHTML = modules.map((m, idx) => {
-      let trackHeader = '';
-      if (idx === 0) {
-        trackHeader = `<div class="col-span-full mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#FF5E3A; background:rgba(255,94,58,0.1);">${trackFineDining}</span></div>`;
-      } else if (m.id === 25) {
-        trackHeader = `<div class="col-span-full mt-4 mb-1"><span class="text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg" style="color:#7dd3fc; background:rgba(125,211,252,0.1);">${trackBar}</span></div>`;
+    const st = getTrackState();
+    const paid = hasPaidPlan();
+    const TRACK_COLORS = {
+      foundations: { c: '#34d399', bg: 'rgba(52,211,153,0.1)' },
+      craft:       { c: '#fbbf24', bg: 'rgba(251,191,36,0.1)' },
+      mastery:     { c: '#c084fc', bg: 'rgba(192,132,252,0.1)' }
+    };
+    let html = '';
+    st.tracks.forEach(tr => {
+      const trUnlocked = st.unlocked[tr.id];
+      const trComplete = st.completion[tr.id];
+      const trName = lang === 'fr' ? tr.nameFr : lang === 'es' ? tr.nameEs : tr.name;
+      const trTag  = lang === 'fr' ? tr.taglineFr : lang === 'es' ? tr.taglineEs : tr.tagline;
+      const doneCount = tr.moduleIds.filter(mid => { const m = modules.find(x => x.id === mid); return m && isTopicComplete(m); }).length;
+      const clr = TRACK_COLORS[tr.id] || TRACK_COLORS.craft;
+      const prereqTr = tr.prereq ? st.tracks.find(t => t.id === tr.prereq) : null;
+      const prereqName = prereqTr ? (lang === 'fr' ? prereqTr.nameFr : lang === 'es' ? prereqTr.nameEs : prereqTr.name) : '';
+      let statusHtml;
+      if (trComplete) {
+        statusHtml = `<span class="text-xs font-semibold text-emerald-400">✓ ${lang==='fr'?'Terminé':lang==='es'?'Completado':'Complete'}</span>`;
+      } else if (!trUnlocked) {
+        const reason = (!paid && !tr.free)
+          ? (lang==='fr'?'🔒 Forfait payant':lang==='es'?'🔒 Plan de pago':'🔒 Paid plan')
+          : (lang==='fr'?`🔒 Terminez ${prereqName}`:lang==='es'?`🔒 Completa ${prereqName}`:`🔒 Complete ${prereqName} first`);
+        statusHtml = `<span class="text-xs font-semibold text-zinc-500">${reason}</span>`;
+      } else {
+        statusHtml = `<span class="text-xs font-semibold" style="color:${clr.c}">${doneCount}/${tr.moduleIds.length}</span>`;
       }
-      const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
-      const done = p.progress >= 100;
-      const qs = savedQuizScores[m.id];
-      const orderNum = idx + 1;
-      const locked = !hasPaidPlan() && idx >= freeModuleLimit;
-      if (locked) {
-        return trackHeader + `<div onclick="window.location='/pricing'" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
-          <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
-          <div class="text-3xl mt-0.5 ml-7 grayscale">${m.emoji}</div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <div class="font-semibold mb-1 text-zinc-400">${getModuleTitle(m)}</div>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20">PRO</span>
+      const freeTag = tr.free
+        ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="color:${clr.c};background:${clr.bg}">${lang==='es'?'GRATIS':lang==='fr'?'GRATUIT':'FREE'}</span>`
+        : '';
+      html += `<div class="col-span-full mt-6 first:mt-0 mb-1">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold uppercase tracking-widest" style="color:${clr.c}">${trName}</span>
+            ${freeTag}
+          </div>
+          ${statusHtml}
+        </div>
+        <div class="text-zinc-500 text-xs mt-0.5">${trTag}</div>
+      </div>`;
+      tr.moduleIds.forEach((mid, i) => {
+        const m = modules.find(x => x.id === mid);
+        if (!m) return;
+        const orderNum = i + 1;
+        if (!trUnlocked) {
+          const clickAction = (!paid && !tr.free) ? "window.location='/pricing'" : `openTopicHub(${m.id})`;
+          html += `<div onclick="${clickAction}" class="bg-zinc-900 border border-zinc-700 hover:border-amber-500/50 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative opacity-60">
+            <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-zinc-700 text-zinc-500 text-xs font-bold flex items-center justify-center">${orderNum}</div>
+            <div class="text-3xl mt-0.5 ml-7 grayscale">${m.emoji}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="font-semibold mb-1 text-zinc-400">${getModuleTitle(m)}</div>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20">🔒</span>
+              </div>
+              <div class="text-zinc-500 text-xs">⏱ ~${m.mins} min</div>
             </div>
-            <div class="text-zinc-500 text-xs">⏱ ~${m.mins} min &nbsp;•&nbsp; 🔒 ${t('proOnly')}</div>
+          </div>`;
+          return;
+        }
+        const p = userProgress.find(u => u.id === m.id) || { progress: 0 };
+        const done = p.progress >= 100;
+        const qs = savedQuizScores[m.id];
+        const isBookmarked = userBookmarks.has(m.id);
+        const isRequired = assignedModuleIds.has(m.id);
+        const topicComplete = isTopicComplete(m);
+        const catStyle = HUB_CATEGORY_STYLE[m.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
+        const catLabel = getCategoryLabel(m.category);
+        const scenDone = getTopicScenariosDoneCount(m);
+        const scenBadge = scenDone > 0 ? `<span class="text-xs text-zinc-400">${scenDone}/5 scenarios</span>` : '';
+        const topicCompleteBadge = topicComplete ? `<span class="text-xs font-semibold text-emerald-400">✓ Complete</span>` : '';
+        html += `<div onclick="openTopicHub(${m.id})" class="bg-zinc-900 border ${topicComplete?'border-emerald-800':done?'border-emerald-800/50':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
+          <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
+          <button id="bookmark-${m.id}" onclick="toggleBookmark(${m.id}, event)" title="Bookmark" class="absolute top-3 right-3 text-lg leading-none ${isBookmarked ? 'text-amber-400' : 'text-zinc-700 hover:text-zinc-400'} transition-colors">★</button>
+          <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <div class="font-semibold">${getModuleTitle(m)}</div>
+              ${isRequired?'<span class="text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30 font-semibold">Required</span>':''}
+            </div>
+            <div class="flex items-center gap-2 flex-wrap mb-2">
+              <span class="text-xs px-2 py-0.5 rounded-full border ${catStyle} font-medium">${catLabel}</span>
+              <span class="text-zinc-600">•</span>
+              <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
+              ${qs != null ? `<span class="text-zinc-600">•</span><span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              ${scenBadge}
+              ${topicCompleteBadge}
+            </div>
+            <div class="w-full bg-zinc-700 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full" style="width:${p.progress}%"></div></div>
           </div>
         </div>`;
-      }
-      const isBookmarked = userBookmarks.has(m.id);
-      const isRequired = assignedModuleIds.has(m.id);
-      const topicComplete = isTopicComplete(m);
-      const catStyle = HUB_CATEGORY_STYLE[m.category] || 'bg-zinc-700 text-zinc-300 border-zinc-600';
-      const catLabel = getCategoryLabel(m.category);
-      const scenDone = getTopicScenariosDoneCount(m);
-      const scenBadge = scenDone > 0 ? `<span class="text-xs text-zinc-400">${scenDone}/5 scenarios</span>` : '';
-      const topicCompleteBadge = topicComplete ? `<span class="text-xs font-semibold text-emerald-400">✓ Complete</span>` : '';
-      return trackHeader + `<div onclick="openTopicHub(${m.id})" class="bg-zinc-900 border ${topicComplete?'border-emerald-800':done?'border-emerald-800/50':isRequired?'border-orange-600/60':'border-amber-900/40'} hover:border-amber-400 rounded-3xl p-6 cursor-pointer transition-all flex gap-4 items-start relative">
-        <div class="absolute top-4 left-4 w-6 h-6 rounded-full bg-amber-400/20 text-amber-400 text-xs font-bold flex items-center justify-center">${orderNum}</div>
-        <button id="bookmark-${m.id}" onclick="toggleBookmark(${m.id}, event)" title="Bookmark" class="absolute top-3 right-3 text-lg leading-none ${isBookmarked ? 'text-amber-400' : 'text-zinc-700 hover:text-zinc-400'} transition-colors">★</button>
-        <div class="text-3xl mt-0.5 ml-7">${m.emoji}</div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap mb-1">
-            <div class="font-semibold">${getModuleTitle(m)}</div>
-            ${isRequired?'<span class="text-xs px-2 py-0.5 rounded-full bg-orange-600/20 text-orange-400 border border-orange-600/30 font-semibold">Required</span>':''}
-          </div>
-          <div class="flex items-center gap-2 flex-wrap mb-2">
-            <span class="text-xs px-2 py-0.5 rounded-full border ${catStyle} font-medium">${catLabel}</span>
-            <span class="text-zinc-600">•</span>
-            <span class="text-zinc-500 text-xs">⏱ ~${m.mins} min</span>
-            ${qs != null ? `<span class="text-zinc-600">•</span><span class="text-xs px-2 py-0.5 rounded-lg bg-amber-400/10 text-amber-400 font-semibold">Quiz ${qs}%</span>` : ''}
-          </div>
-          <div class="flex items-center gap-3 mb-2">
-            ${scenBadge}
-            ${topicCompleteBadge}
-          </div>
-          <div class="w-full bg-zinc-700 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full" style="width:${p.progress}%"></div></div>
-        </div>
-      </div>`;
-    }).join('');
-    if (proModulesLocked) {
-      const upgradeContextLabel = lang==='fr' ? '27 modules + Piste service bar' : lang==='es' ? '27 módulos + Pista Servicio de Bar' : '27 More Modules + Full Bar Service Track';
-      allEl.innerHTML += showUpgradePrompt(upgradeContextLabel);
+      });
+    });
+    allEl.innerHTML = html;
+    if (!paid) {
+      allEl.innerHTML += showUpgradePrompt(lang==='fr'?'Débloquez Le Métier et Maîtrise':lang==='es'?'Desbloquea El Oficio y Maestría':'Unlock The Craft & Mastery Tracks');
     }
   }
 

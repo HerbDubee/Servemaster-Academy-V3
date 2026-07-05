@@ -1,5 +1,8 @@
 'use strict';
 const express = require('express');
+const { PAID_PLAN_STATUSES } = require('../lib/plans');
+const tracksLib = require('../lib/tracks');
+const knowledgeCenter = require('../lib/knowledgeCenter');
 
 module.exports = function createUserRouter({
   db, getUncachableStripeClient, resend, upload, toFile,
@@ -178,6 +181,52 @@ module.exports = function createUserRouter({
 
   // ── User progress ───────────────────────────────────────────────────────────
 
+  // ── Apprenticeship access (tracks + Knowledge Center gating) ────────────────
+  // Loads the learner's plan + completion state and computes progressive unlocks.
+  async function loadAccessState(userId) {
+    const uRes = await db.query(
+      'SELECT role, subscription_status, trial_ends_at, invite_access_expires_at, training_track FROM users WHERE id = $1',
+      [userId]
+    );
+    const user = uRes.rows[0] || {};
+    const now = new Date();
+    const isAdmin = user.role === 'admin';
+    const isPaid = isAdmin
+      || PAID_PLAN_STATUSES.has(user.subscription_status)
+      || (user.trial_ends_at && now <= new Date(user.trial_ends_at))
+      || (user.invite_access_expires_at && now <= new Date(user.invite_access_expires_at));
+
+    const pRes = await db.query('SELECT module_id, quiz_score FROM user_progress WHERE user_id = $1', [userId]);
+    const quizScores = {};
+    pRes.rows.forEach((r) => { quizScores[r.module_id] = r.quiz_score; });
+
+    const sRes = await db.query('SELECT scenario_id FROM scenario_scores WHERE user_id = $1', [userId]);
+    const completedScenarioSet = new Set(sRes.rows.map((r) => Number(r.scenario_id)));
+
+    const access = tracksLib.computeAccess({
+      isPaid: !!isPaid,
+      quizScores,
+      completedScenarioSet,
+      assignedTrack: user.training_track || null,
+    });
+    return { ...access, role: user.role || 'user', isAdmin };
+  }
+
+  router.get('/api/user/access', authMiddleware, async (req, res, next) => {
+    try {
+      const access = await loadAccessState(req.user.id);
+      res.json(access);
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to load access state' })); }
+  });
+
+  router.get('/api/user/knowledge', authMiddleware, async (req, res, next) => {
+    try {
+      const access = await loadAccessState(req.user.id);
+      const payload = knowledgeCenter.buildPayload(access.unlockedLevels, { isAdmin: access.isAdmin });
+      res.json(payload);
+    } catch (err) { next(Object.assign(err, { publicMessage: 'Failed to load knowledge center' })); }
+  });
+
   router.get('/api/user/progress', authMiddleware, checkTrial, async (req, res, next) => {
     try {
       const result = await db.query('SELECT module_id, progress, quiz_score, completed_at FROM user_progress WHERE user_id = $1', [req.user.id]);
@@ -199,6 +248,16 @@ module.exports = function createUserRouter({
     let { moduleId, progress, quizScore } = req.body;
     if (!moduleId) return res.status(400).json({ error: 'moduleId required' });
     try {
+      // Enforce apprenticeship gating server-side: a learner may only record
+      // progress on modules in a track they've unlocked.
+      const access = await loadAccessState(req.user.id);
+      if (!access.unlockedModuleIds.includes(Number(moduleId))) {
+        const track = tracksLib.trackForModule(moduleId);
+        if (track && track.free === false && !access.isPaid) {
+          return res.status(402).json({ error: 'Upgrade required to access this track', redirect: '/pricing' });
+        }
+        return res.status(403).json({ error: 'This track is locked — complete the previous track first', locked: true });
+      }
       const userRes = await db.query('SELECT stripe_subscription_id, subscription_status FROM users WHERE id = $1', [req.user.id]);
       const user = userRes.rows[0];
       if (user?.stripe_subscription_id) {

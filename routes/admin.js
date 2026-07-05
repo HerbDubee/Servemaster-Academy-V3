@@ -319,12 +319,12 @@ module.exports = function createAdminRouter({
   router.get('/api/admin/users', adminMiddleware, async (req, res, next) => {
     try {
       const result = await db.query(`
-        SELECT u.id, u.name, u.email, u.role, u.subscription_status, u.created_at, u.last_login,
+        SELECT u.id, u.name, u.email, u.role, u.subscription_status, u.training_track, u.created_at, u.last_login,
           COALESCE(SUM(p.progress)/30, 0) as avg_progress,
           COUNT(CASE WHEN p.progress >= 100 THEN 1 END) as modules_completed
         FROM users u
         LEFT JOIN user_progress p ON p.user_id = u.id
-        GROUP BY u.id, u.name, u.email, u.role, u.subscription_status, u.created_at, u.last_login
+        GROUP BY u.id, u.name, u.email, u.role, u.subscription_status, u.training_track, u.created_at, u.last_login
         ORDER BY u.created_at DESC
         LIMIT 200
       `);
@@ -335,14 +335,16 @@ module.exports = function createAdminRouter({
   router.patch('/api/admin/users/:id', adminMiddleware, express.json(), validate(updateUserSchema), async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { plan, role } = req.body;
+      const { plan, role, trainingTrack } = req.body;
       const fields = [];
       const vals = [];
       if (plan) { fields.push(`subscription_status = $${vals.length + 1}`); vals.push(plan); }
       if (role) { fields.push(`role = $${vals.length + 1}`); vals.push(role); }
+      if (trainingTrack !== undefined) { fields.push(`training_track = $${vals.length + 1}`); vals.push(trainingTrack || null); }
+      if (!fields.length) return res.status(400).json({ error: 'Nothing to update' });
       vals.push(id);
       const result = await db.query(
-        `UPDATE users SET ${fields.join(', ')} WHERE id = $${vals.length} RETURNING id, subscription_status, role`,
+        `UPDATE users SET ${fields.join(', ')} WHERE id = $${vals.length} RETURNING id, subscription_status, role, training_track`,
         vals
       );
       if (!result.rows.length) return res.status(404).json({ error: 'User not found' });

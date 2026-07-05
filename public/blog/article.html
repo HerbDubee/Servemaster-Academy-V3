@@ -208,6 +208,9 @@
   var ctaP = lang === 'fr' ? 'ServeMaster Academy — formation gratuite pour commencer.' : lang === 'es' ? 'ServeMaster Academy — formación gratuita para empezar.' : 'ServeMaster Academy trains you with real scenarios. Free to start.';
   var ctaBtn = lang === 'fr' ? 'Commencer gratuitement' : lang === 'es' ? 'Comenzar Gratis' : 'Get Started Free';
   var moreLabel = lang === 'fr' ? 'Plus du Centre de Connaissances' : lang === 'es' ? 'Más del Centro de Conocimiento' : 'More from the Knowledge Centre';
+  var kcH = lang === 'fr' ? 'Approfondissez dans le Centre de Connaissances' : lang === 'es' ? 'Profundiza en el Centro de Conocimiento' : 'Go deeper in the in-app Knowledge Center';
+  var kcP = lang === 'fr' ? "Débloquez des guides de référence alignés sur le programme au fil de votre apprentissage — Fondations, Le Métier, puis Maîtrise." : lang === 'es' ? 'Desbloquea guías de referencia alineadas con el plan de estudios a medida que avanzas — Fundamentos, El Oficio y Maestría.' : 'Unlock curriculum-aligned field guides as you progress your apprenticeship — Foundations, The Craft, then Mastery.';
+  var kcBtn = lang === 'fr' ? 'Ouvrir le Centre de Connaissances →' : lang === 'es' ? 'Abrir el Centro de Conocimiento →' : 'Open the Knowledge Center →';
 
   var relatedArticles = articles.filter(function(a) {
     return a.slug !== slug && a.category === article.category;
@@ -263,6 +266,13 @@
         '<p class="text-zinc-400 text-sm">Try this scenario with a live AI guest — instant coaching feedback after every exchange.</p>' +
       '</div>' +
       '<a href="/ai-roleplay" class="shrink-0 font-bold px-6 py-3 rounded-2xl text-sm whitespace-nowrap" style="background:#FF5E3A;color:#fff;">Practice in Roleplay Training →</a>' +
+    '</div>' +
+    '<div class="mt-6 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4" style="background:rgba(196,181,253,0.06); border:1px solid rgba(196,181,253,0.25);">' +
+      '<div>' +
+        '<p class="font-bold text-white mb-1">' + kcH + '</p>' +
+        '<p class="text-zinc-400 text-sm">' + kcP + '</p>' +
+      '</div>' +
+      '<a href="/app" class="shrink-0 font-bold px-6 py-3 rounded-2xl text-sm whitespace-nowrap" style="background:#c4b5fd;color:#0b0b0f;">' + kcBtn + '</a>' +
     '</div>' +
     '<div class="mt-6 bg-zinc-900 border border-amber-900 rounded-3xl p-10 text-center">' +
       '<h3 class="heading text-2xl font-bold mb-3">' + ctaH + '</h3>' +

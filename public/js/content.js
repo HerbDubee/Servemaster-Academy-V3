@@ -2170,12 +2170,41 @@ const practiceScenarios = [
     difficulty:'Beginner', moduleId:30 },
 ];
 
+  // Apprenticeship tracks — structural metadata only (which modules belong to
+  // each track + gating rules). The server (lib/tracks.js) is the source of
+  // truth and enforces access; this mirror lets the app render lock states
+  // instantly. Keep moduleIds in lockstep with lib/tracks.js.
+  var tracks = [
+    { id:'foundations', order:1, free:true,  prereq:null,
+      name:'Foundations', nameFr:'Fondations', nameEs:'Fundamentos',
+      knowledgeLevel:'basic',
+      tagline:'The craft begins here — free for every server.',
+      taglineFr:'Le métier commence ici — gratuit pour chaque serveur.',
+      taglineEs:'El oficio comienza aquí — gratis para cada mesero.',
+      moduleIds:[1,2,6,7,8,10,14,17,19,22] },
+    { id:'craft', order:2, free:false, prereq:'foundations',
+      name:'The Craft', nameFr:'Le Métier', nameEs:'El Oficio',
+      knowledgeLevel:'intermediate',
+      tagline:'Where good servers become great ones.',
+      taglineFr:'Là où les bons serveurs deviennent excellents.',
+      taglineEs:'Donde los buenos meseros se vuelven grandes.',
+      moduleIds:[3,4,5,9,13,15,16,18,20,25,26,27] },
+    { id:'mastery', order:3, free:false, prereq:'craft',
+      name:'Mastery', nameFr:'Maîtrise', nameEs:'Maestría',
+      knowledgeLevel:'advanced',
+      tagline:'The art of hospitality, fully owned.',
+      taglineFr:'L\'art de l\'hospitalité, pleinement maîtrisé.',
+      taglineEs:'El arte de la hospitalidad, plenamente dominado.',
+      moduleIds:[11,12,21,23,24,28,29,30] }
+  ];
+
   window.SMAContent = {
     modules: modules,
     lessonData: lessonData,
     glossaryTerms: glossaryTerms,
     blogArticles: blogArticles,
     blogSections: blogSections,
-    practiceScenarios: practiceScenarios
+    practiceScenarios: practiceScenarios,
+    tracks: tracks
   };
 })();

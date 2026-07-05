@@ -4,3 +4,4 @@
 - [Logging & error handling](logging-and-errors.md) — structured logger (lib/logger.js) + requestLogger; global errorHandler exists but routes still use res.status(500), so next(err) migration is deferred.
 - [Input validation (Zod)](input-validation.md) — lib/schemas.js + validate() middleware; order = limiter→auth→validate; schemas strip unknown keys; auth/payment/contact/manager/admin/affiliates all done; manager+admin routers mount before global express.json so each body route needs inline express.json().
 - [Novel reader API](novel-reader-api.md) — chapter lists come from books/voice-map.js (single source); unknown book ids return [] not Book1; content read from books/ md files.
+- [i18n copy lives in lang.js](i18n-lang-js.md) — visible marketing copy is set by data-i18n keys resolved from public/js/lang.js at load; inline HTML text is only a pre-load fallback. Edit lang.js (EN/FR/ES) to change what users see.

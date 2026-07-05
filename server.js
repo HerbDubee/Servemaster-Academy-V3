@@ -257,8 +257,7 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000, sameSite: 'lax', secure: IS_PROD };
 
 
-const PLAN_TIER_ORDER = ['free', 'premium_monthly', 'premium', 'starter_team', 'pro_team', 'enterprise'];
-const PAID_PLAN_STATUSES = new Set(['premium_monthly', 'premium', 'individual', 'starter_team', 'pro_team', 'enterprise', 'active']);
+const { PLAN_TIER_ORDER, PAID_PLAN_STATUSES } = require('./lib/plans');
 function highestPlan(a, b) {
   const ai = PLAN_TIER_ORDER.indexOf(a || 'free');
   const bi = PLAN_TIER_ORDER.indexOf(b || 'free');
@@ -1338,6 +1337,8 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
     await db.query(`CREATE INDEX IF NOT EXISTS idx_inf_commissions_influencer ON influencer_commissions(influencer_id)`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_inf_commissions_user ON influencer_commissions(user_id)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS influencer_ref_code TEXT`);
+    // Apprenticeship: admin-assignable track override (foundations|craft|mastery|null)
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS training_track TEXT`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS website TEXT`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS pref_language TEXT DEFAULT 'en'`);
     await db.query(`ALTER TABLE influencers ADD COLUMN IF NOT EXISTS pref_payout_method TEXT`);
