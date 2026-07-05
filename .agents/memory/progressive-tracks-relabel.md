@@ -16,17 +16,14 @@ The 30 modules are grouped into 3 progressive tracks — **Foundations** (free, 
   module id) holds lesson bodies and does NOT carry a competing display title.
 
 **The relabel was originally title-only**, but a follow-up content pass then rewrote each module's
-`lessonData` (lessons + quizzes) to match its new title and re-mapped `emoji` + `blogSlug` to fit.
-**The one thing NOT rewritten is the roleplay `practiceScenarios`** — they still describe each
-module's pre-overhaul topic (e.g. module 6 "Wine Service Fundamentals" still has food-pacing
-scenarios). The remaining scenario mismatches are tracked in
-`docs/track-relabel-content-mismatches.md` — consult it before a scenario-rewrite pass.
-**Why:** the rename + lesson rewrite are done; scenarios were left for a later pass.
-**The relabel was title-only.** Lesson bodies, quizzes, `emoji`, and `blogSlug`
-were intentionally left on their original topics, so most renamed modules still have lesson/quiz
-content that does not match the new title. The full list is tracked in
-`docs/track-relabel-content-mismatches.md` — consult it before a content-rewrite pass.
-**Why:** the task scoped this as a repositioning, not a content rewrite.
+`lessonData` (subtitle + 5 lesson bodies + 5-question embedded quiz, EN/FR/ES) to match its new
+title and re-mapped `emoji` + `blogSlug` to fit. **Verified: all 30 modules' lessons AND quizzes
+in `content.js` already teach their current title** — this is done, do NOT re-rewrite it.
+**Why:** confirmed by full audit of `lessonData` (all 30 pass a structural + i18n + on-topic check).
+Ignore any older note claiming lessons/quizzes were "left on their original topics" — that was
+superseded by the rewrite pass. The DB `quizzes` table is a single standalone `wine-service`
+curriculum quiz (consumed only by `training.html` / `app-training.html`), NOT per-module content
+for the 30 renamed modules — do not confuse it with the in-app module quizzes in `lessonData`.
 
 **`scenarioIds` HAVE since been repointed** so each module's 5 practice roleplays fit its new
 title (content-based rematch across all 150 scenarios). Three sources must stay in lockstep:
