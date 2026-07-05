@@ -388,6 +388,20 @@ module.exports = function createUserRouter({
     const { scenarioId } = req.body;
     if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
     try {
+      // Enforce apprenticeship gating server-side: scenarios count toward module
+      // completion, so a learner may only record scenarios for modules whose
+      // track they've unlocked.
+      const moduleId = tracksLib.moduleForScenario(scenarioId);
+      if (moduleId != null) {
+        const access = await loadAccessState(req.user.id);
+        if (!access.unlockedModuleIds.includes(Number(moduleId))) {
+          const track = tracksLib.trackForModule(moduleId);
+          if (track && track.free === false && !access.isPaid) {
+            return res.status(402).json({ error: 'Upgrade required to access this track', redirect: '/pricing' });
+          }
+          return res.status(403).json({ error: 'This track is locked — complete the previous track first', locked: true });
+        }
+      }
       await db.query('INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)', [req.user.id, scenarioId]);
       await checkAndAwardBadges(req.user.id);
       res.json({ success: true });
