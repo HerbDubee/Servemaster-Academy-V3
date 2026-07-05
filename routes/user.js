@@ -465,7 +465,7 @@ module.exports = function createUserRouter({
     const systemContent = langInstruction + thirdPersonWrapper + basePrompt;
     try {
       const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-mini',
         messages: [{ role: 'system', content: systemContent }, ...messages],
       });
       const reply = completion.choices[0].message.content || '';
@@ -509,7 +509,7 @@ Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field
 }`;
     try {
       const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-mini',
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
