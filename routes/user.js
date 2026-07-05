@@ -212,6 +212,21 @@ module.exports = function createUserRouter({
     return { ...access, role: user.role || 'user', isAdmin };
   }
 
+  // Shared apprenticeship gate for any scenario-consuming endpoint. Returns null
+  // when access is allowed (including freeform scenes with no module mapping),
+  // otherwise an { status, body } describing the 402/403 response to send.
+  async function scenarioAccessGate(userId, scenarioId) {
+    const moduleId = tracksLib.moduleForScenario(scenarioId);
+    if (moduleId == null) return null;
+    const access = await loadAccessState(userId);
+    if (access.unlockedModuleIds.includes(Number(moduleId))) return null;
+    const track = tracksLib.trackForModule(moduleId);
+    if (track && track.free === false && !access.isPaid) {
+      return { status: 402, body: { error: 'Upgrade required to access this track', redirect: '/pricing' } };
+    }
+    return { status: 403, body: { error: 'This track is locked — complete the previous track first', locked: true } };
+  }
+
   router.get('/api/user/access', authMiddleware, async (req, res, next) => {
     try {
       const access = await loadAccessState(req.user.id);
@@ -388,20 +403,9 @@ module.exports = function createUserRouter({
     const { scenarioId } = req.body;
     if (!scenarioId) return res.status(400).json({ error: 'scenarioId required' });
     try {
-      // Enforce apprenticeship gating server-side: scenarios count toward module
-      // completion, so a learner may only record scenarios for modules whose
-      // track they've unlocked.
-      const moduleId = tracksLib.moduleForScenario(scenarioId);
-      if (moduleId != null) {
-        const access = await loadAccessState(req.user.id);
-        if (!access.unlockedModuleIds.includes(Number(moduleId))) {
-          const track = tracksLib.trackForModule(moduleId);
-          if (track && track.free === false && !access.isPaid) {
-            return res.status(402).json({ error: 'Upgrade required to access this track', redirect: '/pricing' });
-          }
-          return res.status(403).json({ error: 'This track is locked — complete the previous track first', locked: true });
-        }
-      }
+      // Enforce apprenticeship gating: scenarios count toward module completion.
+      const gate = await scenarioAccessGate(req.user.id, scenarioId);
+      if (gate) return res.status(gate.status).json(gate.body);
       await db.query('INSERT INTO scenario_scores (user_id, scenario_id) VALUES ($1, $2)', [req.user.id, scenarioId]);
       await checkAndAwardBadges(req.user.id);
       res.json({ success: true });
@@ -463,6 +467,9 @@ module.exports = function createUserRouter({
     const { scenarioId, messages, lang, sceneContext } = req.body;
     const scenario = scenarios[scenarioId];
     if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
+    // Gate live roleplay consumption for curriculum scenarios in locked tracks.
+    const rpGate = await scenarioAccessGate(req.user.id, scenarioId);
+    if (rpGate) return res.status(rpGate.status).json(rpGate.body);
     const thirdPersonWrapper = lang === 'fr'
       ? `STYLE DE NARRATION — IMPORTANT : Narrez toujours le client à la troisième personne. Ne parlez jamais en tant que client à la première personne. Décrivez ce que dit et fait le client comme un narrateur : "Le client fronce les sourcils et dit : '...'". Utilisez "le client", "il", "elle" ou "ils" tout au long.\n\nBRIÈVETÉ — Soyez concis. Chaque réponse : une action brève + une réplique de dialogue. Pas de description d'ambiance, de décor ou de narration atmosphérique. Allez droit au comportement et aux mots du client.\n\n`
       : lang === 'es'
@@ -494,6 +501,9 @@ module.exports = function createUserRouter({
     const { scenarioId, messages, lang, sceneTitle, sceneContext } = req.body;
     const scenario = scenarios[scenarioId];
     if (!scenario && !sceneContext) return res.status(400).json({ error: 'Invalid scenario' });
+    // Gate roleplay summary/coaching for curriculum scenarios in locked tracks.
+    const sumGate = await scenarioAccessGate(req.user.id, scenarioId);
+    if (sumGate) return res.status(sumGate.status).json(sumGate.body);
     const scenarioTitle = scenario ? scenario.title : (sceneTitle || 'Hospitality Scenario');
     const langInstruction = lang === 'fr'
       ? 'IMPORTANT : Rédige toute ta réponse en français. Tous les champs JSON doivent être en français.\n\n'
@@ -581,6 +591,9 @@ Respond with valid JSON only, in this exact format${lang === 'fr' ? ' (all field
     const { scenarioId, messages, verdict } = req.body;
     if (!scenarioId || !messages) return res.status(400).json({ error: 'scenarioId and messages required' });
     try {
+      // Gate transcript writes for curriculum scenarios in locked tracks.
+      const gate = await scenarioAccessGate(req.user.id, scenarioId);
+      if (gate) return res.status(gate.status).json(gate.body);
       await db.query(
         'INSERT INTO scenario_transcripts (user_id, scenario_id, messages, verdict) VALUES ($1, $2, $3, $4)',
         [req.user.id, scenarioId, JSON.stringify(messages), verdict || null]
