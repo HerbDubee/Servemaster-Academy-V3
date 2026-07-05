@@ -1252,7 +1252,6 @@ const practiceScenarios = [
     sceneFr:'C\'est un mercredi soir tranquille. Une femme dans la quarantaine s\'installe seule au bar, commande un verre de vin, ouvre son téléphone — puis le pose face vers le bas sur le bar. Elle n\'a parlé à personne. Elle semble vouloir de la compagnie, ou pas. Vous avez le bar presque pour vous et aucune commande urgente.',
     sceneEs:'Es un tranquilo miércoles por la noche. Una mujer de unos 40 años se sienta sola en el bar, pide una copa de vino, abre su teléfono — luego lo pone boca abajo en la barra. No ha hablado con nadie. Parece que podría querer compañía, o no. Tienes el bar casi para ti solo y sin pedidos urgentes.',
     difficulty:'Advanced', moduleId:10 },
-// ── Module 1: The First 90 Seconds ─────────────────────────────────────────
   { id:37,  emoji:'🌟', title:'First Impressions Count', titleFr:'Les premières impressions comptent', titleEs:'Las Primeras Impresiones Cuentan',
     desc:'Set the tone for the entire experience from the very first moment.', descFr:'Donnez le ton pour toute l\'expérience dès le premier instant.', descEs:'Establece el tono para toda la experiencia desde el primer momento.',
     scene:'A couple walks in for dinner. The host is momentarily distracted, and as the nearest server, you step in. They look uncertain — this is clearly their first visit to a restaurant at this price point. Your greeting in the next ten seconds will shape everything that follows.',
@@ -1284,7 +1283,6 @@ const practiceScenarios = [
     sceneEs:'Son las 9:45pm. Tu sección está terminada y tu reemplazo llegará 30 minutos tarde. Un gerente pregunta si puedes atender una mesa de dos que acaba de llegar — claramente una ocasión especial. Tu respuesta ahora definirá cómo te ve este equipo.',
     difficulty:'Beginner', moduleId:1 },
 
-  // ── Module 2: Reading the Table ──────────────────────────────────────────
   { id:42,  emoji:'📋', title:'The Complex Order', titleFr:'La commande complexe', titleEs:'El Pedido Complejo',
     desc:'Take a complicated order from a large table without a notepad or any errors.', descFr:'Prenez une commande compliquée d\'une grande table sans bloc-notes et sans erreurs.', descEs:'Toma un pedido complicado de una mesa grande sin libreta y sin errores.',
     scene:'You\'re taking orders from a table of six. Two people change their minds mid-order, one guest asks for multiple substitutions, and two people order in French while the others order in English. The kitchen is watching the ticket clock. You want to get this right the first time.',
@@ -1310,7 +1308,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal ordenó el halibut hace 20 minutos. La cocina te acaba de decir que se agotó a mitad del servicio. El comensal ha estado esperando emocionado. Necesitas dar la noticia y recuperar la situación.',
     difficulty:'Intermediate', moduleId:20 },
 
-  // ── Module 3: Managing the 45-Minute Delay ───────────────────────────────
   { id:46,  emoji:'🍷', title:'The Wine Preference Puzzle', titleFr:'Le puzzle des préférences en vin', titleEs:'El Rompecabezas de Preferencias de Vino',
     desc:'Find the perfect bottle for a guest who can\'t describe what they like.', descFr:'Trouvez la bouteille parfaite pour un client qui ne peut pas décrire ce qu\'il aime.', descEs:'Encuentra la botella perfecta para un comensal que no puede describir lo que le gusta.',
     scene:'A man in his 50s looks at the wine list with visible uncertainty. He says: "I like wine, just not the technical stuff. I know what I like when I drink it — something not too dry, not too sweet, goes with red meat." Your list has 40 bottles by the glass. How do you land him on the right one?',
@@ -1336,7 +1333,6 @@ const practiceScenarios = [
     sceneEs:'Tu restaurante añadió una lista de sake. Tres comensales aventureros preguntan: "Ninguno de nosotros ha tomado sake de calidad. ¿Con qué debemos empezar?" Tienes dos muestras disponibles.',
     difficulty:'Advanced', moduleId:6 },
 
-  // ── Module 4: Table-Side Wine Service Under Pressure ─────────────────────
   { id:50,  emoji:'🥂', title:'The Pairing Debate', titleFr:'Le débat sur les accords', titleEs:'El Debate de Maridaje',
     desc:'Navigate a disagreement about wine pairings with a knowledgeable guest.', descFr:'Naviguez un désaccord sur les accords mets-vins avec un client averti.', descEs:'Navega un desacuerdo sobre maridajes con un comensal conocedor.',
     scene:'A guest challenges your pairing suggestion. You recommended a Côtes du Rhône with the lamb, and they pushed back: "I\'d go with a Barolo — the tannins stand up to the fat better." They\'re not wrong, but neither are you. How do you handle this gracefully without backing down or becoming defensive?',
@@ -1362,7 +1358,6 @@ const practiceScenarios = [
     sceneEs:'Una mesa ordenó una botella de vino de $95. La mujer dice: "Creo que este vino podría estar corchado." Lo pruebas y estás de acuerdo. ¿Cómo manejas la situación?',
     difficulty:'Advanced', moduleId:6 },
 
-  // ── Module 5: The Subtle Art of the Upsell ───────────────────────────────
   { id:54,  emoji:'💰', title:'The Appetizer Bridge', titleFr:'Le pont des entrées', titleEs:'El Puente de las Entradas',
     desc:'Suggest a starter in a way that feels helpful, not salesy.', descFr:'Suggérez une entrée d\'une façon utile, pas commerciale.', descEs:'Sugiere una entrada de manera que se sienta útil, no vendedora.',
     scene:'Two guests ordered mains but haven\'t mentioned starters. You have a 12-minute window before the kitchen fires their plates. One mentioned they haven\'t eaten since noon — it\'s 7pm now. Your chef\'s soup of the day is outstanding and only $12. How do you bring this up naturally?',
@@ -1394,7 +1389,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal solo ordenó las opciones menos costosas y pregunta los precios antes de que termines. ¿Cómo abordas esto sin hacerlos sentir incómodos?',
     difficulty:'Intermediate', moduleId:5 },
 
-  // ── Module 6: Wine Service Fundamentals ──────────────────────────────────
   { id:59,  emoji:'🍽️', title:'The Pacing Problem', titleFr:'Le problème de rythme', titleEs:'El Problema de Ritmo',
     desc:'Manage a table where courses are arriving too fast — without blaming the kitchen.', descFr:'Gérez une table où les plats arrivent trop vite sans blâmer la cuisine.', descEs:'Maneja una mesa donde los platos llegan demasiado rápido — sin culpar a la cocina.',
     scene:'A table of four ordered a three-course dinner. The kitchen is running fast — starters arrived before guests touched their bread. Now the mains are ready and two people are still eating their first course. The expeditor is pressuring you to run the plates. Guests haven\'t noticed yet. What do you do?',
@@ -1426,7 +1420,6 @@ const practiceScenarios = [
     sceneEs:'Sirves el tercer plato: un risotto de hongos con trufa negra, espuma de parmesano y una hen-of-the-woods asada. Un comensal pregunta: "¿Puedes contarnos sobre este?" Tienes 60 segundos.',
     difficulty:'Intermediate', moduleId:13 },
 
-  // ── Module 7: Guest Psychology Basics ────────────────────────────────────
   { id:64,  emoji:'💧', title:'The Spill Recovery', titleFr:'La récupération après un renversement', titleEs:'La Recuperación del Derrame',
     desc:'Handle a spill at the table professionally — whether it was your fault or the guest\'s.', descFr:'Gérez un renversement professionnellement — que ce soit votre faute ou celle du client.', descEs:'Maneja un derrame en la mesa profesionalmente.',
     scene:'You\'re passing a table when a guest knocks over a full glass of red wine. It spreads across the white tablecloth and drips toward their lap. They jump up, mortified. Three others go silent. Every nearby table has turned to look. You have ten seconds before this becomes a defining moment for the entire restaurant experience.',
@@ -1434,7 +1427,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal vuelca una copa llena de vino tinto. Se levantan mortificados. Cada mesa cercana mira. Tienes diez segundos. ¿Qué haces?',
     difficulty:'Beginner', moduleId:20 },
 
-  // ── Module 8: Handling Simple Complaints ─────────────────────────────────
   { id:65,  emoji:'🌍', title:'The Japanese Business Dinner', titleFr:'Le dîner d\'affaires japonais', titleEs:'La Cena de Negocios Japonesa',
     desc:'Serve a table of Japanese executives with appropriate cultural sensitivity.', descFr:'Servez une table de cadres d\'affaires japonais avec une sensibilité culturelle appropriée.', descEs:'Sirve a una mesa de ejecutivos japoneses con la sensibilidad cultural apropiada.',
     scene:'Four Japanese business executives are seated for dinner. They exchange business cards at the table. The senior member has not been served first. They seem uncomfortable each time someone tries to make casual conversation. How do you adapt your service approach?',
@@ -1466,7 +1458,6 @@ const practiceScenarios = [
     sceneEs:'Una familia judía explica que observan el kashrut. Tu restaurante no es una cocina kosher certificada, pero tienes varias opciones naturalmente apropiadas. ¿Cómo manejas la conversación?',
     difficulty:'Advanced', moduleId:7 },
 
-  // ── Module 9: Difficult Guests: De-escalation ────────────────────────────
   { id:70,  emoji:'🥂', title:'The Retirement Dinner', titleFr:'Le dîner de retraite', titleEs:'La Cena de Jubilación',
     desc:'Make a retirement celebration feel genuinely memorable and personal.', descFr:'Rendez une célébration de retraite mémorable et personnelle.', descEs:'Haz que una celebración de jubilación se sienta genuinamente memorable y personal.',
     scene:'A group of twelve colleagues has booked a private room for a retirement dinner. The retiree, Gerald, worked 34 years at the same company and is clearly moved. His colleagues want to make it special but haven\'t pre-arranged anything. The room feels a little stiff. How do you elevate this naturally throughout the evening?',
@@ -1486,7 +1477,6 @@ const practiceScenarios = [
     sceneEs:'Una familia de cinco celebra la graduación de Emma. Está orgullosa pero exhausta. ¿Cómo haces que la noche de Emma se sienta genuinamente especial?',
     difficulty:'Beginner', moduleId:11 },
 
-  // ── Module 10: Body Language & Presence ──────────────────────────────────
   { id:73,  emoji:'👋', title:'The Lingering Table', titleFr:'La table qui s\'attarde', titleEs:'La Mesa que se Queda',
     desc:'Move a table that has overstayed without making them feel rushed or unwelcome.', descFr:'Faites bouger une table qui a dépassé son temps sans les brusquer.', descEs:'Mueve una mesa que se ha quedado más tiempo sin hacerles sentir apresurados.',
     scene:'Table 8 arrived at 7pm. It\'s now 9:45 and you have a reservation for this table at 10pm. The two couples have finished dinner, their wine is almost gone, but they\'re deeply engaged in conversation. You need the table turned in 10-12 minutes. How do you signal the close without ruining the end of their evening?',
@@ -1512,7 +1502,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal comió la mitad de su lubina de $48 y pide llevarse el resto. El empaque para llevar no es estándar en fine dining. ¿Cómo respondes?',
     difficulty:'Beginner', moduleId:22 },
 
-  // ── Module 11: Private Dining Command ────────────────────────────────────
   { id:77,  emoji:'🌎', title:'Old World vs. New World', titleFr:'Vieux Monde vs. Nouveau Monde', titleEs:'Viejo Mundo vs. Nuevo Mundo',
     desc:'Explain the philosophical difference between Old and New World wines to an engaged guest.', descFr:'Expliquez la différence philosophique entre les vins du Vieux et du Nouveau Monde.', descEs:'Explica la diferencia filosófica entre los vinos del Viejo y Nuevo Mundo.',
     scene:'A curious guest is debating between a Burgundy Pinot Noir and a Willamette Valley Pinot — same variety, similar price. They ask: "What\'s actually the difference? Philosophically?" They have wine knowledge but aren\'t a professional. Give them the explanation that will make them feel like they\'ve learned something real.',
@@ -1538,7 +1527,6 @@ const practiceScenarios = [
     sceneEs:'Después del postre, tres caballeros piden oporto. Tienes un tawny de 10 y 20 años, un LBV y un colheita. Quieren una recomendación y breve explicación.',
     difficulty:'Intermediate', moduleId:11 },
 
-  // ── Module 12: When the Sommelier Is Wrong ───────────────────────────────
   { id:81,  emoji:'⭐', title:'Mentoring a New Server', titleFr:'Mentorer un nouveau serveur', titleEs:'Mentorear a un Nuevo Mesero',
     desc:'Guide a struggling new server through their first real service without undermining their confidence.', descFr:'Guidez un nouveau serveur en difficulté sans miner sa confiance.', descEs:'Guía a un nuevo mesero que lucha sin minar su confianza.',
     scene:'It\'s Friday dinner service. Alex, a new server two weeks in, just forgot to put in a drink order for Table 12. Guests are getting impatient. You\'re the senior server tonight. Alex looks panicked. Help Alex fix this now — and use the moment to teach — without humiliating them in front of the floor or guests.',
@@ -1570,7 +1558,6 @@ const practiceScenarios = [
     sceneEs:'Jasmine te aparta: "Tengo 27 años y no he decidido si esto es lo que quiero a largo plazo. Pero me encanta. ¿Estoy siendo estúpida?" ¿Qué le dices?',
     difficulty:'Beginner', moduleId:30 },
 
-  // ── Module 13: Multi-Course Pacing ───────────────────────────────────────
   { id:86,  emoji:'🥃', title:'The Whisky Flight', titleFr:'La dégustation de whisky', titleEs:'La Cata de Whisky',
     desc:'Present and guide a whisky flight with genuine knowledge and enthusiasm.', descFr:'Présentez et guidez une dégustation de whisky avec connaissance et enthousiasme.', descEs:'Presenta y guía una cata de whisky con genuino conocimiento y entusiasmo.',
     scene:'Two guests order your whisky flight — four pours: an Islay Scotch, an Irish single malt, a Japanese expression, and a Kentucky bourbon. They\'re enthusiastic beginners who have never done a formal tasting. They ask you to walk them through it. You have about three minutes before your next table needs you. Make this count.',
@@ -1596,7 +1583,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal pide un gin tonic ordinario. Tu bar acaba de lanzar un cóctel de temporada excepcional por solo $1 más. ¿Cómo presentas la mejora de manera emocionante?',
     difficulty:'Intermediate', moduleId:13 },
 
-  // ── Module 14: Basic Menu Navigation ─────────────────────────────────────
   { id:90,  emoji:'☕', title:'The Coffee Conversation', titleFr:'La conversation café', titleEs:'La Conversación del Café',
     desc:'Guide a coffee-loving guest through your specialty coffee program with genuine expertise.', descFr:'Guidez un amateur de café à travers votre programme de café de spécialité.', descEs:'Guía a un amante del café a través de tu programa de café de especialidad.',
     scene:'A guest finishes their meal and turns to the coffee menu. They\'re clearly a coffee person: they ask about the origin of your espresso blend, whether you offer single-origin pour-overs, and what the roast level is. Your restaurant has a curated program with three single origins and a house blend. Match their enthusiasm.',
@@ -1628,7 +1614,6 @@ const practiceScenarios = [
     sceneEs:'Acabas de sentar a una mesa de seis. En lugar de solo preguntar "¿natural o con gas?", quieres hacer que incluso este pequeño ritual se sienta intencional y acogedor.',
     difficulty:'Beginner', moduleId:10 },
 
-  // ── Module 15: Wine Pairing Under Time Pressure ──────────────────────────
   { id:95,  emoji:'🥜', title:'The Hidden Allergen', titleFr:'L\'allergène caché', titleEs:'El Alérgeno Oculto',
     desc:'Catch a potential allergen issue in a dish a guest is about to order.', descFr:'Repérez un allergène potentiel dans un plat qu\'un client est sur le point de commander.', descEs:'Detecta un posible problema de alérgeno en un plato que un comensal está a punto de ordenar.',
     scene:'A guest orders the roasted cauliflower salad. You remember from their arrival that they mentioned a tree nut allergy. The salad normally comes with a walnut and almond crumble listed simply as "nut crumble" in the menu description. The kitchen would add it automatically. You need to flag this before the order goes in.',
@@ -1636,7 +1621,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal ordena la ensalada de coliflor. Recuerdas que mencionó una alergia a los frutos secos. La ensalada incluye un crumble de nueces no claramente indicado. Necesitas señalarlo antes de que el pedido entre.',
     difficulty:'Intermediate', moduleId:16 },
 
-  // ── Module 16: Allergens & Special Requests at Depth ─────────────────────
   { id:96,  emoji:'🧠', title:'The Silent Tension', titleFr:'La tension silencieuse', titleEs:'La Tensión Silenciosa',
     desc:'Read the room when a table is clearly in the middle of a difficult moment.', descFr:'Lisez la salle quand une table traverse clairement un moment difficile.', descEs:'Lee la sala cuando una mesa claramente está en medio de un momento difícil.',
     scene:'A couple at Table 5 ordered an hour ago and have barely spoken since. Food is on the table, mostly untouched. They\'re not looking at each other. The woman stares at her phone; the man looks at the wall. It\'s not an argument — more like a quiet sadness. They haven\'t asked for anything. How do you approach this table without making it worse?',
@@ -1662,7 +1646,6 @@ const practiceScenarios = [
     sceneEs:'Un hombre está claramente presumiendo ante su mesa, usando terminología francesa ligeramente incorrecta. ¿Cómo lo sirves sin corregirlo torpemente?',
     difficulty:'Intermediate', moduleId:18 },
 
-  // ── Module 17: Team Communication on the Floor ───────────────────────────
   { id:100, emoji:'🌿', title:'The Provenance Question', titleFr:'La question de la provenance', titleEs:'La Pregunta de la Procedencia',
     desc:'Answer detailed questions about where your food comes from with real knowledge.', descFr:'Répondez à des questions détaillées sur la provenance de votre nourriture.', descEs:'Responde preguntas detalladas sobre de dónde viene tu comida.',
     scene:'A guest asks: "Where does your beef come from? Is it local? Is it pasture-raised?" Your restaurant sources from a specific local farm — you know the name and the practices. But you also have items from conventional suppliers. Answer honestly and enthusiastically where you can, without making conventional items sound inferior.',
@@ -1694,7 +1677,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal ha hecho preguntas muy específicas sobre cada plato durante diez minutos. Algunas preguntas las sabes; otras no. ¿Cómo lo manejas profesionalmente?',
     difficulty:'Intermediate', moduleId:16 },
 
-  // ── Module 18: Reading Subtle Guest Cues ─────────────────────────────────
   { id:105, emoji:'⚡', title:'The Double Section Night', titleFr:'La nuit de la double section', titleEs:'La Noche de la Doble Sección',
     desc:'Manage twice your normal section when a colleague calls in sick at the last minute.', descFr:'Gérez deux fois votre section normale quand un collègue appelle malade à la dernière minute.', descEs:'Gestiona el doble de tu sección normal cuando un colega llama enfermo a último momento.',
     scene:'It\'s 6pm Saturday. Another server just called in sick with 20 minutes notice. The manager asks if you can double your section — 8 tables instead of 4 — for the entire service. The restaurant is fully booked. You say yes. Now walk through how you\'d prioritize, triage, and communicate throughout the next four hours.',
@@ -1714,7 +1696,6 @@ const practiceScenarios = [
     sceneEs:'En los próximos 90 segundos: Mesa 3 necesita la cuenta, Mesa 7 tiene comida lista, Mesa 1 derramó una bebida, Mesa 9 espera pan 8 minutos. ¿Cuál es tu orden de prioridad?',
     difficulty:'Intermediate', moduleId:27 },
 
-  // ── Module 19: Cleanliness & Standards ───────────────────────────────────
   { id:108, emoji:'📞', title:'The Reservation Phone Call', titleFr:'L\'appel téléphonique de réservation', titleEs:'La Llamada Telefónica de Reserva',
     desc:'Handle a reservation call professionally — capturing all the right details while being warm.', descFr:'Gérez un appel de réservation professionnellement en capturant tous les détails.', descEs:'Maneja una llamada de reserva profesionalmente capturando todos los detalles.',
     scene:'The restaurant phone rings at 4:15pm. A woman wants to book for Saturday dinner for seven. She mentions a birthday, asks about parking, dietary restrictions, and a cake corkage fee. She also asks to be seated away from the bar because the birthday girl doesn\'t drink. Get this all right and make her feel like she called the right place.',
@@ -1746,7 +1727,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal de vuelta menciona haber dejado una reseña negativa. Está probando si esta visita será diferente. ¿Cómo respondes y te aseguras de que la llegada de esta noche cambie su impresión?',
     difficulty:'Intermediate', moduleId:8 },
 
-  // ── Module 20: Recovering from Service Errors ────────────────────────────
   { id:113, emoji:'🧀', title:'The Cheese Course', titleFr:'Le plateau de fromages', titleEs:'El Plato de Quesos',
     desc:'Present a cheese course with genuine expertise and enthusiasm.', descFr:'Présentez un plateau de fromages avec expertise et enthousiasme.', descEs:'Presenta un plato de quesos con genuina experiencia y entusiasmo.',
     scene:'A table of four finished their mains and you\'re bringing the cheese trolley with five selections: a young fresh chèvre, a Camembert de Normandie, an aged Comté, a Spanish Manchego, and a powerful Roquefort. The guests are excited but admit they know little about cheese. Walk them through each one.',
@@ -1778,7 +1758,6 @@ const practiceScenarios = [
     sceneEs:'Una mesa de cuatro ordenó la ensalada César en la mesa. Todos observan cada paso. Uno pregunta: "¿El aderezo tiene huevo crudo?" Explica, prepara y entrega con experiencia.',
     difficulty:'Intermediate', moduleId:4 },
 
-  // ── Module 21: Mentoring the New Server ──────────────────────────────────
   { id:118, emoji:'🌱', title:'The Sustainability Story', titleFr:'L\'histoire de durabilité', titleEs:'La Historia de Sostenibilidad',
     desc:'Explain your restaurant\'s sustainability initiatives in a way that resonates with guests.', descFr:'Expliquez les initiatives de durabilité de votre restaurant de façon authentique.', descEs:'Explica las iniciativas de sostenibilidad de tu restaurante de manera auténtica.',
     scene:'A guest who has been asking thoughtful menu questions asks: "Does this restaurant do anything around sustainability? Like sourcing, waste, energy?" Your restaurant has a genuine program: local sourcing, a composting partnership, and a staff wellness initiative. How do you tell this story authentically without it sounding like a press release?',
@@ -1810,7 +1789,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal pregunta sinceramente si la propina le llega realmente. Tu política es transparente: el 100% va al personal. ¿Cómo respondes honestamente?',
     difficulty:'Beginner', moduleId:10 },
 
-  // ── Module 22: Closing the Interaction ───────────────────────────────────
   { id:123, emoji:'💻', title:'The POS System Failure', titleFr:'La panne du système de point de vente', titleEs:'La Falla del Sistema POS',
     desc:'Handle a POS system failure mid-service without letting guests feel the chaos.', descFr:'Gérez une panne du système en plein service sans que les clients le ressentent.', descEs:'Maneja una falla del sistema POS en pleno servicio sin que los comensales sientan el caos.',
     scene:'It\'s 7:45pm Thursday. Your restaurant\'s POS just went down. Credit card processing is offline. Three tables are ready to pay. You have a manual system as backup, slower and unused for six months. The manager handles one frustrated table. You have two others. How do you manage this professionally?',
@@ -1842,7 +1820,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal pregunta: "¿Es mejor para ti si doy la propina en tarjeta o en efectivo?" Es una pregunta sincera. Tienes una preferencia. ¿Cómo respondes honestamente?',
     difficulty:'Beginner', moduleId:22 },
 
-  // ── Module 23: Edge-Case Situations ──────────────────────────────────────
   { id:128, emoji:'🤝', title:'The Kitchen Conflict', titleFr:'Le conflit en cuisine', titleEs:'El Conflicto de Cocina',
     desc:'Navigate a communication breakdown between the floor and the kitchen during service.', descFr:'Naviguez une rupture de communication entre la salle et la cuisine.', descEs:'Navega una ruptura de comunicación entre el piso y la cocina.',
     scene:'The sous chef is clearly frustrated and snapped at you when you came to the pass to ask about a ticket time. The guests have been waiting 28 minutes. You need information from the kitchen but the tone has become hostile. Two other servers are watching. How do you de-escalate, get the information you need, and maintain a functional relationship?',
@@ -1874,7 +1851,6 @@ const practiceScenarios = [
     sceneEs:'Tu gerente te da retroalimentación crítica sobre cómo manejaste una mesa. Te sientes a la defensiva. ¿Cómo recibes este feedback profesionalmente?',
     difficulty:'Beginner', moduleId:9 },
 
-  // ── Module 24: Leadership on the Floor ───────────────────────────────────
   { id:133, emoji:'🌟', title:'The Burnout Warning Signs', titleFr:'Les signaux d\'alarme de l\'épuisement', titleEs:'Las Señales de Alarma del Agotamiento',
     desc:'Recognize and address early signs of burnout before they derail your performance and health.', descFr:'Reconnaissez les premiers signes d\'épuisement avant qu\'ils nuisent à vos performances.', descEs:'Reconoce y aborda las señales tempranas de agotamiento antes de que arruinen tu rendimiento.',
     scene:'It\'s week three of working six days a week with no days off. You\'ve started dreading coming in, snapping at colleagues, and can\'t remember if a table last night had a great experience — you were just going through the motions. This isn\'t a bad week. This is a pattern. What do you do about it?',
@@ -1906,7 +1882,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal exitoso te pregunta sinceramente qué quieres hacer en cinco años. Es una pregunta familiar que puede parecer condescendiente. ¿Cómo respondes con orgullo?',
     difficulty:'Beginner', moduleId:30 },
 
-  // ── Module 25: Bar Service Integration ───────────────────────────────────
   { id:138, emoji:'🧊', title:'The Bar Opening Checklist', titleFr:'La liste de contrôle d\'ouverture du bar', titleEs:'La Lista de Verificación de Apertura del Bar',
     desc:'Walk through a complete bar opening procedure with nothing overlooked.', descFr:'Parcourez une procédure complète d\'ouverture de bar sans rien oublier.', descEs:'Repasa un procedimiento completo de apertura de bar sin pasar nada por alto.',
     scene:'It\'s 3:45pm and you\'re opening the bar for a 5pm service. The previous bartender left the ice well half-cleaned, fruit prep hasn\'t been done, and three bottle labels on the speed rail face the wrong way. You have about 70 minutes. Walk through your full mise en place systematically so nothing gets missed.',
@@ -1938,7 +1913,6 @@ const practiceScenarios = [
     sceneEs:'Son las 2:15am. Fin de un sábado pesado. Un nuevo barback ayuda en su primer cierre. Guíalo a través del cierre sistemáticamente.',
     difficulty:'Beginner', moduleId:25 },
 
-  // ── Module 26: Handling VIPs Gracefully ──────────────────────────────────
   { id:143, emoji:'🍹', title:'Shake vs. Stir', titleFr:'Shaker ou remuer', titleEs:'Agitar o Remover',
     desc:'Explain and demonstrate proper shaking technique and when to shake vs. stir.', descFr:'Expliquez la technique appropriée de shaker et quand shaker vs. remuer.', descEs:'Explica la técnica correcta de agitar y cuándo agitar vs. remover.',
     scene:'A bartending externship student asks during a slow afternoon: "When do you shake a cocktail and when do you stir? And does the shaking technique actually matter?" You\'ve been behind bars for six years and have genuine opinions on this. Give them the real answer — the one that took you years to understand.',
@@ -1964,7 +1938,6 @@ const practiceScenarios = [
     sceneEs:'Enseñas a un nuevo barback cómo preparar los cítricos. Quiere saber por qué cortas diferente y cómo evitar la oxidación. Dale la educación completa en 10 minutos.',
     difficulty:'Beginner', moduleId:27 },
 
-  // ── Module 27: Speed Without Sacrificing Warmth ──────────────────────────
   { id:147, emoji:'🥃', title:'The Old Fashioned Purist', titleFr:'Le puriste de l\'Old Fashioned', titleEs:'El Purista del Old Fashioned',
     desc:'Make a perfect Old Fashioned for a very particular guest who knows exactly how they want it.', descFr:'Faites un Old Fashioned parfait pour un client très pointilleux.', descEs:'Haz un Old Fashioned perfecto para un comensal muy exigente que sabe exactamente cómo lo quiere.',
     scene:'A guest orders an Old Fashioned and immediately adds: "No fruit, no muddling, don\'t drown it in soda water. I want it right." You agree completely. But he also wants rye, not bourbon — specifically a split base of two ryes you actually have. This is a discerning guest. Build it perfectly and explain each decision.',
@@ -1990,7 +1963,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal dice que los Negronis siempre son demasiado amargos pero quiere que le gusten. Conoces la familia Negroni. Encuentra el correcto para su paladar.',
     difficulty:'Intermediate', moduleId:28 },
 
-  // ── Module 28: High-Pressure VIP & Celebrity Service ─────────────────────
   { id:3, emoji:'💰', title:'The Premium Spirit Switch', titleFr:'Le passage au spiritueux premium', titleEs:'El Cambio al Licor Premium',
     desc:'Guide a guest from the well spirit to a premium pour they\'ll actually appreciate.', descFr:'Guidez un client du spiritueux de base vers un versement premium qu\'il appréciera.', descEs:'Guía a un comensal del licor estándar a un vertido premium que realmente apreciará.',
     scene:'A guest orders "a gin and tonic." Your well gin is fine, but you just received a small-batch BC gin that is exceptional — floral, coastal, complex. It\'s $3 more. The guest seems like someone who would appreciate the difference. How do you make the suggestion without it feeling like a sales pitch or implying their choice was wrong?',
@@ -2016,7 +1988,6 @@ const practiceScenarios = [
     sceneEs:'Cinco comensales en el bar en diferentes etapas de su primera bebida. Describe cómo lees a cada uno y das el tiempo a cada oferta de manera diferente.',
     difficulty:'Intermediate', moduleId:18 },
 
-  // ── Module 29: Reading and Shaping the Room ──────────────────────────────
   { id:16, emoji:'🚫', title:'The Pre-Emptive Intervention', titleFr:'L\'intervention préventive', titleEs:'La Intervención Preventiva',
     desc:'Slow down a guest\'s drinking pace before they reach the point of refusal.', descFr:'Ralentissez le rythme de consommation d\'un client avant d\'en arriver au refus.', descEs:'Ralentiza el ritmo de consumo de un comensal antes de llegar al punto de negativa.',
     scene:'A group of four has been drinking quickly — fourth round in 90 minutes and the energy is escalating. No one is visibly intoxicated yet, but you can see where this is heading. You have a window to intervene before it becomes a cut-off conversation. How do you gently slow the pace without triggering defensiveness or confrontation?',
@@ -2042,7 +2013,6 @@ const practiceScenarios = [
     sceneEs:'Un comensal que ha bebido se está volviendo verbalmente agresivo. Las mesas cercanas miran. Te respondió bruscamente. El gerente está ocupado. Necesitas actuar ahora.',
     difficulty:'Advanced', moduleId:9 },
 
-  // ── Module 30: Long-Term Guest Relationship Building ─────────────────────
   { id:26, emoji:'🌟', title:'The Bar Career Path', titleFr:'Le parcours de carrière de barman', titleEs:'El Camino de Carrera del Bartender',
     desc:'Map out a realistic career trajectory in bartending for someone just starting out.', descFr:'Tracez une trajectoire de carrière réaliste dans le bartending pour un débutant.', descEs:'Traza una trayectoria de carrera realista en el bartending para alguien que recién comienza.',
     scene:'A new barback named Priya is ambitious and wants to become head bartender within three years. She asks: "What\'s the realistic path? How long does each stage take and what should I be working on right now?" You\'ve been in the industry for eight years. What do you tell her?',
