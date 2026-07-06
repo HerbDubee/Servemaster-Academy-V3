@@ -78,22 +78,70 @@ function arraysEqual(a, b) {
 // so on. Generic hospitality words (guest, table, service) are deliberately left
 // out: they carry no topical signal and would only add noise. Only add a word
 // here if a scenario that mentions it is almost certainly *about* that subject.
+//
+// Each subject carries a per-language word list (en/fr/es) because scenarios are
+// trilingual (title/desc in EN + titleFr/descFr + titleEs/descEs), and a copy
+// edit can drift one language's wording off-topic while the others stay put.
+// Accents are stripped before matching (see domainHits), so lexicon words may be
+// written with or without their diacritics.
 const DOMAIN_LEXICON = {
-  wine: ['wine', 'wines', 'bottle', 'bottles', 'sommelier', 'vintage', 'barolo', 'champagne', 'sparkling', 'sake', 'corked', 'decant', 'decanting', 'decanter', 'biodynamic', 'port', 'cellar', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
-  cocktail: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'fashioned', 'mocktail', 'bitters', 'gin', 'tonic', 'whisky', 'whiskey', 'muddle', 'shaken', 'stirred', 'vermouth', 'aperitif'],
-  beer: ['beer', 'beers', 'pint', 'lager', 'ale', 'ipa', 'draught'],
-  'coffee/tea': ['coffee', 'espresso', 'cappuccino', 'latte', 'matcha'],
-  allergen: ['allergy', 'allergies', 'allergen', 'allergens', 'allergic', 'celiac', 'coeliac', 'anaphylactic', 'anaphylaxis', 'gluten', 'vegan', 'dietary', 'kosher', 'halal', 'intolerance'],
-  payment: ['bill', 'check', 'tip', 'tips', 'tipping', 'gratuity', 'splitting', 'pos', 'receipt'],
-  reservation: ['reservation', 'reservations', 'overbooking', 'overbooked'],
+  wine: {
+    en: ['wine', 'wines', 'bottle', 'bottles', 'sommelier', 'vintage', 'barolo', 'champagne', 'sparkling', 'sake', 'corked', 'decant', 'decanting', 'decanter', 'biodynamic', 'port', 'cellar', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
+    fr: ['vin', 'vins', 'bouteille', 'bouteilles', 'sommelier', 'sommelière', 'millésime', 'barolo', 'champagne', 'mousseux', 'pétillant', 'saké', 'bouchonné', 'décanter', 'décantation', 'carafage', 'biodynamique', 'porto', 'cave', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
+    es: ['vino', 'vinos', 'botella', 'botellas', 'sommelier', 'añada', 'barolo', 'champán', 'espumoso', 'espumante', 'sake', 'decantar', 'decantación', 'decantador', 'biodinámico', 'oporto', 'bodega', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
+  },
+  cocktail: {
+    en: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'fashioned', 'mocktail', 'bitters', 'gin', 'tonic', 'whisky', 'whiskey', 'muddle', 'shaken', 'stirred', 'vermouth', 'aperitif'],
+    fr: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amers', 'gin', 'tonic', 'whisky', 'whiskey', 'piler', 'secoué', 'remué', 'vermouth', 'apéritif'],
+    es: ['cóctel', 'cócteles', 'coctel', 'cocteles', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amargos', 'ginebra', 'tónica', 'whisky', 'whiskey', 'macerar', 'agitado', 'removido', 'vermut', 'aperitivo'],
+  },
+  beer: {
+    en: ['beer', 'beers', 'pint', 'lager', 'ale', 'ipa', 'draught'],
+    fr: ['bière', 'bières', 'pinte', 'lager', 'ale', 'ipa', 'pression'],
+    es: ['cerveza', 'cervezas', 'pinta', 'lager', 'ale', 'ipa', 'barril'],
+  },
+  'coffee/tea': {
+    en: ['coffee', 'espresso', 'cappuccino', 'latte', 'matcha'],
+    fr: ['café', 'expresso', 'espresso', 'cappuccino', 'latte', 'matcha'],
+    es: ['café', 'espresso', 'capuchino', 'cappuccino', 'latte', 'matcha'],
+  },
+  allergen: {
+    en: ['allergy', 'allergies', 'allergen', 'allergens', 'allergic', 'celiac', 'coeliac', 'anaphylactic', 'anaphylaxis', 'gluten', 'vegan', 'dietary', 'kosher', 'halal', 'intolerance'],
+    fr: ['allergie', 'allergies', 'allergène', 'allergènes', 'allergique', 'cœliaque', 'coeliaque', 'anaphylactique', 'anaphylaxie', 'gluten', 'végétalien', 'végane', 'casher', 'cachère', 'halal', 'intolérance'],
+    es: ['alergia', 'alergias', 'alérgeno', 'alérgenos', 'alérgico', 'celíaco', 'celiaco', 'anafiláctico', 'anafilaxia', 'gluten', 'vegano', 'dietético', 'kosher', 'halal', 'intolerancia'],
+  },
+  payment: {
+    en: ['bill', 'check', 'tip', 'tips', 'tipping', 'gratuity', 'splitting', 'pos', 'receipt'],
+    fr: ['addition', 'pourboire', 'pourboires', 'gratification', 'reçu', 'ticket'],
+    es: ['cuenta', 'propina', 'propinas', 'gratificación', 'recibo', 'ticket'],
+  },
+  reservation: {
+    en: ['reservation', 'reservations', 'overbooking', 'overbooked'],
+    fr: ['réservation', 'réservations', 'surréservation', 'surbooking'],
+    es: ['reserva', 'reservas', 'sobreventa', 'sobrerreserva', 'overbooking'],
+  },
 };
+
+// The three languages each scenario carries, mapped to their content.js fields.
+const LANGS = [
+  { key: 'en', label: 'EN', title: 'title', desc: 'desc', subtitle: 'subtitle', body: 'body', q: 'q' },
+  { key: 'fr', label: 'FR', title: 'titleFr', desc: 'descFr', subtitle: 'subtitleFr', body: 'bodyFr', q: 'qFr' },
+  { key: 'es', label: 'ES', title: 'titleEs', desc: 'descEs', subtitle: 'subtitleEs', body: 'bodyEs', q: 'qEs' },
+];
+
+// Strip diacritics so "bière"/"allergène"/"añada" match their lexicon entries
+// regardless of how accents were typed.
+function stripDiacritics(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 // Count how many distinct lexicon words appear (as whole words) in a blob.
 function domainHits(text, words) {
-  const t = ' ' + String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ') + ' ';
+  const t = ' ' + stripDiacritics(text).toLowerCase().replace(/[^a-z0-9\s]/g, ' ') + ' ';
   let n = 0;
   for (const w of words) {
-    if (t.includes(' ' + w + ' ')) n += 1;
+    const nw = stripDiacritics(w).toLowerCase();
+    if (t.includes(' ' + nw + ' ')) n += 1;
   }
   return n;
 }
@@ -101,11 +149,11 @@ function domainHits(text, words) {
 // The module's own "theme text": its title plus its lesson curriculum. If a
 // module's lessons already talk about a subject, a scenario on that subject is
 // on-topic even when its four siblings happen not to mention it.
-function moduleThemeText(mod, lessonData) {
+function moduleThemeText(mod, lessonData, lang) {
   const ld = (lessonData && lessonData[mod.id]) || {};
-  let t = (mod.title || '') + ' ' + (ld.subtitle || '');
-  for (const l of ld.lessons || []) t += ' ' + (l.title || '') + ' ' + (l.body || '');
-  for (const q of ld.quiz || []) t += ' ' + (q.q || '');
+  let t = (mod[lang.title] || '') + ' ' + (ld[lang.subtitle] || '');
+  for (const l of ld.lessons || []) t += ' ' + (l[lang.title] || '') + ' ' + (l[lang.body] || '');
+  for (const q of ld.quiz || []) t += ' ' + (q[lang.q] || '');
   return t;
 }
 
@@ -125,6 +173,8 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
     siblingsByModule.get(m).push(s);
   }
 
+  // Theme text is cached per (module, language) since it's the same for every
+  // sibling scenario in a module.
   const themeCache = new Map();
 
   for (const s of practiceScenarios) {
@@ -132,36 +182,41 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
     const mod = modById.get(modId);
     if (!mod) continue; // structural check already reports orphaned moduleIds
 
-    // Dominant subject, judged from the naming fields only.
-    const naming = `${s.title} ${s.desc}`;
-    let domain = null;
-    let best = 0;
-    for (const [name, words] of Object.entries(DOMAIN_LEXICON)) {
-      const h = domainHits(naming, words);
-      if (h > best) {
-        best = h;
-        domain = name;
+    // Judge each language independently so a drift in FR or ES wording surfaces
+    // even when the EN naming (and vice versa) is still on-topic.
+    for (const lang of LANGS) {
+      // Dominant subject, judged from the naming fields only, in this language.
+      const naming = `${s[lang.title] || ''} ${s[lang.desc] || ''}`;
+      let domain = null;
+      let best = 0;
+      for (const [name, byLang] of Object.entries(DOMAIN_LEXICON)) {
+        const h = domainHits(naming, byLang[lang.key]);
+        if (h > best) {
+          best = h;
+          domain = name;
+        }
       }
+      if (!domain || best < 2) continue; // require a strong, concentrated signal
+
+      const words = DOMAIN_LEXICON[domain][lang.key];
+
+      // On-topic if the module's own title/curriculum covers the subject.
+      const cacheKey = `${modId}:${lang.key}`;
+      if (!themeCache.has(cacheKey)) themeCache.set(cacheKey, moduleThemeText(mod, lessonData, lang));
+      if (domainHits(themeCache.get(cacheKey), words) > 0) continue;
+
+      // On-topic if any sibling scenario is itself *named* around the same subject.
+      // Judge siblings by their naming (title + description), the same standard used
+      // for the candidate — an incidental one-off mention buried in scene prose does
+      // not establish that the module "covers" the subject.
+      const siblings = (siblingsByModule.get(modId) || []).filter((x) => x !== s);
+      if (siblings.some((x) => domainHits(`${x[lang.title] || ''} ${x[lang.desc] || ''}`, words) > 0)) continue;
+
+      warnings.push(
+        `Scenario ${s.id} ("${s.title}") reads as a "${domain}" scenario in its ${lang.label} wording, but module ${modId} ("${mod.title}") ` +
+        `covers that subject nowhere else (not in its title, lessons, or sibling scenarios) — verify it is on-topic.`
+      );
     }
-    if (!domain || best < 2) continue; // require a strong, concentrated signal
-
-    const words = DOMAIN_LEXICON[domain];
-
-    // On-topic if the module's own title/curriculum covers the subject.
-    if (!themeCache.has(modId)) themeCache.set(modId, moduleThemeText(mod, lessonData));
-    if (domainHits(themeCache.get(modId), words) > 0) continue;
-
-    // On-topic if any sibling scenario is itself *named* around the same subject.
-    // Judge siblings by their naming (title + description), the same standard used
-    // for the candidate — an incidental one-off mention buried in scene prose does
-    // not establish that the module "covers" the subject.
-    const siblings = (siblingsByModule.get(modId) || []).filter((x) => x !== s);
-    if (siblings.some((x) => domainHits(`${x.title} ${x.desc}`, words) > 0)) continue;
-
-    warnings.push(
-      `Scenario ${s.id} ("${s.title}") reads as a "${domain}" scenario, but module ${modId} ("${mod.title}") ` +
-      `covers that subject nowhere else (not in its title, lessons, or sibling scenarios) — verify it is on-topic.`
-    );
   }
 
   return warnings;
