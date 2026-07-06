@@ -1,0 +1,104 @@
+Maven:
+Approved. Proceeding with full completion.
+
+Here is the complete, ready-to-paste update for public/js/content.js.
+
+Updated modules array with track assignments
+
+const modules = [
+  // === FOUNDATIONS (Free) ===
+  { id:1,  title:'The First 90 Seconds',         titleFr:'Les 90 premières secondes',              titleEs:'Los Primeros 90 Segundos',      emoji:'⏱️', mins:10, category:'fine-dining',    blogSlug:'mastering-the-greeting', scenarioIds: [37, 38, 39, 40, 41], track:'foundations' },
+  { id:2,  title:'Reading the Table',            titleFr:'Lire la table',           titleEs:'Leer la Mesa',           emoji:'👀', mins:10, category:'guest-experience', blogSlug:'eight-table-types', scenarioIds: [9, 42, 44, 61, 103], track:'foundations' },
+  { id:3,  title:'Managing the 45-Minute Delay', titleFr:'Gérer le retard de 45 minutes',        titleEs:'Gestionar el Retraso de 45 Minutos',       emoji:'⏳', mins:12, category:'beverage',        blogSlug:'high-volume-service-weeds', scenarioIds: [4, 19, 35, 105, 106], track:'foundations' },
+  { id:4,  title:'Table-Side Wine Service Under Pressure',titleFr:'Service du vin en salle sous pression',      titleEs:'Servicio de Vino en Mesa Bajo Presión', emoji:'🥂', mins:12, category:'beverage',        blogSlug:'wine-service-tips', scenarioIds: [11, 47, 115, 116, 117], track:'foundations' },
+  { id:5,  title:'The Subtle Art of the Upsell',             titleFr:"L'art subtil de la vente additionnelle",         titleEs:'El Arte Sutil de la Venta Sugestiva',        emoji:'💰', mins:10, category:'menu-upselling',  blogSlug:'natural-upsell-language', scenarioIds: [54, 55, 56, 57, 58], track:'foundations' },
+  { id:6,  title:'Wine Service Fundamentals',             titleFr:'Fondamentaux du service du vin',              titleEs:'Fundamentos del Servicio de Vino',    emoji:'🍷', mins:10, category:'fine-dining',    blogSlug:'wine-fundamentals-servers', scenarioIds: [2, 46, 49, 52, 53], track:'foundations' },
+  { id:7,  title:'Guest Psychology Basics',    titleFr:'Bases de la psychologie du client',  titleEs:'Fundamentos de Psicología del Cliente', emoji:'🧠', mins:10, category:'fine-dining', blogSlug:'reading-big-tippers', scenarioIds: [65, 67, 68, 69, 92], track:'foundations' },
+  { id:8,  title:'Handling Simple Complaints',                   titleFr:'Gérer les plaintes simples',                        titleEs:'Manejo de Quejas Sencillas',                    emoji:'🛠️', mins:8,  category:'guest-experience', blogSlug:'handle-complaints', scenarioIds: [23, 112, 124, 125, 121], track:'foundations' },
+  { id:9,  title:'Difficult Guests: De-escalation',                 titleFr:'Clients difficiles : désamorçage',                titleEs:'Clientes Difíciles: Desescalada',           emoji:'🧯', mins:10, category:'guest-experience', blogSlug:'difficult-guests-playbook', scenarioIds: [1, 24, 128, 130, 132], track:'foundations' },
+  { id:10, title:'Body Language & Presence',                    titleFr:'Langage corporel & présence',                              titleEs:'Lenguaje Corporal y Presencia',                     emoji:'🧍', mins:8,  category:'guest-experience', blogSlug:'body-language-servers', scenarioIds: [5, 36, 73, 122, 94], track:'foundations' },
+
+  // === CRAFT (Paid) ===
+  { id:11, title:'Private Dining Command',                     titleFr:'Maîtrise des salons privés',                      titleEs:'Dominio de Comedores Privados',          emoji:'🍽️', mins:12, category:'beverage',        blogSlug:'large-parties-events-banquets', scenarioIds: [12, 70, 71, 72, 80], track:'craft' },
+  { id:12, title:'When the Sommelier Is Wrong',                titleFr:'Quand le sommelier se trompe',                titleEs:'Cuando el Sommelier se Equivoca',emoji:'🍷', mins:10, category: 'team-management',          blogSlug:'wine-service-tips', scenarioIds: [3, 25, 77, 78, 79], track:'craft' },
+
+{ id:13, title:'Multi-Course Pacing',         titleFr:'Rythme des plats multiples',           titleEs:'Ritmo de Múltiples Platos',  emoji:'⏲️', mins:12, category:'beverage',        blogSlug:'running-food-and-drinks', scenarioIds: [59, 60, 62, 63, 151], track:'craft' },
+{ id:14, title:'Basic Menu Navigation',    titleFr:'Navigation de base du menu',     titleEs:'Navegación Básica del Menú', emoji:'📖', mins:10, category:'beverage',        blogSlug:'taking-orders-pro', scenarioIds: [8, 43, 87, 90, 91], track:'craft' },
+{ id:15, title:'Wine Pairing Under Time Pressure',    titleFr:'Accords mets-vins sous pression',  titleEs:'Maridaje de Vinos Bajo Presión', emoji:'🍷', mins:12, category:'guest-experience', blogSlug:'perfect-pairings-server', scenarioIds: [31, 50, 51, 86, 88, 89], track:'craft' },
+{ id:16, title:'Allergens & Special Requests at Depth',    titleFr:'Allergènes & demandes spéciales en profondeur',    titleEs:'Alérgenos y Solicitudes Especiales a Fondo', emoji:'⚠️', mins:10, category:'guest-experience', blogSlug:'allergen-dietary-guide', scenarioIds: [13, 17, 28, 95, 104, 66], track:'craft' },
+{ id:17, title:'Team Communication on the Floor',     titleFr:"Communication d'équipe en salle", titleEs:'Comunicación de Equipo en el Salón', emoji:'🗣️', mins:10, category:'menu-upselling',  blogSlug:'communicating-with-the-kitchen', scenarioIds: [82, 100, 101, 102, 129], track:'craft' },
+{ id:18, title:'Reading Subtle Guest Cues',                          titleFr:'Lire les signaux subtils des clients',                            titleEs:'Leer Señales Sutiles del Cliente',                   emoji:'👁️', mins:10, category:'fine-dining',    blogSlug:'silent-service', scenarioIds: [15, 96, 97, 98, 99], track:'craft' },
+{ id:19, title:'Cleanliness & Standards',titleFr:'Propreté & normes', titleEs:'Limpieza y Estándares', emoji:'🧼', mins:10, category:'guest-experience', blogSlug:'sidework-efficiency', scenarioIds: [93, 108, 109, 110, 152], track:'craft' },
+{ id:20, title:'Recovering from Service Errors',titleFr:'Se rattraper après une erreur de service',   titleEs:'Recuperarse de Errores de Servicio', emoji:'🔧', mins:10, category:'menu-upselling',  blogSlug:'recovering-from-mistakes', scenarioIds: [10, 45, 64, 123, 126], track:'craft' },
+
+// === MASTERY (Paid) ===
+{ id:21, title:'Mentoring the New Server',   titleFr:'Encadrer le nouveau serveur',            titleEs:'Mentoría al Nuevo Mesero', emoji:'🌱', mins:10, category: 'team-management',          blogSlug:'onboard-new-server', scenarioIds: [81, 118, 119, 120, 131], track:'mastery' },
+{ id:22, title:'Closing the Interaction',     titleFr:"Clore l'interaction",         titleEs:'Cerrar la Interacción', emoji:'👋', mins:8,  category: 'tech',          blogSlug:'presenting-the-check', scenarioIds: [7, 74, 75, 76, 127], track:'mastery' },
+{ id:23, title:'Edge-Case Situations',       titleFr:'Situations limites',     titleEs:'Situaciones Límite', emoji:'🎯', mins:10, category:'team-management', blogSlug:'when-to-call-the-manager', scenarioIds: [22, 48, 34, 83, 27], track:'mastery' },
+{ id:24, title:'Leadership on the Floor',    titleFr:'Leadership en salle',   titleEs:'Liderazgo en el Salón', emoji:'🧭', mins:10, category: 'team-management',       blogSlug:'moving-into-management', scenarioIds: [84, 133, 134, 135, 136], track:'mastery' },
+{ id:25, title:'Bar Service Integration',                  titleFr:'Intégration du service au bar',                            titleEs:'Integración del Servicio de Bar',            emoji:'🍸', mins:12, category: 'beverage',   blogSlug:'cocktail-food-pairing', scenarioIds: [138, 139, 140, 141, 142,
+
+Approved. Proceeding with full completion.
+
+Here is the complete, ready-to-paste update for public/js/content.js.
+
+Updated modules array with track assignments
+
+<code class="language-js">const modules = [
+  // === FOUNDATIONS (Free) ===
+  { id:1,  title:'The First 90 Seconds',         titleFr:'Les 90 premières secondes',              titleEs:'Los Primeros 90 Segundos',      emoji:'⏱️', mins:10, category:'fine-dining',    blogSlug:'mastering-the-greeting', scenarioIds: [37, 38, 39, 40, 41], track:'foundations' },
+  { id:2,  title:'Reading the Table',            titleFr:'Lire la table',           titleEs:'Leer la Mesa',           emoji:'👀', mins:10, category:'guest-experience', blogSlug:'eight-table-types', scenarioIds: [9, 42, 44, 61, 103], track:'foundations' },
+  { id:3,  title:'Managing the 45-Minute Delay', titleFr:'Gérer le retard de 45 minutes',        titleEs:'Gestionar el Retraso de 45 Minutos',       emoji:'⏳', mins:12, category:'beverage',        blogSlug:'high-volume-service-weeds', scenarioIds: [4, 19, 35, 105, 106], track:'foundations' },
+  { id:4,  title:'Table-Side Wine Service Under Pressure',titleFr:'Service du vin en salle sous pression',      titleEs:'Servicio de Vino en Mesa Bajo Presión', emoji:'🥂', mins:12, category:'beverage',        blogSlug:'wine-service-tips', scenarioIds: [11, 47, 115, 116, 117], track:'foundations' },
+  { id:5,  title:'The Subtle Art of the Upsell',             titleFr:"L'art subtil de la vente additionnelle",         titleEs:'El Arte Sutil de la Venta Sugestiva',        emoji:'💰', mins:10, category:'menu-upselling',  blogSlug:'natural-upsell-language', scenarioIds: [54, 55, 56, 57, 58], track:'foundations' },
+  { id:6,  title:'Wine Service Fundamentals',             titleFr:'Fondamentaux du service du vin',              titleEs:'Fundamentos del Servicio de Vino',    emoji:'🍷', mins:10, category:'fine-dining',    blogSlug:'wine-fundamentals-servers', scenarioIds: [2, 46, 49, 52, 53], track:'foundations' },
+  { id:7,  title:'Guest Psychology Basics',    titleFr:'Bases de la psychologie du client',  titleEs:'Fundamentos de Psicología del Cliente', emoji:'🧠', mins:10, category:'fine-dining', blogSlug:'reading-big-tippers', scenarioIds: [65, 67, 68, 69, 92], track:'foundations' },
+  { id:8,  title:'Handling Simple Complaints',                   titleFr:'Gérer les plaintes simples',                        titleEs:'Manejo de Quejas Sencillas',                    emoji:'🛠️', mins:8,  category:'guest-experience', blogSlug:'handle-complaints', scenarioIds: [23, 112, 124, 125, 121], track:'foundations' },
+  { id:9,  title:'Difficult Guests: De-escalation',                 titleFr:'Clients difficiles : désamorçage',                titleEs:'Clientes Difíciles: Desescalada',           emoji:'🧯', mins:10, category:'guest-experience', blogSlug:'difficult-guests-playbook', scenarioIds: [1, 24, 128, 130, 132], track:'foundations' },
+  { id:10, title:'Body Language & Presence',                    titleFr:'Langage corporel & présence',                              titleEs:'Lenguaje Corporal y Presencia',                     emoji:'🧍', mins:8,  category:'guest-experience', blogSlug:'body-language-servers', scenarioIds: [5, 36, 73, 122, 94], track:'foundations' },
+
+  // === CRAFT (Paid) ===
+  { id:11, title:'Private Dining Command',                     titleFr:'Maîtrise des salons privés',                      titleEs:'Dominio de Comedores Privados',          emoji:'🍽️', mins:12, category:'beverage',        blogSlug:'large-parties-events-banquets', scenarioIds: [12, 70, 71, 72, 80], track:'craft' },
+  { id:12, title:'When the Sommelier Is Wrong',                titleFr:'Quand le sommelier se trompe',                titleEs:'Cuando el Sommelier se Equivoca',emoji:'🍷', mins:10, category: 'team-management',          blogSlug:'wine-service-tips', scenarioIds: [3, 25, 77, 78, 79], track:'craft' },</code>
+
+<code class="language-js">{ id:13, title:'Multi-Course Pacing',         titleFr:'Rythme des plats multiples',           titleEs:'Ritmo de Múltiples Platos',  emoji:'⏲️', mins:12, category:'beverage',        blogSlug:'running-food-and-drinks', scenarioIds: [59, 60, 62, 63, 151], track:'craft' },
+  { id:14, title:'Basic Menu Navigation',    titleFr:'Navigation de base du menu',     titleEs:'Navegación Básica del Menú', emoji:'📖', mins:10, category:'beverage',        blogSlug:'taking-orders-pro', scenarioIds: [8, 43, 87, 90, 91], track:'craft' },
+  { id:15, title:'Wine Pairing Under Time Pressure',    titleFr:'Accords mets-vins sous pression',  titleEs:'Maridaje de Vinos Bajo Presión', emoji:'🍷', mins:12, category:'guest-experience', blogSlug:'perfect-pairings-server', scenarioIds: [31, 50, 51, 86, 88, 89], track:'craft' },
+  { id:16, title:'Allergens & Special Requests at Depth',    titleFr:'Allergènes & demandes spéciales en profondeur',    titleEs:'Alérgenos y Solicitudes Especiales a Fondo', emoji:'⚠️', mins:10, category:'guest-experience', blogSlug:'allergen-dietary-guide', scenarioIds: [13, 17, 28, 95, 104, 66], track:'craft' },
+  { id:17, title:'Team Communication on the Floor',     titleFr:"Communication d'équipe en salle", titleEs:'Comunicación de Equipo en el Salón', emoji:'🗣️', mins:10, category:'menu-upselling',  blogSlug:'communicating-with-the-kitchen', scenarioIds: [82, 100, 101, 102, 129], track:'craft' },
+  { id:18, title:'Reading Subtle Guest Cues',                          titleFr:'Lire les signaux subtils des clients',                            titleEs:'Leer Señales Sutiles del Cliente',                   emoji:'👁️', mins:10, category:'fine-dining',    blogSlug:'silent-service', scenarioIds: [15, 96, 97, 98, 99], track:'craft' },
+  { id:19, title:'Cleanliness & Standards',titleFr:'Propreté & normes', titleEs:'Limpieza y Estándares', emoji:'🧼', mins:10, category:'guest-experience', blogSlug:'sidework-efficiency', scenarioIds: [93, 108, 109, 110, 152], track:'craft' },
+  { id:20, title:'Recovering from Service Errors',titleFr:'Se rattraper après une erreur de service',   titleEs:'Recuperarse de Errores de Servicio', emoji:'🔧', mins:10, category:'menu-upselling',  blogSlug:'recovering-from-mistakes', scenarioIds: [10, 45, 64, 123, 126], track:'craft' },
+
+  // === MASTERY (Paid) ===
+  { id:21, title:'Mentoring the New Server',   titleFr:'Encadrer le nouveau serveur',            titleEs:'Mentoría al Nuevo Mesero', emoji:'🌱', mins:10, category: 'team-management',          blogSlug:'onboard-new-server', scenarioIds: [81, 118, 119, 120, 131], track:'mastery' },
+  { id:22, title:'Closing the Interaction',     titleFr:"Clore l'interaction",         titleEs:'Cerrar la Interacción', emoji:'👋', mins:8,  category: 'tech',          blogSlug:'presenting-the-check', scenarioIds: [7, 74, 75, 76, 127], track:'mastery' },
+  { id:23, title:'Edge-Case Situations',       titleFr:'Situations limites',     titleEs:'Situaciones Límite', emoji:'🎯', mins:10, category:'team-management', blogSlug:'when-to-call-the-manager', scenarioIds: [22, 48, 34, 83, 27], track:'mastery' },
+  { id:24, title:'Leadership on the Floor',    titleFr:'Leadership en salle',   titleEs:'Liderazgo en el Salón', emoji:'🧭', mins:10, category: 'team-management',       blogSlug:'moving-into-management', scenarioIds: [84, 133, 134, 135, 136], track:'mastery' },
+  { id:25, title:'Bar Service Integration',                  titleFr:'Intégration du service au bar',                            titleEs:'Integración del Servicio de Bar',            emoji:'🍸', mins:12, category: 'beverage',   blogSlug:'cocktail-food-pairing', scenarioIds: [138, 139, 140, 141, 142, 147, 148, 149, 150], track:'mastery' },
+</code>
+
+<code class="language-js">  { id:26, title:'Handling VIPs Gracefully',            titleFr:'Gérer les VIP avec élégance',               titleEs:'Atender VIPs con Elegancia',              emoji:'🌟', mins:12, category: 'beverage',   blogSlug:'special-occasions', scenarioIds: [6, 14, 111, 113, 114], track:'mastery' },</code>
+
+<code class="language-js">{ id:27, title:'Speed Without Sacrificing Warmth',         titleFr:'La rapidité sans sacrifier la chaleur', titleEs:'Rapidez Sin Sacrificar la Calidez',    emoji:'⚡', mins:14, category: 'beverage',   blogSlug:'multi-tabling-systems', scenarioIds: [107, 143, 144, 145, 146], track:'mastery' },
+  { id:28, title:'High-Pressure VIP & Celebrity Service',           titleFr:'Service VIP & célébrités sous haute pression',  titleEs:'Servicio VIP y de Celebridades de Alta Presión',    emoji:'⭐', mins:12, category: 'guest-experience',       blogSlug:'reading-big-tippers', scenarioIds: [18, 153, 154, 155, 156], track:'mastery' },
+  { id:29, title:'Reading and Shaping the Room', titleFr:'Lire et façonner la salle',     titleEs:'Leer y Moldear el Salón',   emoji:'🎛️', mins:12, category: 'guest-experience', blogSlug:'matching-energy-service', scenarioIds: [16, 20, 21, 33, 32], track:'mastery' },
+  { id:30, title:'Long-Term Guest Relationship Building',                       titleFr:'Bâtir des relations clients durables',                       titleEs:'Construir Relaciones Duraderas con los Clientes',                      emoji:'🤝', mins:10, category: 'team-management',      blogSlug:'building-rapport-at-bar', scenarioIds: [26, 29, 30, 85, 137], track:'mastery' }
+];
+</code>
+Additional required changes (to fully complete)
+
+I also need to add a small utility function near the top of content.js:
+
+<code class="language-js">function isModuleUnlocked(module, userPlan) {
+  if (module.track === 'foundations') return true;
+  return userPlan === 'paid' || userPlan === 'team' || userPlan === 'enterprise';
+}
+</code>
+Would you like me to also generate:
+
+1. The access-control updates for app.html / nav-auth.js?
+2. The Knowledge Center tier structure?
+3. The homepage "Tracks" section content?
+
+Reply with the next piece you want completed.
