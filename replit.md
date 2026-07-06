@@ -107,6 +107,8 @@ Checkout plan keys: `premium_monthly`, `premium_annual`, `starter_team`, `pro_te
 
 **CSP:** Helmet sends a Content-Security-Policy allowlisting the third-party origins the site uses (Stripe, Google Fonts/Tag Manager, ContentSquare, Tailwind/cdnjs/jsDelivr, YouTube). `'unsafe-inline'`/`'unsafe-eval'` and `script-src-attr 'unsafe-inline'` are required because the pages use hundreds of inline scripts/handlers and the Tailwind Play CDN. `upgrade-insecure-requests` is production-only.
 
+**Module ↔ scenario integrity:** The training SPA (`app.html`) renders each module's practice scenarios by resolving `modules[].scenarioIds` against `practiceScenarios` (id lookup) in `public/js/content.js`; `lib/tracks.js` `MODULE_SCENARIOS` mirrors the same mapping for server-side completion/gating. Keep the two in lockstep. Verify with `node scripts/check-module-scenarios.js` (registered as the `module-scenarios` validation): it asserts every `scenarioId` resolves, each scenario's own `moduleId` points back to its owning module (on-topic), `MODULE_SCENARIOS` matches `scenarioIds` exactly, all trilingual fields (EN/FR/ES title/desc/scene) are present, and no scenario is orphaned or double-referenced. Run it after any module rename or scenario id change.
+
 ## Manager Dashboard
 
 A user becomes a manager by `POST /api/manager/create-restaurant` (creates a `restaurants` row with an 8-char `invite_code`, promotes the caller to `role='manager'`, sets `restaurant_id`). Others join via `POST /api/manager/join { inviteCode }` (sets `restaurant_id` without changing role — for co-managers). Shareable invite URL: `https://servemasteracademy.ca/join?code=XXXXXXXX`.
