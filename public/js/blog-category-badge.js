@@ -4,7 +4,7 @@
   var cat = meta.getAttribute('content');
 
   var config = {
-    'bartending':    { label: 'Bartending',         color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
+    'bartending':    { label: 'Bartending',         color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
     'server-skills': { label: 'Server Skills',       color: '#34d399', bg: 'rgba(52,211,153,0.12)'  },
     'management':    { label: 'Management & Career', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  }
   };

@@ -21,13 +21,13 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      #sma-chat-bubble { position:fixed; bottom:24px; right:24px; z-index:9999; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 4px 20px rgba(245,158,11,0.4); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s,box-shadow 0.2s; }
-      #sma-chat-bubble:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(245,158,11,0.55); }
+      #sma-chat-bubble { position:fixed; bottom:24px; right:24px; z-index:9999; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#fbbf24,#d97706); box-shadow:0 4px 20px rgba(251,191,36,0.4); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s,box-shadow 0.2s; }
+      #sma-chat-bubble:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(251,191,36,0.55); }
       #sma-chat-bubble svg { width:26px; height:26px; fill:none; stroke:#09090b; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
       #sma-chat-panel { position:fixed; bottom:92px; right:24px; z-index:9999; width:360px; max-width:calc(100vw - 32px); background:#09090b; border:1px solid #3f3f46; border-radius:20px; box-shadow:0 12px 48px rgba(0,0,0,0.7); display:flex; flex-direction:column; overflow:hidden; transition:opacity 0.2s,transform 0.2s; }
       #sma-chat-panel.sma-hidden { opacity:0; pointer-events:none; transform:translateY(12px); }
       #sma-chat-header { background:#18181b; padding:14px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #27272a; }
-      #sma-chat-header .sma-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#f59e0b,#d97706); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+      #sma-chat-header .sma-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#fbbf24,#d97706); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
       #sma-chat-header .sma-info { flex:1; min-width:0; }
       #sma-chat-header .sma-info strong { display:block; font-size:14px; font-weight:700; color:#fafafa; }
       #sma-chat-header .sma-info span { font-size:11px; color:#71717a; }
@@ -36,14 +36,14 @@
       #sma-chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; height:320px; scroll-behavior:smooth; }
       #sma-chat-messages::-webkit-scrollbar { width:4px; } #sma-chat-messages::-webkit-scrollbar-track { background:transparent; } #sma-chat-messages::-webkit-scrollbar-thumb { background:#3f3f46; border-radius:2px; }
       .sma-msg { max-width:86%; padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.5; word-wrap:break-word; }
-      .sma-msg-user { align-self:flex-end; background:#f59e0b; color:#09090b; font-weight:500; border-bottom-right-radius:4px; }
+      .sma-msg-user { align-self:flex-end; background:#fbbf24; color:#09090b; font-weight:500; border-bottom-right-radius:4px; }
       .sma-msg-bot { align-self:flex-start; background:#27272a; color:#e4e4e7; border-bottom-left-radius:4px; }
       .sma-msg-typing { align-self:flex-start; background:#27272a; color:#71717a; padding:10px 16px; border-radius:14px; border-bottom-left-radius:4px; font-size:20px; letter-spacing:3px; }
       #sma-chat-input-row { display:flex; gap:8px; padding:12px; border-top:1px solid #27272a; background:#18181b; }
       #sma-chat-input { flex:1; background:#27272a; border:1px solid #3f3f46; border-radius:12px; padding:9px 12px; font-size:13px; color:#fafafa; outline:none; resize:none; font-family:inherit; line-height:1.4; transition:border-color 0.15s; }
-      #sma-chat-input:focus { border-color:#f59e0b; }
+      #sma-chat-input:focus { border-color:#fbbf24; }
       #sma-chat-input::placeholder { color:#71717a; }
-      #sma-chat-send { background:#f59e0b; border:none; border-radius:10px; width:38px; height:38px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; align-self:flex-end; transition:background 0.15s; }
+      #sma-chat-send { background:#fbbf24; border:none; border-radius:10px; width:38px; height:38px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; align-self:flex-end; transition:background 0.15s; }
       #sma-chat-send:hover { background:#d97706; }
       #sma-chat-send svg { width:18px; height:18px; fill:none; stroke:#09090b; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
       #sma-chat-send:disabled { opacity:0.5; cursor:not-allowed; }

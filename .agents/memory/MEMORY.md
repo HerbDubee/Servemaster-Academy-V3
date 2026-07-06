@@ -9,3 +9,4 @@
 - [Tailwind build + amber→coral remap](tailwind-build-and-remap.md) — compiled /tailwind.css needs `npm run build:css` after class changes; amber-* utilities render CORAL via tailwind-input.css overrides; app-training.html still uses the CDN.
 - [Progressive tracks relabel & marketing i18n](progressive-tracks-relabel.md) — lib/tracks.js owns 3-track membership; module titles live only in content.js modules[]; relabel was title-only (mismatches in docs/); lang.js overrides HTML for marketing copy.
 - [Scenario topic-drift checker](scenario-drift-checker.md) — check-module-scenarios.js advisory drift: island (1 scenario) + cluster (majority) passes; spirits high-signal; clean tree = 0 warnings (6 reviewed false-positives suppressed via allowlist).
+- [Brand accent palette](brand-palette.md) — coral #FF5E3A primary, amber-gold #fbbf24 editorial; tokens in tailwind.config brand.* + tailwind-input.css :root; amber-* utilities remap to coral (rebuild css).

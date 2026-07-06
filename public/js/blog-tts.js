@@ -149,8 +149,8 @@
 
     var lbl = getLabels();
     var isActive = state !== 'idle';
-    btn.style.borderColor = isActive ? '#f59e0b' : '#3f3f46';
-    btn.style.color = isActive ? '#f59e0b' : '#a1a1aa';
+    btn.style.borderColor = isActive ? '#fbbf24' : '#3f3f46';
+    btn.style.color = isActive ? '#fbbf24' : '#a1a1aa';
     btn.setAttribute('aria-label', lbl.aria);
     btn.setAttribute('title', lbl.aria);
 

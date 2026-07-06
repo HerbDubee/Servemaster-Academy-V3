@@ -3,6 +3,22 @@
 @tailwind utilities;
 
 /* ========================================
+   ServeMaster Academy — Accent palette (single source of truth)
+   Primary CTA:  coral  #FF5E3A  (hover #e8522e)
+   Editorial:    amber  #fbbf24  (book / reading accent)
+   Secondary:    teal   #0A4D68
+   Success:      green  #22C55E
+   Also exposed as Tailwind theme colors (see tailwind.config.js `brand.*`).
+   ======================================== */
+:root {
+  --sma-coral: #FF5E3A;
+  --sma-coral-hover: #e8522e;
+  --sma-amber: #fbbf24;
+  --sma-teal: #0A4D68;
+  --sma-success: #22C55E;
+}
+
+/* ========================================
    ServeMaster Academy Brand Color Overrides
    Primary CTA: #FF5E3A (brand orange)
    Secondary: #0A4D68 (brand teal)
