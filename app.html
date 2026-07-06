@@ -228,8 +228,9 @@
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f4">Badges, streaks & leaderboard</span></div>
         <div class="flex items-center gap-3 text-sm"><span class="text-amber-400">✓</span> <span id="ob-f5">Completion certificate PDF</span></div>
       </div>
-      <button onclick="obFinish()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors" id="ob-start">Start Learning 🍸</button>
-      <button onclick="showAuthModal()" class="w-full border border-zinc-700 hover:border-amber-400 text-zinc-300 hover:text-amber-400 font-medium py-3 rounded-3xl text-sm transition-colors" id="ob-account-btn">Create account to sync across devices</button>
+      <button onclick="showAuthModal()" class="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-4 rounded-3xl text-lg transition-colors" id="ob-account-btn">Create account to save your progress</button>
+      <button onclick="obFinish()" class="w-full border border-zinc-700 hover:border-amber-400 text-zinc-300 hover:text-amber-400 font-medium py-3 rounded-3xl text-sm transition-colors" id="ob-start">Skip for now — start learning 🍸</button>
+      <p class="text-amber-400/80 text-xs flex items-start gap-1.5 justify-center text-center px-2"><span class="shrink-0">⚠️</span><span id="ob-local-warn">Without an account, your progress is saved only on this device and browser — it can be lost if you clear your browser data or switch devices.</span></p>
     </div>
     <div class="flex justify-center gap-2 mt-8">
       <div id="ob-dot-1" class="w-2 h-2 rounded-full bg-amber-400"></div>
@@ -757,8 +758,9 @@ const STRINGS = {
     readySub: 'Your personalized curriculum is ready. 30 modules, real skills, real results.',
     f1: '30 professional training modules', f2: '150+ AI role-play scenarios',
     f3: 'Voice role-play & tray simulation', f4: 'Badges, streaks & leaderboard',
-    f5: 'Completion certificate PDF', startBtn: 'Start Learning 🍸',
-    accountBtn: 'Create account to sync across devices',
+    f5: 'Completion certificate PDF', startBtn: 'Skip for now — start learning 🍸',
+    accountBtn: 'Create account to save your progress',
+    localWarn: 'Without an account, your progress is saved only on this device and browser — it can be lost if you clear your browser data or switch devices.',
     dashContinue: 'Continue Learning', dashBadges: 'Recent Badges',
     learnTitle: 'All Modules', practiceTitle: 'AI Role-Play Practice',
     practiceSub: 'Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.',
@@ -797,8 +799,9 @@ const STRINGS = {
     readySub: 'Votre programme personnalisé est prêt. 30 modules, de vraies compétences, de vrais résultats.',
     f1: '30 modules de formation professionnelle', f2: '150+ scénarios de jeu de rôle IA',
     f3: 'Jeu de rôle vocal & simulation de plateau', f4: 'Badges, séries & classement',
-    f5: 'Certificat de réussite PDF', startBtn: 'Commencer 🍸',
-    accountBtn: 'Créer un compte pour synchronizer entre appareils',
+    f5: 'Certificat de réussite PDF', startBtn: 'Passer pour l\'instant — commencer 🍸',
+    accountBtn: 'Créer un compte pour sauvegarder votre progression',
+    localWarn: 'Sans compte, votre progression est enregistrée uniquement sur cet appareil et ce navigateur — elle peut être perdue si vous effacez vos données de navigation ou changez d\'appareil.',
     dashContinue: 'Continuer à apprendre', dashBadges: 'Badges Récents',
     learnTitle: 'Tous les modules', practiceTitle: 'Pratique IA - Jeu de rôle',
     practiceSub: 'Choisissez un scénario. Vous jouez le serveur — l\'IA joue le client. Recevez des conseils instantanés après chaque réponse.',
@@ -837,8 +840,9 @@ const STRINGS = {
     readySub: 'Tu plan de estudios personalizado está listo. 30 módulos, habilidades reales, resultados reales.',
     f1: '30 módulos de formación profesional', f2: '150+ escenarios de juego de rol con IA',
     f3: 'Juego de rol vocal y simulación de bandeja', f4: 'Insignias, rachas y tabla de líderes',
-    f5: 'Certificado de finalización en PDF', startBtn: 'Comenzar 🍸',
-    accountBtn: 'Crear cuenta para sincronizar entre dispositivos',
+    f5: 'Certificado de finalización en PDF', startBtn: 'Omitir por ahora — comenzar 🍸',
+    accountBtn: 'Crear cuenta para guardar tu progreso',
+    localWarn: 'Sin una cuenta, tu progreso se guarda solo en este dispositivo y navegador — puede perderse si borras los datos del navegador o cambias de dispositivo.',
     dashContinue: 'Seguir Aprendiendo', dashBadges: 'Insignias Recientes',
     learnTitle: 'Todos los Módulos', practiceTitle: 'Práctica de IA — Juego de Rol',
     practiceSub: 'Elige un escenario. Tú juegas al mesero — la IA juega al cliente. Recibe coaching instantáneo después de cada respuesta.',
@@ -884,8 +888,8 @@ function setLang(l) {
   applyLangStrings();
 }
 function applyLangStrings() {
-  const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','dashContinue','dashBadges','learnTitle','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
-  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn', navDashboard:'nav-dashboard', navLearn:'nav-learn', navPractice:'nav-practice', navAchievements:'nav-achievements', navLeaderboard:'nav-leaderboard', navManager:'nav-manager' };
+  const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','localWarn','dashContinue','dashBadges','learnTitle','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
+  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', localWarn:'ob-local-warn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn', navDashboard:'nav-dashboard', navLearn:'nav-learn', navPractice:'nav-practice', navAchievements:'nav-achievements', navLeaderboard:'nav-leaderboard', navManager:'nav-manager' };
   for (const [k, elId] of Object.entries(map)) {
     const text = t(k);
     if (Array.isArray(elId)) { elId.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = text; }); }
