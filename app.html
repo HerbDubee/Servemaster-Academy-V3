@@ -4548,6 +4548,8 @@ function renderAll() {
       const trComplete = st.completion[tr.id];
       const trName = lang === 'fr' ? tr.nameFr : lang === 'es' ? tr.nameEs : tr.name;
       const trTag  = lang === 'fr' ? tr.taglineFr : lang === 'es' ? tr.taglineEs : tr.tagline;
+      const trSub  = lang === 'fr' ? tr.subtitleFr : lang === 'es' ? tr.subtitleEs : tr.subtitle;
+      const trBook = lang === 'fr' ? tr.bookStageFr : lang === 'es' ? tr.bookStageEs : tr.bookStage;
       const doneCount = tr.moduleIds.filter(mid => { const m = modules.find(x => x.id === mid); return m && isTopicComplete(m); }).length;
       const clr = TRACK_COLORS[tr.id] || TRACK_COLORS.craft;
       const prereqTr = tr.prereq ? st.tracks.find(t => t.id === tr.prereq) : null;
@@ -4572,11 +4574,13 @@ function renderAll() {
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="color:${clr.c};background:${clr.bg}">${stageLabel} ${tr.order}</span>
             <span class="text-sm font-bold uppercase tracking-widest" style="color:${clr.c}">${trName}</span>
+            ${trSub ? `<span class="text-sm font-medium text-zinc-300">${trSub}</span>` : ''}
             ${freeTag}
           </div>
           ${statusHtml}
         </div>
         <div class="text-zinc-500 text-xs mt-0.5">${trTag}</div>
+        ${trBook ? `<div class="text-zinc-400 text-xs mt-1 flex items-start gap-1.5"><span style="color:#fbbf24">📖</span><span class="italic">${trBook}</span></div>` : ''}
       </div>`;
       tr.moduleIds.forEach((mid, i) => {
         const m = modules.find(x => x.id === mid);

@@ -74,6 +74,33 @@ const moduleBookLinks = {
     workbookFr:"Déroulez votre service de bouteille étape par étape, de mémoire. Où vos mains hésitent-elles sous pression — et quel geste unique rendrait toute la séquence naturelle ?",
     workbookEs:"Repasa tu servicio de botella paso a paso, de memoria. ¿Dónde dudan tus manos bajo presión — y qué gesto único haría que toda la secuencia pareciera natural?"
   },
+  5: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:11, chapterTitle:'London Ikoyi',
+    blurb:"At Ikoyi, Luca sells the Suya lamb shoulder not with adjectives but with a story — the spice merchants of Kano, the twenty-minute plantain ritual — until the guest wants the journey, not just the dish. That's the upsell as narration, never pressure.",
+    blurbFr:"Chez Ikoyi, Luca vend l'épaule d'agneau suya non pas avec des adjectifs mais avec une histoire — les marchands d'épices de Kano, le rituel de vingt minutes de la plantain — jusqu'à ce que le client veuille le voyage, pas seulement le plat. C'est la vente additionnelle comme récit, jamais comme pression.",
+    blurbEs:"En Ikoyi, Luca vende la paletilla de cordero suya no con adjetivos sino con una historia — los mercaderes de especias de Kano, el ritual de veinte minutos del plátano — hasta que el cliente quiere el viaje, no solo el plato. Es la venta sugestiva como relato, nunca como presión.",
+    workbook:"Pick one dish you want to sell more of. Write the two-sentence story behind it — an origin, a ritual, a person — that would make a guest choose it without you ever pushing.",
+    workbookFr:"Choisissez un plat que vous aimeriez vendre davantage. Écrivez l'histoire en deux phrases derrière lui — une origine, un rituel, une personne — qui pousserait un client à le choisir sans jamais insister.",
+    workbookEs:"Elige un plato que quieras vender más. Escribe la historia en dos frases detrás de él — un origen, un ritual, una persona — que haría que un cliente lo eligiera sin que tú insistas jamás."
+  },
+  6: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:10, chapterTitle:'Barcelona Farewell',
+    blurb:"For her exam, Sofia decants a Priorat by watching the candle flame through the bottle's neck for fifty seconds, catching the sediment's shadow before it clouds the pour. Wine service, stripped back to its patient fundamentals.",
+    blurbFr:"Pour son examen, Sofia décante un Priorat en observant la flamme de la bougie à travers le col de la bouteille pendant cinquante secondes, saisissant l'ombre du dépôt avant qu'il ne trouble le service. Le service du vin, réduit à ses patients fondamentaux.",
+    blurbEs:"Para su examen, Sofia decanta un Priorat observando la llama de la vela a través del cuello de la botella durante cincuenta segundos, captando la sombra del sedimento antes de que enturbie el servicio. El servicio del vino, reducido a sus pacientes fundamentos.",
+    workbook:"Walk through your basic wine service from bottle to first sip. Name the one step you rush — and slow it down on your next table until it feels deliberate.",
+    workbookFr:"Déroulez votre service du vin de base, de la bouteille à la première gorgée. Nommez l'étape que vous précipitez — et ralentissez-la à votre prochaine table jusqu'à ce qu'elle paraisse maîtrisée.",
+    workbookEs:"Repasa tu servicio de vino básico, de la botella al primer sorbo. Nombra el único paso que apresuras — y ralentízalo en tu próxima mesa hasta que se sienta deliberado."
+  },
+  7: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:3, chapterTitle:'The Near Miss',
+    blurb:"At the Medici Fountain, Sofia watches an old man's shoulders drop half an inch when his wife covers his hand — and reads the whole grammar of their marriage in the gesture. Guest psychology begins with noticing what people never say.",
+    blurbFr:"À la fontaine Médicis, Sofia observe les épaules d'un vieil homme s'affaisser d'un centimètre quand sa femme couvre sa main — et lit toute la grammaire de leur mariage dans ce geste. La psychologie du client commence par remarquer ce que les gens ne disent jamais.",
+    blurbEs:"En la fuente de Médici, Sofia observa cómo los hombros de un anciano caen un centímetro cuando su esposa cubre su mano — y lee toda la gramática de su matrimonio en ese gesto. La psicología del cliente empieza por notar lo que la gente nunca dice.",
+    workbook:"At your next table, guess one thing about the guests' relationship or mood from body language alone — then watch for proof. How often is your first read right?",
+    workbookFr:"À votre prochaine table, devinez une chose sur la relation ou l'humeur des clients à partir du seul langage corporel — puis cherchez la preuve. À quelle fréquence votre première lecture est-elle juste ?",
+    workbookEs:"En tu próxima mesa, adivina una cosa sobre la relación o el ánimo de los clientes solo con el lenguaje corporal — luego busca la prueba. ¿Con qué frecuencia aciertas a la primera?"
+  },
   8: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:4, chapterTitle:'Florence Rhythm',
     blurb:"A guest sends a dish back cold. Instead of defending the kitchen, the server listens, owns it, and turns the recovery into a gift — the calm complaint arc you practice here.",
@@ -101,6 +128,42 @@ const moduleBookLinks = {
     workbookFr:"Le temps d'un service, notez chaque besoin capté par le seul langage corporel. Quel signal lisez-vous le plus vite — et lequel vous échappe encore ?",
     workbookEs:"Durante un turno, anota cada necesidad que captaste solo con el lenguaje corporal. ¿Qué señal lees más rápido — y cuál todavía se te escapa?"
   },
+  11: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:8, chapterTitle:"The Widower's Wine",
+    blurb:"In the hushed dining room of Le Gabriel, every movement carries — a footfall, a glance, the weight of a pause. Luca commands the room not by presence but by restraint, which is exactly what a private, high-stakes service demands.",
+    blurbFr:"Dans la salle feutrée du Gabriel, chaque mouvement porte — un pas, un regard, le poids d'une pause. Luca maîtrise la salle non par sa présence mais par sa retenue, exactement ce qu'exige un service privé à fort enjeu.",
+    blurbEs:"En el salón silencioso de Le Gabriel, cada movimiento pesa — un paso, una mirada, el peso de una pausa. Luca domina el salón no por su presencia sino por su contención, justo lo que exige un servicio privado de alto nivel.",
+    workbook:"Recall a room or party you had to 'own.' Where did you fill silence out of nerves — and where would holding back have made you look more in command?",
+    workbookFr:"Repensez à une salle ou une réception que vous deviez « tenir ». Où avez-vous comblé le silence par nervosité — et où la retenue vous aurait-elle donné plus d'autorité ?",
+    workbookEs:"Recuerda un salón o evento que tuviste que «dominar». ¿Dónde llenaste el silencio por nervios — y dónde la contención te habría hecho parecer más al mando?"
+  },
+  12: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:6, chapterTitle:'The City That Shouts',
+    blurb:"At Le Cordon Bleu, Sofia tells Professor Vega the 2019 Rioja Reserva needs decanting and a warmer glass — against the rulebook, and she's right. Knowing when the expert is wrong takes evidence, not nerve alone.",
+    blurbFr:"Au Cordon Bleu, Sofia dit au professeur Vega que le Rioja Reserva 2019 a besoin d'être décanté et servi plus chaud — contre le règlement, et elle a raison. Savoir quand l'expert se trompe demande des preuves, pas seulement de l'audace.",
+    blurbEs:"En Le Cordon Bleu, Sofia le dice al profesor Vega que el Rioja Reserva 2019 necesita decantarse y una copa más templada — contra el reglamento, y tiene razón. Saber cuándo el experto se equivoca exige pruebas, no solo valor.",
+    workbook:"Recall a time you disagreed with someone senior about a wine or a call. What evidence would have let you make the case calmly — and would you raise it now?",
+    workbookFr:"Repensez à une fois où vous étiez en désaccord avec un supérieur sur un vin ou une décision. Quelle preuve vous aurait permis de plaider calmement — et la soulèveriez-vous aujourd'hui ?",
+    workbookEs:"Recuerda una vez en que discrepaste con alguien de mayor rango sobre un vino o una decisión. ¿Qué prueba te habría permitido defender tu postura con calma — y la plantearías ahora?"
+  },
+  13: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:2, chapterTitle:'Paris Precision',
+    blurb:"When the kitchen stalls two minutes, Luca doesn't apologize — he pours a bridge wine and lets the table's rhythm carry the gap, plates arriving in pairs like a pulse. Pacing is the art of making the wait feel like part of the plan.",
+    blurbFr:"Quand la cuisine prend deux minutes de retard, Luca ne s'excuse pas — il sert un vin de transition et laisse le rythme de la table combler le vide, les plats arrivant par deux comme une pulsation. Le rythme, c'est l'art de faire de l'attente une partie du plan.",
+    blurbEs:"Cuando la cocina se retrasa dos minutos, Luca no se disculpa — sirve un vino puente y deja que el ritmo de la mesa cubra el hueco, los platos llegando de dos en dos como un pulso. El ritmo es el arte de hacer que la espera parezca parte del plan.",
+    workbook:"Think of a multi-course table that dragged. Where did the rhythm break — and what could you have offered in that gap to keep the meal feeling like one continuous story?",
+    workbookFr:"Pensez à une table à plusieurs plats qui a traîné. Où le rythme s'est-il brisé — et qu'auriez-vous pu offrir dans ce vide pour que le repas reste une seule histoire continue ?",
+    workbookEs:"Piensa en una mesa de varios platos que se alargó. ¿Dónde se rompió el ritmo — y qué podrías haber ofrecido en ese hueco para que la comida siguiera sintiéndose como una sola historia continua?"
+  },
+  14: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:1, chapterTitle:'The City That Starts Without You',
+    blurb:"On her first night, Sofia blanks on the acqua pazza — its tomato, olives, capers — and steers a guest toward the wrong wine. The chapter shows the cost of a shaky menu, and why knowing every dish cold is the ground everything else stands on.",
+    blurbFr:"Lors de sa première soirée, Sofia sèche sur l'acqua pazza — sa tomate, ses olives, ses câpres — et oriente un client vers le mauvais vin. Le chapitre montre le prix d'une carte mal maîtrisée, et pourquoi connaître chaque plat sur le bout des doigts est le socle de tout le reste.",
+    blurbEs:"En su primera noche, Sofia se queda en blanco con la acqua pazza — su tomate, aceitunas, alcaparras — y guía a un cliente hacia el vino equivocado. El capítulo muestra el costo de una carta insegura, y por qué conocer cada plato al dedillo es la base sobre la que se sostiene todo lo demás.",
+    workbook:"Pick the three dishes you explain least confidently. Write each one's key ingredients and one honest line you'd say to a curious guest — then test yourself tomorrow.",
+    workbookFr:"Choisissez les trois plats que vous expliquez le moins sûrement. Notez les ingrédients clés de chacun et une phrase sincère à dire à un client curieux — puis testez-vous demain.",
+    workbookEs:"Elige los tres platos que explicas con menos seguridad. Anota los ingredientes clave de cada uno y una frase honesta que le dirías a un cliente curioso — luego ponte a prueba mañana."
+  },
   15: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:9, chapterTitle:'London Borough Market',
     blurb:"Faced with West African heat on the menu, the server reaches for Riesling and Chenin Blanc and makes the call fast — pairing as quick, confident logic rather than a memorized chart. That's this module under real time pressure.",
@@ -109,6 +172,24 @@ const moduleBookLinks = {
     workbook:"Pick three dishes you pair badly. For each, name one wine and the single reason it works — no chart, just the logic you'd trust at speed.",
     workbookFr:"Choisissez trois plats que vous accordez mal. Pour chacun, nommez un vin et l'unique raison qui le justifie — sans fiche, juste la logique que vous suivriez dans le feu de l'action.",
     workbookEs:"Elige tres platos que maridas mal. Para cada uno, nombra un vino y la única razón por la que funciona — sin tabla, solo la lógica en la que confiarías a toda prisa."
+  },
+  16: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:5, chapterTitle:'Paris Deepening',
+    blurb:"Camille reads a guest's disappointment over a delayed lamb and sets down warm rye and a single butter curl — no words, just a need met early. Handling allergens and special requests at depth is this same anticipatory care, made precise and safe.",
+    blurbFr:"Camille perçoit la déception d'un client face à un agneau en retard et pose un pain de seigle chaud et une noix de beurre — sans un mot, juste un besoin comblé tôt. Gérer les allergènes et les demandes spéciales en profondeur, c'est cette même attention anticipée, rendue précise et sûre.",
+    blurbEs:"Camille percibe la decepción de un cliente por un cordero demorado y deja pan de centeno tibio y una porción de mantequilla — sin palabras, solo una necesidad atendida a tiempo. Manejar alérgenos y solicitudes especiales a fondo es esa misma atención anticipada, hecha precisa y segura.",
+    workbook:"Recall a guest with a real dietary need. Map every point in the meal where it could have gone wrong — and one thing you could pre-empt before they had to ask twice.",
+    workbookFr:"Repensez à un client avec un vrai besoin alimentaire. Cartographiez chaque moment du repas où cela aurait pu mal tourner — et une chose que vous pourriez anticiper avant qu'il ait à redemander.",
+    workbookEs:"Recuerda a un cliente con una necesidad alimentaria real. Traza cada punto de la comida donde pudo salir mal — y una cosa que podrías anticipar antes de que tuviera que pedirlo dos veces."
+  },
+  17: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:9, chapterTitle:'London Borough Market',
+    blurb:"Aisha catches Luca's Burgundy 'fighting' the yassa and swaps in a Georgian orange wine mid-service — a colleague's correction taken cleanly, no ego, better for the guest. That's team communication on the floor at its best.",
+    blurbFr:"Aisha remarque que le bourgogne de Luca « se bat » avec le yassa et le remplace par un vin orange géorgien en plein service — une correction de collègue acceptée sans ego, meilleure pour le client. Voilà la communication d'équipe en salle à son meilleur.",
+    blurbEs:"Aisha nota que el borgoña de Luca «pelea» con el yassa y lo cambia por un vino naranja georgiano en pleno servicio — una corrección de colega aceptada sin ego, mejor para el cliente. Esa es la comunicación de equipo en el salón en su mejor forma.",
+    workbook:"Recall the last time a coworker corrected you mid-shift. Did you defend or adjust? Write what a clean, ego-free handoff of that moment would have sounded like.",
+    workbookFr:"Repensez à la dernière fois qu'un collègue vous a corrigé en plein service. Vous êtes-vous défendu ou ajusté ? Écrivez à quoi aurait ressemblé un échange propre et sans ego à ce moment-là.",
+    workbookEs:"Recuerda la última vez que un compañero te corrigió a media jornada. ¿Te defendiste o te ajustaste? Escribe cómo habría sonado un intercambio limpio y sin ego en ese momento."
   },
   18: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:7, chapterTitle:'Millimeter Work',
@@ -119,6 +200,24 @@ const moduleBookLinks = {
     workbookFr:"Repensez à un moment où vous avez parlé alors que le silence aurait mieux servi. Quel signal vous disait de vous retenir — et pourquoi l'avez-vous ignoré ?",
     workbookEs:"Recuerda un momento en que hablaste cuando el silencio habría servido mejor. ¿Qué señal te decía que te contuvieras — y por qué la ignoraste?"
   },
+  19: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:7, chapterTitle:'Millimeter Work',
+    blurb:"At Disfrutar, Sofia places grains of 'saffron snow' exactly two millimeters apart, a dish that collapses if it sits twenty seconds too long. Standards this exact aren't fussiness — they're respect for the guest made visible on the plate.",
+    blurbFr:"Chez Disfrutar, Sofia place des grains de « neige de safran » à exactement deux millimètres d'écart, un plat qui s'effondre s'il attend vingt secondes de trop. Des normes aussi précises ne sont pas de la maniaquerie — c'est le respect du client rendu visible dans l'assiette.",
+    blurbEs:"En Disfrutar, Sofia coloca granos de «nieve de azafrán» separados exactamente dos milímetros, un plato que se derrumba si espera veinte segundos de más. Estándares tan exactos no son manía — son el respeto al cliente hecho visible en el plato.",
+    workbook:"Walk your section as a guest would. Name three small standards you've let slide under pressure — a smudge, a crumb, a crooked setting — and fix one on every table tonight.",
+    workbookFr:"Parcourez votre rang comme le ferait un client. Nommez trois petites normes que vous avez laissées filer sous pression — une trace, une miette, un couvert de travers — et corrigez-en une à chaque table ce soir.",
+    workbookEs:"Recorre tu sección como lo haría un cliente. Nombra tres pequeños estándares que has dejado pasar bajo presión — una mancha, una miga, un cubierto torcido — y corrige uno en cada mesa esta noche."
+  },
+  20: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:4, chapterTitle:'Florence Rhythm',
+    blurb:"A guest's saffron risotto arrives cold. Sofia doesn't just replace it — she follows the fix with an Amaro Nonino, turning a kitchen slip into a moment the table remembers warmly. Recovery isn't fixing the error; it's what you add on top of the fix.",
+    blurbFr:"Le risotto au safran d'un client arrive froid. Sofia ne se contente pas de le remplacer — elle accompagne la correction d'un Amaro Nonino, transformant un raté de cuisine en un moment dont la table se souviendra avec chaleur. Se rattraper, ce n'est pas réparer l'erreur ; c'est ce qu'on ajoute par-dessus la réparation.",
+    blurbEs:"El risotto de azafrán de un cliente llega frío. Sofia no solo lo reemplaza — acompaña la solución con un Amaro Nonino, convirtiendo un desliz de cocina en un momento que la mesa recordará con cariño. Recuperarse no es arreglar el error; es lo que añades por encima del arreglo.",
+    workbook:"Think of a recent service error. You fixed it — but what did you add on top to make the guest leave happier than if it had never happened? If nothing, what could you have?",
+    workbookFr:"Pensez à une erreur de service récente. Vous l'avez réparée — mais qu'avez-vous ajouté par-dessus pour que le client reparte plus content que si rien ne s'était passé ? Si rien, qu'auriez-vous pu faire ?",
+    workbookEs:"Piensa en un error de servicio reciente. Lo arreglaste — pero ¿qué añadiste por encima para que el cliente se fuera más contento que si nada hubiera pasado? Si nada, ¿qué podrías haber hecho?"
+  },
   21: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:10, chapterTitle:'Barcelona Farewell',
     blurb:"Leaving Barcelona, the mentor's last gift isn't a technique — it's handing the floor to someone newer and trusting them to carry it. That passing-down is the heart of this module.",
@@ -127,6 +226,24 @@ const moduleBookLinks = {
     workbook:"Think of one thing you do well without thinking. How would you break it into three teachable steps for a server on their first week?",
     workbookFr:"Pensez à une chose que vous faites bien sans y penser. Comment la décomposeriez-vous en trois étapes enseignables pour un serveur à sa première semaine ?",
     workbookEs:"Piensa en algo que haces bien sin pensarlo. ¿Cómo lo dividirías en tres pasos enseñables para un mesero en su primera semana?"
+  },
+  22: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:6, chapterTitle:'The City That Shouts',
+    blurb:"At the standing bar, Clara teaches Sofia to read weight — the shift of a guest's feet, not their face — to know the exact moment they're ready to go. Closing well is timing the goodbye so it feels like their idea, never yours.",
+    blurbFr:"Au bar debout, Clara apprend à Sofia à lire le poids — le déplacement des pieds d'un client, pas son visage — pour saisir l'instant précis où il est prêt à partir. Bien clore, c'est calibrer l'au revoir pour qu'il semble venir de lui, jamais de vous.",
+    blurbEs:"En la barra de pie, Clara le enseña a Sofia a leer el peso — el movimiento de los pies de un cliente, no su rostro — para saber el momento exacto en que está listo para irse. Cerrar bien es calcular la despedida para que parezca idea suya, nunca tuya.",
+    workbook:"For one shift, watch for the physical signal that a table is ready to leave before they ask for the check. What tells you first — and are you usually early or late to it?",
+    workbookFr:"Le temps d'un service, guettez le signal physique qu'une table est prête à partir avant qu'elle ne demande l'addition. Qu'est-ce qui vous alerte en premier — et êtes-vous plutôt en avance ou en retard ?",
+    workbookEs:"Durante un turno, busca la señal física de que una mesa está lista para irse antes de que pida la cuenta. ¿Qué te avisa primero — y sueles adelantarte o llegar tarde a ella?"
+  },
+  23: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:12, chapterTitle:'The Almost',
+    blurb:"Mid-conversation, a sprinkler strobes and 200 hospitality professionals must file out into the rain. The night's plan evaporates in seconds — the definition of an edge case, where composure matters more than any script.",
+    blurbFr:"En pleine conversation, un gicleur clignote et 200 professionnels de l'hospitalité doivent sortir sous la pluie. Le plan de la soirée s'évapore en quelques secondes — la définition même d'une situation limite, où le sang-froid compte plus que n'importe quel script.",
+    blurbEs:"En plena conversación, un rociador destella y 200 profesionales de la hospitalidad deben salir bajo la lluvia. El plan de la noche se evapora en segundos — la definición misma de una situación límite, donde la compostura importa más que cualquier guion.",
+    workbook:"Recall a shift where the plan fell apart — an outage, an evacuation, a no-show line cook. What did you do first? Write the calm first move you'd want to default to next time.",
+    workbookFr:"Repensez à un service où le plan s'est effondré — une panne, une évacuation, un cuisinier absent. Qu'avez-vous fait en premier ? Écrivez le premier geste calme que vous voudriez adopter par réflexe la prochaine fois.",
+    workbookEs:"Recuerda un turno donde el plan se vino abajo — un apagón, una evacuación, un cocinero que no llegó. ¿Qué hiciste primero? Escribe el primer movimiento sereno que querrías adoptar por reflejo la próxima vez."
   },
   24: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:12, chapterTitle:'The Almost',
@@ -146,6 +263,15 @@ const moduleBookLinks = {
     workbookFr:"Choisissez un cocktail de votre carte. Avec quel plat l'enverriez-vous à table, et quelle note commune les relie ? Entraînez-vous à le présenter en une phrase.",
     workbookEs:"Elige un cóctel de tu carta. ¿Con qué plato lo enviarías a la mesa y qué nota compartida los une? Practica presentarlo en una sola frase."
   },
+  26: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:8, chapterTitle:"The Widower's Wine",
+    blurb:"Monsieur Henriot touches a worn locket of his late wife, and Luca answers not with fuss but with a wine that honors her memory — grace under the weight a special guest carries. Handling VIPs is reading what they need and giving it quietly.",
+    blurbFr:"Monsieur Henriot effleure un médaillon usé de sa défunte épouse, et Luca répond non par des égards bruyants mais par un vin qui honore sa mémoire — de la grâce sous le poids que porte un client d'exception. Gérer les VIP, c'est lire ce dont ils ont besoin et le donner discrètement.",
+    blurbEs:"El señor Henriot roza un guardapelo gastado de su difunta esposa, y Luca responde no con aspavientos sino con un vino que honra su memoria — gracia bajo el peso que carga un cliente especial. Atender VIPs es leer lo que necesitan y dárselo en silencio.",
+    workbook:"Think of a VIP or important guest you served. Did you over-perform or truly read them? Name one quiet, specific gesture that would have shown care without making a show of it.",
+    workbookFr:"Pensez à un VIP ou un client important que vous avez servi. En avez-vous fait trop ou l'avez-vous vraiment lu ? Nommez un geste discret et précis qui aurait montré votre attention sans en faire un spectacle.",
+    workbookEs:"Piensa en un VIP o cliente importante que atendiste. ¿Exageraste o de verdad lo leíste? Nombra un gesto discreto y concreto que habría mostrado atención sin hacer un espectáculo."
+  },
   27: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:6, chapterTitle:'The City That Shouts',
     blurb:"Barcelona at full volume — the server moves fast enough to keep up and slow enough that no guest feels processed. Holding speed and warmth at once is the whole point of this module.",
@@ -154,6 +280,24 @@ const moduleBookLinks = {
     workbook:"On your next rush, pick one guest to give three extra seconds of real attention. What did you have to drop to find them — and did the section actually suffer?",
     workbookFr:"Au prochain coup de feu, choisissez un client à qui offrir trois secondes de vraie attention. Qu'avez-vous dû lâcher pour les trouver — et votre rang en a-t-il vraiment souffert ?",
     workbookEs:"En tu próximo ajetreo, elige a un cliente a quien dar tres segundos de atención real. ¿Qué tuviste que soltar para encontrarlos — y de verdad sufrió tu sección?"
+  },
+  28: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:10, chapterTitle:'Barcelona Farewell',
+    blurb:"Sofia works a normal Friday rush, not knowing a Disfrutar chef is watching the floor to scout her. High-pressure VIP service is often invisible — the guest who matters most may be the one quietly judging whether you're the real thing.",
+    blurbFr:"Sofia assure un coup de feu du vendredi comme un autre, ignorant qu'un chef de Disfrutar observe la salle pour la recruter. Le service VIP sous haute pression est souvent invisible — le client qui compte le plus peut être celui qui juge en silence si vous êtes à la hauteur.",
+    blurbEs:"Sofia trabaja un ajetreo normal de viernes, sin saber que un chef de Disfrutar observa el salón para reclutarla. El servicio VIP de alta presión suele ser invisible — el cliente que más importa puede ser el que juzga en silencio si eres lo que dices ser.",
+    workbook:"Imagine your most important guest is in tonight, unannounced, at a random table. Would your section pass that test right now? Name the one thing you'd tighten to serve as if it always were.",
+    workbookFr:"Imaginez que votre client le plus important est là ce soir, incognito, à une table au hasard. Votre rang passerait-il ce test maintenant ? Nommez la seule chose que vous resserreriez pour servir comme si c'était toujours le cas.",
+    workbookEs:"Imagina que tu cliente más importante está esta noche, de incógnito, en una mesa cualquiera. ¿Tu sección pasaría esa prueba ahora mismo? Nombra la única cosa que ajustarías para servir como si siempre fuera así."
+  },
+  29: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:6, chapterTitle:'The City That Shouts',
+    blurb:"Barcelona at full volume teaches Sofia to feel the whole room's energy at once — fast enough to ride the crowd, calm enough that no single guest feels rushed. Reading and shaping a room means conducting the many without losing the one.",
+    blurbFr:"Barcelone à plein volume apprend à Sofia à ressentir l'énergie de toute la salle d'un coup — assez rapide pour épouser la foule, assez calme pour qu'aucun client ne se sente bousculé. Lire et façonner une salle, c'est diriger le plus grand nombre sans perdre l'individu.",
+    blurbEs:"Barcelona a todo volumen le enseña a Sofia a sentir la energía de todo el salón a la vez — lo bastante rápida para seguir a la multitud, lo bastante serena para que ningún cliente se sienta apurado. Leer y moldear un salón es dirigir a los muchos sin perder al uno.",
+    workbook:"Next busy shift, take three seconds to feel the whole room's mood before your next table. Is it buzzing, flat, tense? Name one thing you could do to nudge the energy where you want it.",
+    workbookFr:"Au prochain service chargé, prenez trois secondes pour ressentir l'humeur de toute la salle avant votre prochaine table. Est-elle animée, plate, tendue ? Nommez une chose que vous pourriez faire pour orienter l'énergie où vous le voulez.",
+    workbookEs:"En el próximo turno cargado, tómate tres segundos para sentir el ánimo de todo el salón antes de tu próxima mesa. ¿Está animado, plano, tenso? Nombra una cosa que podrías hacer para llevar la energía donde quieres."
   },
   30: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:8, chapterTitle:"The Widower's Wine",
@@ -2215,24 +2359,42 @@ const practiceScenarios = [
   var tracks = [
     { id:'foundations', order:1, free:true,  prereq:null,
       name:'Foundations', nameFr:'Fondations', nameEs:'Fundamentos',
+      subtitle:'The Apprentice\'s First Shifts',
+      subtitleFr:'Les premiers services de l\'apprenti',
+      subtitleEs:'Los primeros turnos del aprendiz',
       knowledgeLevel:'basic',
       tagline:'The craft begins here — free for every server.',
       taglineFr:'Le métier commence ici — gratuit pour chaque serveur.',
       taglineEs:'El oficio comienza aquí — gratis para cada mesero.',
+      bookStage:'Walk Sofia and Luca\'s first nights on the floor in Florence and Paris — the opening chapters of First Crossings.',
+      bookStageFr:'Vivez les premières soirées de Sofia et Luca en salle à Florence et Paris — les premiers chapitres de First Crossings.',
+      bookStageEs:'Vive las primeras noches de Sofia y Luca en el salón de Florencia y París — los primeros capítulos de First Crossings.',
       moduleIds:[1,2,6,7,8,10,14,17,19,22] },
     { id:'craft', order:2, free:false, prereq:'foundations',
       name:'Craft', nameFr:'Le Métier', nameEs:'El Oficio',
+      subtitle:'Finding Your Range',
+      subtitleFr:'Trouver votre registre',
+      subtitleEs:'Encontrar tu registro',
       knowledgeLevel:'intermediate',
       tagline:'Where good servers become great ones.',
       taglineFr:'Là où les bons serveurs deviennent excellents.',
       taglineEs:'Donde los buenos meseros se vuelven grandes.',
+      bookStage:'Their craft sharpens across Paris, Barcelona and London — the middle crossings, where technique meets instinct.',
+      bookStageFr:'Leur métier s\'affine entre Paris, Barcelone et Londres — les traversées du milieu, où la technique rejoint l\'instinct.',
+      bookStageEs:'Su oficio se afina entre París, Barcelona y Londres — las travesías intermedias, donde la técnica se encuentra con el instinto.',
       moduleIds:[3,4,5,9,13,15,16,18,20,25,26,27] },
     { id:'mastery', order:3, free:false, prereq:'craft',
       name:'Mastery', nameFr:'Maîtrise', nameEs:'Maestría',
+      subtitle:'Owning the Room',
+      subtitleFr:'Maîtriser la salle',
+      subtitleEs:'Dominar el salón',
       knowledgeLevel:'advanced',
       tagline:'The art of hospitality, fully owned.',
       taglineFr:'L\'art de l\'hospitalité, pleinement maîtrisé.',
       taglineEs:'El arte de la hospitalidad, plenamente dominado.',
+      bookStage:'The final crossings — mentoring, memory, and the quiet command that holds a room.',
+      bookStageFr:'Les dernières traversées — la transmission, la mémoire et l\'autorité tranquille qui tient une salle.',
+      bookStageEs:'Las últimas travesías — la mentoría, la memoria y la autoridad serena que sostiene un salón.',
       moduleIds:[11,12,21,23,24,28,29,30] }
   ];
 
