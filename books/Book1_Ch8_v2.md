@@ -1,99 +1,141 @@
 Chapter 8 — The Widower's Wine
 
-There was a table at Plénitude that Luca thought about sometimes. Not in the way you think about problems — not with the analytical attention he gave to things that needed solving — but in the quieter way that things settle in the body and come back occasionally as facts rather than memories.
+October turned the Seine the color of cold pewter, and Luca had to adjust his route. Not because of the weather — he ran in worse — but because the quais had been dug up between the Pont de la Tournelle and the Île Saint-Louis, orange barriers and mud and a jackhammer that started, inexplicably, at five in the morning. He'd discovered this the hard way, at pace, in the dark, nearly taking out a construction worker's coffee. Now he went west instead: Pont d'Iéna to Trocadéro and back, the Eiffel Tower's silhouette against first light like something out of a postcard he'd never buy. It added four minutes. He didn't mind.
 
-Table seven, early December, the second winter of his second year.
+Camille ran two meters to his left, as she had most mornings for the past three months. It had started without ceremony. She'd appeared at the corner of rue de Berri one Tuesday in July — Le Gabriel's hostess, black cap pulled low, stretching a calf against a parked Vespa — and said: I run this route. You run this route. We may as well run it together. He'd said yes before he'd decided to. They ran the same pace to within six seconds per kilometer, which he found either convenient or suspicious, and had never determined which.
 
-He'd noticed the man when he arrived: sixties, well dressed in the understated way of old money, alone. Solo diners were not unusual at Plénitude; the room could hold them with dignity, which was its own skill. But something about this one registered differently — a quality of stillness that wasn't the comfortable stillness of a solo diner who was used to eating alone and enjoyed it. More like the stillness of someone who was very far away from where they were sitting.
+She didn't ask about his pace data. He didn't ask about her Saturdays. What they talked about instead: the strange man at table three last week who'd eaten his entire seven-course menu while reading a folded newspaper; the supplier who kept sending undersized sole and seemed personally offended when Luca flagged it; the way autumn made the city feel like it was exhaling after holding its breath all summer. Sometimes they ran the whole stretch in silence. He didn't mind that either. "You thawed a degree," she said that Thursday morning, matching him up the incline near the Trocadéro fountain. "Something happened in Barcelona."
 
-Beaumont had the table. Luca watched from the station.
+"I told you. The stage at Quimet i Quimet."
 
-The man ordered the tasting menu, which was conventional, and a half-bottle of the 2009 Chambolle-Musigny, which was less conventional for December — Chambolle was spring wine, or the warmth of a July evening, not December at the right bank at seven-thirty in a room full of couples celebrating things. Beaumont took the order without comment, which meant he'd already assessed the situation and decided his approach.
+"That's not what I mean and you know it." She glanced sideways, just for a moment, then back at the path. "You've been running differently. Like you're thinking about something." He didn't answer.
 
-He brought the wine with a story. Luca had heard Beaumont give the Chambolle-Musigny story before — the village, the particular clay and chalk of the Premier Cru, the perfume and the silk — but tonight he shortened it. He gave the essential fact: this wine was made in a good year and it's beautiful. He poured it with complete attention, as if the man and the room were the only things. Then he said nothing further and withdrew.
+"You're doing the thing where you decide not to answer."
 
-The man held the glass for a long moment before he drank.
+"I'm running."
 
-Beaumont returned to the station. He said to Luca, quietly: "His wife's birthday. She died in March."
+"You're running and doing the thing." She adjusted her cap against the wind off the river. "I'm not asking for a full confession. Just — something happened."
 
-Luca looked at the table. The man had opened the menu but wasn't reading it.
+The truth was that he couldn't stop thinking about a laugh. Which was not a sentence he knew how to say out loud to another person, so he said: "The Henriot dinner. Last Thursday." "The widower."
 
-"What do we do with that?" Luca asked. Not performatively — he genuinely wanted to know the protocol. He'd encountered grief before in dining rooms, but usually in groups, where the social chemistry provided its own management.
+"Yes."
 
-"We hold him," Beaumont said. "We don't acknowledge it, because that would make it real and he already knows it's real. We make the room worth being in." He straightened a fork on the station. "We give him exactly what he asks for and a little more of what he needs."
+She let it rest there. That was one of the things he'd noticed about her: she asked exactly once, and then gave whatever she'd asked about room to breathe. He found this unusually considerate. He suspected she'd learned it the hard way, the way most considerate things were learned. They ran on without speaking, feet synchronized on the cobblestones, the city assembling itself in pale autumn light around them.
 
-"How do you know what he needs?"
+Le Gabriel occupied the heart of La Réserve Paris at 42 avenue Gabriel, and Luca had spent three months learning its particular vocabulary. Two Michelin stars under Jérôme Banctel. Twenty-eight covers, maximum. No glass-fronted views of the Seine, no terrace, no spectacle — just velvet drapes and chandelier light and the understanding that the guests who dined here already had everything, and what they wanted now was to be remembered.
 
-"Watch."
+He kept a notebook. Not for show — for the same reason he ran: because the body needed to practice a thing before the mind could trust it. Monsieur Duval, table seven on Thursdays, who ate sole meunière without deviation and whose face went distant and private when a Sancerre was poured. Madame Lefèvre, anniversary dinners, who once mentioned offhandedly that her husband always ordered for her — mentioned it in the tone people use when something no longer surprises them. Raoul had worked this room for a decade. Salt-and-pepper temples, hands that moved around glassware with the unhurried authority of someone who had never needed to rush. He'd murmured to Luca in his first week, just after a Thursday service when the room had emptied and they were resetting in the low hum of the kitchen: The guests here come because they're lonely. Not all of them. But enough. Remember that.
 
-The service moved. The man ate without hurry. At the third course — the sole, which arrived as the room was at its midpoint quiet — he looked up and caught Luca's eye. Not to call him over. Just looked, the way people look at a room they're deciding to be present in. Luca held the look for one beat, neutral, warm without being intrusive, and then moved on.
+Luca had written it down that night. Then crossed it out. Then written it again. "How do you carry it?" he'd asked Raoul two weeks later, when they were polishing glasses before an evening service, the question more abrupt than he'd intended.
 
-In the pause before dessert, Beaumont sent Luca. Just to the table's edge — not to ask anything, just to be there.
+Raoul had set down a flute and looked at him with the patience of a man who'd been asked versions of this question before. "You mean the loneliness."
 
-"Is there anything I can bring you?" Luca asked.
+"Theirs. Not — I don't mean?"
 
-The man considered. Then: "Could you tell me — the Chambolle. Did you like the '09?"
+"I know what you mean." Raoul picked up another glass, held it to the light. "You don't carry it, Luca. You receive it. There's a difference. If you carry it home with you, you'll last a year in this room, maybe two. If you receive it — here, in this hour, in this service — and then you put it down when you leave?" He paused. "That takes practice."
 
-It was an odd question. Luca answered honestly. "I think it's one of the most interesting years in that wine. There's a freshness in it that '10 or '12 don't have — something that keeps it light even as it deepens." He paused. "I've had it twice. Once with something heavy, which was wrong. Once with almost nothing, just the glass. That was right."
+"And you've managed it."
 
-The man looked at the glass. "She would have known exactly what to order with it," he said. "She always knew. I never developed the palate." A pause. "Forty-one years and she always knew."
+Raoul had looked at him with something complicated in his eyes. "Some nights better than others." He'd set the glass down on the correct shelf and moved away, and Luca had stood with the polish cloth in his hand thinking about the distance between what people said and what they were actually
 
-Luca said nothing. He was aware of Beaumont's instruction — hold him — and understood now that holding was not comfort in the conventional sense. It was not acknowledgment and it was not distance. It was a kind of sustained presence that asked nothing, offered nothing specific, and was simply there.
+telling you. He wasn't sure there was a word for it. He wrote receive, not carry in his notebook and underlined it twice.
 
-"She would have liked this room," the man said finally.
+Monsieur Henriot came every Thursday, 20:02, with the punctuality of someone who had no one left to wait for.
 
-"Yes," Luca said. "I think so."
+Mid-sixties. Silver hair. A Savile Row suit he'd probably owned for twenty years, still impeccably kept. He wore a small oval locket at his chest — Luca had noticed it the second week and said nothing. Gold, slightly worn at the clasp. The photo inside had faded to a soft oval blur, which Luca knew because Henriot sometimes touched it and the locket would fall open against his shirt, and the room's low candlelight would catch whatever remained of the image inside, and Henriot's eyes would do something private and then he would close the locket and pick up his menu again. He always ordered the filet, medium-rare, slightly toward the rare side. He ate slowly, without hurry, sometimes setting his knife down between bites to look at the room. Not sadly — just attentively, the way very old people and very young children look at things, as if seeing them might become important later.
 
-He withdrew. The man finished the wine. He stayed through dessert and a coffee and a petits fours plate that Beaumont quietly doubled, and then he asked for the bill and paid it with the precision of someone carrying out a ritual they'd decided mattered, and he thanked them both with the gravity of someone who knew the difference between service and care.
+The knowledge had come in pieces over three weeks. A comment five Thursdays back about a vineyard in Burgundy — casual, the kind of thing a man mentions to fill a silence he has learned to find tolerable. The way his eyes had caught on the white Burgundy list one evening and then moved away. Raoul had supplied the rest, not as a briefing but conversationally, between services: the wife, the years in Beaune, the Chassagne-Montrachet she'd loved the way people love the particular wine of a particular time in their lives. Eighteen months gone now. Henriot had been coming every Thursday since the funeral.
 
-Beaumont said, after he'd gone: "That's when you know why you do it."
+Luca had spent those three weeks building toward something he couldn't quite name. He'd pulled the cellar's inventory on Chassagne-Montrachet three times, cross-referencing against Henriot's offhand mention of the harvest — the '92, a Burgundy summer that had produced wines both Raoul and the wine books agreed were remarkable for their warmth and longevity. The 2014 he eventually selected was not the same vintage, obviously, but it was the right producer, the right appellation, and it had aged in a way that recalled the generous years without pretending to be them. He'd opened a bottle on a quiet Tuesday afternoon when the room was empty and stood at the pass with a single glass and tasted it with the focused attention of someone who needed to be certain.
 
-Luca had written it in his notebook that night: Not the fix. Not the recovery. Not the seventeen seconds. The man with the Chambolle. The room worth being in.
+It was right. He knew it was right. He still spent the next four days second-guessing himself. On Thursday evening, when the room had filled and settled into its velvet rhythms, he took the bottle from the cellar shelf and carried it to the pass. He set it down. Picked it up. His hands, he noticed, were not entirely steady. He couldn't have told you why — he'd done hundreds of wine presentations, had stood at tableside in front of people with opinions and money and expressed preferences, and his hands had been precisely calibrated instruments throughout. Tonight they were slightly wrong. The label blurred a fraction and then came back. He breathed once, deliberately, the way he did at the turnaround point of a run.
 
-He'd been thinking about this in the context of a question Camille had been asking him, in the indirect way she asked the important things, for most of his second year: what was the work actually for?
+He brought the bottle to table four just after the amuse-bouche: a 2014, dusty label, cork still sound.
 
-He'd given her the technical answers — the guest experience, the standard of the room, the craft — and she'd nodded at each of them with the patience of someone waiting for the true answer. The widower's table was the true answer, and he'd had to experience it before he could have said it.
+He presented it horizontal, the way you would something that mattered.
 
-He thought about it again now, in his final weeks at Plénitude. He'd given notice — not abruptly, with the proper consideration that Beaumont's investment in him deserved. London next. A six-month engagement at Ikoyi that Camille had facilitated with a phone call, which was how the best things happened.
+"Chassagne-Montrachet," he said. "You mentioned a vineyard visit once. The '92 harvest." He paused, which wasn't something he always did. "I thought perhaps tonight."
 
-"You're not leaving because you've run out of learning," Beaumont had said. A statement, not a question.
+Henriot looked at the label for a long moment without speaking. The room hummed around them — silver on china, soft laughter from table two, Banctel's kitchen pulsing behind the partition. A universe of small sounds that felt very distant.
+
+Then Henriot looked at Luca, and something in his face was not quite what Luca had expected, which was — he realized, after the fact — because he hadn't known what to expect. "She loved this wine," Henriot said. His voice was careful in the way people's voices are when they're not sure they can trust them all the way through a sentence.
+
+"I know," Luca said. "I'm sorry."
+
+He opened the bottle quietly, without ceremony, and poured two fingers. Watched Henriot swirl — the gesture automatic, the knowledge of decades in the hands — bergamot and a little hazelnut rising in the glass. Henriot lifted it and didn't drink immediately. He held it, and the candlelight moved through the wine's pale gold, and his hand went to the locket at his chest. Not consciously. Luca was almost certain he didn't know he'd done it.
+
+"She would have liked this room," Henriot said, to no one in particular. He looked at the drapes, the other tables, the chandelier refracting its light across the tablecloths. Then, quieter: "She would have found something to say about every person in here. She always did."
+
+"She sounds like someone who paid attention," Luca said.
+
+Henriot looked at him. "Yes." A pause. "Exactly that."
+
+He drank. He set the glass down with the particular deliberateness of a man who is deciding something, or has decided it, or has decided to stop deciding for the evening and simply be where he is. His eyes were bright. He didn't look away from the wine.
+
+"Thank you, Luca." His voice had steadied, though something in it remained open. "I mean it." Luca stepped back two paces and attended to the room. There was nothing more to do. The work was done. He refilled table six's water, adjusted a fork on table nine's reset, and didn't look back at table four for another twelve minutes, because Henriot deserved those twelve minutes to sit with whatever the wine had opened in him.
+
+Walking home on the fogged avenue afterward, he thought he would feel satisfied. Completed. The data points had aligned, the moment had arrived, the guest had been served. He'd built toward something for three weeks and it had worked. That should have registered as a solved problem. Instead he felt something lodged in his chest that he didn't have a category for. It wasn't grief — the grief wasn't his. It wasn't pride exactly, though he recognized something adjacent
+
+to it. What he kept returning to, in the fog and the quiet of the avenue Gabriel at nearly midnight, was the moment Henriot's hand had found the locket without his knowing. That involuntary gesture. The body carrying something the mind couldn't always hold. He'd designed the wine selection. He hadn't designed that. He'd simply been present when it happened, and it had — what was the word — it had moved through him. Like weather through an open window. He hadn't expected it. He didn't know what to do with it now.
+
+Raoul had said: receive, not carry. He understood the instruction better than he had before. He wasn't sure it was as separable as Raoul had made it sound.
+
+He kept walking. His footsteps were precise on the pavement. That much, at least, was still familiar. The Barcelona stage was a single day, booked months back at a tapas institution in El Born — Quimet i Quimet, standing room only, the kind of place that laughed at reservations. Banctel had arranged it as a kind of counterweight: Le Gabriel can make you delicate. Go somewhere that will roughen you up.
+
+He flew early, landed in October sun that felt like a joke after two weeks of Paris gray. La Boqueria first — Banctel wanted intelligence on an Iberian pork supplier, and Luca had learned to trust the sourcing instinct developed through hours of good markets.
+
+La Boqueria at mid-morning was not a place that made room for systematic observation. It was organized chaos of the most committed kind: fish smell over everything, paprika clouds drifting from the spice stalls, children threading through adult knees with the total confidence of people who have not yet learned to apologize for taking up space. Luca moved through the stalls with his notebook, recording jamón provenance, checking the marbling, asking questions in the small Spanish he had. A saffron vendor — older man, magnificent mustache — had opinions about every purchase made within his sight line and seemed to view sharing them as a civic obligation.
+
+He was two stalls past the saffron, notes in hand, when he heard it.
+
+A laugh. Bright and entirely unselfconscious, cutting through the market noise the way a clear note cuts through an orchestra — you couldn't not hear it, couldn't be indifferent to it. Portuguese-accented Spanish, a quick exchange with a vendor: obrigada, mais um pouco — and then the laugh again, warm and completely unbothered by the crowd pressing in on all sides. Something in it snagged on something in him. Some hook of recognition that made no immediate logical sense. He turned. A crate went over somewhere behind him. Oranges rolled. The crowd surged and filled the gap like water filling a space, and by the time he had a clear line of sight there was nothing — dark curls already disappearing past the Gothic archway, a yellow saffron pouch clutched in one hand, gone into the city's morning chaos as though the laugh had never happened.
+
+He stood there for three seconds, holding his jamón notes, watching the space where the voice had been. The saffron vendor said something cheerful in Catalan, gesturing at the orange carnage, probably about the crowd, possibly about Luca's expression. Luca agreed, paid for his notes, and walked on.
+
+Quimet i Quimet in the afternoon was everything Le Gabriel was not. No reservation sheet to read. No velvet, no chandelier, no choreographed retreat to a position. Just a room packed four bodies deep and a bar stacked with tins of conservas and bottles of vermouth and people who had come here knowing what they wanted and also people who hadn't and needed a hand. He figured out the flow in the first ten minutes — this space rewarded instinct over procedure — and then spent three hours moving through it, reading the room the way you read a river, picking the current and following it. He was good at it. Better than he'd expected, and in a way that surprised him: it wasn't that the skills transferred, exactly. It was that the underlying thing — the watching, the reading, the decision about when to approach and when to give the room more of itself — that was the same here as anywhere. Le Gabriel had taught him refinement. Quimet i Quimet reminded him that the instrument he'd been refining was his all along.
+
+On the flight back he opened his notebook to a blank page and held the pen there for a while without writing anything. Finally:
+
+Barcelona. La Boqueria, 11:42. A laugh in the crowd. Couldn't see the face.
+
+He looked at what he'd written. This was not a professional observation. This was not sourcing intelligence or service data. He was recording a laugh heard briefly in a market. He understood this was slightly strange behavior and wrote it down anyway.
+
+Paris rose through the plane window, gray and golden, strung with lights. His train to London was confirmed for the sixteenth. Le Cordon Bleu's enrollment papers sat on his kitchen counter, already signed. He thought about the laugh all the way through customs and on the Métro home and while he made his single espresso and stood at the kitchen window watching the avenue in the dark. Thursday morning, last run before London. Camille matched his stride across the Pont d'Iéna, the Eiffel Tower catching early light behind them, the city assembling itself in the particular slow way it had after rain.
+
+"You going to tell me eventually?" she said.
+
+He ran for a few more strides, considering how much of this was sayable. "A guest. Last Thursday. He cried — barely, just at the edges. Over a wine I chose." He paused. "I wasn't ready for it." Camille waited.
+
+"I'd built toward the moment for three weeks. The right vineyard, the right year, all the context I'd accumulated without asking for it. It was — precisely engineered." He heard himself say the words and noticed they sounded different out loud than they had in his head for the past seven days. "And then it worked. And I felt?" He stopped. "I don't know what I felt. That's the problem." "Why is that a problem?"
+
+He looked at her. "Because I knew what I was going to feel. I was supposed to feel — I'd solved it. I thought I'd solved it."
+
+Camille's face did something careful. "You solved the wine part."
+
+"Yes."
+
+"The other part — the part where a grieving man sat with a bottle that meant something and you were the one who gave it to him?" She shook her head slightly, not unkindly. "You don't solve that. You just end up in it."
+
+Their footfalls were synchronized on the bridge's stones, the Seine below carrying its cold October light.
+
+"That's not something you can systemize," she said. "The way it felt."
 
 "No."
 
-"What is it then?"
+"Is that what's different? In how you're running?"
 
-Luca had thought about this. "I need to see what the work looks like somewhere completely different. Somewhere the rules are different. Somewhere the room doesn't look like this." He gestured at the dining room through the glass. "Everything I've learned here is real. I need to test it against something it wasn't built for."
+He thought about it honestly. "I keep thinking I should be able to file it. The Henriot dinner. The moment. But it won't stay filed."
 
-Beaumont had been quiet for a moment. Then: "Ikoyi is very good. Different frequency entirely."
+Camille was quiet for a stretch. When she spoke again she didn't look at him. "For what it's worth — I noticed the change before Barcelona. Something shifted in how you move through the floor. You used to work the room like a problem. Now it looks more like — I don't know. Like you actually want to be in it."
 
-"Marta — at Disfrutar — recommended it. Indirectly."
+He didn't know what to say to that. He wasn't sure she was wrong.
 
-Beaumont looked at him with a small, genuine interest. "You're keeping track of the circuit."
+"Good luck in London," she said. She said it without sentiment, which was how she said everything that mattered.
 
-"Of the people in it," Luca corrected. "The people who are thinking about the same questions."
+He thought about the Henriot tear and the Barcelona laugh and the way his notebook had started to feel less like a record of guest preferences and more like a kind of evidence. Evidence of what, he hadn't decided. The problem was that he'd built his entire way of working around knowing what things were evidence of. This not-knowing was new, and it sat in him like something undigested, and he couldn't tell yet whether it was something that would pass or something that was going to change the shape of things.
 
-"There's someone at Ikoyi," Beaumont said. "A server from Brazil. Apparently remarkable. She came through Florence, Barcelona. Cordon Bleu."
+He ran on. The river below had no opinion about any of it. He found that, this morning, less comforting than usual.
 
-Luca was still.
+In his coat pocket: a notebook. The train tickets. And on his kitchen counter, eight blocks east, a flask he hadn't opened, a photograph of his grandmother's lemon grove, and the Le Cordon Bleu enrollment form already signed. The life arranged and organized, moving toward London like a schedule. It would be fine. It would be more than fine. He was good at this — at all of it. He ran. The bridge fell away behind him. He was still thinking about a widower's hand finding a locket in the candlelight of a room he had no part in designing, and the way that gesture had passed through him like something he didn't have a classification for, and the way it wouldn't go away.
 
-"I mention it only because the circuit is small," Beaumont said, with a neutrality so perfect it was almost theatrical. "You may find yourself in the same room."
-
-"Yes," Luca said, after a moment. "I may."
-
-He spent his final three weeks giving Plénitude everything he had. The widower's table was in his body now — the knowledge it carried, the reason behind the craft. He led the room with the lightness that comes from knowing what you're doing it for, which was different from the lightness that comes from confidence. Confidence was technical. This was vocational.
-
-Camille did something at his last service that she'd never done in two years: she came and stood beside him at the station at the end of closing and poured two glasses of the Chambolle-Musigny and handed him one.
-
-"For the road," she said.
-
-He held it the way the man had held it. Just for a moment.
-
-"Thank you," he said. "For — all of this."
-
-"I didn't do all of it," Camille said. "You were doing it before you got here." She drank. "I just showed you where the windows were."
-
-He caught the overnight train to London that Sunday, sitting with the notebook and a coffee he didn't need, the Seine somewhere behind him, Paris folding itself into the dark. He opened to a fresh page.
-
-At the top he wrote: What Plénitude taught me: service at its highest is care that leaves no trace. The guest should never know how precisely they were held.
-
-And below that, after a pause: The circuit is small. Pay attention to who's in it.
+End of Chapter 8

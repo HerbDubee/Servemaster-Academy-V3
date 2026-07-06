@@ -1,97 +1,131 @@
 Chapter 6 — The City That Shouts
 
-She left Florence on a Wednesday, which felt wrong. Florence was a city that deserved a proper goodbye — a Sunday, maybe, or at the very minimum a weeknight with ceremony. But the stage at Disfrutar ended on a Wednesday and the train south left at noon and so she packed the armoire and settled her bill with Signora Rossi, who produced a small bag of dried lavender as a parting gift and pressed it into her hands with the warmth of someone who'd been housing young professionals for forty years and had seen them all leave.
+Signora Rossi smelled of lavender and bread, the same as the first morning Sofia had arrived with her single rolling suitcase and a face full of badly masked nerves. Six months later, the smell was the same. Everything else was different.
 
-"Tornerai," Signora Rossi said. You'll come back.
+"You grew here, ragazza." The woman pulled her in with the conviction of someone who had hugged hundreds of people off these narrow stairs and would hug hundreds more and remembered every one. Her apron pressed floury prints against Sofia's jacket. "Florence marks you. Take it with you." Sofia nodded against her shoulder and didn't trust her voice. Outside on the street, the morning sun was already warm on the cobblestones, and she stood a moment in the doorway with her bag and her suitcase looking back at the courtyard, the lemon tree, the window box of dusty geraniums. The cat that lived under the stairs sat in a bar of light and watched her go with the particular indifference of a creature who understood that all good guests eventually left.
 
-Sofia looked at the courtyard lemon tree, which had become a kind of marker — she'd watched it through the winter, the brief period in January where it had looked genuinely fragile, and then the first new growth in March. "I hope so," she said.
+She took the long way to Gucci Osteria. The Arno was low and green in the summer heat, the Ponte Vecchio trailing its reflection in the slow water, the jewelers' shutters not yet open. She'd walked this route every early shift for six months and knew every paving stone that caught her wheel when the suitcase wanted to veer left, every café whose coffee she'd learned to stop rating against anywhere else. The Mercato Centrale leaked its morning noise into the street — a vendor's shout, the slap of a cleaver, the metal-bright smell of blood orange. No time for a last tripe sandwich. She noted this as a genuine loss.
 
-She walked to the station with the backpack and the dried lavender tucked into the side pocket where the Cordon Bleu letter lived. The letter was slightly more crumpled than it had been when she'd arrived. She'd taken it out and read it a few times, not because the content changed but because there was something clarifying about holding the future as a physical object. A reminder that she was choosing this. That the other path existed and she was here anyway.
+Elena spotted her before she reached the pass. Elena always spotted everyone before they reached the pass — it was what made her excellent and occasionally terrifying.
 
-Marco had shaken her hand at the close of her last service. Elena had done something more unusual: she'd hugged her. Brief, firm, entirely unannounced, and then immediately returned to folding napkins as if it hadn't happened.
+"Sofia." Not a greeting, more like a fact being confirmed. The hug was fierce and brief and smelled of stock. She pulled back and held her by the shoulders, eyes doing the same calibration they always did — precise, affectionate, making an assessment.
 
-"Disfrutar is very different," Elena had said, by way of farewell and warning simultaneously. "More conceptual. Don't let it flatten you."
+"You'll conquer that chaos over there." She released her, looked at her. "Hip down, eyes up. You know this."
 
-"What do you mean?"
+"I know."
 
-"I mean: some cooks go to the very technical places and come out thinking service is a delivery mechanism for the kitchen's ideas. It isn't. The kitchen serves the guest. The server serves the guest. The whole structure serves the guest." She aligned a napkin precisely. "Keep that order."
+"You know it for forty covers. Barcelona is different." Elena tilted her head, the slight angle of a woman choosing her words with care. "At volume — real volume, a hundred-cover night, three hundred people through a standing bar — you can't read each face. There's no time. So you read the room." She pressed one finger to her sternum. "You feel where the energy is pooling. Where it's thinning. A cluster of people all craning the same direction means something is wrong or someone needs something loudly. A sudden quiet pocket in the middle of a full house means someone's uncomfortable and making space around themselves without knowing it. You learn to feel the room's weather before you look at the individuals in it." She dropped her hand. "Florence gave you the
 
-Sofia had written it down on the train.
+individual. Barcelona will teach you the crowd."
 
-The train to Barcelona was five hours through Tuscany and into the coast road section where the Mediterranean appeared in flashes through the hills — green-blue, blinding in the afternoon sun, impossible in its beauty in the way that things are when you've been living inland. She pressed her face to the window and let it hit her: the scale of it, the endlessness. The sea made Florence feel like an interior, a beautiful interior, a room she'd spent months learning. This was the exterior. The scale that didn't need walls.
+Sofia looked at her. "Did you stage at volume?"
 
-Barcelona hit differently than Florence.
+"Seville," Elena said. "Briefly. It humbled me." She straightened Sofia's collar, which didn't need straightening, because she needed something to do with her hands. "Go."
 
-Florence hit you in the lungs — the light, the warmth, the smell. Barcelona hit you in the ears. It was louder in the specific way of cities that have decided noise is evidence of life: scooters, construction, the conversational volume of people who see no reason to moderate it, music from everywhere and nowhere. The Gothic Quarter, where she'd found a room above a bar, smelled of churros and something older underneath — stone and salt and the memory of a hundred previous centuries of people who'd also found this corner of the world and decided to stay.
+Marco clapped her shoulder — both hands, the way he did when something mattered. He pressed a paper package into her arms, still warm. Tortellini in brodo, she knew from the weight and the smell. She blinked at the kitchen steam.
 
-She was not staging anywhere yet. She had three weeks before the Disfrutar stage began, and she'd planned this as deliberate: time to be inside the city before she was inside any kitchen.
+She wasn't going to cry in the pass. That was a firm position.
 
-She explored with her notebook.
+She cried a little in the pass.
 
-The first thing she wrote: This city doesn't pretend to be quiet. It treats volume as honesty. I think I like it.
+The train unlaced Tuscany slowly, olive groves stepping down pale hillsides, vineyards beginning their slow golden turn. Sofia sat with her forehead against the glass and ate the tortellini cold because she'd forgotten to eat them warm and they were still, objectively, the best thing she'd consumed in weeks. She watched the hills and thought about nothing in particular, and then about Elena's word — weather — and the way it rearranged something she'd been trying to name. The hunger that had been building in her since the first time Elena had said good with the same tone other people reserved for perfect was still there, lodged somewhere below her ribs. Barcelona had a name attached to it: Quimet i Quimet. Standing room. Family run since 1914. Tapas perfection in controlled pandemonium. She'd looked it up five times.
 
-The second thing she wrote: The market has a smell that Florence doesn't — something briny and sharp underneath the produce, the sea coming inland. The fishmongers shout the names of things. Everyone shouts, actually. Even the prices.
+Sants station hit like a cold wave breaking over the neck — the salt and diesel of a port city carried on air that couldn't decide whether to be Mediterranean or industrial, the bark of Catalan announcements over the speakers, the physical density of bodies all moving as if late. Nobody was late. That was just Barcelona at noon. She shouldered her bag into the current and let it carry her. El Born was a neighborhood that felt invented for a film about Barcelona and then made real by force of habit. The streets were too narrow and the buildings too tall and everything smelled of garlic and drains and the distant cold iodine of the sea. She found the building by counting alleys from the corner and went up the stairs past doors leaking various competing musics.
 
-La Boqueria was chaos in the way that useful things are chaotic — not disorder but density, everything present, the sheer abundance of it producing a kind of cognitive joy. She went twice before the stage started. Once in the morning, early, when the market workers were doing the actual work and the tourist current hadn't reached full flow. Once midday, to watch the market in its full social form — an argument between a produce vendor and a fish vendor over some territorial dispute, conducted with total theatricality for an audience of approximately forty people who had stopped to watch as if this were scheduled entertainment. Nobody seemed bothered. The argument ended with what seemed, from her position fifteen feet away, like a sincere handshake and a shared cigarette.
+Maria opened the flat door already talking. "Bienvenida. Rules: no fish in the fridge, and party starts at midnight." She had tattoos from wrist to elbow and the quick assessment of someone who'd run a bar long enough to know exactly who needed to be told about the midnight rule and who didn't. Sofia was clearly the latter. She seemed satisfied with this.
 
-She wrote: The Spanish conduct conflict like service. All the drama is in the moment. Afterward: cigarettes.
+The room was small and white and had a window over a laundry line where someone's red dress hung limp in the heat. Sofia unpacked in eleven minutes. Her uniform lay pressed and exact on the chair. Stage at Quimet i Quimet: tomorrow morning, nine sharp.
 
-She found the bar.
+She went out to walk the city before it got dark, because it seemed wrong to arrive somewhere and immediately go to bed. The streets turned gold as the sun dropped behind the buildings, and she found her way to a corner stool at a tapas place so small the kitchen was essentially a conspiracy
 
-It was called Quimet & Quimet, which she'd heard mentioned three times in the first week — by the woman who ran the room above the bar, by a chef she'd met at a market who'd seen her notebook and started talking, and by a food writer she'd eavesdropped on at a café. Three independent recommendations in a city she'd been in for six days seemed decisive.
+between two people and a fryer. The patatas bravas arrived in a clay bowl, their edges black-crisp, the sauce building heat in slow waves that reached the back of her throat just as she finished the last one. Good heat. Real heat. Not polished or managed or suggested. She sat with the empty bowl and the sensation and thought: yes.
 
-She went on a Thursday.
+Florence whispered something from memory. She told it she'd be back later.
 
-Quimet was, technically, a bar — a narrow, standing-room-only space on Carrer del Poeta Cabanyes, walls dense with tinned goods and bottles from floor to ceiling, the bar presided over by a man who worked with the focused efficiency of someone conducting rather than making. The montaditos — small toasts, topped with combinations that should not have worked and did — were constructed with an economy of movement that she watched as closely as she'd watched Elena work the room. No wasted motion. No showmanship. Pure craft.
+Quimet i Quimet crouched between a hardware store and a pharmacy on Carrer del Poeta Cabanyes, its facade barely wider than a generous hallway. Inside, the shelves went from floor to ceiling: tinned conservas in their hundreds, labels peeling slightly from years of sea air, cans of spider crab and sepia and razor clams glazed in the low morning light like a still life someone had been adding to for decades. No tables. A marble bar, a few stools that were always taken. Twenty square meters, roughly, if you were generous.
 
-She ordered the one with smoked salmon, yogurt, and truffle honey because the combination alarmed her, which had become her ordering principle.
+Quim had the solid, unhurried quality of a man who'd done this work so long it had become structural — part of the building rather than a person in it. He looked at her, looked at her reference from Elena, nodded once. "Shadow Clara. Read their eyes, not mouths. Speed first."
 
-It was extraordinary. Not in a complicated way. In the way that things are extraordinary when everything is exactly right — the bread not too thick, the fish not too much, the honey cutting and enhancing simultaneously. She stood at the bar and ate it and thought about how much effort went into making something taste inevitable.
+Clara had a ponytail and wrists that moved with the compact efficiency of someone who'd been doing this since childhood, which she had. She handed Sofia a towel without breaking eye contact with the bar she was wiping. "The first thing you need to understand about a standing bar: nobody sits." She said it simply. "No chairs means no territory. They can't establish a table. So they stake a position." She tipped her head at the counter. "You read positions, not faces. That man at the end has owned that twenty centimeters of bar for twelve minutes. He wants two more rounds and a receipt. Don't make him ask."
 
-She went back on Friday. And Saturday.
+"How do you know?" Sofia said.
 
-On Saturday, the man behind the bar — she'd learned his name was Joaquim, a third-generation barman, his grandfather's photograph on the wall — noticed her notebook.
+"His weight." Clara glanced at her. "Sitting-room service, you read posture — leaned back means comfortable, leaned in means ready to order. Standing bar, you read weight. Where someone shifts it tells you whether they're settling in or about to leave." She wrung the cloth and moved. "Also, he comes every Saturday."
 
-"Periodista?" he asked.
+She handed Sofia a tray. "Watch me for twenty minutes. Then you take the left side." Sofia watched for fifteen.
 
-"Camarera," she said, using the Spanish for server, and the conversation that followed was conducted half in Spanish and half in Italian and half in gestures, which made it three halves and worked perfectly. She explained the stage at Disfrutar. He explained, with the candor of someone who has made his peace with the question, why he'd never wanted a dining room. She explained Elena's instruction about service architecture. He described the way he thought about the bar as a different kind of hospitality — less narrative, more direct. You give them the thing. You let the thing speak.
+The rush came in from the street at eleven like weather — exactly the word Elena had used, and Sofia felt it land now in a way she hadn't fully understood from Florence: not an individual, not a table, not a request she could isolate and address. A construction worker trailing plaster dust, two women with market bags who knew exactly what they wanted, an old man who arrived at the same barstool at the same time every Saturday and would be mildly aggrieved if it wasn't available. Then eight more in ninety seconds, then a dozen, then the air thickened with fried potato and tinned fish brine and the bright copper smell of vermut poured from a tap, and Quim's voice from somewhere: "Bombas. Ahora."
 
-"No stories?" she asked.
+She picked up her first tray.
 
-He shrugged. "The tinned fish is from Galicia. That's the story. The fish tells it."
+For the next twenty minutes, Sofia drowned.
 
-She walked back through the Gothic Quarter thinking about Elena's structures and Joaquim's economy and the way Paolo at the Florence market had handed her the blood orange — per capire, to understand — and felt the distinct pleasure of a body of knowledge that was becoming a conversation with itself.
+Not dramatically. She didn't drop anything. But she was always one beat behind — turning to a voice that had already been answered by Clara, reaching for a glass that had already been poured, opening her mouth to ask a man in a hard hat what he wanted and watching Clara slide it in front of him without being asked, without looking up, while simultaneously placing a tin of mussels in front of a woman who hadn't spoken at all. The bar kept moving and Sofia kept trying to find her footing in it and the footing kept shifting because there were no anchors — no tables, no reservations, no sequence she could impose on the chaos to make it navigable. A shoulder clipped her elbow. She caught the tray. Another shoulder immediately after, different direction, and she was turning to stabilize when someone touched her arm — not urgently, just pointing, two fingers, the direction of an empty glass — and she looked at the glass and then at the person and there were three other people behind them in various stages of wanting something and her mind, trained on Florence's forty covers and its clear topography, couldn't find a thread.
 
-The Disfrutar stage began on a Monday.
+She stood still, the way Elena had taught her. Breathe.
 
-She was ready. She thought she was ready. She arrived at 10:00, uniform pressed, notes reviewed, the extensive reading she'd done over three weeks organized into something coherent. She stood in the prep room and waited for her orientation and felt the particular flavor of first-day adrenaline that she knew now was useful and not to be suppressed, just directed.
+Then: she stopped looking at individuals.
 
-Then the chef de salle opened the door and said: "Benvinguda. Come see the room."
+It happened almost accidentally — her gaze went wide rather than narrow, the way her eyes adjusted in a dark room, and she felt the room instead of itemizing it. The left side of the bar was dense, everyone leaning in, energy compressing — more than she could reach. The right side had thinned slightly, two people just departing, a space opening that would fill in sixty seconds. The far end: the hard hat man was lifting his glass, not to drink, just tilting it, a gesture she recognized now as the same as before. Behind her, someone was putting money on the bar without looking at anyone — paying to leave.
 
-The room was not what she'd expected, and she'd done her reading. She'd seen photographs and read reviews and thought she knew the architecture. But photographs don't capture the quality of the light in a dining room — Disfrutar's was a greenhouse-adjacent space, high windows, plants, a room that felt simultaneously precise and alive. The tables were spaced with the calm deliberateness of a room that trusted its own capacity. The mise en place was unlike anything she'd seen: customized service items that existed specifically for certain dishes, tools that weren't tools in the conventional sense, props in a play where the play was the meal.
+She moved.
 
-"The service here," said the chef de salle — Marta, she'd learn, compact and focused, the energy of a person who has worked these rooms for a decade and still approaches each service like a problem worth solving — "is extension of the kitchen. The chefs create the experience. We deliver it precisely. Not as servers. As performers."
+Hard hat man, vermut, done before he'd fully decided he needed it. Money on the bar, receipt, gone. The right side filled; she was already there. She stopped asking what people wanted with her mouth and started asking with her eyes, and the eyes answered faster. Clara appeared beside her for one second — not to correct, just to pass her a plate — and said, quiet: "There you go." That was all. But it was enough.
 
-Sofia thought of Elena's warning on the Florence train. Don't let it flatten you.
+A shoulder clipped her elbow an hour later — she felt it rather than saw it — and the bomba on the end of the tray shifted. Her elbow snapped in. Weight transferred. Tray leveled. The whole thing happened in under a second and then she was placing the plate with both feet solid and moving on before the man had finished saying gràcies. She didn't stop to be proud of it. There were three more people with the particular stillness of someone who'd decided what they wanted and hadn't yet been asked.
 
-"What's the difference between delivering and performing?" she asked.
+Clara caught her eye across the bar. One brief nod, the same grade as Elena's good. The same worth. Peak at one in the afternoon: the space so full she could feel the body heat as its own climate, voices layering in Catalan and Spanish and something that might have been German, glasses slid across wet
 
-Marta looked at her. "A delivery person brings a package. A performer understands what the package contains and helps the audience receive it." She handed Sofia a notebook — pre-printed, Disfrutar's internal service manual. "Read this tonight. Tomorrow we talk about the dishes."
+marble in a pattern that had its own internal logic if you stayed long enough to see it. She stopped thinking in steps. The construction worker wanted two more bombas. The tourist couple — she knew from the way they studied the conservas shelf, delighted but slightly overwhelmed — wanted someone to choose for them; she brought the razor clams without being asked and watched their faces shift from uncertain to convinced. An elderly woman with a shopping trolley pointed at the spider crab tin on the fourth shelf without looking at Sofia, knowing without discussion that she'd get it. The tray saved itself once more near the end of the rush, a full load of cod fritters and vermut sloshed amber at the lip by a door swinging too fast. Hip locked. Thumb under edge. The world righted. Quim watched from the pass and grunted: "Buen salvamento." High praise from a man who communicated largely through tone.
 
-She sat in her room above the bar in the Gothic Quarter and read about dishes that existed as experiences — courses that required guest participation, presentations that changed in the guest's hands, flavors that evolved with temperature and time. The kitchen at Disfrutar was doing something that wasn't quite cooking in the conventional sense. It was designing for all the senses, sequencing them, writing a story in the language of taste and texture and surprise.
+She biked home at five past five with sore legs and salt in her hair from somewhere she couldn't identify and a feeling she couldn't fully name. Not happiness exactly. More like alignment. Like a drawer that had always stuck finally sliding home.
 
-She thought about Elena's dining room. About the blood of the earth in Paolo's hand. About Joaquim's bar, where the thing spoke for itself.
+La Boqueria at dawn was another argument entirely. Under the iron vault, the market achieved a kind of productive chaos that Quimet i Quimet would have recognized in miniature — vendors broadcasting over one another, the wet slap of fish on ice, the sweet-chemical cloud from the chocolatería at the back blurring into shrimp iodine and the dry-wood smell of saffron. She elbowed in like everyone else, bought jamón sliced to translucent ribbons and a paper cone of fried snails from a man who pressed it into her hands with the urgency of a gift, the garlic broth dripping down her wrist before she got the first one in her mouth.
 
-All of it hospitality. All of it a different answer to the same question: how do you give someone an experience worth having?
+Everything was too loud and slightly too crowded and the best market she'd been in since the Mercato Centrale. She had this thought and then felt disloyal to the Mercato Centrale and then felt disloyal to La Boqueria for feeling disloyal and then ate another snail.
 
-She opened her notebook.
+The nights were their own education. El Born spilled into the street after dark, tables appearing on pavements that technically had no room for them, laughter from open windows competing with a guitarist who played the same five minutes of flamenco on repeat from an alley near the church and got better each time, somehow. She fell in with other people staging around the city — a sommelier from Lyon doing his two weeks at a spot in the Eixample, a server from Jerez who could carry four glasses in one hand without looking and was genuinely humble about it. They drank tinto de verano sweating in the heat and told the same stories everyone in this life tells: the near-drops, the difficult tables, the small gestures that turned a bad night into something worth keeping. One evening, rain swept in from the sea without warning and turned the Barri Gòtic's alleys to mirrors. She ran for a church portico, laughing, soaked to the collar. Lightning lit the gargoyles white against the sky. She stood in the doorway watching the street empty and flood simultaneously, the water channeling along the gutters in quick brown rivers, and felt — not lonely exactly. More like very specifically located. Barcelona in the rain, stone cold against her back, the night smelling of wet limestone and ozone and somewhere nearby, frying oil. She was here. She was doing this. Avó would have understood that, more than anything.
 
-At the top of a new page she wrote: What Florence taught me: read the person before the table. What Barcelona is teaching me: read the experience before the room.
+The rain eased to a hiss. She walked back through streets where the puddles had the orange glow of streetlights in them and the whole city looked like it had been recently and thoroughly washed. Le Cordon Bleu Barcelona occupied a floor of a building in the Eixample that looked out on a row of modernist facades that refused to agree on anything except ornamentation. Mornings there had the quality of a held breath.
 
-She looked at that for a while.
+She'd deferred Paris for a year that had become two. She'd expected the classroom to feel like a step backward. It didn't, quite — but it rubbed in unexpected places.
 
-Outside, the city was making its particular evening noise — the bar downstairs starting its Friday crowd, scooters, voices, music from one of the small stages in the quarter. She let it come through the window. Florence had been quiet enough to hear yourself think. Barcelona didn't allow that, which turned out to be its own education: you had to think through the noise, which meant the thinking had to be louder, clearer, more insistent on its own coherence.
+The third week: Rioja vintages under fluorescent light, lined up in their glasses in a way no wine ever appeared on an actual floor. Professor Vega — small, precise, a man who had passed the WSET Diploma with distinction and held this like a shield — moved through the row, naming structures. Tempranillo in warm years. High alcohol. Grippy tannin. Serve at sixteen Celsius. He listed the food pairings with the confidence of someone reciting established law.
 
-She added to the page: And what the noise teaches: clarity has to be won. Silence gives it to you. Volume makes you earn it.
+Sofia's hand went up.
 
-She closed the notebook and went downstairs to find dinner, already looking forward to tomorrow.
+"The 2019 Rioja Reserva we're tasting." She kept her voice neutral. "It's reading younger than the label. Probably needs another year or two — the tannins are still a bit grippy and the fruit's closed. If a guest ordered it tonight, I'd decant it and give them something to talk about for fifteen minutes before pouring. The sixteen-degree rule would make it worse, not better."
+
+A pause.
+
+Professor Vega looked at her the way the classroom's textbooks had not prepared her for: not dismissive, but recalibrating. "You have floor experience."
+
+"Yes."
+
+"The sixteen-degree guidance is for general application," he said carefully. "A restaurant scenario with a guest ordering?"
+
+"Is the only scenario that matters," she said, and immediately softened it. "Sorry. What I mean is — in practice, the vintage variation and the individual bottle's stage of development change everything. The rule is the starting point. The floor is where you adjust."
+
+He let a silence run for two beats, the same silence, she suspected, he used to wait out wrong answers. "Yes," he said. "That's correct." He moved on. But she caught him look at her glass before he did — the way she'd been holding it, stem between two fingers, tilted at the angle she'd first learned behind a bar rather than in a classroom — and something in his expression acknowledged a distinction without naming it.
+
+Afterward, in the hallway, a classmate named Yusuf — Dutch, twenty-four, staging at a hotel bar while he studied — stopped beside her. "You almost got yourself kicked out in there." "I wasn't wrong."
+
+"No," he said. "That's the interesting part." He considered this. "The thing the classroom can't teach
+
+you is when to override the rule. You already know that. The rest of us are still learning the rule." She thought about Elena. When I'm wrong, I have twenty years of credibility to spend. The classroom gave you the map. The floor was the territory, and the territory didn't care about the map. She went back to her table and wrote it down, so she wouldn't forget it twice. One evening after the late shift, she stood at the bathroom mirror with her uniform still on and looked at her own face for a while. She did this sometimes, the way you check a thing is still what it was. The woman looking back was not the one who'd trembled through her first tray at Gucci Osteria. The lines around her eyes were new. She had stopped being surprised by what her hands could do. She splashed water on her face, turned off the light.
+
+The last shift at Quimet, Quim pulled her aside as the bar emptied, the marble going sticky under the dim clean-up lights. He had the contained energy of a man who said things once and expected them to land.
+
+He didn't say anything for a moment. Wiped the far end of the bar. Then: "That tourist couple your third week. The ones who didn't know what they wanted."
+
+She remembered. The razor clams.
+
+"You brought them the clams before they asked." He set the cloth down. "They hadn't said a word. Hadn't pointed. Just stood there looking at the shelf with that face people get when they're delighted and embarrassed about being lost." He looked at her with the evaluation of someone who'd watched a lot of people come through his twenty square meters. "I've had people stage here who could move at speed. Plenty of them. They don't always see." He turned back to the bar. "You see." He picked up the cloth again. One beat.
+
+"Heard Disfrutar's hiring." He used the name the way people use names they don't need to explain. "Villarroel 163. Oriol Castro's crew." He looked at her steadily. "You got the speed. You got the eye. A kitchen that works at that level, they need both." He went back to wiping. "Apply." She nodded.
+
+He went back to the bar and the conversation was over, the way all of Quim's conversations were over — not abruptly, just complete. A thing said that didn't need repeating.
+
+Outside, the street was quiet, the city cooling in increments. She walked toward the metro with her bag on one shoulder, the summer air still warm on her skin, and thought about three stars, about kitchens that worked in pipettes and tweezers, about the next version of this thing she was still becoming. The sea was somewhere beyond the buildings, invisible but present. She could smell it. The hunger below her ribs said: yes.
+
+End of Chapter 6

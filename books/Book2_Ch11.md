@@ -4,13 +4,15 @@ By the time dinner service ended, Sofia had spent nine hours pretending her puls
 
 A delayed four-top in the corner. A private-room menu adjustment. Claire deciding at 18:40 that a table of financiers needed to be served as if money had made them delicate instead of merely impatient. None of it was difficult. That was almost worse. Difficulty would have used up the restless current under her skin. Instead the room ran clean, which left space for anticipation to sharpen itself against every small thing.
 
+The one moment it nearly cracked was at 20:15, table nine, a two-top celebrating an anniversary by not quite looking at each other. Sofia had gone in to clear the amuse-bouche and the woman's champagne flute was untouched, and rather than register the table or the sequence she had stood a beat too long in the doorway calculating the silence between them — the particular quality of it, whether it was the comfortable kind or the performing kind — and had felt, with a precision that embarrassed her afterward, that she understood exactly what that silence cost. She caught herself. Filed it. Moved.
+
+No one saw it. That was what mattered.
+
 At lineup, Claire had looked directly at her and said, "If any of you are protecting an important window tonight, do it on purpose. Hope is not a sequence."
 
 Dev laughed because he thought it was about a birthday table.
 
-Farah looked at Sofia once and then at Luca and had the decency to say nothing.
-
-Sofia wrote the line anyway.
+Farah looked at Sofia once and then at Luca and had the decency to say nothing. Sofia wrote the line anyway.
 
 If the window matters, name the owner before logistics eat it.
 
@@ -44,7 +46,7 @@ The air held late Singapore heat, softer now than at noon but still damp enough 
 
 At Lau Pa Sat, the satay smoke hit them before the noise did.
 
-Sofia breathed in char, spice, heat, the sweetness of grilled onions, and some small knot inside her loosened at once. Hawker centres did not permit performance for long. They demanded appetite, elbows, cashless payment, and a tolerance for other people's proximity.
+Sofia breathed in char, spice, heat, the sweetness of grilled onions, and some small knot inside her loosened at once. The charcoal stations were going at full working rhythm, the satay men fanning the coals with flat pieces of cardboard, smoke rising in grey ribbons through the ornate Victorian ironwork overhead. It was a sound as much as a smell — the dry crackle of fat meeting heat, the percussion of skewers shifted on the grate — and it had absolutely no interest in being elegant. Hawker centres did not permit performance for long. They demanded appetite, elbows, cashless payment, and a tolerance for other people's proximity.
 
 "Useful choice," she said as they stepped into the crowd.
 
@@ -60,17 +62,15 @@ Luca glanced at her. "I thought so."
 
 "No," Sofia said. "You contain lists."
 
-That made his mouth shift in the way she now understood as the beginning of a real smile.
-
-They found a table at the edge of the open aisle after Luca claimed it with the quiet decisiveness of someone who had spent too long in dining rooms to mistake hesitation for manners. Then he went to queue for satay and rice while she secured drinks and negotiated with herself about how normal she ought to look while waiting for him.
+That made his mouth shift in the way she now understood as the beginning of a real smile. They found a table at the edge of the open aisle after Luca claimed it with the quiet decisiveness of someone who had spent too long in dining rooms to mistake hesitation for manners. Then he went to queue for satay and rice while she secured drinks and negotiated with herself about how normal she ought to look while waiting for him.
 
 Not too pleased. Not too aware. Not like a woman who had been waiting for a night like this since Bangkok and maybe before that.
 
+The plastic table was sticky in one corner from someone's previous drink, and she rested her wrists along the edge anyway, feeling the textured surface against her pulse points — the specific low-grade roughness of cheap furniture that nothing in the last eight hours of polished oak and starched linen had prepared her for. It was not unpleasant. It was simply true. The fluorescent lights above ran cold and flat, stripping everyone of the small advantages engineered lighting provided in the kind of rooms she worked in. Everyone looked the same shade of tired. She found this unexpectedly reassuring.
+
 He returned balancing a tray with satay skewers, chicken rice, sambal stingray, and two sugar-cane juices beaded with cold.
 
-Sofia looked at the tray, then at him. "You ordered as if we were feeding grief."
-
-"I am a generous planner."
+Sofia looked at the tray, then at him. "You ordered as if we were feeding grief." "I am a generous planner."
 
 "This is not planning. This is appetite with a management style."
 
@@ -94,13 +94,13 @@ For a while they ate with the concentration of people who had worked too much an
 
 "You look calmer than yesterday," she said.
 
-He tore a piece of stingray with clinical precision. "I decided something useful."
-
-"Which was?"
+He tore a piece of stingray with clinical precision. "I decided something useful." "Which was?"
 
 "That if tonight mattered, then I needed to treat it like something that mattered instead of like an accident I hoped would occur elegantly."
 
 Sofia took a drink of sugar cane to buy a second.
+
+She felt the weight of it land before she assembled any response — not the compliment of it, but the more specific thing: that he had looked at the evening and decided it deserved deliberateness, that he had extended the same discipline he brought to a difficult service to the care of not wasting this. That was not a small thing. That was a person who understood the difference between hoping for clarity and choosing it.
 
 "That is almost romantic," she said.
 
@@ -128,15 +128,11 @@ He asked about the lunch table she had handled that afternoon, and she told him 
 
 "So yes."
 
-She lifted a shoulder. "They needed the gesture without the public labor of receiving it."
-
-"Most people do."
+She lifted a shoulder. "They needed the gesture without the public labor of receiving it." "Most people do."
 
 "Including you?"
 
-He did not answer immediately. That was answer enough, but then he gave her the cleaner version.
-
-"Including me," he said.
+He did not answer immediately. That was answer enough, but then he gave her the cleaner version. "Including me," he said.
 
 She set her cup down carefully. The plastic table between them suddenly felt much too small and exactly right.
 
@@ -170,11 +166,7 @@ She turned her head. "You planned stopping too?"
 
 "I told you. Lists."
 
-That nearly made her smile, but something in his face kept her from letting the moment turn playful.
-
-He was steady, yes, but not casual. She had seen enough of him by now to know the difference.
-
-"All right," she said. "What are we stopping for?"
+That nearly made her smile, but something in his face kept her from letting the moment turn playful. He was steady, yes, but not casual. She had seen enough of him by now to know the difference. "All right," she said. "What are we stopping for?"
 
 He looked out at the water once, then back at her.
 
@@ -182,11 +174,7 @@ He looked out at the water once, then back at her.
 
 There it was.
 
-No performance. No grand declaration. Just accuracy, finally delivered on time.
-
-For a second she could not answer because her whole body had gone still around the sentence.
-
-So much of what stood between them had always depended on what they did not insult by naming too quickly. Bangkok had required patience. Singapore had required discipline. Their work, their leaving, the approaching split into two different continents — none of it had made care simpler. Only more exact.
+No performance. No grand declaration. Just accuracy, finally delivered on time. For a second she could not answer because her whole body had gone still around the sentence. So much of what stood between them had always depended on what they did not insult by naming too quickly. Bangkok had required patience. Singapore had required discipline. Their work, their leaving, the approaching split into two different continents — none of it had made care simpler. Only more exact.
 
 "And what is it?" she asked quietly.
 
@@ -202,11 +190,11 @@ He went on before she had to rescue him.
 
 "I know I'm leaving," he said. "I know Buenos Aires is coming for you. I know the next months are not designed to make anything between us convenient. But I also know that what has been happening between us for months is not friendship plus good timing."
 
-Sofia looked at the water because looking directly at him had become briefly impossible.
+Sofia looked at the water because looking directly at him had become briefly impossible. Not friendship plus good timing.
 
-Not friendship plus good timing.
+No, she thought. That had never been it. And the thing she had not quite let herself say clearly until this moment — standing with her hands on the railing and the city at her back and nothing left to usefully pretend — was that she had known that, and had named it professionalism anyway. Not because it was false. Because it was useful. Because professionalism was a container she trusted, and she had packed the other thing inside it very carefully and carried it that way for months, and it had
 
-No, she thought. That had never been it. It had been recognition sharpened into reliance, usefulness turning intimate before either of them permitted the word, all of it held in place by people too disciplined to mistake every feeling for a right to act.
+worked, until about ten seconds ago when he had said the true sentence out loud and the container had simply stopped holding.
 
 "No," she said.
 
@@ -214,17 +202,11 @@ When she turned back, his expression had changed only by degree, but she felt it
 
 "No," she repeated, steadier now. "It isn't."
 
-The promenade around them kept moving. A pair of runners passed behind them. Somewhere down the bay, music leaked thinly out of a tourist boat and vanished in the open air. The city remained indifferent, which gave the moment a kind of privacy no soft-focus version ever could.
+The promenade around them kept moving. A pair of runners passed behind them. Somewhere down the bay, music leaked thinly out of a tourist boat and vanished in the open air. The city remained indifferent, which gave the moment a kind of privacy no soft-focus version ever could. Sofia folded her arms, then unfolded them again because she hated when her body tried to defend itself after her mouth had already chosen honesty.
 
-Sofia folded her arms, then unfolded them again because she hated when her body tried to defend itself after her mouth had already chosen honesty.
+"I have spent weeks," she said, "telling myself that not naming this was professionalism." Luca watched her without interruption.
 
-"I have spent weeks," she said, "telling myself that not naming this was professionalism."
-
-Luca watched her without interruption.
-
-"Some of it was professionalism," she went on. "Some of it was timing. Some of it was not wanting to turn a real thing into a dramatic one too early. But a fair amount of it was fear dressed very well."
-
-That made something like pain cross his face and then settle.
+"Some of it was professionalism," she went on. "Some of it was timing. Some of it was not wanting to turn a real thing into a dramatic one too early. But a fair amount of it was fear dressed very well." That made something like pain cross his face and then settle.
 
 "Yes," he said. "Same."
 
@@ -232,9 +214,7 @@ She exhaled through her nose. "I dislike when you answer correctly."
 
 "I know."
 
-"And I dislike even more that you are leaving just when accuracy has finally become possible."
-
-The words surprised her by how plainly they arrived.
+"And I dislike even more that you are leaving just when accuracy has finally become possible." The words surprised her by how plainly they arrived.
 
 He absorbed them without flinching. "I know that too."
 
@@ -244,9 +224,7 @@ After a moment he said, more quietly, "Sofia."
 
 She looked at him.
 
-"I don't want distance to reduce this into something polite," he said. "I don't want us to become careful updates and weather. I want the real version, even when it is inconvenient."
-
-She felt the answer before she assembled it.
+"I don't want distance to reduce this into something polite," he said. "I don't want us to become careful updates and weather. I want the real version, even when it is inconvenient." She felt the answer before she assembled it.
 
 "So do I," she said.
 
@@ -258,13 +236,9 @@ It should have been a small word. It wasn't.
 
 They stood in it together, in the strange calm that sometimes followed truth when neither person had damaged it by trying to improve the language.
 
-Then Luca said, with the same deliberate steadiness he used at difficult tables, "May I kiss you?"
+Then Luca said, with the same deliberate steadiness he used at difficult tables, "May I kiss you?" The whole city seemed to narrow to the shape of that question.
 
-The whole city seemed to narrow to the shape of that question.
-
-Not because it was unexpected. Because it was him. Because after months of precision, of restraint, of letting care travel safely inside usefulness and timing and the million small mercies of shared professional life, he had still chosen not to take even this without naming it.
-
-Sofia felt something in her chest open and ache at once.
+Not because it was unexpected. Because it was him. Because after months of precision, of restraint, of letting care travel safely inside usefulness and timing and the million small mercies of shared professional life, he had still chosen not to take even this without naming it. Sofia felt something in her chest open and ache at once.
 
 "Yes," she said.
 
@@ -276,7 +250,7 @@ The first shock of it was not heat. It was recognition.
 
 As if some long-held line in her had finally been drawn all the way through.
 
-He kissed her like himself — controlled, attentive, no wasted flourish — and that restraint undid her faster than hunger would have. There was no skyline inside it, no theatrics, nothing cinematic except the brute fact of how overdue it was. The bay, the lights, the city at their backs — none of it mattered for a second compared with the clean devastating reality of his hand at her jaw and the answer her whole body gave without consultation.
+He kissed her like himself — controlled, attentive, no wasted flourish — and that restraint undid her faster than hunger would have. There was no skyline inside it, no theatrics, nothing cinematic except the brute fact of how overdue it was. The bay, the lights, the city at their backs — none of it mattered for a second compared with the clean devastating reality of his hand at her jaw and the answer her whole body gave without consultation. The only thing she registered with any accuracy was the warmth of his collar under her palm, the particular texture of it, laundered cotton still faintly carrying the day's work, and the fact that her body had simply decided this was exactly where it had always meant to put its hand.
 
 She touched his wrist first, then his shirt, then finally let her hand come to rest against the side of his neck as if admitting that yes, this had been waiting there all along.
 
@@ -284,15 +258,15 @@ When they broke apart it was only by inches.
 
 She kept her eyes closed for one beat too long, then opened them and found him looking at her as if the truth had become more dangerous and less negotiable all at once.
 
-"Right," she said, because apparently language had abandoned her for all but the most useless syllables.
+"Right," she said, because apparently language had abandoned her for all but the most useless
+
+syllables.
 
 A breath of laughter left him, unsteady at the edges. "Yes."
 
-That should have been embarrassing. Instead it saved the moment from grandeur.
+That should have been embarrassing. Instead it saved the moment from grandeur. Sofia became aware again of the promenade, the light on the water, the impossible ordinariness of other people still passing several meters away while her entire internal architecture had just been rearranged.
 
-Sofia became aware again of the promenade, the light on the water, the impossible ordinariness of other people still passing several meters away while her entire internal architecture had just been rearranged.
-
-She swallowed. "That was—"
+She swallowed. "That was?"
 
 "Yes," Luca said, and now he was definitely laughing at least a little.
 
@@ -302,19 +276,13 @@ She swallowed. "That was—"
 
 That made her laugh too, half out of relief, half because if she did not laugh she might have had to cry and the bay had done nothing to deserve that sort of scene.
 
-He rested his forehead briefly against hers.
-
-It was somehow more intimate than the kiss.
-
-"Are you all right?" he asked.
+He rested his forehead briefly against hers. It was somehow more intimate than the kiss. "Are you all right?" he asked.
 
 "No," she said truthfully. "But in the useful direction."
 
 He closed his eyes once. "Good. Same."
 
-When he stepped back, it was only enough to let both of them breathe normally again.
-
-The night had changed. Not solved. Changed.
+When he stepped back, it was only enough to let both of them breathe normally again. The night had changed. Not solved. Changed.
 
 Sofia leaned against the railing this time because her knees had developed opinions she did not care to honor publicly.
 
@@ -328,9 +296,7 @@ She gave him a look. "Don't be technical after kissing me."
 
 "Tragic."
 
-He followed her gaze back to the water. For a while neither spoke. They did not need to. The kiss had not created certainty about distance or cities or the thousand practical humiliations about to come. What it had done was remove the last false permission to pretend none of this was real.
-
-After a moment Luca said, "I don't think I understood until just now how much energy it took not to do that."
+He followed her gaze back to the water. For a while neither spoke. They did not need to. The kiss had not created certainty about distance or cities or the thousand practical humiliations about to come. What it had done was remove the last false permission to pretend none of this was real. After a moment Luca said, "I don't think I understood until just now how much energy it took not to do that."
 
 Sofia let out a short breath. "I did. I resented it often."
 
@@ -350,15 +316,11 @@ That made him smile with actual warmth now, the kind she almost never got when h
 
 They started walking again after that, slower than before. Not because either of them wanted the night to become indulgent, but because the body needed time to understand what the mouth and the heart had finally agreed to. Their shoulders brushed once. Then again. Eventually his hand found hers with such matter-of-fact certainty that she almost loved him a little for refusing to make that part theatrical too.
 
-The protected hour announced itself at the edges now. Not airport yet. Not departure as main action. Just the pressure of tomorrow waiting beyond the bay, beyond the walk back, beyond sleep.
-
-Sofia felt it and knew he felt it too.
+The protected hour announced itself at the edges now. Not airport yet. Not departure as main action. Just the pressure of tomorrow waiting beyond the bay, beyond the walk back, beyond sleep. Sofia felt it and knew he felt it too.
 
 "You should tell me something practical," she said, still looking ahead. "Before I start believing we're allowed to become unbearable."
 
-"All right," he said. "Tomorrow I finish lunch. Pack properly. Car at nineteen-ten. Changi after that."
-
-She nodded once. Facts. Sequence. Not because romance required less feeling. Because feeling survived better when reality was named.
+"All right," he said. "Tomorrow I finish lunch. Pack properly. Car at nineteen-ten. Changi after that." She nodded once. Facts. Sequence. Not because romance required less feeling. Because feeling survived better when reality was named.
 
 "And before that?" she asked.
 
@@ -368,9 +330,7 @@ Her hand tightened around his without her permission.
 
 "Good," she said. "I would also like that."
 
-They walked the rest of the promenade under a skyline too polished to be sentimental and therefore, somehow, exactly right. When they finally turned back toward City Hall, the city had thinned further. The night air moved more freely between buildings. Her body still carried the kiss in distinct points of contact, as if memory had decided to become physical before she could stop it.
-
-At the staff-housing door they stopped because they had to.
+They walked the rest of the promenade under a skyline too polished to be sentimental and therefore, somehow, exactly right. When they finally turned back toward City Hall, the city had thinned further. The night air moved more freely between buildings. Her body still carried the kiss in distinct points of contact, as if memory had decided to become physical before she could stop it. At the staff-housing door they stopped because they had to.
 
 No one kissed again immediately. That would have cheapened something neither of them had waited this long to mishandle.
 
@@ -383,6 +343,8 @@ Sofia shut her eyes for a second.
 "I was aiming for memorable."
 
 "Unfortunately, successful."
+
+&nbsp;
 
 He let her hand go.
 

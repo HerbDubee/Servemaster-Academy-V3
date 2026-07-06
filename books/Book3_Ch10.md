@@ -1,30 +1,68 @@
 Chapter 10 — The Table We Want
 
-The park was what Melbourne gave you when it finally decided to be generous.
+The city had been grey for eleven days in a row. Luca had counted because he was the kind of person who counted things now — covers, turns, seconds between a guest's eyes landing on the water jug and his hand reaching for it. The grey had been a low, pressureless grey, not threatening, just present, the way Melbourne wore winter when it wasn't in the mood to perform it. And then on a Tuesday afternoon in August, with four hours between his lunch close and his dinner prep start, the sky opened into something pale and honest and blue.
 
-They had found it on a Sunday in late July when the rain stopped for long enough that staying inside felt like a choice rather than a necessity. The Royal Botanic Gardens at midday, the light coming in low and gold through the canopy, the grass still damp but the sky committed to something better. They'd bought coffee on the way and carried the notebook and found a dry patch of grass near the edge of the lake.
+Sofia had texted at noon. Botanic Gardens. Bring a blanket if you have one.
 
-Sofia had been sitting cross-legged for an hour with the notebook open on her lap. Luca was lying on his side, head propped on one hand, watching her think in the way he'd learned to watch — present enough to be useful, still enough not to interrupt.
+He had one. It was his flatmate's, technically, but he took it anyway.
 
-She had been working through a single scenario for forty minutes. Not writing, exactly. Rearranging. Reading a line, crossing it out, writing something different below.
+They found a patch of grass near the Ornamental Lake, the CBD visible through the canopy — glass and steel gone soft in the afternoon light, the Yarra somewhere below the tree line, grey-green and unhurried. Sofia had the notebook. She always had the notebook now. It was a Leuchtturm, black, already thick in the spine from the pages they'd filled. She set it on the blanket and then set her coffee on top of it and then picked the coffee back up because the notebook mattered more. Luca lay back for thirty seconds, looked at the sky, and felt something he didn't have a word for. Not contentment exactly. More like: recognition. This is what a Tuesday afternoon is supposed to feel like. He had spent so many of them inside rooms built for other people's pleasure that he'd stopped expecting pleasure for himself. Melbourne had started to return something to him. Attica had started to return something to him.
 
-"The problem," she said, not looking up, "is that everything we've written sounds like advice. Like tips."
+Three months in the room had given him things he hadn't anticipated. The technical precision he'd expected — the mise en place of a service culture so exacting it had its own internal weather. What he hadn't expected was the philosophy that lived underneath the precision. Ben Shewry's approach started from the land and worked outward: every plate carried a story before the server said a word, before the guest read a menu, before a foot crossed the threshold. The soil in the dish was actual soil. The story was actual story. His job in that room was not to explain the story but to let it breathe — to keep the air around it clear.
 
-Luca said nothing. She was thinking out loud. This was different from asking.
+He had been thinking about what that meant for a module. Not just for a lesson, but for the architecture of how you taught something at all. The story had to arrive intact. The lesson had to be the lens through which someone could see it.
 
-"A tip tells you what to do. Intercept the runner before the guest has to repeat a dietary restriction. Don't cross a sightline on a first pass. Agree, reframe, disappear." She set the pen down. "They're useful. But they're specific. They only work in the situation they were written for."
+He hadn't said any of this to Sofia yet. She was already opening the notebook. They'd been working on the outline for weeks. Modules. Sub-modules. Learning objectives written and discarded and written differently. Today they weren't planning. Today they were writing. The park was quiet the way urban parks are quiet — ambient noise present but held at a distance, a
 
-"And the next situation is always different," he said.
+buffer of trees and open air between the blanket and the city's insistence. A dog moved through the middle distance. Two women walked past with prams, talking without looking at each other. Sofia turned to page fourteen.
 
-"Right." She looked at the page. "So what would it take to teach someone to generate the right behavior in any situation? Not a list of tips they memorise. Something else."
+It wasn't actually page fourteen — they'd been numbering their drafts differently — but it was where they were, and it was blank, and that blankness had a particular quality in the afternoon light. "Singapore," Luca said.
 
-She was quiet again. He waited.
+Sofia looked up.
 
-"What if it's not tips," she said. "What if it's lenses."
+"I want to write the Lee family scenario. The shellfish thing."
 
-He was still. She looked at him.
+"Write it," she said.
 
-"A lens is different from a rule," she said. "A rule tells you what to do. A lens changes how you see. If I teach someone the rule — don't cross a sightline — they follow it in the one situation where they know to apply it. But if I teach them the lens — your job is to be invisible, which means knowing where everyone is looking before you move — then they can apply that in any room, any configuration, any table they've never seen before. The lens generates the right behavior. The rule just describes it."
+He took the pen. He didn't ask for it — she handed it over without marking the transition, which was its own kind of fluency.
+
+He wrote the scenario the way he'd learned to write at Eleven Madison: clear, sequential, no decoration. The facts first.
+
+The Lee family. Table of six, late booking, anniversary dinner. Shellfish allergy disclosed at reservation by Mrs. Lee — prawns, crab, scallops, all bivalves. Information logged, communicated to kitchen, passed to floor manager. Service runs. Courses arrive. At the third course — a cold seafood plate, adjusted for the table — a runner approaches with the tray. The runner is about to stop at the table and ask: "Who had the shellfish?"
+
+He paused. Wrote the parenthetical beside it: (This would be the third time someone at that table has been asked to identify themselves as the person with the restriction.)
+
+Then below:
+
+The intercept. Luca takes the tray at the service door. To the runner: "I own nine." He carries it to the table himself. He places the adjusted plate in front of Mrs. Lee without asking, without referencing it. Her eyes register this.
+
+He handed the pen to Sofia.
+
+She wrote without pausing.
+
+The opening line to the daughter, who has been watching: "I have your mum's shellfish note — she won't have to repeat it."
+
+Then below that:
+
+What the guest experienced at each decision point:
+
+— At reservation: relief that the allergy was taken seriously.
+
+— At confirmation: appropriate, expected.
+
+— At first ask during service: mild alertness. Fine.
+
+— At second ask during service: the alertness becomes monitoring. Is this floor in control? — At third ask (prevented): what would have been felt — the full reduction. Becoming a medical document in public. The table managing an administrative problem instead of celebrating an anniversary.
+
+— What was felt instead (the intercept): that someone had been paying attention all along. Sofia set the pen down. She looked at it. Luca looked at it.
+
+She wrote one more line, in the smaller, sharper hand she used for principles: Never make a guest become a medical document in public.
+
+They both read it.
+
+The park continued around them. The dog returned from wherever it had gone.
+
+"That's not a tip," Sofia said.
 
 Luca waited.
 
@@ -38,9 +76,7 @@ He wrote it at the top of the page. Not as a subheading. At the very top, like i
 
 "That's the whole thing," Sofia said.
 
-He looked at her. She was already looking at the page, but she knew he was looking at her, and she didn't look away from the page. He understood. The page had earned the attention.
-
-He was quiet for a moment. Then: "We go back through everything."
+He looked at her. She was already looking at the page, but she knew he was looking at her, and she didn't look away from the page. He understood. The page had earned the attention. He was quiet for a moment. Then: "We go back through everything."
 
 "Every scenario."
 
@@ -52,15 +88,11 @@ They worked for ninety minutes. The coffee went cold. The light in the park shif
 
 Not "don't cross the sightline" — that was a rule, a negative instruction, useful only in the precise configuration it described. The lens underneath it: your job is to be invisible, which means understanding where everyone's eyes are before you move. With that lens, you could walk a room you'd never entered. You could find the correct angle of approach to a table in a restaurant that didn't exist yet, in a city neither of them had worked.
 
-Not "de-escalate difficult guests" — that was the language of a training document written by someone who had never stood in front of a table that had decided to be difficult. The lens underneath it: agree with the frustration, reframe the situation, then disappear. Three steps, in order, with logic connecting them. If you understood why the order mattered — that you couldn't reframe until the frustration felt heard, that you had to disappear once the reframe had landed or you'd absorb the energy of the whole table's recalibration — you could improvise. The tip couldn't teach that. The lens could.
-
-Not "read the table" — every training programme in the world said "read the table" and meant approximately nothing by it. The lens: read the system the people have become. Tables were not collections of individuals. They were temporary social systems with internal agreements — spoken and unspoken — about who was leading, who was celebrating, who was performing composure, who needed the next drink and would not ask for it. A good server read the system and responded to the system's actual state, not to its surface presentation.
+Not "de-escalate difficult guests" — that was the language of a training document written by someone who had never stood in front of a table that had decided to be difficult. The lens underneath it: agree with the frustration, reframe the situation, then disappear. Three steps, in order, with logic connecting them. If you understood why the order mattered — that you couldn't reframe until the frustration felt heard, that you had to disappear once the reframe had landed or you'd absorb the energy of the whole table's recalibration — you could improvise. The tip couldn't teach that. The lens could. Not "read the table" — every training programme in the world said "read the table" and meant approximately nothing by it. The lens: read the system the people have become. Tables were not collections of individuals. They were temporary social systems with internal agreements — spoken and unspoken — about who was leading, who was celebrating, who was performing composure, who needed the next drink and would not ask for it. A good server read the system and responded to the system's actual state, not to its surface presentation.
 
 Every technique had a lens underneath it. The lens was the module.
 
-By the time they stopped, the notebook had added eleven pages. Luca's hand was tired in a way that felt different from the tiredness of service. Less expenditure, more accumulation.
-
-Sofia closed the notebook. She set it on the blanket between them and then lay back, one arm behind her head, and looked at the sky. Luca sat for a moment with his knees up, watching the CBD through the trees. The light had gone grey-gold — not the oppressive grey of the previous eleven days but something warmer, more architectural, the kind of afternoon light that made the buildings look like they'd earned their height.
+By the time they stopped, the notebook had added eleven pages. Luca's hand was tired in a way that felt different from the tiredness of service. Less expenditure, more accumulation. Sofia closed the notebook. She set it on the blanket between them and then lay back, one arm behind her head, and looked at the sky. Luca sat for a moment with his knees up, watching the CBD through the trees. The light had gone grey-gold — not the oppressive grey of the previous eleven days but something warmer, more architectural, the kind of afternoon light that made the buildings look like they'd earned their height.
 
 "I keep thinking about what this could actually become," she said. Not as an opening to a conversation. More like something that had been sitting in the room and finally found a door. "Not just an app. A real shift in how the industry treats its people."
 
@@ -86,20 +118,20 @@ Sofia turned to him.
 
 "We're really doing this," she said.
 
-It wasn't a question. It was a sentence that had been waiting for the right moment to be true.
+It wasn't a question. It was a sentence that had been waiting for the right moment to be true. "Yeah," Luca said. "We are."
 
-"Yeah," Luca said. "We are."
+He leaned over and kissed her — slow, certain, the kind of kiss that doesn't happen in the middle of something but at the beginning of it, when two people have finally stopped performing patience and started making a decision. The gardens were quiet around them. Somewhere across the city, Marcus Hale was running his restaurants the old way — the floors turning, the numbers clean, the servers managing their faces. Here, on a blanket in the afternoon light, that felt very far away. He had spent a long time crossing paths with this person. Conferences, training programmes, shifts that overlapped for a week and then separated. He had spent a long time treating their work as parallel, two people moving in the same direction by coincidence. The coincidence had accumulated into something else. He understood that now, with the specific clarity that only arrives when you stop postponing understanding.
 
-He leaned over and kissed her — slow, certain, the kind of kiss that doesn't happen in the middle of something but at the beginning of it, when two people have finally stopped performing patience and started making a decision. The gardens were quiet around them. Somewhere across the city, Marcus Hale was running his restaurants the old way — the floors turning, the numbers clean, the servers managing their faces. Here, on a blanket in the afternoon light, that felt very far away.
+They sat for a moment longer. The light in the park shifted one more time, softer now, the angle flattening. Neither of them said anything. The notebook was between them on the blanket, and they
 
-He had spent a long time crossing paths with this person. Conferences, training programmes, shifts that overlapped for a week and then separated. He had spent a long time treating their work as parallel, two people moving in the same direction by coincidence. The coincidence had accumulated into something else. He understood that now, with the specific clarity that only arrives when you stop postponing understanding.
-
-They sat for a moment longer. The light in the park shifted one more time, softer now, the angle flattening. Neither of them said anything. The notebook was between them on the blanket, and they both knew it was there, and neither of them needed to reference it. It had said enough.
-
-They walked back toward the city as the afternoon settled into early evening. The Yarra was below them when they crossed the bridge — grey-green, moving without urgency, carrying the light from the west in long flat pieces that broke apart and reformed downstream. Sofia carried the notebook under her arm. Not tucked away. Present. The way you carry something when it has already become the thing it's going to be and you're the only one who knows yet.
+both knew it was there, and neither of them needed to reference it. It had said enough. They walked back toward the city as the afternoon settled into early evening. The Yarra was below them when they crossed the bridge — grey-green, moving without urgency, carrying the light from the west in long flat pieces that broke apart and reformed downstream. Sofia carried the notebook under her arm. Not tucked away. Present. The way you carry something when it has already become the thing it's going to be and you're the only one who knows yet.
 
 They didn't talk much. The notebook had done enough talking for one day.
 
-Luca thought: forty-seven pages. Fifty-three scenarios. Each one a lens. He thought about what it would feel like to hand that to someone just starting out — someone in the first month of their first real room, still learning where to stand, still running the calculation every experienced server runs unconsciously. What it would feel like to give them a lens instead of a list. To say: here is how to see this. Not: here is what to do when this happens. Here is how to see this, and then trust them.
+Luca thought: forty-seven pages. Fifty-three scenarios. Each one a lens. He thought about what it would feel like to hand that to someone just starting out — someone in the first month of their first real room, still learning where to stand, still running the calculation every experienced server runs unconsciously. What it would feel like to give them a lens instead of a list. To say: here is how to see this. Not: here is what to do when this happens. Here is how to see this, and then trust them. He didn't say it aloud. He didn't need to. Sofia was walking beside him, and the city was ahead of them, impervious and honest as Melbourne always was — it did not soften itself to make you feel welcome, and so when you felt welcome anyway, you knew you'd earned it.
 
-He didn't say it aloud. He didn't need to. Sofia was walking beside him, and the city was ahead of them, impervious and honest as Melbourne always was — it did not soften itself to make you feel welcome, and so when you felt welcome anyway, you knew you'd earned it.
+The chapter ended here, before the parting. Before the shift and the prep and the room filling again. While they were still in the city that had given them the afternoon. While the notebook was still under her arm and the light was still in the trees and the lens was still new enough to feel like something they'd made.
+
+Which they had.
+
+Which it was.
