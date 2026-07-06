@@ -95,3 +95,9 @@ id = "xnyuhVk7QUGi7tqyRWE15"
 uri = "file://books/workbooks/book1-workbook.pdf"
 type = "pdf"
 title = "First Crossings — Companion Workbook"
+
+[[outputs]]
+id = "1IgKT0_QsPu6TLhaBI1fM"
+uri = "file://docs/polish-audit.md"
+type = "text"
+title = "Cohesion & Polish Audit — Punch List"
