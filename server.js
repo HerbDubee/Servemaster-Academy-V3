@@ -1475,6 +1475,37 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
     await db.query(`ALTER TABLE book_chapters ADD COLUMN IF NOT EXISTS source_file TEXT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_digest_enabled BOOLEAN DEFAULT TRUE`);
     console.log('Schema additions complete');
+
+    // ── Per-module scripted role-plays ─────────────────────────────────────────
+    // One on-topic role-play per training module, seeded under category
+    // `module-<id>` so the training pages can show the role-play matching the
+    // module a learner is viewing (see lib/roleplaySeed.js).
+    await db.query(`CREATE TABLE IF NOT EXISTS roleplays (
+      id SERIAL PRIMARY KEY,
+      category TEXT NOT NULL,
+      title TEXT NOT NULL UNIQUE,
+      setup TEXT,
+      dialogue TEXT,
+      debrief TEXT,
+      voice_style_server TEXT,
+      voice_style_guest TEXT
+    )`);
+    const { ROLEPLAYS } = require('./lib/roleplaySeed');
+    for (const rp of ROLEPLAYS) {
+      await db.query(
+        `INSERT INTO roleplays (category, title, setup, dialogue, debrief, voice_style_server, voice_style_guest)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)
+         ON CONFLICT (title) DO UPDATE SET
+           category = EXCLUDED.category,
+           setup = EXCLUDED.setup,
+           dialogue = EXCLUDED.dialogue,
+           debrief = EXCLUDED.debrief,
+           voice_style_server = EXCLUDED.voice_style_server,
+           voice_style_guest = EXCLUDED.voice_style_guest`,
+        [`module-${rp.moduleId}`, rp.title, rp.setup, rp.dialogue, rp.debrief, rp.voice_style_server, rp.voice_style_guest]
+      );
+    }
+    console.log(`Seeded ${ROLEPLAYS.length} per-module role-plays`);
   } catch (e) { console.error('Schema additions error:', e.message); }
 })();
 // ── Roleplays API ────────────────────────────────────────────────────────────────

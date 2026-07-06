@@ -19,10 +19,14 @@
     <p class="text-gray-600 mb-10">Practice real restaurant situations and build your confidence</p>
 
     <!-- Role-Plays Section -->
-    <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-      Difficult Guest Role-Plays
-      <span class="text-sm font-normal text-gray-500">(New)</span>
-    </h2>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <h2 class="text-2xl font-semibold">Role-Play Practice</h2>
+      <div class="flex items-center gap-2">
+        <label for="module-select" class="text-sm text-gray-500 whitespace-nowrap">Practice topic:</label>
+        <select id="module-select" onchange="onModuleChange()"
+                class="border border-gray-300 rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-xs"></select>
+      </div>
+    </div>
     <div id="roleplays-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
 
     <!-- Wine Service Quiz -->
@@ -56,13 +60,50 @@
     let currentRoleplay = null;
     let cachedRoleplays = [];
 
-    // Load Role-Plays
-    async function loadRoleplays() {
+    function currentLang() {
+      try { return localStorage.getItem('sma-lang') || 'en'; } catch (e) { return 'en'; }
+    }
+
+    function moduleTitle(m) {
+      const lang = currentLang();
+      if (lang === 'fr' && m.titleFr) return m.titleFr;
+      if (lang === 'es' && m.titleEs) return m.titleEs;
+      return m.title;
+    }
+
+    // Populate the topic selector from the shared content store, then load
+    // the role-play(s) for the first module.
+    function initModules() {
+      const select = document.getElementById('module-select');
+      const modules = (window.SMAContent && window.SMAContent.modules) || [];
+      if (!modules.length) {
+        // Content store unavailable — fall back to the de-escalation module.
+        loadRoleplays('module-9');
+        return;
+      }
+      select.innerHTML = modules.map(m =>
+        `<option value="module-${m.id}">${m.emoji ? m.emoji + ' ' : ''}${moduleTitle(m)}</option>`
+      ).join('');
+      loadRoleplays(select.value);
+    }
+
+    function onModuleChange() {
+      loadRoleplays(document.getElementById('module-select').value);
+    }
+
+    // Load Role-Plays for a given module category (e.g. "module-9")
+    async function loadRoleplays(category) {
       try {
-        const response = await fetch('/api/roleplays?category=difficult-guests');
+        const response = await fetch('/api/roleplays?category=' + encodeURIComponent(category));
         cachedRoleplays = await response.json();
         const container = document.getElementById('roleplays-container');
         container.innerHTML = '';
+
+        if (!Array.isArray(cachedRoleplays) || cachedRoleplays.length === 0) {
+          container.innerHTML =
+            '<p class="text-gray-500 col-span-3">No role-play for this topic yet — pick another topic above.</p>';
+          return;
+        }
 
         cachedRoleplays.forEach(rp => {
           const card = document.createElement('div');
@@ -214,10 +255,11 @@
     }
 
     window.onload = () => {
-      loadRoleplays();
+      initModules();
       loadQuiz();
     };
   </script>
+  <script src="/js/content.js"></script>
 
   <footer class="border-t border-gray-200 py-8 mt-4">
     <div class="flex gap-3 justify-center">
