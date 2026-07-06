@@ -469,6 +469,10 @@
       </div>
       <div>
         <h2 class="text-lg font-semibold mb-6" id="badges-title">Badges</h2>
+        <div id="badges-empty-state" class="hidden bg-zinc-900 border border-amber-900/40 rounded-2xl p-4 mb-5 flex items-center gap-3">
+          <span class="text-2xl shrink-0">🏅</span>
+          <span id="badges-empty-text" class="text-sm text-zinc-300">Complete lessons, practice scenarios, and build a daily streak to start earning badges. Here's everything you can unlock:</span>
+        </div>
         <div id="badges-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
       </div>
 
@@ -3954,6 +3958,20 @@ function renderAchievements() {
       ${earned ? `<div class="text-emerald-400 text-xs mt-2">${t('earnedLabel')}</div>` : ''}
     </div>`;
   }).join('');
+  const emptyEl = document.getElementById('badges-empty-state');
+  if (emptyEl) {
+    if (earnedBadges.length === 0) {
+      emptyEl.classList.remove('hidden');
+      const txt = document.getElementById('badges-empty-text');
+      if (txt) txt.textContent = lang === 'fr'
+        ? `Terminez des leçons, pratiquez des scénarios et bâtissez une série quotidienne pour gagner vos premiers badges. Voici les ${BADGE_DEFS.length} badges à débloquer :`
+        : lang === 'es'
+        ? `Completa lecciones, practica escenarios y crea una racha diaria para ganar tus primeras insignias. Aquí están las ${BADGE_DEFS.length} que puedes desbloquear:`
+        : `Complete lessons, practice scenarios, and build a daily streak to earn your first badges. Here are all ${BADGE_DEFS.length} you can unlock:`;
+    } else {
+      emptyEl.classList.add('hidden');
+    }
+  }
   document.getElementById('scenarios-done').textContent = completedScenarios.length;
 
   renderQuizChart();
@@ -4146,11 +4164,48 @@ function computeSmartRecommendations() {
   return recs;
 }
 
+function renderRecommendedEmptyState() {
+  const heading = lang === 'fr' ? 'Recommandés pour vous' : lang === 'es' ? 'Recomendados para ti' : 'Recommended for you';
+  const headerHtml = `<div class="mb-2 flex items-center gap-2"><h3 class="text-sm font-semibold uppercase tracking-wider text-amber-400">✨ ${heading}</h3></div>`;
+  const hasEngagement = completedScenarios.length > 0 || Object.keys(savedQuizScores || {}).length > 0;
+  if (hasEngagement) {
+    // Returning user with nothing urgent — positive "all caught up" state instead of a blank panel.
+    const msg = lang === 'fr'
+      ? "Vous êtes à jour ! Choisissez un scénario ci-dessous pour continuer à vous entraîner."
+      : lang === 'es'
+      ? "¡Estás al día! Elige un escenario abajo para seguir practicando."
+      : "You're all caught up! Pick any scenario below to keep practicing.";
+    return `${headerHtml}<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-zinc-400 text-sm flex items-center gap-3"><span class="text-xl shrink-0">✅</span><span>${msg}</span></div>`;
+  }
+  // Brand-new (day-0) user — suggest a sensible beginner starter scenario.
+  const starter = (practiceScenarios || []).find(s => s.difficulty === 'Beginner' && !completedScenarios.includes(s.id))
+    || (practiceScenarios || []).find(s => !completedScenarios.includes(s.id));
+  if (!starter) return '';
+  const title = lang === 'es' && starter.titleEs ? starter.titleEs : lang === 'fr' && starter.titleFr ? starter.titleFr : starter.title;
+  const label = lang === 'fr' ? 'Commencez ici' : lang === 'es' ? 'Empieza aquí' : 'Start here';
+  const sub = lang === 'fr'
+    ? 'Nouveau ? Essayez ce premier scénario pour vous lancer.'
+    : lang === 'es'
+    ? '¿Nuevo? Prueba este primer escenario para empezar.'
+    : 'New here? Try this first scenario to get started.';
+  const diff = DIFFICULTY_STYLES[starter.difficulty] || DIFFICULTY_STYLES.Beginner;
+  const diffLabel = lang === 'es' && diff.labelEs ? diff.labelEs : lang === 'fr' ? diff.labelFr : diff.label;
+  return `${headerHtml}<div onclick="startChat(${starter.id})" class="bg-zinc-900 border border-amber-900/60 hover:border-amber-400 rounded-2xl p-4 cursor-pointer transition-all flex gap-3 items-start">
+    <div class="text-2xl mt-0.5 shrink-0">${starter.emoji}</div>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs text-amber-500 font-semibold mb-1">🚀 ${label}</div>
+      <div class="font-semibold text-sm mb-1.5 leading-snug">${title}</div>
+      <div class="text-zinc-400 text-xs mb-1.5">${sub}</div>
+      <div class="flex items-center gap-2 flex-wrap"><span class="text-xs px-2 py-0.5 rounded-lg border ${diff.cls}">${diffLabel}</span></div>
+    </div>
+  </div>`;
+}
+
 function renderRecommendedPanel() {
   const panel = document.getElementById('recommended-panel');
   if (!panel) return;
   const recs = computeSmartRecommendations();
-  if (!recs.length) { panel.innerHTML = ''; return; }
+  if (!recs.length) { panel.innerHTML = renderRecommendedEmptyState(); return; }
   const heading = lang === 'fr' ? 'Recommandés pour vous' : lang === 'es' ? 'Recomendados para ti' : 'Recommended for you';
   const cards = recs.map(({ scenario: s, topic, reason, quizScore }) => {
     const title = lang === 'es' && s.titleEs ? s.titleEs : lang === 'fr' && s.titleFr ? s.titleFr : s.title;
