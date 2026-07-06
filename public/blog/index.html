@@ -150,7 +150,7 @@
   <div class="max-w-5xl mx-auto px-4 text-center">
     <p class="text-amber-400 text-sm font-medium uppercase tracking-widest mb-4" data-i18n="blog_index_label">Resources</p>
     <h1 data-i18n-html="blog_h1" class="heading text-5xl font-black mb-4">Knowledge Centre</h1>
-    <p class="text-zinc-400 text-xl max-w-xl mx-auto" data-i18n="blog_index_sub">Professional tips, techniques, and career advice for restaurant servers and hospitality professionals.</p>
+    <p class="text-zinc-400 text-xl max-w-xl mx-auto" data-i18n="blog_index_sub">Field guides for every stage of the apprenticeship — from your first shifts in Foundations, through the Craft, to Mastery of the room.</p>
   </div>
 </section>
 
@@ -210,6 +210,44 @@
     bartending:    { label: 'Bartending',         color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
     'server-skills': { label: 'Server Skills',      color: '#34d399', bg: 'rgba(52,211,153,0.12)'  },
     management:    { label: 'Management & Career', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  }
+  };
+
+  // Knowledge Centre tiers mirror the app's apprenticeship stages (colours match app TRACK_COLORS).
+  var TIER_ORDER = ['foundations', 'craft', 'mastery'];
+  var TIER_CONFIG = {
+    foundations: {
+      color: '#34d399',
+      level: { en: 'Basic', fr: 'Débutant', es: 'Básico' },
+      name:  { en: 'Foundations', fr: 'Fondations', es: 'Fundamentos' },
+      sub:   { en: 'The Apprentice\u2019s First Shifts', fr: 'Les premiers services de l\u2019apprenti', es: 'Los primeros turnos del aprendiz' },
+      intro: {
+        en: 'Field guides for your first shifts on the floor — the greeting, the basics of service, wine, and the fundamentals every server needs.',
+        fr: 'Des guides pratiques pour vos premiers services en salle — l\u2019accueil, les bases du service, le vin et les fondamentaux indispensables.',
+        es: 'Guías prácticas para tus primeros turnos en el salón — el saludo, las bases del servicio, el vino y los fundamentos que todo mesero necesita.'
+      }
+    },
+    craft: {
+      color: '#fbbf24',
+      level: { en: 'Intermediate', fr: 'Intermédiaire', es: 'Intermedio' },
+      name:  { en: 'Craft', fr: 'Le Métier', es: 'El Oficio' },
+      sub:   { en: 'Finding Your Range', fr: 'Trouver votre registre', es: 'Encontrar tu registro' },
+      intro: {
+        en: 'Sharpen your technique — upselling, difficult situations, section management, and the bar craft that separates good servers from great ones.',
+        fr: 'Affinez votre technique — vente additionnelle, situations difficiles, gestion de section et le métier du bar qui distingue les bons serveurs des excellents.',
+        es: 'Afina tu técnica — venta sugestiva, situaciones difíciles, gestión de sección y el oficio de la barra que separa a los buenos meseros de los grandes.'
+      }
+    },
+    mastery: {
+      color: '#c084fc',
+      level: { en: 'Advanced', fr: 'Avancé', es: 'Avanzado' },
+      name:  { en: 'Mastery', fr: 'Maîtrise', es: 'Maestría' },
+      sub:   { en: 'Owning the Room', fr: 'Maîtriser la salle', es: 'Dominar el salón' },
+      intro: {
+        en: 'The art of hospitality, fully owned — leading a team, building a career, restaurant culture, and the mindset that sustains a lifetime in the craft.',
+        fr: 'L\u2019art de l\u2019hospitalité, pleinement maîtrisé — diriger une équipe, bâtir une carrière, la culture du restaurant et l\u2019état d\u2019esprit qui soutient toute une vie dans le métier.',
+        es: 'El arte de la hospitalidad, plenamente dominado — liderar un equipo, construir una carrera, la cultura del restaurante y la mentalidad que sostiene toda una vida en el oficio.'
+      }
+    }
   };
 
   var filterState = { section: 'all', query: '', category: null };
@@ -275,8 +313,34 @@
     var readLabel = lang === 'fr' ? 'Lire l\'article \u2192' : lang === 'es' ? 'Leer art\u00edculo \u2192' : 'Read article \u2192';
     var noResultsMsg = lang === 'fr' ? 'Aucun article trouv\u00e9.' : lang === 'es' ? 'No se encontraron art\u00edculos.' : 'No articles found.';
 
+    var storyLabel = lang === 'fr' ? 'Vivez-le dans First Crossings \u2192' : lang === 'es' ? 'Vívelo en First Crossings \u2192' : 'Live it in First Crossings \u2192';
+    var startLabel = lang === 'fr' ? 'Commencer cette étape \u2192' : lang === 'es' ? 'Empieza esta etapa \u2192' : 'Start this stage \u2192';
+
     var html = '';
-    sections.forEach(function (section) {
+    TIER_ORDER.forEach(function (tierId) {
+      var tcfg = TIER_CONFIG[tierId];
+      if (!tcfg) return;
+      var tierSections = sections.filter(function (s) { return s.tier === tierId; });
+      if (!tierSections.length) return;
+
+      var levelTxt = tcfg.level[lang] || tcfg.level.en;
+      var nameTxt = tcfg.name[lang] || tcfg.name.en;
+      var subTxt = tcfg.sub[lang] || tcfg.sub.en;
+      var introTxt = tcfg.intro[lang] || tcfg.intro.en;
+
+      html += '<div class="blog-tier" data-tier-id="' + escHtml(tierId) + '">';
+      html += '<div class="blog-tier-head" style="margin-bottom:1.75rem">';
+      html += '<span style="display:inline-block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;padding:4px 12px;border-radius:9999px;border:1px solid ' + tcfg.color + ';color:' + tcfg.color + ';background:transparent;margin-bottom:0.85rem">' + escHtml(levelTxt) + '</span>';
+      html += '<h2 class="heading text-3xl font-bold text-white">' + escHtml(nameTxt) + ' <span style="color:' + tcfg.color + ';font-weight:600">\u00b7 ' + escHtml(subTxt) + '</span></h2>';
+      html += '<p class="text-zinc-400 mt-2 max-w-2xl leading-relaxed">' + escHtml(introTxt) + '</p>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1rem;font-size:0.9rem;font-weight:600">';
+      html += '<a href="/novels/first-crossings" style="color:' + tcfg.color + '" onmouseover="this.style.opacity=\'0.75\'" onmouseout="this.style.opacity=\'1\'">' + escHtml(storyLabel) + '</a>';
+      html += '<a href="/signup" style="color:#FF5E3A" onmouseover="this.style.opacity=\'0.75\'" onmouseout="this.style.opacity=\'1\'">' + escHtml(startLabel) + '</a>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="blog-tier-sections">';
+
+      tierSections.forEach(function (section) {
       var sTitle = lang === 'fr' && section.titleFr ? section.titleFr : lang === 'es' && section.titleEs ? section.titleEs : section.title;
       var sSub = lang === 'fr' && section.subFr ? section.subFr : lang === 'es' && section.subEs ? section.subEs : section.sub;
 
@@ -324,7 +388,11 @@
 
       html += '</div>';
       html += '</div>';
-    });
+      }); // end tierSections.forEach
+
+      html += '</div>'; // end .blog-tier-sections
+      html += '</div>'; // end .blog-tier
+    }); // end TIER_ORDER.forEach
 
     html += '<div id="blog-no-results" style="display:none;text-align:center;padding:3rem 0 1rem;color:#71717a;font-size:0.95rem">' + escHtml(noResultsMsg) + '</div>';
     return html;
@@ -372,16 +440,37 @@
       totalVisible += visibleCount;
     });
 
-    visibleSections.forEach(function (sectionEl, i) {
-      if (i === 0) {
-        sectionEl.style.borderTop = 'none';
-        sectionEl.style.paddingTop = '0';
-        sectionEl.style.marginTop = '0';
+    var firstTierShown = true;
+    document.querySelectorAll('.blog-tier').forEach(function (tierEl) {
+      var shown = [];
+      tierEl.querySelectorAll('.blog-section').forEach(function (se) {
+        if (se.style.display !== 'none') shown.push(se);
+      });
+      if (!shown.length) { tierEl.style.display = 'none'; return; }
+
+      tierEl.style.display = '';
+      if (firstTierShown) {
+        tierEl.style.borderTop = 'none';
+        tierEl.style.marginTop = '0';
+        tierEl.style.paddingTop = '0';
       } else {
-        sectionEl.style.borderTop = '1px solid #27272a';
-        sectionEl.style.paddingTop = '3rem';
-        sectionEl.style.marginTop = '1rem';
+        tierEl.style.borderTop = '1px solid #27272a';
+        tierEl.style.marginTop = '4rem';
+        tierEl.style.paddingTop = '3rem';
       }
+      firstTierShown = false;
+
+      shown.forEach(function (sectionEl, i) {
+        if (i === 0) {
+          sectionEl.style.borderTop = 'none';
+          sectionEl.style.paddingTop = '0';
+          sectionEl.style.marginTop = '0';
+        } else {
+          sectionEl.style.borderTop = '1px solid #27272a';
+          sectionEl.style.paddingTop = '3rem';
+          sectionEl.style.marginTop = '1rem';
+        }
+      });
     });
 
     var noResults = document.getElementById('blog-no-results');
