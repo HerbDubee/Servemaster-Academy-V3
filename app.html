@@ -320,6 +320,7 @@
         </div>
         <button onclick="downloadCertificate()" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap" id="cert-btn">Download PDF</button>
       </div>
+      <div id="whats-next-card" class="hidden"></div>
       <div id="streak-card" class="hidden bg-zinc-900 border border-amber-900/40 rounded-3xl p-6">
         <div class="flex items-center gap-4">
           <div class="text-4xl streak-glow">🔥</div>
@@ -2478,19 +2479,81 @@ function renderGlossary() {
 }
 
 function checkCertificate() {
-  const allDone = userProgress.every(p => p.progress >= 100);
+  const allDone = userProgress.length > 0 && userProgress.every(p => p.progress >= 100);
   const banner = document.getElementById('certificate-banner');
-  if (!banner) return;
-  if (allDone && !hasPaidPlan()) {
-    banner.classList.remove('hidden');
-    banner.innerHTML = `<div class="flex-1">
-      <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Earned!</div>
-      <div class="text-zinc-400 text-sm mt-1">${lang==='es'?'¡Felicidades! Actualiza a Pro para descargar tu certificado.':lang==='fr'?'Félicitations ! Passez à Pro pour télécharger votre certificat.':'Congratulations! Upgrade to Pro to download your certificate.'}</div>
-    </div>
-    <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap text-sm">${lang==='es'?'Cambiar a Pro →':lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>`;
-  } else {
-    banner.classList.toggle('hidden', !allDone);
+  if (banner) {
+    if (allDone && !hasPaidPlan()) {
+      banner.classList.remove('hidden');
+      banner.innerHTML = `<div class="flex-1">
+        <div class="font-semibold text-amber-300 text-lg" id="cert-title">🎓 Certificate Earned!</div>
+        <div class="text-zinc-400 text-sm mt-1">${lang==='es'?'¡Felicidades! Actualiza a Pro para descargar tu certificado.':lang==='fr'?'Félicitations ! Passez à Pro pour télécharger votre certificat.':'Congratulations! Upgrade to Pro to download your certificate.'}</div>
+      </div>
+      <a href="/pricing" class="bg-amber-400 hover:bg-amber-300 text-black font-bold px-6 py-3 rounded-2xl transition-colors whitespace-nowrap text-sm">${lang==='es'?'Cambiar a Pro →':lang==='fr'?'Passer à Pro →':'Upgrade to Pro →'}</a>`;
+    } else {
+      banner.classList.toggle('hidden', !allDone);
+    }
   }
+  renderWhatsNext(allDone);
+}
+
+function renderWhatsNext(allDone) {
+  const wn = document.getElementById('whats-next-card');
+  if (!wn) return;
+  if (!allDone) { wn.classList.add('hidden'); wn.innerHTML = ''; return; }
+  const copy = {
+    en: {
+      eyebrow: 'The next chapter',
+      title: "You've mastered the floor. Now live it.",
+      sub: "Your certificate is the beginning, not the finish line. Here's where ServeMaster graduates go next.",
+      readT: 'Read <em>First Crossings</em>', readD: 'Step into the novel behind the curriculum — the late nights, the tough guests, and the craft you just learned, brought to life.', readC: 'Start reading →',
+      practiceT: 'Keep your edge sharp', practiceD: 'Run advanced voice roleplays and difficult-guest scenarios so your instincts stay game-ready.', practiceC: 'Open Practice →',
+      workT: 'Companion workbooks', workD: 'Turn each chapter into real reps with the $1.99 workbooks — reflection prompts and on-shift drills.', workC: 'Browse workbooks →'
+    },
+    fr: {
+      eyebrow: 'Le prochain chapitre',
+      title: 'Vous maîtrisez la salle. Vivez-la maintenant.',
+      sub: "Votre certificat est un début, pas une ligne d'arrivée. Voici où vont les diplômés ServeMaster.",
+      readT: 'Lire <em>First Crossings</em>', readD: "Plongez dans le roman derrière le programme — les soirées tardives, les clients difficiles et le métier que vous venez d'apprendre.", readC: 'Commencer la lecture →',
+      practiceT: 'Gardez votre avantage', practiceD: 'Enchaînez des jeux de rôle vocaux avancés et des scénarios de clients difficiles pour rester au top.', practiceC: 'Ouvrir la pratique →',
+      workT: "Cahiers d'exercices", workD: 'Transformez chaque chapitre en entraînement avec les cahiers à 1,99 $ — réflexions et exercices de service.', workC: 'Voir les cahiers →'
+    },
+    es: {
+      eyebrow: 'El próximo capítulo',
+      title: 'Dominas el salón. Ahora vívelo.',
+      sub: 'Tu certificado es el comienzo, no la meta. Aquí es donde van los graduados de ServeMaster.',
+      readT: 'Lee <em>First Crossings</em>', readD: 'Entra en la novela detrás del programa — las noches largas, los clientes difíciles y el oficio que acabas de aprender.', readC: 'Empezar a leer →',
+      practiceT: 'Mantén tu ventaja', practiceD: 'Practica juegos de rol de voz avanzados y escenarios de clientes difíciles para mantener el instinto afilado.', practiceC: 'Abrir práctica →',
+      workT: 'Cuadernos de trabajo', workD: 'Convierte cada capítulo en práctica real con los cuadernos de $1.99 — reflexiones y ejercicios de turno.', workC: 'Ver cuadernos →'
+    }
+  };
+  const c = copy[lang] || copy.en;
+  wn.classList.remove('hidden');
+  wn.innerHTML = `
+  <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 border rounded-3xl p-6 md:p-8" style="border-color:rgba(251,191,36,0.25)">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:#fbbf24">${c.eyebrow}</div>
+    <h2 class="heading text-2xl md:text-3xl text-white mb-1">${c.title}</h2>
+    <p class="text-zinc-400 text-sm mb-6 max-w-2xl">${c.sub}</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 flex flex-col">
+        <div class="text-3xl mb-3">📖</div>
+        <div class="font-semibold text-white mb-1">${c.readT}</div>
+        <p class="text-zinc-400 text-sm mb-4 flex-1">${c.readD}</p>
+        <a href="/novels" class="font-semibold text-sm" style="color:#fbbf24">${c.readC}</a>
+      </div>
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 flex flex-col">
+        <div class="text-3xl mb-3">🎤</div>
+        <div class="font-semibold text-white mb-1">${c.practiceT}</div>
+        <p class="text-zinc-400 text-sm mb-4 flex-1">${c.practiceD}</p>
+        <button onclick="navigate('practice')" class="text-left font-semibold text-sm" style="color:#FF5E3A">${c.practiceC}</button>
+      </div>
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 flex flex-col">
+        <div class="text-3xl mb-3">✍️</div>
+        <div class="font-semibold text-white mb-1">${c.workT}</div>
+        <p class="text-zinc-400 text-sm mb-4 flex-1">${c.workD}</p>
+        <a href="/novels" class="font-semibold text-sm" style="color:#fbbf24">${c.workC}</a>
+      </div>
+    </div>
+  </div>`;
 }
 
 let _lastCertToken = null;
