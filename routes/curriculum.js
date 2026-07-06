@@ -318,7 +318,7 @@ Pricing (CAD, all with 14-day free trial):
 - Pro Team Annual: $1,990/yr (~$165.83/mo, save ~17%)
 - Enterprise: custom pricing — multi-location, white-label, SSO, API access
 
-Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to support@servemasteracademy.ca. Answer in the same language the visitor uses.`;
+Keep answers concise, helpful, and friendly. If someone asks about pricing, always mention the free tier and 14-day trial. If they want to sign up, direct them to /signup. If they have a billing issue, direct them to hello@servemasteracademy.ca. Answer in the same language the visitor uses.`;
 
   router.post('/api/chat', async (req, res, next) => {
     try {
