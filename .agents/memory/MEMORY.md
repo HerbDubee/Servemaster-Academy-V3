@@ -6,4 +6,4 @@
 - [Novel reader API](novel-reader-api.md) — chapter lists come from books/voice-map.js (single source); unknown book ids return [] not Book1; content read from books/ md files.
 - [i18n copy lives in lang.js](i18n-lang-js.md) — visible marketing copy is set by data-i18n keys resolved from public/js/lang.js at load; inline HTML text is only a pre-load fallback. Edit lang.js (EN/FR/ES) to change what users see.
 - [Progressive tracks relabel & marketing i18n](progressive-tracks-relabel.md) — lib/tracks.js owns 3-track membership; module titles live only in content.js modules[]; relabel was title-only (mismatches in docs/); lang.js overrides HTML for marketing copy.
-- [Scenario topic-drift checker](scenario-drift-checker.md) — check-module-scenarios.js advisory drift: island (1 scenario) + cluster (majority) passes; spirits high-signal; Module 28 cocktail cluster is a known intentional warning.
+- [Scenario topic-drift checker](scenario-drift-checker.md) — check-module-scenarios.js advisory drift: island (1 scenario) + cluster (majority) passes; spirits high-signal; clean tree = 0 warnings (6 reviewed false-positives suppressed via allowlist).

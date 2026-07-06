@@ -14,4 +14,6 @@ description: How the advisory drift heuristic works and which standing warnings 
 
 **How to apply:** the checker exports its internals when `require`d (not run as CLI) — `{ checkTopicDrift, DOMAIN_LEXICON, SUBJECT_MIN_HITS, domainHits }` — so you can unit-check drift logic without invoking the CLI.
 
-**Known standing advisory warning (intentional, do NOT treat as a bug):** Module 28 "High-Pressure VIP & Celebrity Service" trips cluster drift — 4 of 5 scenarios are cocktail deep-dives (Old Fashioned, Martini, Daiquiri, Negroni) while the module theme is discretion/composure. This is a real content signal the checker correctly surfaces; re-homing it would be a separate content task, not a checker fix.
+**Reviewed false-positive allowlist:** `REVIEWED_DRIFT_ALLOWLIST` (keyed by scenarioId:lang:subject) suppresses human-reviewed island false positives. A clean tree prints "0 topic-drift warning(s) (N reviewed false positive(s) suppressed)" so any NEW drift stands out. If an allowlisted scenario is re-themed, remove its entry. (Total scenarios is now 156, not 150.)
+
+**Module 28 cluster is RESOLVED:** the former "High-Pressure VIP & Celebrity Service" 4-of-5 cocktail cluster was fixed by re-homing the four cocktail scenarios (Old Fashioned/Martini/Daiquiri/Negroni) to module 25 "Bar Service Integration" (now a 9-scenario bar deep-dive) and adding genuine VIP scenarios 153–156. A clean tree currently produces **zero cluster warnings**; do not expect a standing module-28 warning.

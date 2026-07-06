@@ -25,12 +25,14 @@ superseded by the rewrite pass. The DB `quizzes` table is a single standalone `w
 curriculum quiz (consumed only by `training.html` / `app-training.html`), NOT per-module content
 for the 30 renamed modules — do not confuse it with the in-app module quizzes in `lessonData`.
 
-**`scenarioIds` HAVE since been repointed** so each module's 5 practice roleplays fit its new
-title (content-based rematch across all 150 scenarios). Three sources must stay in lockstep:
-`content.js` `modules[].scenarioIds`, each scenario's `moduleId` in `content.js` `practiceScenarios`,
-and `lib/tracks.js` `MODULE_SCENARIOS`. Invariant: scenarios 1–150 each used exactly once, exactly
-5 per module. The old grouping comments in `practiceScenarios` are now cosmetic/stale — do not trust
-them for grouping; the `moduleId` field is authoritative.
+**`scenarioIds` HAVE since been repointed** so each module's practice roleplays fit its new
+title (content-based rematch). Three sources must stay in lockstep: `content.js`
+`modules[].scenarioIds`, each scenario's `moduleId` in `content.js` `practiceScenarios`, and
+`lib/tracks.js` `MODULE_SCENARIOS`. There are now **156 scenarios** (not 150) — most modules carry
+exactly 5, but by design modules 15/16 carry 6 and module 25 is a 9-scenario bar/cocktail deep-dive,
+so "exactly 5 per module" is no longer an invariant. The training UI renders by array length, so
+uneven counts are cosmetic. The old grouping comments in `practiceScenarios` are cosmetic/stale — do
+not trust them; the `moduleId` field is authoritative.
 
 # Marketing i18n (lang.js overrides HTML)
 
