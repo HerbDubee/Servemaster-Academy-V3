@@ -21,11 +21,19 @@
  * right module, but not that its *wording* still fits the module's subject. As a
  * softer safety net, a topic-drift heuristic (see checkTopicDrift below) scans each
  * scenario's title/description for a strong, concrete subject (wine, cocktails,
- * beer, coffee/tea, allergens, payment, reservations) and *warns* when that subject
- * is an "island" — absent from the module's own title, its lesson curriculum, and
- * every sibling scenario. These warnings never change the exit code (the heuristic
- * is deliberately conservative to keep false positives near zero); they just flag
- * scenarios worth a human re-read after a copy edit.
+ * spirits, beer, coffee/tea, allergens, payment, reservations) and *warns* on two
+ * kinds of drift:
+ *   - Island drift: a single scenario reads as a subject that is absent from its
+ *     module's title, lesson curriculum, and every sibling scenario.
+ *   - Cluster drift: several scenarios in one module all read as the same subject,
+ *     which dominates the module's scenario set yet is absent from the module's own
+ *     title and lessons — so the scenarios mutually "support" each other as siblings
+ *     and the island check alone would miss them.
+ * "spirits" is treated as high-signal: a single distinctive spirit name (whisky,
+ * bourbon, scotch…) is enough to flag it, since those words rarely appear off-topic.
+ * These warnings never change the exit code (the heuristic is deliberately
+ * conservative to keep false positives near zero); they just flag scenarios worth a
+ * human re-read after a copy edit.
  *
  * Usage:
  *   node scripts/check-module-scenarios.js
@@ -91,9 +99,20 @@ const DOMAIN_LEXICON = {
     es: ['vino', 'vinos', 'botella', 'botellas', 'sommelier', 'añada', 'barolo', 'champán', 'espumoso', 'espumante', 'sake', 'decantar', 'decantación', 'decantador', 'biodinámico', 'oporto', 'bodega', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
   },
   cocktail: {
-    en: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'fashioned', 'mocktail', 'bitters', 'gin', 'tonic', 'whisky', 'whiskey', 'muddle', 'shaken', 'stirred', 'vermouth', 'aperitif'],
-    fr: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amers', 'gin', 'tonic', 'whisky', 'whiskey', 'piler', 'secoué', 'remué', 'vermouth', 'apéritif'],
-    es: ['cóctel', 'cócteles', 'coctel', 'cocteles', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amargos', 'ginebra', 'tónica', 'whisky', 'whiskey', 'macerar', 'agitado', 'removido', 'vermut', 'aperitivo'],
+    en: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'fashioned', 'mocktail', 'bitters', 'gin', 'tonic', 'muddle', 'shaken', 'stirred', 'vermouth', 'aperitif'],
+    fr: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amers', 'gin', 'tonic', 'piler', 'secoué', 'remué', 'vermouth', 'apéritif'],
+    es: ['cóctel', 'cócteles', 'coctel', 'cocteles', 'martini', 'negroni', 'daiquiri', 'mocktail', 'amargos', 'ginebra', 'tónica', 'macerar', 'agitado', 'removido', 'vermut', 'aperitivo'],
+  },
+  // Neat/spirit-forward drinks — distinct from cocktail because a single spirit
+  // name (whisky, bourbon, scotch…) almost never appears outside a spirits
+  // context, so this subject is treated as high-signal (see SUBJECT_MIN_HITS):
+  // even one distinctive word is enough to flag a spirit scenario stranded in an
+  // unrelated module (e.g. a whisky flight in a wine module). Plain "rye" is left
+  // out on purpose — it collides with rye bread and would add allergen noise.
+  spirits: {
+    en: ['whisky', 'whiskey', 'bourbon', 'scotch', 'tequila', 'vodka', 'rum', 'cognac', 'brandy', 'mezcal', 'digestif'],
+    fr: ['whisky', 'whiskey', 'bourbon', 'scotch', 'tequila', 'vodka', 'rhum', 'cognac', 'brandy', 'mezcal', 'digestif'],
+    es: ['whisky', 'whiskey', 'bourbon', 'escocés', 'tequila', 'vodka', 'ron', 'coñac', 'brandy', 'mezcal', 'digestivo'],
   },
   beer: {
     en: ['beer', 'beers', 'pint', 'lager', 'ale', 'ipa', 'draught'],
@@ -121,6 +140,18 @@ const DOMAIN_LEXICON = {
     es: ['reserva', 'reservas', 'sobreventa', 'sobrerreserva', 'overbooking'],
   },
 };
+
+// Per-subject minimum lexicon hits required before a scenario's *naming* counts
+// as strongly expressing that subject. The default is 2 (a single generic word
+// like "wine" or "bill" carries too little signal on its own). "spirits" is the
+// exception: its words are proper spirit names that almost never appear outside a
+// spirits context, so a single hit is enough to flag drift (e.g. a lone whisky
+// scenario stranded in a wine module — blind spot #1). Keep this list tiny and
+// only for subjects whose every word is unambiguous, or false positives creep in.
+const SUBJECT_MIN_HITS = { spirits: 1 };
+function minHitsFor(domain) {
+  return SUBJECT_MIN_HITS[domain] || 2;
+}
 
 // The three languages each scenario carries, mapped to their content.js fields.
 const LANGS = [
@@ -231,7 +262,7 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
           domain = name;
         }
       }
-      if (!domain || best < 2) continue; // require a strong, concentrated signal
+      if (!domain || best < minHitsFor(domain)) continue; // require a strong, concentrated signal
 
       const words = DOMAIN_LEXICON[domain][lang.key];
 
@@ -257,6 +288,74 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
       warnings.push(
         `Scenario ${s.id} ("${s.title}") reads as a "${domain}" scenario in its ${lang.label} wording, but module ${modId} ("${mod.title}") ` +
         `covers that subject nowhere else (not in its title, lessons, or sibling scenarios) — verify it is on-topic.`
+      );
+    }
+  }
+
+  // -- Cluster drift (blind spot #2) ---------------------------------------
+  //
+  // The per-scenario island check above intentionally goes quiet when siblings
+  // agree with each other — a single off-topic scenario is suspicious, but a
+  // whole coherent set is assumed intentional. That lets a *cluster* of drift
+  // slip through: if several scenarios in one module all read as the same wrong
+  // subject (e.g. four reservation scenarios crammed into a Cleanliness module),
+  // they mutually "support" each other as siblings and none is ever flagged.
+  //
+  // This pass judges the module as a whole: it finds the subject that dominates
+  // the module's scenario *naming* and warns when that dominant subject is
+  // absent from the module's own title and lesson curriculum. Unlike the island
+  // check, the per-scenario bar here is a single lexicon hit — the corroboration
+  // comes from the *count* (a strict majority of at least 3 scenarios all naming
+  // the same subject), not from any one scenario's strength. That is precisely
+  // the pattern the island check misses, since the agreeing siblings cancel each
+  // other out. A module with a naturally mixed scenario set has no single
+  // dominant subject and never trips it, keeping false positives low.
+  for (const [modId, scenarios] of siblingsByModule) {
+    const mod = modById.get(modId);
+    if (!mod) continue; // orphaned moduleIds already reported structurally
+    const total = scenarios.length;
+    if (total < 3) continue; // too few scenarios to call anything a "cluster"
+
+    for (const lang of LANGS) {
+      // Tally each scenario's single dominant naming subject in this language.
+      // A single lexicon hit is enough to attribute a scenario to a subject here
+      // (see the count-based corroboration note above).
+      const counts = new Map();
+      for (const s of scenarios) {
+        const naming = `${s[lang.title] || ''} ${s[lang.desc] || ''}`;
+        let domain = null;
+        let best = 0;
+        for (const [name, byLang] of Object.entries(DOMAIN_LEXICON)) {
+          const h = domainHits(naming, byLang[lang.key]);
+          if (h > best) {
+            best = h;
+            domain = name;
+          }
+        }
+        if (domain && best >= 1) counts.set(domain, (counts.get(domain) || 0) + 1);
+      }
+
+      // The subject expressed by the most scenarios.
+      let domSubject = null;
+      let domCount = 0;
+      for (const [name, c] of counts) {
+        if (c > domCount) {
+          domCount = c;
+          domSubject = name;
+        }
+      }
+      if (!domSubject) continue;
+      // Must dominate decisively: at least 3 scenarios AND a strict majority.
+      if (domCount < 3 || domCount * 2 <= total) continue;
+
+      // On-topic if the module's own title/curriculum covers that subject.
+      const cacheKey = `${modId}:${lang.key}`;
+      if (!themeCache.has(cacheKey)) themeCache.set(cacheKey, moduleThemeText(mod, lessonData, lang));
+      if (domainHits(themeCache.get(cacheKey), DOMAIN_LEXICON[domSubject][lang.key]) > 0) continue;
+
+      warnings.push(
+        `Module ${modId} ("${mod.title}") has ${domCount} of ${total} scenarios reading as "${domSubject}" in ${lang.label}, ` +
+        `but the module's own title and lessons cover that subject nowhere — the scenario set may have drifted off-topic as a cluster.`
       );
     }
   }
@@ -378,4 +477,9 @@ function run() {
   process.exit(0);
 }
 
-run();
+if (require.main === module) {
+  run();
+} else {
+  // Exposed for verification/tests; requiring the module does not run the CLI.
+  module.exports = { checkTopicDrift, DOMAIN_LEXICON, SUBJECT_MIN_HITS, domainHits };
+}
