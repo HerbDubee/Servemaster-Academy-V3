@@ -17,12 +17,23 @@
  *   4. Every scenario carries its trilingual fields (title/desc/scene in EN/FR/ES).
  *   5. No scenario is referenced by more than one module, and none is orphaned.
  *
+ * Those checks are all *structural* — they guarantee a scenario is wired to the
+ * right module, but not that its *wording* still fits the module's subject. As a
+ * softer safety net, a topic-drift heuristic (see checkTopicDrift below) scans each
+ * scenario's title/description for a strong, concrete subject (wine, cocktails,
+ * beer, coffee/tea, allergens, payment, reservations) and *warns* when that subject
+ * is an "island" — absent from the module's own title, its lesson curriculum, and
+ * every sibling scenario. These warnings never change the exit code (the heuristic
+ * is deliberately conservative to keep false positives near zero); they just flag
+ * scenarios worth a human re-read after a copy edit.
+ *
  * Usage:
  *   node scripts/check-module-scenarios.js
  *
  * Exit code:
  *   0  — every module resolves to on-topic, fully-translated scenarios
- *   1  — one or more mismatches found
+ *        (topic-drift warnings, if any, do NOT affect the exit code)
+ *   1  — one or more structural mismatches found
  */
 
 'use strict';
@@ -59,8 +70,105 @@ function arraysEqual(a, b) {
   return a.every((v, i) => Number(v) === Number(b[i]));
 }
 
+// -- Topic-drift heuristic ---------------------------------------------------
+//
+// Concrete, high-signal subject lexicons. These are the kinds of nouns a copy
+// edit carries with it when a scenario's theme changes — a wine scenario always
+// says "wine/bottle/sommelier", a cocktail scenario says "cocktail/martini", and
+// so on. Generic hospitality words (guest, table, service) are deliberately left
+// out: they carry no topical signal and would only add noise. Only add a word
+// here if a scenario that mentions it is almost certainly *about* that subject.
+const DOMAIN_LEXICON = {
+  wine: ['wine', 'wines', 'bottle', 'bottles', 'sommelier', 'vintage', 'barolo', 'champagne', 'sparkling', 'sake', 'corked', 'decant', 'decanting', 'decanter', 'biodynamic', 'port', 'cellar', 'riesling', 'pinot', 'cabernet', 'chardonnay', 'rioja'],
+  cocktail: ['cocktail', 'cocktails', 'martini', 'negroni', 'daiquiri', 'fashioned', 'mocktail', 'bitters', 'gin', 'tonic', 'whisky', 'whiskey', 'muddle', 'shaken', 'stirred', 'vermouth', 'aperitif'],
+  beer: ['beer', 'beers', 'pint', 'lager', 'ale', 'ipa', 'draught'],
+  'coffee/tea': ['coffee', 'espresso', 'cappuccino', 'latte', 'matcha'],
+  allergen: ['allergy', 'allergies', 'allergen', 'allergens', 'allergic', 'celiac', 'coeliac', 'anaphylactic', 'anaphylaxis', 'gluten', 'vegan', 'dietary', 'kosher', 'halal', 'intolerance'],
+  payment: ['bill', 'check', 'tip', 'tips', 'tipping', 'gratuity', 'splitting', 'pos', 'receipt'],
+  reservation: ['reservation', 'reservations', 'overbooking', 'overbooked'],
+};
+
+// Count how many distinct lexicon words appear (as whole words) in a blob.
+function domainHits(text, words) {
+  const t = ' ' + String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ') + ' ';
+  let n = 0;
+  for (const w of words) {
+    if (t.includes(' ' + w + ' ')) n += 1;
+  }
+  return n;
+}
+
+// The module's own "theme text": its title plus its lesson curriculum. If a
+// module's lessons already talk about a subject, a scenario on that subject is
+// on-topic even when its four siblings happen not to mention it.
+function moduleThemeText(mod, lessonData) {
+  const ld = (lessonData && lessonData[mod.id]) || {};
+  let t = (mod.title || '') + ' ' + (ld.subtitle || '');
+  for (const l of ld.lessons || []) t += ' ' + (l.title || '') + ' ' + (l.body || '');
+  for (const q of ld.quiz || []) t += ' ' + (q.q || '');
+  return t;
+}
+
+// Conservative topic-drift detector. Warns when a scenario's *naming* (title +
+// description — i.e. what the scenario is about, not incidental scene prose)
+// strongly expresses one concrete subject (>= 2 distinct lexicon words) that is
+// an island in its module: not in the module title, not in the module's lesson
+// curriculum, and not shared by any sibling scenario. Returns warning strings.
+function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
+  const warnings = [];
+  const modById = new Map(modules.map((m) => [Number(m.id), m]));
+
+  const siblingsByModule = new Map();
+  for (const s of practiceScenarios) {
+    const m = Number(s.moduleId);
+    if (!siblingsByModule.has(m)) siblingsByModule.set(m, []);
+    siblingsByModule.get(m).push(s);
+  }
+
+  const themeCache = new Map();
+
+  for (const s of practiceScenarios) {
+    const modId = Number(s.moduleId);
+    const mod = modById.get(modId);
+    if (!mod) continue; // structural check already reports orphaned moduleIds
+
+    // Dominant subject, judged from the naming fields only.
+    const naming = `${s.title} ${s.desc}`;
+    let domain = null;
+    let best = 0;
+    for (const [name, words] of Object.entries(DOMAIN_LEXICON)) {
+      const h = domainHits(naming, words);
+      if (h > best) {
+        best = h;
+        domain = name;
+      }
+    }
+    if (!domain || best < 2) continue; // require a strong, concentrated signal
+
+    const words = DOMAIN_LEXICON[domain];
+
+    // On-topic if the module's own title/curriculum covers the subject.
+    if (!themeCache.has(modId)) themeCache.set(modId, moduleThemeText(mod, lessonData));
+    if (domainHits(themeCache.get(modId), words) > 0) continue;
+
+    // On-topic if any sibling scenario is itself *named* around the same subject.
+    // Judge siblings by their naming (title + description), the same standard used
+    // for the candidate — an incidental one-off mention buried in scene prose does
+    // not establish that the module "covers" the subject.
+    const siblings = (siblingsByModule.get(modId) || []).filter((x) => x !== s);
+    if (siblings.some((x) => domainHits(`${x.title} ${x.desc}`, words) > 0)) continue;
+
+    warnings.push(
+      `Scenario ${s.id} ("${s.title}") reads as a "${domain}" scenario, but module ${modId} ("${mod.title}") ` +
+      `covers that subject nowhere else (not in its title, lessons, or sibling scenarios) — verify it is on-topic.`
+    );
+  }
+
+  return warnings;
+}
+
 function run() {
-  const { modules, practiceScenarios } = loadContent();
+  const { modules, practiceScenarios, lessonData } = loadContent();
   const errors = [];
 
   if (!Array.isArray(modules) || !modules.length) {
@@ -148,6 +256,14 @@ function run() {
   }
 
   console.log(`Checked ${modules.length} modules and ${practiceScenarios.length} practice scenarios.\n`);
+
+  // Advisory topic-drift pass. Warns but never fails the check (see header).
+  const topicWarnings = checkTopicDrift({ modules, practiceScenarios, lessonData });
+  if (topicWarnings.length) {
+    console.warn(`${topicWarnings.length} topic-drift warning(s) (advisory — not a failure):\n`);
+    topicWarnings.forEach((w) => console.warn(`  ! ${w}`));
+    console.warn('');
+  }
 
   if (errors.length) {
     console.error(`${errors.length} problem(s) found:\n`);
