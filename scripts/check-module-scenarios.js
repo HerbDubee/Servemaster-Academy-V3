@@ -157,13 +157,48 @@ function moduleThemeText(mod, lessonData, lang) {
   return t;
 }
 
+// Reviewed false-positive allowlist -----------------------------------------
+//
+// These (scenario id + language + subject) triples have been human-reviewed and
+// confirmed on-topic — the topic-drift heuristic flags them only because of a
+// keyword coincidence, not real drift. Suppressing them keeps the advisory
+// output at "0 warnings" on a clean tree, so a genuinely NEW drift warning is
+// impossible to miss in the noise.
+//
+// Each entry documents *why* it's a false positive. If a scenario listed here is
+// ever re-themed (retitled/rewritten onto a different subject), REMOVE its entry
+// so the heuristic can re-evaluate it — an allowlisted scenario is never checked.
+//
+// Key format: `${scenarioId}:${langKey}:${subject}` (langKey = en|fr|es).
+const REVIEWED_DRIFT_ALLOWLIST = new Set([
+  // Scenario 87 "The Mocktail Menu" (module 14 Basic Menu Navigation) is
+  // beverage-menu navigation beside its coffee/tea siblings; the "cocktail"
+  // signal is just mocktail vocabulary. On-topic in all three languages.
+  '87:en:cocktail',
+  '87:fr:cocktail',
+  '87:es:cocktail',
+  // Scenario 126 "The Online Reservation Mixup" (module 20 Recovering from
+  // Service Errors) is one more service error to recover from, beside its
+  // wrong-order/spill/POS siblings; flagged only in ES because the Spanish copy
+  // repeats "reserva".
+  '126:es:reservation',
+  // Scenario 145 "The Batched Cocktail Service" (module 27 Speed Without
+  // Sacrificing Warmth) is a bar-speed scenario beside its Shake-vs-Stir/
+  // Free-Pour/Citrus-Prep cocktail siblings; flagged only in FR/ES because those
+  // sibling titles don't carry the literal "cocktail" lexicon word.
+  '145:fr:cocktail',
+  '145:es:cocktail',
+]);
+
 // Conservative topic-drift detector. Warns when a scenario's *naming* (title +
 // description — i.e. what the scenario is about, not incidental scene prose)
 // strongly expresses one concrete subject (>= 2 distinct lexicon words) that is
 // an island in its module: not in the module title, not in the module's lesson
-// curriculum, and not shared by any sibling scenario. Returns warning strings.
+// curriculum, and not shared by any sibling scenario. Reviewed false positives
+// on REVIEWED_DRIFT_ALLOWLIST are suppressed. Returns { warnings, suppressed }.
 function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
   const warnings = [];
+  let suppressed = 0;
   const modById = new Map(modules.map((m) => [Number(m.id), m]));
 
   const siblingsByModule = new Map();
@@ -212,6 +247,13 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
       const siblings = (siblingsByModule.get(modId) || []).filter((x) => x !== s);
       if (siblings.some((x) => domainHits(`${x[lang.title] || ''} ${x[lang.desc] || ''}`, words) > 0)) continue;
 
+      // Suppress reviewed, confirmed-on-topic false positives so only NEW drift
+      // reaches the output (see REVIEWED_DRIFT_ALLOWLIST).
+      if (REVIEWED_DRIFT_ALLOWLIST.has(`${s.id}:${lang.key}:${domain}`)) {
+        suppressed += 1;
+        continue;
+      }
+
       warnings.push(
         `Scenario ${s.id} ("${s.title}") reads as a "${domain}" scenario in its ${lang.label} wording, but module ${modId} ("${mod.title}") ` +
         `covers that subject nowhere else (not in its title, lessons, or sibling scenarios) — verify it is on-topic.`
@@ -219,7 +261,7 @@ function checkTopicDrift({ modules, practiceScenarios, lessonData }) {
     }
   }
 
-  return warnings;
+  return { warnings, suppressed };
 }
 
 function run() {
@@ -313,11 +355,16 @@ function run() {
   console.log(`Checked ${modules.length} modules and ${practiceScenarios.length} practice scenarios.\n`);
 
   // Advisory topic-drift pass. Warns but never fails the check (see header).
-  const topicWarnings = checkTopicDrift({ modules, practiceScenarios, lessonData });
+  // Reviewed false positives are suppressed via REVIEWED_DRIFT_ALLOWLIST so only
+  // NEW drift surfaces.
+  const { warnings: topicWarnings, suppressed } = checkTopicDrift({ modules, practiceScenarios, lessonData });
+  const suppressedNote = suppressed ? ` (${suppressed} reviewed false positive(s) suppressed)` : '';
   if (topicWarnings.length) {
-    console.warn(`${topicWarnings.length} topic-drift warning(s) (advisory — not a failure):\n`);
+    console.warn(`${topicWarnings.length} topic-drift warning(s) (advisory — not a failure)${suppressedNote}:\n`);
     topicWarnings.forEach((w) => console.warn(`  ! ${w}`));
     console.warn('');
+  } else {
+    console.log(`0 topic-drift warnings${suppressedNote}.\n`);
   }
 
   if (errors.length) {
