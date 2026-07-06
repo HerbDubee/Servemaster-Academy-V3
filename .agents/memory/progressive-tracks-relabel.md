@@ -1,43 +1,37 @@
 ---
-name: Progressive tracks relabel & marketing i18n
-description: How the 3-track (Foundations/Craft/Mastery) module system is wired, and why marketing copy must change in lang.js not the HTML.
+name: Progressive tracks & apprenticeship presentation
+description: Where the 3-stage (Foundations/Craft/Mastery) system is authoritative, and why presentation/marketing/Knowledge-Centre framing must never be wired to gating.
 ---
 
-# Progressive Tracks relabel
+# Single sources of truth (do not fork)
 
-The 30 modules are grouped into 3 progressive tracks — **Foundations** (free, 10),
-**Craft** (paid, 12), **Mastery** (paid, 8).
+- **Track membership + gating: `lib/tracks.js`** (moduleId arrays + rules). Never redefine
+  membership or access logic anywhere else — `routes/user.js` and `app.html` (`getTrackState`)
+  consume it. Treat this as FROZEN for presentation work.
+- **Module display titles: `public/js/content.js` → `modules[]`** (`title`/`titleFr`/`titleEs`).
+  The only source for card/nav/cert titles. `lessonData` (keyed by module id) holds bodies, not
+  a competing title.
+- **Scenario mapping lockstep (3 sources):** `content.js` `modules[].scenarioIds`, each scenario's
+  `moduleId` in `content.js` `practiceScenarios`, and `lib/tracks.js` `MODULE_SCENARIOS`. Verify
+  with `node scripts/check-module-scenarios.js`. Per-module counts are uneven by design (most 5;
+  15/16 carry 6; module 25 is a 9-scenario bar deep-dive) — "5 per module" is NOT an invariant.
+  Old grouping comments in `practiceScenarios` are stale; the `moduleId` field is authoritative.
 
-- **Track membership is authoritative in `lib/tracks.js`** (moduleId arrays + gating rules).
-  Do NOT redefine membership elsewhere. `routes/user.js` (`/api/user/access`, `/api/user/knowledge`)
-  and `app.html` (`getTrackState`, `renderAll`) consume it.
-- **Module titles live only in `public/js/content.js` → `modules` array** (`title`/`titleFr`/`titleEs`).
-  That array is the single source of truth for the card/nav/cert titles. `lessonData` (keyed by
-  module id) holds lesson bodies and does NOT carry a competing display title.
+# Presentation is decoupled from gating
 
-**The relabel was originally title-only**, but a follow-up content pass then rewrote each module's
-`lessonData` (subtitle + 5 lesson bodies + 5-question embedded quiz, EN/FR/ES) to match its new
-title and re-mapped `emoji` + `blogSlug` to fit. **Verified: all 30 modules' lessons AND quizzes
-in `content.js` already teach their current title** — this is done, do NOT re-rewrite it.
-**Why:** confirmed by full audit of `lessonData` (all 30 pass a structural + i18n + on-topic check).
-Ignore any older note claiming lessons/quizzes were "left on their original topics" — that was
-superseded by the rewrite pass. The DB `quizzes` table is a single standalone `wine-service`
-curriculum quiz (consumed only by `training.html` / `app-training.html`), NOT per-module content
-for the 30 renamed modules — do not confuse it with the in-app module quizzes in `lessonData`.
+**Why:** the "Progressive Craft Apprenticeship" overhaul was explicitly presentation-only —
+naming, subtitles, sequencing, marketing copy, and the Knowledge Centre were reframed while
+`lib/tracks.js` membership/gating stayed frozen.
 
-**`scenarioIds` HAVE since been repointed** so each module's practice roleplays fit its new
-title (content-based rematch). Three sources must stay in lockstep: `content.js`
-`modules[].scenarioIds`, each scenario's `moduleId` in `content.js` `practiceScenarios`, and
-`lib/tracks.js` `MODULE_SCENARIOS`. There are now **156 scenarios** (not 150) — most modules carry
-exactly 5, but by design modules 15/16 carry 6 and module 25 is a 9-scenario bar/cocktail deep-dive,
-so "exactly 5 per module" is no longer an invariant. The training UI renders by array length, so
-uneven counts are cosmetic. The old grouping comments in `practiceScenarios` are cosmetic/stale — do
-not trust them; the `moduleId` field is authoritative.
+**How to apply:** learner-facing framing must mirror the 3 stages, never drive access.
+- The public Knowledge Centre (`public/blog/index.html`) groups the existing `blogSections` into
+  3 tiers via a `tier` field (`foundations`/`craft`/`mastery`) on each section — pure display, no
+  auth. Do NOT create placeholder/mock articles to "fill" a tier (real articles already exist).
+- Stage subtitles are reused verbatim across app + marketing + Knowledge Centre: Foundations "The
+  Apprentice's First Shifts", Craft "Finding Your Range", Mastery "Owning the Room" (+ FR/ES).
 
-# Marketing i18n (lang.js overrides HTML)
+# i18n parity gotcha
 
-`public/js/lang.js` holds `en`/`fr`/`es` dictionaries applied via `[data-i18n]` / `[data-i18n-html]`
-attributes on page load. **lang.js OVERRIDES the HTML fallback text**, so to change any marketing
-string that has a `data-i18n` attribute you MUST edit the matching key in lang.js — editing the
-HTML alone will not stick. Keep the HTML fallback in sync anyway for no-JS / missing-key cases.
-FR is sometimes missing a key (e.g. `home_hero`), in which case it falls back to the HTML (English).
+(lang.js override mechanics live in `i18n-lang-js.md`; "Centre" spelling in `brand-spelling-centre.md`.)
+lang.js has a large pre-existing EN↔FR↔ES key asymmetry — missing keys silently fall back to
+English, so when auditing parity check only the keys you added, not the whole corpus.
