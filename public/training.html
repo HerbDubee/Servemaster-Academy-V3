@@ -5,56 +5,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Training - ServeMaster Academy</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF5E3A">
+  <link rel="stylesheet" href="/tailwind.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); align-items: center; justify-content: center; z-index: 50; }
+    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; }
+    .heading { font-family: 'Playfair Display', serif; font-weight: 900; }
+    .btn-primary {
+      background-color: #FF5E3A;
+      color: #fff;
+      font-weight: 700;
+      transition: background-color 0.2s;
+    }
+    .btn-primary:hover { background-color: #e8522e; }
+    .accent { color: #FF5E3A; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; }
     .modal.show { display: flex; }
+    .card-hover { transition: transform 0.2s, border-color 0.2s; }
     .card-hover:hover { transform: translateY(-4px); }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
 
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-amber-400 focus:text-black focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <img src="/logo.svg" alt="ServeMaster Academy" class="h-10 w-auto">
+    </a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+      <a href="/" class="hover:text-white transition-colors">Home</a>
+      <a href="/features" data-i18n="nav_features" class="hover:text-white transition-colors">Academy</a>
+      <a href="/blog" data-i18n="nav_blog" class="hover:text-white transition-colors">Knowledge Centre</a>
+      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="hover:text-white transition-colors">Roleplay Training</a>
+      <a href="/pricing" data-i18n="nav_pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="/scholarship" data-i18n="nav_scholarship" class="font-semibold transition-colors hover:opacity-90" style="color:#7dd3fc;">🎓 Scholarship</a>
+      <a href="/about" data-i18n="nav_about" class="hover:text-white transition-colors">About</a>
+      <a href="/affiliates" data-i18n="nav_affiliates" class="hover:text-white transition-colors">Affiliates</a>
+      <a href="/novels" class="hover:text-white transition-colors">Novels</a>
+      <a href="/demo" class="hover:text-white transition-colors">Book a Demo</a>
+      <a href="/checklist" class="hover:text-white transition-colors">Free Checklist</a>
+      <button id="nav-pwa-d" onclick="navPwaClick()" class="hidden text-zinc-400 text-sm font-medium hover:text-white">📲 Install App</button>
+      <a id="nav-login-d" href="/login" data-i18n="nav_login" class="text-zinc-400 hover:text-white transition-colors">Log in</a>
+      <a id="nav-signup-d" href="/signup" data-i18n="nav_cta" class="btn-primary px-5 py-2.5 rounded-2xl text-sm">Get Started Free</a>
+    </div>
+    <button onclick="toggleMobileMenu()" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+      <span class="w-6 h-0.5 bg-white block"></span>
+      <span class="w-6 h-0.5 bg-white block"></span>
+      <span class="w-6 h-0.5 bg-white block"></span>
+    </button>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-800 bg-zinc-950">
+    <div class="flex flex-col px-4 py-2">
+      <a href="/" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Home</a>
+      <a href="/features" data-i18n="nav_features" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Academy</a>
+      <a href="/blog" data-i18n="nav_blog" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Knowledge Centre</a>
+      <a href="/ai-roleplay" data-i18n="nav_roleplay" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Roleplay Training</a>
+      <a href="/pricing" data-i18n="nav_pricing" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Pricing</a>
+      <a href="/scholarship" data-i18n="nav_scholarship" class="py-4 border-b border-zinc-800 text-sm font-semibold" style="color:#7dd3fc;">🎓 Scholarship</a>
+      <a href="/about" data-i18n="nav_about" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">About</a>
+      <a href="/affiliates" data-i18n="nav_affiliates" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Affiliates</a>
+      <a href="/novels" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Novels</a>
+      <a href="/demo" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Book a Demo</a>
+      <a href="/checklist" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Free Checklist</a>
+      <button id="nav-pwa-m" onclick="navPwaClick()" class="hidden text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white w-full text-left">📲 Install App</button>
+      <a id="nav-login-m" href="/login" data-i18n="nav_login" class="text-zinc-400 py-4 border-b border-zinc-800 text-sm font-medium hover:text-white">Log in</a>
+      <a id="nav-signup-m" href="/signup" data-i18n="nav_cta" class="my-3 btn-primary px-5 py-3 rounded-2xl text-sm text-center">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<script>function toggleMobileMenu(){document.getElementById('mobile-menu').classList.toggle('hidden');}</script>
+<script src="/js/nav-auth.js"></script>
+
+<main id="main-content">
   <div class="max-w-6xl mx-auto p-8">
-    <h1 class="text-4xl font-bold text-gray-900 mb-2">Training Hub</h1>
-    <p class="text-gray-600 mb-10">Practice real restaurant situations and build your confidence</p>
+    <h1 class="heading text-4xl md:text-5xl text-white mb-2">Training Hub</h1>
+    <p class="text-zinc-400 mb-10">Practice real restaurant situations and build your confidence</p>
 
     <!-- Role-Plays Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h2 class="text-2xl font-semibold">Role-Play Practice</h2>
+      <h2 class="heading text-2xl text-white">Role-Play Practice</h2>
       <div class="flex items-center gap-2">
-        <label for="module-select" class="text-sm text-gray-500 whitespace-nowrap">Practice topic:</label>
+        <label for="module-select" class="text-sm text-zinc-400 whitespace-nowrap">Practice topic:</label>
         <select id="module-select" onchange="onModuleChange()"
-                class="border border-gray-300 rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-xs"></select>
+                class="border border-zinc-800 rounded-xl px-4 py-2 text-sm bg-zinc-900 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF5E3A] max-w-xs"></select>
       </div>
     </div>
     <div id="roleplays-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"></div>
 
     <!-- Wine Service Quiz -->
-    <h2 class="text-2xl font-semibold mb-6">Wine Service Quiz</h2>
-    <div id="quiz-container" class="bg-white rounded-3xl shadow p-10"></div>
+    <h2 class="heading text-2xl text-white mb-6">Wine Service Quiz</h2>
+    <div id="quiz-container" class="bg-zinc-900 border border-zinc-800 rounded-3xl p-10"></div>
   </div>
+</main>
 
-  <!-- Role-Play Modal -->
-  <div id="roleplay-modal" class="modal">
-    <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 p-8 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between mb-6">
-        <h3 id="modal-title" class="text-2xl font-bold"></h3>
-        <button onclick="closeModal()" class="text-4xl text-gray-400 hover:text-gray-600">×</button>
-      </div>
-      <div id="modal-content" class="prose text-gray-700"></div>
-      
-      <div class="mt-10 flex gap-4">
-        <button onclick="closeModal()" 
-                class="flex-1 py-4 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium text-lg">
-          Close
-        </button>
-        <button onclick="restartRoleplay()" 
-                class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium text-lg">
-          Practice Again
-        </button>
-      </div>
+<!-- Role-Play Modal -->
+<div id="roleplay-modal" class="modal">
+  <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full mx-4 p-8 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between mb-6">
+      <h3 id="modal-title" class="heading text-2xl text-white"></h3>
+      <button onclick="closeModal()" class="text-4xl text-zinc-500 hover:text-zinc-300 leading-none">×</button>
+    </div>
+    <div id="modal-content"></div>
+
+    <div class="mt-10 flex gap-4">
+      <button onclick="closeModal()"
+              class="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-2xl font-medium text-lg transition">
+        Close
+      </button>
+      <button onclick="restartRoleplay()"
+              class="flex-1 py-4 btn-primary rounded-2xl text-lg">
+        Practice Again
+      </button>
     </div>
   </div>
+</div>
 
   <script>
     let currentRoleplay = null;
@@ -101,18 +171,18 @@
 
         if (!Array.isArray(cachedRoleplays) || cachedRoleplays.length === 0) {
           container.innerHTML =
-            '<p class="text-gray-500 col-span-3">No role-play for this topic yet — pick another topic above.</p>';
+            '<p class="text-zinc-500 col-span-3">No role-play for this topic yet — pick another topic above.</p>';
           return;
         }
 
         cachedRoleplays.forEach(rp => {
           const card = document.createElement('div');
-          card.className = 'bg-white rounded-3xl shadow-sm p-8 hover:shadow-md transition card-hover cursor-pointer';
+          card.className = 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-8 card-hover cursor-pointer';
           card.innerHTML = `
-            <h3 class="font-semibold text-xl mb-4">${rp.title}</h3>
-            <p class="text-gray-600 line-clamp-3 mb-8">${rp.setup}</p>
-            <button onclick="openRoleplay(${rp.id}); event.stopImmediatePropagation();" 
-                    class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl transition">
+            <h3 class="heading text-xl text-white mb-4">${rp.title}</h3>
+            <p class="text-zinc-400 line-clamp-3 mb-8">${rp.setup}</p>
+            <button onclick="openRoleplay(${rp.id}); event.stopImmediatePropagation();"
+                    class="w-full py-4 btn-primary rounded-2xl transition">
               Start This Role-Play
             </button>
           `;
@@ -121,7 +191,7 @@
       } catch (e) {
         console.error('Failed to load roleplays', e);
         document.getElementById('roleplays-container').innerHTML =
-          '<p class="text-gray-500 col-span-3">Failed to load role-plays. Please try refreshing.</p>';
+          '<p class="text-zinc-500 col-span-3">Failed to load role-plays. Please try refreshing.</p>';
       }
     }
 
@@ -133,16 +203,16 @@
       document.getElementById('modal-title').textContent = currentRoleplay.title;
       document.getElementById('modal-content').innerHTML = `
         <div class="mb-8">
-          <h4 class="font-medium text-gray-500 mb-2">Setup</h4>
-          <p class="text-gray-700">${currentRoleplay.setup}</p>
+          <h4 class="font-semibold text-zinc-500 uppercase tracking-wide text-xs mb-2">Setup</h4>
+          <p class="text-zinc-300 leading-relaxed">${currentRoleplay.setup}</p>
         </div>
         <div class="mb-10">
-          <h4 class="font-medium text-gray-500 mb-3">Dialogue</h4>
-          <div class="bg-gray-50 p-6 rounded-2xl whitespace-pre-line text-[15px] leading-relaxed">${currentRoleplay.dialogue}</div>
+          <h4 class="font-semibold text-zinc-500 uppercase tracking-wide text-xs mb-3">Dialogue</h4>
+          <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl whitespace-pre-line text-[15px] leading-relaxed text-zinc-200">${currentRoleplay.dialogue}</div>
         </div>
         <div>
-          <h4 class="font-medium text-gray-500 mb-2">Debrief &amp; Key Takeaways</h4>
-          <p class="text-gray-700">${currentRoleplay.debrief}</p>
+          <h4 class="font-semibold text-zinc-500 uppercase tracking-wide text-xs mb-2">Debrief &amp; Key Takeaways</h4>
+          <p class="text-zinc-300 leading-relaxed">${currentRoleplay.debrief}</p>
         </div>
       `;
       document.getElementById('roleplay-modal').classList.add('show');
@@ -168,20 +238,20 @@
         const data = await res.json();
         const quiz = data[0];
         if (!quiz) {
-          document.getElementById('quiz-container').innerHTML = '<p class="text-gray-500">Quiz not found.</p>';
+          document.getElementById('quiz-container').innerHTML = '<p class="text-zinc-500">Quiz not found.</p>';
           return;
         }
 
         let html = `<div class="space-y-10" id="quiz-questions">`;
         quiz.questions.forEach((q, i) => {
           html += `
-            <div class="border border-gray-200 rounded-2xl p-8" id="question-${i}">
-              <p class="font-medium text-lg mb-5">${i + 1}. ${q.question}</p>
+            <div class="border border-zinc-800 rounded-2xl p-8" id="question-${i}">
+              <p class="font-medium text-lg text-zinc-100 mb-5">${i + 1}. ${q.question}</p>
               <div class="grid gap-3">
                 ${q.options.map((opt, idx) => `
-                  <label class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition" id="label-${i}-${idx}">
-                    <input type="radio" name="q${i}" value="${idx}" class="w-5 h-5 text-blue-600">
-                    <span class="text-gray-700">${opt}</span>
+                  <label class="flex items-center gap-3 p-4 rounded-xl hover:bg-zinc-800 cursor-pointer border border-transparent hover:border-zinc-700 transition" id="label-${i}-${idx}">
+                    <input type="radio" name="q${i}" value="${idx}" class="w-5 h-5" style="accent-color:#FF5E3A;">
+                    <span class="text-zinc-300">${opt}</span>
                   </label>
                 `).join('')}
               </div>
@@ -190,17 +260,17 @@
         });
         html += `</div>
           <button onclick="submitQuiz()" id="submit-btn"
-                  class="mt-12 w-full py-5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-3xl text-lg transition">
+                  class="mt-12 w-full py-5 btn-primary rounded-3xl text-lg transition">
             Submit Quiz &amp; See Results
           </button>
-          <div id="quiz-score" class="hidden mt-8 p-8 bg-gray-50 rounded-3xl text-center"></div>`;
+          <div id="quiz-score" class="hidden mt-8 p-8 bg-zinc-950 border border-zinc-800 rounded-3xl text-center"></div>`;
         document.getElementById('quiz-container').innerHTML = html;
 
         // Store questions for scoring
         document.getElementById('quiz-container').dataset.questions = JSON.stringify(quiz.questions);
       } catch (e) {
         console.error(e);
-        document.getElementById('quiz-container').innerHTML = '<p class="text-gray-500">Failed to load quiz. Please try refreshing.</p>';
+        document.getElementById('quiz-container').innerHTML = '<p class="text-zinc-500">Failed to load quiz. Please try refreshing.</p>';
       }
     }
 
@@ -220,14 +290,14 @@
 
         if (chosen === correct) {
           score++;
-          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-green-50 text-green-800 border border-green-200';
+          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-green-500/10 text-green-300 border border-green-500/30';
           expEl.innerHTML = `<strong>Correct!</strong> ${q.explanation}`;
-          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-green-50', 'border-green-300');
+          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-green-500/10', 'border-green-500/40');
         } else {
-          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-red-50 text-red-800 border border-red-200';
+          expEl.className = 'mt-4 p-4 rounded-xl text-sm bg-red-500/10 text-red-300 border border-red-500/30';
           expEl.innerHTML = `<strong>Not quite.</strong> ${q.explanation}`;
-          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-red-50', 'border-red-300');
-          document.getElementById(`label-${i}-${correct}`).classList.add('bg-green-50', 'border-green-300');
+          document.getElementById(`label-${i}-${chosen}`).classList.add('bg-red-500/10', 'border-red-500/40');
+          document.getElementById(`label-${i}-${correct}`).classList.add('bg-green-500/10', 'border-green-500/40');
         }
 
         // Disable all options for this question
@@ -243,14 +313,14 @@
       const scoreEl = document.getElementById('quiz-score');
       scoreEl.classList.remove('hidden');
       scoreEl.innerHTML = `
-        <div class="text-5xl font-black mb-3 ${pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600'}">${pct}%</div>
-        <div class="text-xl font-semibold text-gray-800 mb-2">${score} / ${questions.length} correct</div>
-        <div class="text-gray-500">${pct >= 80 ? 'Excellent work — you know your wine service!' : pct >= 60 ? 'Good effort. Review the explanations above to sharpen up.' : 'Keep studying — review each explanation and try again.'}</div>
+        <div class="text-5xl font-black mb-3 ${pct >= 80 ? 'text-green-400' : pct >= 60 ? 'text-yellow-400' : 'text-red-400'}">${pct}%</div>
+        <div class="text-xl font-semibold text-zinc-100 mb-2">${score} / ${questions.length} correct</div>
+        <div class="text-zinc-400">${pct >= 80 ? 'Excellent work — you know your wine service!' : pct >= 60 ? 'Good effort. Review the explanations above to sharpen up.' : 'Keep studying — review each explanation and try again.'}</div>
       `;
-      document.getElementById('submit-btn').textContent = 'Submitted ✓';
-      document.getElementById('submit-btn').disabled = true;
-      document.getElementById('submit-btn').classList.replace('bg-green-600', 'bg-gray-400');
-      document.getElementById('submit-btn').classList.replace('hover:bg-green-700', 'cursor-not-allowed');
+      const sb = document.getElementById('submit-btn');
+      sb.textContent = 'Submitted ✓';
+      sb.disabled = true;
+      sb.classList.add('opacity-50', 'cursor-not-allowed');
       scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -261,15 +331,16 @@
   </script>
   <script src="/js/content.js"></script>
 
-  <footer class="border-t border-gray-200 py-8 mt-4">
+  <footer class="border-t border-zinc-800 py-8 mt-4">
     <div class="flex gap-3 justify-center">
-      <button data-lang-option="en" onclick="setLang('en')" class="text-gray-500 hover:text-gray-900 text-sm font-bold tracking-widest transition-colors px-2">EN</button>
-      <span class="text-gray-300 self-center">|</span>
-      <button data-lang-option="fr" onclick="setLang('fr')" class="text-gray-500 hover:text-gray-900 text-sm font-bold tracking-widest transition-colors px-2">FR</button>
-      <span class="text-gray-300 self-center">|</span>
-      <button data-lang-option="es" onclick="setLang('es')" class="text-gray-500 hover:text-gray-900 text-sm font-bold tracking-widest transition-colors px-2">ES</button>
+      <button data-lang-option="en" onclick="setLang('en')" class="text-zinc-500 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">EN</button>
+      <span class="text-zinc-700 self-center">|</span>
+      <button data-lang-option="fr" onclick="setLang('fr')" class="text-zinc-500 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">FR</button>
+      <span class="text-zinc-700 self-center">|</span>
+      <button data-lang-option="es" onclick="setLang('es')" class="text-zinc-500 hover:text-white text-sm font-bold tracking-widest transition-colors px-2">ES</button>
     </div>
   </footer>
   <script src="/js/lang.js?v=6"></script>
+  <script src="/js/pwa-nav.js"></script>
 </body>
 </html>
