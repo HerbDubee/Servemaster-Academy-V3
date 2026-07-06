@@ -381,6 +381,7 @@
         </div>
       </div>
 
+      <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#FF5E3A" id="next-step-heading">Your apprenticeship — next step</div>
       <div id="next-module-card"></div>
       <div>
         <h2 class="text-xl font-semibold mb-6" id="dash-continue-title">Continue Learning</h2>
@@ -397,7 +398,8 @@
 
     <!-- LEARN -->
     <div id="learn-screen" class="hidden">
-      <h1 class="heading text-4xl lg:text-5xl mb-10" id="learn-title">All Modules</h1>
+      <h1 class="heading text-4xl lg:text-5xl mb-2" id="learn-title">The Apprenticeship Path</h1>
+      <p class="text-zinc-400 text-lg mb-10" id="learn-sub">Progress from your first shift to full mastery — one stage at a time.</p>
       <div id="all-modules" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       <div class="mt-12 bg-zinc-900 border border-amber-900/40 rounded-3xl overflow-hidden">
         <button onclick="toggleGlossary()" class="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-zinc-800 transition-colors" id="glossary-toggle-btn">
@@ -762,7 +764,9 @@ const STRINGS = {
     accountBtn: 'Create account to save your progress',
     localWarn: 'Without an account, your progress is saved only on this device and browser — it can be lost if you clear your browser data or switch devices.',
     dashContinue: 'Continue Learning', dashBadges: 'Recent Badges',
-    learnTitle: 'All Modules', practiceTitle: 'AI Role-Play Practice',
+    learnTitle: 'The Apprenticeship Path', learnSub: 'Progress from your first shift to full mastery — one stage at a time.', nextStepLabel: 'Your apprenticeship — next step',
+    journeyLabel: 'Your apprenticeship', journeyMastered: '{done} of {total} modules mastered', stageWord: 'Stage',
+    practiceTitle: 'AI Role-Play Practice',
     practiceSub: 'Choose a scenario. You play the server — the AI plays the guest. Get instant coaching after every response.',
     chatBack: '← Back', chatHint: 'You are the server. Type or speak your response.',
     voiceLabel: 'Voice', aiSpeechLabel: '🔊', sendLabel: 'Send', listening: 'Listening...',
@@ -803,7 +807,9 @@ const STRINGS = {
     accountBtn: 'Créer un compte pour sauvegarder votre progression',
     localWarn: 'Sans compte, votre progression est enregistrée uniquement sur cet appareil et ce navigateur — elle peut être perdue si vous effacez vos données de navigation ou changez d\'appareil.',
     dashContinue: 'Continuer à apprendre', dashBadges: 'Badges Récents',
-    learnTitle: 'Tous les modules', practiceTitle: 'Pratique IA - Jeu de rôle',
+    learnTitle: "Le Parcours d'Apprentissage", learnSub: 'Progressez de votre premier service à la pleine maîtrise — une étape à la fois.', nextStepLabel: 'Votre apprentissage — prochaine étape',
+    journeyLabel: 'Votre apprentissage', journeyMastered: '{done} modules maîtrisés sur {total}', stageWord: 'Étape',
+    practiceTitle: 'Pratique IA - Jeu de rôle',
     practiceSub: 'Choisissez un scénario. Vous jouez le serveur — l\'IA joue le client. Recevez des conseils instantanés après chaque réponse.',
     chatBack: '← Retour', chatHint: 'Vous êtes le serveur. Tapez ou parlez votre réponse.',
     voiceLabel: 'Voix', aiSpeechLabel: '🔊', sendLabel: 'Envoyer', listening: 'Écoute...',
@@ -844,7 +850,9 @@ const STRINGS = {
     accountBtn: 'Crear cuenta para guardar tu progreso',
     localWarn: 'Sin una cuenta, tu progreso se guarda solo en este dispositivo y navegador — puede perderse si borras los datos del navegador o cambias de dispositivo.',
     dashContinue: 'Seguir Aprendiendo', dashBadges: 'Insignias Recientes',
-    learnTitle: 'Todos los Módulos', practiceTitle: 'Práctica de IA — Juego de Rol',
+    learnTitle: 'El Camino del Aprendizaje', learnSub: 'Avanza desde tu primer turno hasta la maestría total — una etapa a la vez.', nextStepLabel: 'Tu aprendizaje — siguiente paso',
+    journeyLabel: 'Tu aprendizaje', journeyMastered: '{done} de {total} módulos dominados', stageWord: 'Etapa',
+    practiceTitle: 'Práctica de IA — Juego de Rol',
     practiceSub: 'Elige un escenario. Tú juegas al mesero — la IA juega al cliente. Recibe coaching instantáneo después de cada respuesta.',
     chatBack: '← Volver', chatHint: 'Eres el mesero. Escribe o habla tu respuesta.',
     voiceLabel: 'Voz', aiSpeechLabel: '🔊', sendLabel: 'Enviar', listening: 'Escuchando...',
@@ -888,8 +896,8 @@ function setLang(l) {
   applyLangStrings();
 }
 function applyLangStrings() {
-  const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','localWarn','dashContinue','dashBadges','learnTitle','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
-  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', localWarn:'ob-local-warn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn', navDashboard:'nav-dashboard', navLearn:'nav-learn', navPractice:'nav-practice', navAchievements:'nav-achievements', navLeaderboard:'nav-leaderboard', navManager:'nav-manager' };
+  const ids = ['welcome','welcomeSub','nameLbl','continueBtn','expTitle','expSub','l1','l1d','l2','l2d','l3','l3d','readySub','f1','f2','f3','f4','f5','startBtn','accountBtn','localWarn','dashContinue','dashBadges','learnTitle','learnSub','nextStepLabel','practiceTitle','practiceSub','chatBack','chatHint','voiceLabel','aiSpeechLabel','sendLabel','listening','achieveTitle','achieveSub','streakSection','streakCurrent','streakBest','scenariosDone','badgesTitle','lbTitle','lbSub','mgrTitle','mgrSub','mgrSetupTitle','mgrSetupSub','mgrCreateBtn','mgrOr','mgrJoinSub','mgrJoinBtn','mgrStaffTitle','mgrExportBtn','mgrInviteBtn','nlTitle','nlSub','certTitle','certSub','certBtn','dayStreak','streakBestLabel','dashNewsletterBtn'];
+  const map = { welcome:'ob-welcome', welcomeSub:'ob-welcome-sub', nameLbl:'ob-name-label', continueBtn:['ob-continue-1','ob-continue-2'], expTitle:'ob-exp-title', expSub:'ob-exp-sub', l1:'ob-l1', l1d:'ob-l1d', l2:'ob-l2', l2d:'ob-l2d', l3:'ob-l3', l3d:'ob-l3d', readySub:'ob-ready-sub', f1:'ob-f1', f2:'ob-f2', f3:'ob-f3', f4:'ob-f4', f5:'ob-f5', startBtn:'ob-start', accountBtn:'ob-account-btn', localWarn:'ob-local-warn', dashContinue:'dash-continue-title', dashBadges:'dash-badges-title', learnTitle:'learn-title', learnSub:'learn-sub', nextStepLabel:'next-step-heading', practiceTitle:'practice-title', practiceSub:'practice-sub', chatBack:'chat-back', chatHint:'chat-scenario-hint', voiceLabel:'voice-mode-label', sendLabel:'send-label', listening:'voice-listening-text', achieveTitle:'achieve-title', achieveSub:'achieve-sub', streakSection:'streak-section-title', streakCurrent:'streak-current-label', streakBest:'streak-best-label', scenariosDone:'scenarios-done-label', badgesTitle:'badges-title', lbTitle:'lb-title', lbSub:'lb-sub', mgrTitle:'mgr-title', mgrSub:'mgr-sub', mgrSetupTitle:'mgr-setup-title', mgrSetupSub:'mgr-setup-sub', mgrCreateBtn:'mgr-create-btn', mgrOr:'mgr-or', mgrJoinSub:'mgr-join-sub', mgrJoinBtn:'mgr-join-btn', mgrStaffTitle:'mgr-staff-title', mgrExportBtn:'mgr-export-btn', mgrInviteBtn:'mgr-invite-btn', nlTitle:'nl-title', nlSub:'nl-sub', certTitle:'cert-title', certSub:'cert-sub', certBtn:'cert-btn', dayStreak:'dash-streak-label', streakBestLabel:'dash-streak-best-label', dashNewsletterBtn:'dash-newsletter-btn', navDashboard:'nav-dashboard', navLearn:'nav-learn', navPractice:'nav-practice', navAchievements:'nav-achievements', navLeaderboard:'nav-leaderboard', navManager:'nav-manager' };
   for (const [k, elId] of Object.entries(map)) {
     const text = t(k);
     if (Array.isArray(elId)) { elId.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = text; }); }
@@ -4493,6 +4501,48 @@ function renderAll() {
       mastery:     { c: '#c084fc', bg: 'rgba(192,132,252,0.1)' }
     };
     let html = '';
+    // --- Apprenticeship journey overview (presentation only; mirrors getTrackState) ---
+    const totalModules = modules.length;
+    const totalDone = modules.filter(m => isTopicComplete(m)).length;
+    const journeyPct = totalModules ? Math.round((totalDone / totalModules) * 100) : 0;
+    let currentStageId = null;
+    for (const tr of st.tracks) { if (st.unlocked[tr.id] && !st.completion[tr.id]) { currentStageId = tr.id; break; } }
+    if (!currentStageId) {
+      const firstLocked = st.tracks.find(tr => !st.unlocked[tr.id]);
+      currentStageId = firstLocked ? firstLocked.id : (st.tracks[st.tracks.length - 1] || {}).id;
+    }
+    const stageDots = st.tracks.map((tr, i) => {
+      const clr = TRACK_COLORS[tr.id] || TRACK_COLORS.craft;
+      const isComplete = st.completion[tr.id];
+      const isCurrent = tr.id === currentStageId;
+      const nm = lang === 'fr' ? tr.nameFr : lang === 'es' ? tr.nameEs : tr.name;
+      const dotIcon = isComplete ? '✓' : (i + 1);
+      const dotStyle = isComplete
+        ? `background:${clr.c};color:#000;`
+        : isCurrent ? `background:${clr.bg};color:${clr.c};border:2px solid ${clr.c};`
+        : 'background:#27272a;color:#71717a;';
+      const connector = i < st.tracks.length - 1
+        ? `<div class="flex-1 h-0.5 self-start mt-4" style="background:${isComplete ? clr.c : '#3f3f46'};${isComplete ? '' : 'opacity:0.6;'}"></div>`
+        : '';
+      return `<div class="flex items-start gap-2 ${i < st.tracks.length - 1 ? 'flex-1' : ''}">
+          <div class="flex flex-col items-center gap-1 shrink-0" style="width:72px">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="${dotStyle}">${dotIcon}</div>
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight ${isCurrent ? '' : 'text-zinc-500'}" style="${isCurrent ? `color:${clr.c}` : ''}">${nm}</span>
+          </div>
+          ${connector}
+        </div>`;
+    }).join('');
+    html += `<div class="col-span-full bg-gradient-to-br from-zinc-900 to-zinc-950 border border-amber-900/40 rounded-3xl p-6 mb-2">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-widest" style="color:#FF5E3A">${t('journeyLabel')}</div>
+            <div class="text-zinc-400 text-sm mt-0.5">${t('journeyMastered').replace('{done}', totalDone).replace('{total}', totalModules)}</div>
+          </div>
+          <div class="text-2xl font-bold" style="color:#FF5E3A">${journeyPct}%</div>
+        </div>
+        <div class="w-full bg-zinc-800 rounded-full h-2 mb-5"><div class="h-2 rounded-full transition-all" style="width:${journeyPct}%;background:#FF5E3A"></div></div>
+        <div class="flex items-start justify-between gap-1">${stageDots}</div>
+      </div>`;
     st.tracks.forEach(tr => {
       const trUnlocked = st.unlocked[tr.id];
       const trComplete = st.completion[tr.id];
@@ -4516,9 +4566,11 @@ function renderAll() {
       const freeTag = tr.free
         ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="color:${clr.c};background:${clr.bg}">${lang==='es'?'GRATIS':lang==='fr'?'GRATUIT':'FREE'}</span>`
         : '';
-      html += `<div class="col-span-full mt-6 first:mt-0 mb-1">
+      const stageLabel = t('stageWord');
+      html += `<div class="col-span-full mt-8 first:mt-2 mb-1">
         <div class="flex items-center justify-between flex-wrap gap-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="color:${clr.c};background:${clr.bg}">${stageLabel} ${tr.order}</span>
             <span class="text-sm font-bold uppercase tracking-widest" style="color:${clr.c}">${trName}</span>
             ${freeTag}
           </div>
