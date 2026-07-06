@@ -541,6 +541,7 @@ app.use('/api', createStripeRouter({
   processInfluencerCommission,
   escapeHtml,
   highestPlan,
+  APP_URL,
 }));
 
 const createManagerRouter = require('./routes/manager');
@@ -583,6 +584,9 @@ app.use(createContactRouter({ db, resend, authMiddleware, contactLimiter, escape
 
 const createCurriculumRouter = require('./routes/curriculum');
 app.use(createCurriculumRouter({ db, getGrok, adminMiddleware }));
+
+const createWorkbooksRouter = require('./routes/workbooks');
+app.use('/api', createWorkbooksRouter({ APP_URL }));
 
 const createFeaturesRouter = require('./routes/features');
 app.use(createFeaturesRouter({ db, resend, authMiddleware, escapeHtml, ADMIN_EMAIL, getUncachableStripeClient }));

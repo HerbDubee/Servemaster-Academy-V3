@@ -25,6 +25,7 @@ const crypto = require('crypto');
 const db = require('../db');
 const { validate } = require('../middleware/validate');
 const { checkoutSchema } = require('../lib/schemas');
+const { getWorkbook, WORKBOOK_EXPIRY_DAYS } = require('../lib/workbooks');
 const {
   getUncachableStripeClient,
   getStripePublishableKey,
@@ -34,21 +35,6 @@ const {
 // Declared at module level so the webhook handler can reset it on success.
 // Read by the admin dashboard health check (still in server.js) via the site_settings table.
 let lastWebhookSigFailure = null;
-
-// ── Workbook purchase handler ─────────────────────────────────────────────────
-// NOTE: This function was referenced but never defined in the original server.js.
-// Implemented here from the workbook_purchases table schema.
-async function handleWorkbookPurchase(session) {
-  const email = session.customer_details?.email || session.customer_email;
-  const downloadToken = crypto.randomBytes(32).toString('hex');
-  await db.query(
-    `INSERT INTO workbook_purchases (stripe_session_id, customer_email, download_token, purchased_at)
-     VALUES ($1, $2, $3, NOW())
-     ON CONFLICT (stripe_session_id) DO NOTHING`,
-    [session.id, email, downloadToken]
-  );
-  console.log(`Workbook purchase recorded — session ${session.id}, email ${email}`);
-}
 
 // ── Plan helpers ──────────────────────────────────────────────────────────────
 const PLAN_TIER_ORDER = [
@@ -75,8 +61,58 @@ module.exports = function createStripeRouter({
   processInfluencerCommission,
   escapeHtml,
   highestPlan,
+  APP_URL,
 }) {
   const router = express.Router();
+
+  // ── Workbook purchase handler ───────────────────────────────────────────────
+  // Records the one-time purchase against the workbook_purchases schema and
+  // emails the buyer a tokenised download link. Defined inside the factory so it
+  // closes over resend / APP_URL / escapeHtml.
+  async function handleWorkbookPurchase(session) {
+    const email =
+      session.customer_details?.email || session.customer_email || session.metadata?.email;
+    const bookId = session.metadata?.bookId || 'book1';
+    const wb = getWorkbook(bookId);
+    if (!email || !wb) {
+      console.error(`Workbook purchase missing email/book — session ${session.id}`);
+      return;
+    }
+
+    const downloadToken = crypto.randomBytes(32).toString('hex');
+    const inserted = await db.query(
+      `INSERT INTO workbook_purchases
+         (email, book_id, stripe_session_id, stripe_payment_intent_id, download_token, token_expires_at)
+       VALUES ($1, $2, $3, $4, $5, NOW() + INTERVAL '${WORKBOOK_EXPIRY_DAYS} days')
+       ON CONFLICT (stripe_session_id) DO NOTHING
+       RETURNING download_token`,
+      [email, bookId, session.id, session.payment_intent || null, downloadToken]
+    );
+
+    if (inserted.rows.length === 0) {
+      console.log(`Workbook purchase already recorded — session ${session.id}`);
+      return;
+    }
+
+    const downloadUrl = `${APP_URL}/api/workbooks/download/${inserted.rows[0].download_token}`;
+    console.log(`Workbook purchase recorded — session ${session.id}, book ${bookId}, email ${email}`);
+
+    await resend.emails
+      .send({
+        from: 'Kirk Adamson <kirk_adamson@servemasteracademy.ca>',
+        to: email,
+        subject: `Your ${wb.title} companion workbook is ready`,
+        html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:40px;border-radius:12px;">
+          <img src="https://servemasteracademy.ca/logo.png" alt="ServeMaster Academy" style="width:48px;height:48px;border-radius:10px;margin-bottom:24px;">
+          <h2 style="font-size:22px;margin-bottom:16px;color:#fbbf24;">Thank you for your purchase!</h2>
+          <p style="font-size:16px;line-height:1.7;margin-bottom:16px;">Your companion workbook for <strong>${escapeHtml(wb.title)}</strong> is ready to download.</p>
+          <p style="margin:32px 0;"><a href="${downloadUrl}" style="background:#fbbf24;color:#0a0a0a;padding:14px 28px;border-radius:9999px;text-decoration:none;font-weight:600;font-size:16px;">Download your workbook (PDF) &rarr;</a></p>
+          <p style="font-size:14px;color:#a3a3a3;line-height:1.7;">This link works for up to 5 downloads over the next 7 days. Save the PDF somewhere safe once it's downloaded.</p>
+          <p style="font-size:15px;color:#a3a3a3;line-height:1.7;margin-top:24px;">Enjoy the read,<br><strong style="color:#f5f5f5;">Kirk Adamson</strong><br>Founder, ServeMaster Academy</p>
+        </div>`,
+      })
+      .catch(e => console.error('Workbook delivery email error:', e.message));
+  }
 
   // ── Webhook ─────────────────────────────────────────────────────────────────
   // MUST use express.raw — Stripe signature verification requires the raw body.
@@ -97,7 +133,17 @@ module.exports = function createStripeRouter({
           const rawEvent = JSON.parse(req.body.toString());
           if (rawEvent.type === 'checkout.session.completed') {
             const session = rawEvent.data?.object;
+
+            // Workbook one-time purchase (no logged-in customer required)
             if (
+              session &&
+              session.metadata?.type === 'workbook' &&
+              (session.payment_status === 'paid' || session.payment_status === 'no_payment_required')
+            ) {
+              await handleWorkbookPurchase(session).catch(e =>
+                console.error('Workbook purchase handler error (Replit):', e.message)
+              );
+            } else if (
               session &&
               (session.payment_status === 'paid' || session.status === 'complete') &&
               session.customer

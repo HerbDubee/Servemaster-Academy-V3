@@ -12,3 +12,4 @@
 - ["Knowledge Centre" spelling](brand-spelling-centre.md) — display copy uses Canadian "Centre" (not "Center"); URL slugs stay /knowledge-center to avoid route breakage.
 - [Scenario topic-drift checker](scenario-drift-checker.md) — check-module-scenarios.js advisory drift: island (1 scenario) + cluster (majority) passes; spirits high-signal; clean tree = 0 warnings (6 reviewed false-positives suppressed via allowlist).
 - [Brand accent palette](brand-palette.md) — coral #FF5E3A primary, amber-gold #fbbf24 editorial; tokens in tailwind.config brand.* + tailwind-input.css :root; amber-* utilities remap to coral (rebuild css).
+- [Workbook purchases & download](workbook-purchases.md) — one-time $1.99 CAD PDF sales; tokenized download must be a single guarded UPDATE (not check-then-increment) to enforce max_downloads under concurrency.
