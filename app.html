@@ -652,6 +652,13 @@
         </div>
         <div id="hub-blog-body"></div>
       </div>
+      <div id="hub-novel-section" class="hidden bg-zinc-900 border border-amber-900/40 rounded-3xl p-6 lg:p-8">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-2xl">📖</span>
+          <h2 class="text-xl font-semibold" id="hub-novel-heading">From the Novel</h2>
+        </div>
+        <div id="hub-novel-body"></div>
+      </div>
     </div>
 
   </div>
@@ -3891,6 +3898,39 @@ function renderHub() {
         </div>`;
     } else {
       blogBody.innerHTML = `<p class="text-zinc-500 text-sm">${lang === 'fr' ? 'Article bientôt disponible.' : lang === 'es' ? 'Artículo próximamente.' : 'Article coming soon.'}</p>`;
+    }
+  }
+
+  // From the Novel section — concrete book ↔ curriculum cross-link
+  const novelSection = document.getElementById('hub-novel-section');
+  const novelBody = document.getElementById('hub-novel-body');
+  const novelHeadEl = document.getElementById('hub-novel-heading');
+  if (novelHeadEl) novelHeadEl.textContent = lang === 'fr' ? 'Dans le roman' : lang === 'es' ? 'En la novela' : 'From the Novel';
+  if (novelSection && novelBody) {
+    const bookLinks = (window.SMAContent && window.SMAContent.moduleBookLinks) ? window.SMAContent.moduleBookLinks : {};
+    const link = bookLinks[mod.id];
+    if (link) {
+      novelSection.classList.remove('hidden');
+      const blurb = lang === 'fr' && link.blurbFr ? link.blurbFr : lang === 'es' && link.blurbEs ? link.blurbEs : link.blurb;
+      const workbook = lang === 'fr' && link.workbookFr ? link.workbookFr : lang === 'es' && link.workbookEs ? link.workbookEs : link.workbook;
+      const chapterLabel = lang === 'fr' ? `Chapitre ${link.chapter}` : lang === 'es' ? `Capítulo ${link.chapter}` : `Chapter ${link.chapter}`;
+      const readLabel = lang === 'fr' ? `Lire le chapitre ${link.chapter} →` : lang === 'es' ? `Leer el capítulo ${link.chapter} →` : `Read Chapter ${link.chapter} →`;
+      const wbLabel = lang === 'fr' ? 'Exercice du cahier' : lang === 'es' ? 'Ejercicio del cuaderno' : 'Workbook prompt';
+      novelBody.innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-5 items-start">
+          <div class="flex-1">
+            <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:#fbbf24">${escHtml(link.bookTitle)} · ${chapterLabel} · ${escHtml(link.chapterTitle)}</div>
+            <p class="text-zinc-300 text-sm leading-relaxed mb-4">${escHtml(blurb)}</p>
+            <div class="bg-zinc-800/60 rounded-r-xl px-4 py-3" style="border-left:2px solid #fbbf24">
+              <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#fbbf24">✍️ ${wbLabel}</div>
+              <p class="text-zinc-400 text-sm italic">${escHtml(workbook)}</p>
+            </div>
+          </div>
+          <a href="/novels/${link.bookSlug}" target="_blank" class="shrink-0 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold px-5 py-3 rounded-2xl text-sm transition-all whitespace-nowrap" style="border:1px solid rgba(251,191,36,0.4)">${readLabel}</a>
+        </div>`;
+    } else {
+      novelSection.classList.add('hidden');
+      novelBody.innerHTML = '';
     }
   }
 }

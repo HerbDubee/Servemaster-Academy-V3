@@ -34,6 +34,48 @@ const modules = [
   { id:30, title:'Long-Term Guest Relationship Building',                       titleFr:'Bâtir des relations clients durables',                       titleEs:'Construir Relaciones Duraderas con los Clientes',                      emoji:'🤝', mins:10, category: 'team-management',      blogSlug:'building-rapport-at-bar', scenarioIds: [26, 29, 30, 85, 137] }
 ];
 
+// Concrete book ↔ curriculum cross-links: maps a module id to the novel chapter
+// that dramatizes the same skill, plus a companion-workbook reflection prompt.
+// EN/FR/ES. Add more entries to surface a "From the Novel" card on that module's hub.
+const moduleBookLinks = {
+  1: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:1, chapterTitle:'The City That Starts Without You',
+    blurb:"On Sofia and Luca's first night on a Florence floor, the room judges them before they say a word — the walk, the eye contact, the first few steps. It's this module's opening-90-seconds skill, lived under real pressure.",
+    blurbFr:"Lors de la première soirée de Sofia et Luca en salle à Florence, la salle les juge avant même qu'ils parlent — la démarche, le regard, les premiers pas. C'est la compétence des 90 premières secondes de ce module, vécue sous vraie pression.",
+    blurbEs:"En la primera noche de Sofia y Luca en el salón de Florencia, la sala los juzga antes de que digan una palabra — el andar, la mirada, los primeros pasos. Es la habilidad de los primeros 90 segundos de este módulo, vivida bajo presión real.",
+    workbook:"Recall a greeting you delivered on autopilot. Rewrite the first 15 seconds the way a guest actually experienced them — what did your body say before your mouth did?",
+    workbookFr:"Repensez à un accueil livré en pilote automatique. Réécrivez les 15 premières secondes telles que le client les a vécues — que disait votre corps avant votre bouche ?",
+    workbookEs:"Recuerda un saludo que diste en piloto automático. Reescribe los primeros 15 segundos como los vivió el cliente — ¿qué dijo tu cuerpo antes que tu boca?"
+  },
+  3: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:2, chapterTitle:'Paris Precision',
+    blurb:"In Paris, Luca learns 'the bridge' — using a pour and a small bite to make a stalled kitchen invisible, never once apologizing. That's exactly the delay-management move this module drills.",
+    blurbFr:"À Paris, Luca apprend « le pont » — utiliser un verre et une petite bouchée pour rendre une cuisine à l'arrêt invisible, sans jamais s'excuser. C'est exactement la gestion du retard que ce module travaille.",
+    blurbEs:"En París, Luca aprende «el puente» — usar una copa y un pequeño bocado para hacer invisible una cocina detenida, sin disculparse jamás. Es justo el manejo del retraso que este módulo entrena.",
+    workbook:"Next slow ticket, script the 'bridge' before you reach the table: what will you offer, and how will you frame the wait as care rather than an excuse?",
+    workbookFr:"Au prochain plat en retard, préparez « le pont » avant d'arriver à table : qu'allez-vous offrir, et comment présenter l'attente comme une attention plutôt qu'une excuse ?",
+    workbookEs:"En el próximo plato demorado, prepara «el puente» antes de llegar a la mesa: ¿qué vas a ofrecer y cómo presentarás la espera como atención en vez de excusa?"
+  },
+  8: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:4, chapterTitle:'Florence Rhythm',
+    blurb:"A guest sends a dish back cold. Instead of defending the kitchen, the server listens, owns it, and turns the recovery into a gift — the calm complaint arc you practice here.",
+    blurbFr:"Un client renvoie un plat froid. Au lieu de défendre la cuisine, le serveur écoute, assume, et transforme la réparation en cadeau — l'arc de plainte apaisé que vous pratiquez ici.",
+    blurbEs:"Un cliente devuelve un plato frío. En vez de defender la cocina, el mesero escucha, lo asume y convierte la solución en un regalo — el arco de queja sereno que practicas aquí.",
+    workbook:"Write the last complaint you handled as two versions: the defensive reply you were tempted to give, and the listen-first recovery from the chapter. What changed?",
+    workbookFr:"Écrivez la dernière plainte que vous avez gérée en deux versions : la réponse défensive tentante, et la réparation « écouter d'abord » du chapitre. Qu'est-ce qui change ?",
+    workbookEs:"Escribe la última queja que manejaste en dos versiones: la respuesta defensiva tentadora y la solución de «escuchar primero» del capítulo. ¿Qué cambia?"
+  },
+  30: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:8, chapterTitle:"The Widower's Wine",
+    blurb:"A regular returns alone after a loss. The server remembers one detail — his wine — and lets memory do the work that no script can. This is relationship-building made human.",
+    blurbFr:"Un habitué revient seul après un deuil. Le serveur se souvient d'un détail — son vin — et laisse la mémoire faire ce qu'aucun script ne peut. C'est la relation client rendue humaine.",
+    blurbEs:"Un cliente habitual vuelve solo tras una pérdida. El mesero recuerda un detalle — su vino — y deja que la memoria haga lo que ningún guion puede. Es la relación con el cliente hecha humana.",
+    workbook:"Name three regulars and one true detail about each. What would you do on their next visit to show you remembered — without making it a performance?",
+    workbookFr:"Nommez trois habitués et un vrai détail sur chacun. Que feriez-vous à leur prochaine visite pour montrer que vous vous souvenez — sans en faire un numéro ?",
+    workbookEs:"Nombra tres clientes habituales y un detalle verdadero de cada uno. ¿Qué harías en su próxima visita para mostrar que recordaste — sin convertirlo en una actuación?"
+  }
+};
+
 const lessonData = {
   1: {
     subtitle:"Win the guest in the opening moments — the greeting and first impression that set the tone.",
@@ -2106,6 +2148,7 @@ const practiceScenarios = [
 
   window.SMAContent = {
     modules: modules,
+    moduleBookLinks: moduleBookLinks,
     lessonData: lessonData,
     glossaryTerms: glossaryTerms,
     blogArticles: blogArticles,
