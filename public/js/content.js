@@ -47,6 +47,15 @@ const moduleBookLinks = {
     workbookFr:"Repensez à un accueil livré en pilote automatique. Réécrivez les 15 premières secondes telles que le client les a vécues — que disait votre corps avant votre bouche ?",
     workbookEs:"Recuerda un saludo que diste en piloto automático. Reescribe los primeros 15 segundos como los vivió el cliente — ¿qué dijo tu cuerpo antes que tu boca?"
   },
+  2: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:3, chapterTitle:'The Near Miss',
+    blurb:"Luca almost misses it — the guest who needs something before she asks. The chapter turns anticipation from guesswork into an involuntary reflex, which is exactly what 'reading the table' trains.",
+    blurbFr:"Luca manque de le rater — la cliente qui a besoin de quelque chose avant même de le demander. Le chapitre transforme l'anticipation en réflexe involontaire, exactement ce que « lire la table » entraîne.",
+    blurbEs:"Luca casi lo pasa por alto — la clienta que necesita algo antes de pedirlo. El capítulo convierte la anticipación en un reflejo involuntario, justo lo que entrena «leer la mesa».",
+    workbook:"Sit with one table in memory. List three needs the guests had before they voiced them — and the signal that would have tipped you off earlier.",
+    workbookFr:"Repensez à une table précise. Notez trois besoins des clients avant qu'ils ne les expriment — et le signal qui aurait pu vous alerter plus tôt.",
+    workbookEs:"Piensa en una mesa concreta. Enumera tres necesidades de los clientes antes de que las expresaran — y la señal que te habría avisado antes."
+  },
   3: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:2, chapterTitle:'Paris Precision',
     blurb:"In Paris, Luca learns 'the bridge' — using a pour and a small bite to make a stalled kitchen invisible, never once apologizing. That's exactly the delay-management move this module drills.",
@@ -56,6 +65,15 @@ const moduleBookLinks = {
     workbookFr:"Au prochain plat en retard, préparez « le pont » avant d'arriver à table : qu'allez-vous offrir, et comment présenter l'attente comme une attention plutôt qu'une excuse ?",
     workbookEs:"En el próximo plato demorado, prepara «el puente» antes de llegar a la mesa: ¿qué vas a ofrecer y cómo presentarás la espera como atención en vez de excusa?"
   },
+  4: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:2, chapterTitle:'Paris Precision',
+    blurb:"The same Paris chapter that teaches 'the bridge' is a masterclass in the pour itself — steady hands, host tasted first, the bottle presented like it matters. That's table-side wine service when the room is watching.",
+    blurbFr:"Le chapitre parisien qui enseigne « le pont » est aussi une leçon magistrale sur le service lui-même — mains sûres, hôte qui goûte en premier, bouteille présentée comme si elle comptait. C'est le service du vin en salle quand la salle regarde.",
+    blurbEs:"El mismo capítulo parisino que enseña «el puente» es una clase magistral del servicio en sí — manos firmes, el anfitrión cata primero, la botella presentada como si importara. Es el servicio de vino en mesa cuando la sala observa.",
+    workbook:"Walk through your bottle service step by step from memory. Where do your hands hesitate under pressure — and what one move would make the whole sequence look effortless?",
+    workbookFr:"Déroulez votre service de bouteille étape par étape, de mémoire. Où vos mains hésitent-elles sous pression — et quel geste unique rendrait toute la séquence naturelle ?",
+    workbookEs:"Repasa tu servicio de botella paso a paso, de memoria. ¿Dónde dudan tus manos bajo presión — y qué gesto único haría que toda la secuencia pareciera natural?"
+  },
   8: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:4, chapterTitle:'Florence Rhythm',
     blurb:"A guest sends a dish back cold. Instead of defending the kitchen, the server listens, owns it, and turns the recovery into a gift — the calm complaint arc you practice here.",
@@ -64,6 +82,78 @@ const moduleBookLinks = {
     workbook:"Write the last complaint you handled as two versions: the defensive reply you were tempted to give, and the listen-first recovery from the chapter. What changed?",
     workbookFr:"Écrivez la dernière plainte que vous avez gérée en deux versions : la réponse défensive tentante, et la réparation « écouter d'abord » du chapitre. Qu'est-ce qui change ?",
     workbookEs:"Escribe la última queja que manejaste en dos versiones: la respuesta defensiva tentadora y la solución de «escuchar primero» del capítulo. ¿Qué cambia?"
+  },
+  9: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:4, chapterTitle:'Florence Rhythm',
+    blurb:"When the table turns hot, the server in Florence lowers the temperature before fixing the plate — voice slow, shoulders open, no defence. De-escalation is a posture before it's a script, and this chapter shows it.",
+    blurbFr:"Quand la table s'échauffe, le serveur de Florence fait baisser la tension avant de régler l'assiette — voix lente, épaules ouvertes, aucune défense. Le désamorçage est une posture avant d'être un script, et ce chapitre le montre.",
+    blurbEs:"Cuando la mesa se calienta, el mesero de Florencia baja la temperatura antes de arreglar el plato — voz lenta, hombros abiertos, sin defenderse. La desescalada es una postura antes que un guion, y este capítulo lo muestra.",
+    workbook:"Recall a guest who escalated on you. Replay the first ten seconds: what did your body and tone do — and what would 'lower the temperature first' have looked like?",
+    workbookFr:"Repensez à un client qui s'est emporté. Rejouez les dix premières secondes : qu'ont fait votre corps et votre ton — et à quoi aurait ressemblé « faire baisser la tension d'abord » ?",
+    workbookEs:"Recuerda a un cliente que se alteró contigo. Repite los primeros diez segundos: ¿qué hicieron tu cuerpo y tu tono — y cómo habría sido «bajar la temperatura primero»?"
+  },
+  10: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:5, chapterTitle:'Paris Deepening',
+    blurb:"A guest's shoulders drop half an inch and the server reads it across the room — need spotted before a word. This chapter lives in that silent channel, the same one this module trains.",
+    blurbFr:"Les épaules d'un client s'affaissent d'un centimètre et le serveur le lit à travers la salle — besoin repéré avant un mot. Ce chapitre vit dans ce canal silencieux, celui-là même que ce module entraîne.",
+    blurbEs:"Los hombros de un cliente caen un centímetro y el mesero lo lee desde el otro lado del salón — necesidad detectada antes de una palabra. Este capítulo vive en ese canal silencioso, el mismo que entrena este módulo.",
+    workbook:"For one shift, note every need you caught from body language alone. Which signal do you read fastest — and which one still slips past you?",
+    workbookFr:"Le temps d'un service, notez chaque besoin capté par le seul langage corporel. Quel signal lisez-vous le plus vite — et lequel vous échappe encore ?",
+    workbookEs:"Durante un turno, anota cada necesidad que captaste solo con el lenguaje corporal. ¿Qué señal lees más rápido — y cuál todavía se te escapa?"
+  },
+  15: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:9, chapterTitle:'London Borough Market',
+    blurb:"Faced with West African heat on the menu, the server reaches for Riesling and Chenin Blanc and makes the call fast — pairing as quick, confident logic rather than a memorized chart. That's this module under real time pressure.",
+    blurbFr:"Face à la chaleur ouest-africaine à la carte, le serveur choisit un Riesling et un Chenin Blanc et tranche vite — l'accord comme une logique rapide et sûre, pas une fiche apprise. C'est ce module sous vraie pression.",
+    blurbEs:"Ante el picante de África Occidental en la carta, el mesero elige Riesling y Chenin Blanc y decide rápido — el maridaje como lógica ágil y segura, no una tabla memorizada. Es este módulo bajo presión real.",
+    workbook:"Pick three dishes you pair badly. For each, name one wine and the single reason it works — no chart, just the logic you'd trust at speed.",
+    workbookFr:"Choisissez trois plats que vous accordez mal. Pour chacun, nommez un vin et l'unique raison qui le justifie — sans fiche, juste la logique que vous suivriez dans le feu de l'action.",
+    workbookEs:"Elige tres platos que maridas mal. Para cada uno, nombra un vino y la única razón por la que funciona — sin tabla, solo la lógica en la que confiarías a toda prisa."
+  },
+  18: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:7, chapterTitle:'Millimeter Work',
+    blurb:"During a tableside transformation, the server's hardest skill is doing nothing — not breaking the guest's awe with a word. Knowing when to stay silent is reading cues at their most subtle.",
+    blurbFr:"Pendant une transformation en salle, la compétence la plus difficile du serveur est de ne rien faire — ne pas briser l'émerveillement du client par un mot. Savoir se taire, c'est lire les signaux les plus subtils.",
+    blurbEs:"Durante una transformación en la mesa, la habilidad más difícil del mesero es no hacer nada — no romper el asombro del cliente con una palabra. Saber callar es leer las señales más sutiles.",
+    workbook:"Recall a moment you spoke when silence would have served better. What cue told you to hold back — and why did you override it?",
+    workbookFr:"Repensez à un moment où vous avez parlé alors que le silence aurait mieux servi. Quel signal vous disait de vous retenir — et pourquoi l'avez-vous ignoré ?",
+    workbookEs:"Recuerda un momento en que hablaste cuando el silencio habría servido mejor. ¿Qué señal te decía que te contuvieras — y por qué la ignoraste?"
+  },
+  21: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:10, chapterTitle:'Barcelona Farewell',
+    blurb:"Leaving Barcelona, the mentor's last gift isn't a technique — it's handing the floor to someone newer and trusting them to carry it. That passing-down is the heart of this module.",
+    blurbFr:"En quittant Barcelone, le dernier cadeau du mentor n'est pas une technique — c'est de confier la salle à plus novice et de lui faire confiance pour la porter. Cette transmission est le cœur de ce module.",
+    blurbEs:"Al dejar Barcelona, el último regalo del mentor no es una técnica — es entregar el salón a alguien más nuevo y confiar en que lo sostendrá. Esa transmisión es el corazón de este módulo.",
+    workbook:"Think of one thing you do well without thinking. How would you break it into three teachable steps for a server on their first week?",
+    workbookFr:"Pensez à une chose que vous faites bien sans y penser. Comment la décomposeriez-vous en trois étapes enseignables pour un serveur à sa première semaine ?",
+    workbookEs:"Piensa en algo que haces bien sin pensarlo. ¿Cómo lo dividirías en tres pasos enseñables para un mesero en su primera semana?"
+  },
+  24: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:12, chapterTitle:'The Almost',
+    blurb:"By the final chapter, technical skill and human warmth stop being two things — the server simply holds the room. That quiet authority, not a title, is what leadership on the floor looks like.",
+    blurbFr:"Au dernier chapitre, la compétence technique et la chaleur humaine cessent d'être deux choses — le serveur tient simplement la salle. Cette autorité tranquille, pas un titre, voilà le leadership en salle.",
+    blurbEs:"Para el capítulo final, la habilidad técnica y la calidez humana dejan de ser dos cosas — el mesero simplemente sostiene el salón. Esa autoridad serena, no un cargo, es el liderazgo en el salón.",
+    workbook:"Name a shift you 'held' well and one you didn't. What was present in the first — in your presence, not your tasks — that was missing in the second?",
+    workbookFr:"Nommez un service que vous avez « tenu » avec brio et un autre non. Qu'y avait-il dans le premier — dans votre présence, pas vos tâches — qui manquait au second ?",
+    workbookEs:"Nombra un turno que «sostuviste» bien y otro que no. ¿Qué había en el primero — en tu presencia, no en tus tareas — que faltó en el segundo?"
+  },
+  25: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:11, chapterTitle:'London Ikoyi',
+    blurb:"At Ikoyi the pairing logic goes past wine into bold, non-Western flavour — the same lateral thinking that lets a great server move between bar and table without a seam. That's integration.",
+    blurbFr:"Chez Ikoyi, la logique des accords dépasse le vin pour explorer des saveurs audacieuses et non occidentales — la même pensée latérale qui permet à un grand serveur de passer du bar à la table sans couture. Voilà l'intégration.",
+    blurbEs:"En Ikoyi la lógica del maridaje va más allá del vino hacia sabores audaces y no occidentales — el mismo pensamiento lateral que permite a un gran mesero moverse entre la barra y la mesa sin costuras. Eso es integración.",
+    workbook:"Pick one cocktail on your list. Which dish would you send it to the table with, and what shared note ties them? Practice pitching it in one sentence.",
+    workbookFr:"Choisissez un cocktail de votre carte. Avec quel plat l'enverriez-vous à table, et quelle note commune les relie ? Entraînez-vous à le présenter en une phrase.",
+    workbookEs:"Elige un cóctel de tu carta. ¿Con qué plato lo enviarías a la mesa y qué nota compartida los une? Practica presentarlo en una sola frase."
+  },
+  27: {
+    bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:6, chapterTitle:'The City That Shouts',
+    blurb:"Barcelona at full volume — the server moves fast enough to keep up and slow enough that no guest feels processed. Holding speed and warmth at once is the whole point of this module.",
+    blurbFr:"Barcelone à plein volume — le serveur va assez vite pour suivre et assez lentement pour qu'aucun client ne se sente expédié. Tenir la rapidité et la chaleur en même temps, c'est tout l'enjeu de ce module.",
+    blurbEs:"Barcelona a todo volumen — el mesero va lo bastante rápido para seguir el ritmo y lo bastante lento para que ningún cliente se sienta despachado. Sostener rapidez y calidez a la vez es el sentido de este módulo.",
+    workbook:"On your next rush, pick one guest to give three extra seconds of real attention. What did you have to drop to find them — and did the section actually suffer?",
+    workbookFr:"Au prochain coup de feu, choisissez un client à qui offrir trois secondes de vraie attention. Qu'avez-vous dû lâcher pour les trouver — et votre rang en a-t-il vraiment souffert ?",
+    workbookEs:"En tu próximo ajetreo, elige a un cliente a quien dar tres segundos de atención real. ¿Qué tuviste que soltar para encontrarlos — y de verdad sufrió tu sección?"
   },
   30: {
     bookTitle:'First Crossings', bookSlug:'first-crossings', chapter:8, chapterTitle:"The Widower's Wine",
